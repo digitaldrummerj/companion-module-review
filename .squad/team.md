@@ -86,11 +86,11 @@ Each agent writes ONLY to their own named inbox file:
 
 After all agents complete, the Coordinator combines all findings into one file written to the **centralized `reviews/` directory at the workspace root**:
 ```
-reviews/{module-directory-name}/review-{module-name}-{tag}-{YYYY-MM-DD-HHmmss}.md
+reviews/{module-name}/review-{module-name}-{tag}-{YYYY-MM-DD-HHmmss}.md
 ```
-Where `{module-name}` is the module directory name with `companion-module-` stripped (e.g., `softouch-easyworship`). The module name in the filename makes the file self-identifying even if copied out of its directory.
+Where `{module-name}` is the module name with `companion-module-` stripped from both the directory and the filename (e.g., `softouch-easyworship`). This keeps paths concise while remaining self-identifying.
 
-Example: `reviews/companion-module-softouch-easyworship/review-softouch-easyworship-v2.1.0-2026-04-02-041821.md`
+Example: `reviews/softouch-easyworship/review-softouch-easyworship-v2.1.0-2026-04-02-041821.md`
 
 The `{tag}` is the release tag being reviewed (e.g., `v2.1.0`). The Coordinator must create `reviews/{module-directory-name}/` if it doesn't exist before writing.
 

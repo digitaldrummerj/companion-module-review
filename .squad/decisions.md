@@ -136,3 +136,13 @@ reviews/companion-module-{name}/review-{name}-{tag}-{YYYY-MM-DD-HHmmss}.md
 ```
 Example: `reviews/companion-module-softouch-easyworship/review-softouch-easyworship-v2.1.0-2026-04-02-041821.md`
 **Why:** User request — captured for team memory
+
+### 2026-04-02T191531Z: User directive — Review directory also strips companion-module prefix
+
+**By:** Justin James (via Copilot)
+**What:** The `reviews/` subdirectory for each module also strips the `companion-module-` prefix, not just the filename. Final format:
+```
+reviews/{module-name}/review-{module-name}-{tag}-{YYYY-MM-DD-HHmmss}.md
+```
+Example: `reviews/softouch-easyworship/review-softouch-easyworship-v2.1.0-2026-04-02-041821.md`
+**Why:** User request — captured for team memory
