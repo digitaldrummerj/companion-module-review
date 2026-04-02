@@ -52,13 +52,12 @@ this.setPresetDefinitions(GetPresetList(this))
 ### Imports
 
 ```typescript
-import { CompanionPresetExt, CompanionPresetDefinitionsExt } from './preset-utils.js'
-import { ActionIdMyCategory } from '../actions/action-my-category.js'
-import { colorBlack, colorLightGray } from '../utils.js'
-// Add any other ActionId enums or helpers you need
+import { CompanionPresetExt, btn, colorWhite, colorBlack, colorLightGray } from './preset-utils.js'
+import { ActionId{RelatedCategory} } from '../actions/action-{related-category}.js'
 ```
 
 > Always use `.js` extensions on relative imports — this is ESM.
+> Import `btn` from `preset-utils.js` to use the shared button helper for simple presets. Import color constants when defining a button inline.
 
 ### Enum of Preset IDs
 
@@ -209,9 +208,8 @@ Use the template below (copy verbatim, replace all `{placeholders}`).
 ### 2. File template
 
 ```typescript
-import { CompanionPresetExt } from './preset-utils.js'
+import { CompanionPresetExt, btn, colorWhite, colorBlack } from './preset-utils.js'
 import { ActionId{RelatedCategory} } from '../actions/action-{related-category}.js'
-import { colorBlack, colorLightGray } from '../utils.js'
 
 export enum PresetId{Category} {
   firstPreset = '{category}_firstPreset',
@@ -223,39 +221,24 @@ export function GetPresets{Category}(): {
 } {
   const presets: { [id in PresetId{Category}]: CompanionPresetExt | undefined } = {
 
-    [PresetId{Category}.firstPreset]: {
-      type: 'button',
-      category: '{Category Display Name}',
-      name: 'First Preset',
-      style: {
-        text: 'First Preset',
-        size: '14',
-        color: colorBlack,
-        bgcolor: colorLightGray,
-      },
-      steps: [
-        {
-          down: [
-            {
-              actionId: ActionId{RelatedCategory}.someAction,
-              options: {},
-            },
-          ],
-          up: [],
-        },
-      ],
-      feedbacks: [],
-    },
+    // Simple preset — use the btn() helper
+    [PresetId{Category}.firstPreset]: btn(
+      'First Preset',
+      '{Category Display Name}',
+      ActionId{RelatedCategory}.someAction,
+      { targetType: 'roomIndex', roomIndex: 1 },
+    ),
 
+    // Inline preset — use when you need size '18', feedbacks, or multiple steps
     [PresetId{Category}.secondPreset]: {
       type: 'button',
       category: '{Category Display Name}',
       name: 'Second Preset',
       style: {
         text: 'Second Preset',
-        size: '14',
-        color: colorBlack,
-        bgcolor: colorLightGray,
+        size: '18',
+        color: colorWhite,
+        bgcolor: colorBlack,
       },
       steps: [
         {
@@ -333,9 +316,9 @@ Full annotated reference for a `CompanionPresetExt` entry:
   name: 'My Preset',                 // display name shown in the preset picker
   style: {
     text: 'Button Label',            // text rendered on the button face
-    size: '14',                      // font size as string
-    color: colorBlack,               // foreground color — import from '../utils.js'
-    bgcolor: colorLightGray,         // background color — import from '../utils.js'
+    size: '14',                      // font size as string; use '18' for primary actions
+    color: colorBlack,               // foreground color — import from './preset-utils.js'
+    bgcolor: colorLightGray,         // background color — import from './preset-utils.js'
   },
   steps: [
     {
@@ -352,6 +335,33 @@ Full annotated reference for a `CompanionPresetExt` entry:
 }
 ```
 
+**Shorthand:** use `btn()` from `preset-utils.js` for simple presets (size `'14'`, no feedbacks):
+
+```typescript
+[PresetIdMyCategory.myPreset]: btn(
+  'Button Label',
+  'My Category',
+  ActionIdMyCategory.someAction,
+  { targetType: 'roomIndex', roomIndex: 1 },
+),
+```
+
+---
+
+## Color Constants
+
+All color constants live in `src/presets/preset-utils.ts` and are imported via `'./preset-utils.js'`.
+
+Currently defined:
+
+| Constant         | Hex value  | Typical use         |
+| ---------------- | ---------- | ------------------- |
+| `colorBlack`     | `0x000000` | Text color          |
+| `colorWhite`     | `0xffffff` | Text color on dark  |
+| `colorLightGray` | `0xaaaaaa` | Button background   |
+
+> **If the color you need does not exist, add it to `src/presets/preset-utils.ts`** as a new exported `const` before using it. Never use raw hex literals in preset files.
+
 ---
 
 ## Common Mistakes
@@ -363,6 +373,8 @@ Full annotated reference for a `CompanionPresetExt` entry:
 | Added enum to union but forgot to spread the result               | TypeScript will error — spread the factory result into the `presets` object                                         |
 | Forgot `.js` extension on import in `presets.ts`                  | This is ESM — always use `.js` extension on relative imports                                                        |
 | Using a string literal for `actionId` inside `steps`              | Use the typed `ActionId*` enum value — TypeScript cannot catch typos in raw strings                                 |
+| Using a raw hex literal for a color                               | Add a named constant to `preset-utils.ts` and import it — never inline `0xffffff` or `16777215`                    |
+| Importing color constants from the wrong module                   | Import from `'./preset-utils.js'`, not from `'../utils.js'`                                                         |
 | Factory returns `CompanionPresetDefinitionsExt` (old pattern)     | Return the enum-mapped type `{ [id in PresetId{Category}]: CompanionPresetExt \| undefined }`                       |
 | Forgot `as CompanionPresetDefinitions` cast on `return presets`   | The mapped union type is more specific — cast is required to satisfy the return type                                |
 
@@ -372,7 +384,7 @@ Full annotated reference for a `CompanionPresetExt` entry:
 
 - `src/presets.ts` — the aggregator (authoritative wiring pattern, mirrors `actions.ts`)
 - `src/actions.ts` — the action aggregator this pattern exactly mirrors
-- `src/presets/preset-recording.ts` — existing no-instance preset category file (shows old string-key style; target for enum migration)
-- `src/presets/preset-participants.ts` — existing instance-form preset category file
-- `src/presets/preset-utils.ts` — `CompanionPresetExt` and `CompanionPresetDefinitionsExt` type definitions
+- `src/presets/preset-join-flow.ts` — no-instance preset category file example
+- `src/presets/preset-utils.ts` — `CompanionPresetExt` type, `colorWhite`/`colorBlack` constants, `btn()` helper
 - Sibling skill: `companion-action-file-pattern` — the parallel pattern this skill mirrors
+- Sibling skill: `companion-add-preset-to-category-file` — use when category file already exists
