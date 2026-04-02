@@ -103,3 +103,26 @@
 **By:** Lyn (via Copilot)
 **What:** The convention that code files should be in the `src` directory is a suggestion/preference, not a hard rule. Agents should recommend it but not enforce it or block work because of it.
 **Why:** User request — captured for team memory
+
+### 2026-04-02T190519Z: User directive — Read-only external access
+
+**By:** Justin James (via Copilot)
+**What:** The team must NEVER write anything back to GitHub or the BitFocus developer API. All interactions with `https://developer.bitfocus.io/api/v1/*` and GitHub (repos, issues, releases) are strictly **read-only**. No `POST`, `PUT`, `PATCH`, or `DELETE` requests to either service. The only output from a review is the markdown review file written to the local `reviews/` directory.
+**Why:** User request — captured for team memory
+
+---
+
+### 2026-04-02T190519Z: User directive — Review output directory structure
+
+**By:** Justin James (via Copilot)
+**What:** Review output files must be written to a dedicated `reviews/` directory at the workspace root, NOT to the individual module directory. Structure:
+```
+reviews/
+  {module-directory-name}/
+    review-{tag}-{YYYY-MM-DD-HHmmss}.md
+```
+Example: `reviews/companion-module-softouch-easyworship/review-v2.1.0-2026-04-02-041821.md`
+
+The tag in the filename is the release tag being reviewed (e.g., `v2.1.0`). This provides permanent historical records — module directories are still cloned and removed manually after a review is delivered, but the review files in `reviews/` are kept indefinitely.
+
+**Why:** User request — module directories are temporary (removed after review delivery); review history must persist separately.

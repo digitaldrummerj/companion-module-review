@@ -84,11 +84,18 @@ Each agent writes ONLY to their own named inbox file:
 
 **Coordinator assembles the single final review:**
 
-After all agents complete, the Coordinator combines all findings into one file written to the module's own folder:
+After all agents complete, the Coordinator combines all findings into one file written to the **centralized `reviews/` directory at the workspace root**:
 ```
-{module_directory}/review-{YYYY-MM-DD-HHmmss}.md
+reviews/{module-directory-name}/review-{tag}-{YYYY-MM-DD-HHmmss}.md
 ```
+Example: `reviews/companion-module-softouch-easyworship/review-v2.1.0-2026-04-02-041821.md`
+
+The `{tag}` is the release tag being reviewed (e.g., `v2.1.0`). The Coordinator must create `reviews/{module-directory-name}/` if it doesn't exist before writing.
 
 The final review uses severity order: 🔴 Critical → 🟠 High → 🟡 Medium → 🟢 Low → 💡 Nice to Have → 🔮 Next Release → ✅ What's Solid
 
-**No individual agent review files.** Only the single assembled file goes in the module directory. Scribe cleans up the inbox findings files after the final review is written.
+**No individual agent review files.** Only the single assembled file goes in `reviews/`. Scribe cleans up the inbox findings files after the final review is written.
+
+**Module directories are temporary.** After a review is delivered to the maintainer, Justin manually removes the module directory from the workspace root. The `reviews/` folder is permanent and provides historical records across releases.
+
+⚠️ **External write policy: READ ONLY.** The team must NEVER write to GitHub (no PR comments, issue comments, releases) or the BitFocus API (no POST/PUT/PATCH/DELETE). The only output from any review is the local markdown file above.
