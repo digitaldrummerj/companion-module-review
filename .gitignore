@@ -5,3 +5,9 @@
 .squad/sessions/
 # Squad: SubSquad activation file (local to this machine)
 .squad-workstream
+
+# Squad archives
+.squad-archive*/
+
+# Cloned companion modules (local review checkouts — not committed)
+companion-module-*/
