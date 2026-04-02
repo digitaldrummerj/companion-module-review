@@ -111,3 +111,9 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 
 **Orchestration Log:** `.squad/orchestration-log/2026-04-02T041821Z-kaylee.md`
 **Session Log:** `.squad/log/2026-04-02T041821Z-easyworship-review.md`
+
+### Template Compliance Skill Created (2026-04-02)
+
+- Created `.squad/skills/companion-template-compliance/SKILL.md` — full checklist for JS and TS template compliance covering: required files, config file content rules (.gitattributes, .gitignore, .prettierignore, .yarnrc.yml), package.json field requirements (engines, prettier, packageManager, scripts, dependencies), manifest.json rules (id/name match, maintainer placeholders, repository URL, banned keywords), HELP.md stub detection, and husky hook requirements for TS modules.
+- Updated charter (`What I Own`, `How I Work`, `Review Criteria`) to reference the skill and enumerate the new manifest/HELP/keyword/version-tag checks.
+- Directive source: `.squad/decisions/inbox/copilot-directive-2026-04-02T21-20-36Z.md`

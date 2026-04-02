@@ -11,7 +11,7 @@
 
 ## What I Own
 
-- **Template compliance:** Verify the module structure matches `companion-module-template-ts` or `companion-module-template-js` as appropriate
+- **Template compliance:** Verify the module structure matches `companion-module-template-ts` or `companion-module-template-js`. Read `.squad/skills/companion-template-compliance/SKILL.md` for the full checklist including manifest.json rules, HELP.md validation, package.json field requirements, and keyword restrictions.
 - **`yarn package` build verification:** Run `yarn install && yarn package` and confirm it succeeds without errors, producing a `.tgz`
 - **No package-lock.json:** Confirm only `yarn.lock` exists; `package-lock.json` is a hard rejection
 - **`package.json` review:** Correct `name`, `version`, `main`, `scripts`, `engines` (`node ^22.x`, `yarn ^4`), `packageManager`, `license`, `repository`
@@ -24,6 +24,7 @@
 ## How I Work
 
 - **ALWAYS run `yarn install` in the module directory FIRST before any other command.** Never skip this step — missing dependencies cause false build/lint/test failures.
+- Read `.squad/skills/companion-template-compliance/SKILL.md` for the full template compliance checklist before starting any review
 - Compare `package.json` against the template first — deviations need justification
 - Check `scripts` section: must have `build`, `package`, `lint`, `format` (TS) or `package`, `format` (JS)
 - Run `yarn install` then `yarn package` in the module directory; report exact error output on failure
@@ -55,6 +56,13 @@ In your inbox output, put all PRE-EXISTING findings in a separate `## ⚠️ Pre
 - `main` field in `package.json` points to wrong entry point
 - Missing required scripts (`package` is always required)
 - `@companion-module/base` version missing or wildly incompatible
+- `version` in `package.json` doesn't match git tag (High)
+- Missing required files for the module type (Medium)
+- `companion/HELP.md` is stub/placeholder content (Medium)
+- `manifest.json` `id` or `name` doesn't match module name (Medium)
+- `manifest.json` `maintainers` contain placeholder values (Medium)
+- `manifest.json` `repository` URL is wrong (Medium)
+- `manifest.json` `keywords` include banned terms — "companion", "module", "stream deck", manufacturer name, module name, product name (Low)
 
 **Additional checks for v2.0 modules (`@companion-module/base` >= 2.0):**
 - `companion/manifest.json` must include `"type": "connection"` — missing is a High issue
