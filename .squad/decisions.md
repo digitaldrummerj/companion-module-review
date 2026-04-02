@@ -126,3 +126,13 @@ Example: `reviews/companion-module-softouch-easyworship/review-v2.1.0-2026-04-02
 The tag in the filename is the release tag being reviewed (e.g., `v2.1.0`). This provides permanent historical records — module directories are still cloned and removed manually after a review is delivered, but the review files in `reviews/` are kept indefinitely.
 
 **Why:** User request — module directories are temporary (removed after review delivery); review history must persist separately.
+
+### 2026-04-02T191405Z: User directive — Review filename includes module name (no companion-module prefix)
+
+**By:** Justin James (via Copilot)
+**What:** Review filenames must include the module name (without the `companion-module-` prefix) so the file is self-identifying even when copied out of its directory. Updated format:
+```
+reviews/companion-module-{name}/review-{name}-{tag}-{YYYY-MM-DD-HHmmss}.md
+```
+Example: `reviews/companion-module-softouch-easyworship/review-softouch-easyworship-v2.1.0-2026-04-02-041821.md`
+**Why:** User request — captured for team memory
