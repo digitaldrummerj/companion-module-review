@@ -133,3 +133,42 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 
 **Session Closed:** 2026-04-02
 **Review file:** `.squad/decisions/inbox/zoe-review-findings.md`
+
+### 2026-04-02: EasyWorship v2.1.0 review — major reliability improvements with one typo
+
+**Module:** companion-module-softouch-easyworship v2.1.0 (upgrade from v2.0.2)
+**Protocol:** TCP to EasyWorship presentation software, mDNS discovery via Bonjour
+**Key files:** index.js (605 lines), actions.js (307 lines), config.js, feedbacks.js, variables.js
+
+**Verdict:** REJECTED — 1 blocking issue (NEW)
+
+**B-01 (NEW): Undefined method call in reconnect action** — `actions.js:247` calls `this.clearIdleTimer()` which doesn't exist. Will throw TypeError when user presses "Reconnect to EasyWorship" button. Should be removed (redundant with `clearRetry()` and `clearKeepalive()` already called).
+
+**Critical reliability improvement — TCP receive buffer:** v2.0.2 had naive `data.toString().split('\r\n')` with no partial message handling. v2.1.0 adds proper `_receiveBuffer` accumulation (lines 493-508) with `MAX_BUFFER_SIZE = 1MB` DoS protection. Handles TCP stream fragmentation correctly — incomplete lines stay in buffer, complete lines get processed. Drops connection if buffer exceeds 1MB (prevents malicious server from memory-bombing the module).
+
+**Reconnection logic rewrite — exponential backoff:** v2.0.2 used `setInterval` that ran even when connected. v2.1.0 uses `scheduleReconnect()` with exponential backoff (1s → 1.5s → 2.3s → 3.4s → 5s cap) via `setTimeout`. Only schedules next retry after previous attempt completes. Lines 343-375. Fixes reconnection storm where v2.0.2 would hammer the network every 5s regardless of connection state.
+
+**Keepalive mechanism added:** v2.1.0 sends heartbeat every 30s when paired (lines 383-393). If send fails, TCP error handler triggers reconnect. v2.0.2 had no keepalive — relied on EW to send periodic status. Dead sockets could go undetected for minutes. New behavior detects dead sockets within 30s.
+
+**Bonjour lifecycle leak fixed:** v2.0.2 created new `Bonjour()` instance on every `initBonjour()` call, never destroyed old ones. v2.1.0 uses single persistent instance with `if (this.bonjour) return` guard (line 269). Clean teardown in `stopDiscovery()` (lines 166-175). Prevents mDNS listener accumulation on repeated config saves.
+
+**Forward-compatible protocol handling:** v2.1.0 adds `KNOWN_ACTIONS` set (line 29) + debug-level logging for unknown actions (line 534). Still sends heartbeat to keep connection alive even for unrecognized action types. If EW ships protocol update, module won't break.
+
+**Display state isolation between servers:** `resetDisplayState()` (lines 140-164) clears logo/black/clear/livepreview state when switching servers. v2.0.2 had state bleed — Building A's button highlights would persist in Building B's session.
+
+**sendCommand error handling pattern:** Returns `true/false` instead of throwing or calling `destroy()`. Display toggle actions (logo/black/clear) save previous state before optimistic update, revert if `sendCommand()` returns false (lines 89-93, 112-115, 127-129). Prevents button flicker and incorrect highlights when connection is down.
+
+**Pairing request sanitization:** `config.ClientName` is sanitized via `.replace(/[\x00-\x1f]/g, '').slice(0, 64)` before sending to EW (lines 451, 43). v2.0.2 sent raw user input. Prevents control character injection into EW's pairing database.
+
+**Action options cleanup:** v2.0.2 had dummy dropdown `[{ id: '0', label: 'Not used' }]` on every action. v2.1.0 uses `options: []` for actions with no parameters. Cleaner UI.
+
+**Type validation on incoming messages:** Lines 516-520 validate `command.action` is a string before use (`const action = typeof command.action === 'string' ? command.action : null`). v2.0.2 directly accessed `command['action']` with no type guard.
+
+**Note on structural issue (PRE-EXISTING):** Source files at module root, not in `src/`. Existed in v2.0.2, not introduced by this release. Per team decision, this is a structural violation but doesn't block approval (note only).
+
+**Session Closed:** 2026-04-02
+**Review file:** `.squad/decisions/inbox/zoe-review-findings.md`
+
+
+**Orchestration Log:** `.squad/orchestration-log/2026-04-02T041821Z-zoe.md`
+**Session Log:** `.squad/log/2026-04-02T041821Z-easyworship-review.md`

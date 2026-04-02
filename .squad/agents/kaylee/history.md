@@ -81,3 +81,33 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 - **HELP.md:** Comprehensive and well-written. Covers requirements, configuration, all action categories, variables, real-time sync, and troubleshooting.
 - **Verdict:** REJECTED — blocking structural violations (source not in `src/`). Once fixed and rebuild verified, will be APPROVED WITH NOTES (resolve H1 repo mismatch before next release, add presets recommended).
 - **Findings file:** `.squad/decisions/inbox/kaylee-review-findings.md`
+
+### Softouch EasyWorship Review (2026-04-02)
+
+- **Module:** `companion-module-softouch-easyworship` v2.1.0 (was v2.0.2)
+- **Template:** JS template reference (v1.x API)
+- **SDK version:** @companion-module/base ^1.11.0 (v1.x — not v2.0)
+- **Build:** `yarn release` succeeded → `softouch-easyworship-2.1.0.tgz` (89.6 KB). Note: Module uses `release` script instead of standard `package` script (pre-existing issue).
+- **No package-lock.json:** Confirmed clean (only yarn.lock).
+- **companion/ directory:** Present with manifest.json and HELP.md.
+- **Release changes:** 14 files changed, 1252 insertions, 1027 deletions. Major refactoring of connection handling, actions, feedbacks, and documentation.
+- **Connection improvements (v2.1.0):** Exponential backoff reconnection (1s → 5s cap), `sendCommand()` gate returns true/false, auto-retry pairing when TCP up but unpaired, 30s keepalive heartbeat, 1MB buffer size limit (DoS prevention), forward-compatible unknown action logging.
+- **Code quality:** Extensive inline documentation added explaining EW protocol quirks (full state payloads required, heartbeat responses, mutual exclusivity of Logo/Black overlays). Optimistic state updates with revert-on-failure patterns for responsive buttons.
+- **Only NEW issue (H2 - REGRESSION):** `companion/manifest.json` version still shows "2.0.2" but package.json correctly shows "2.1.0". These must match. Trivial fix (one line change).
+- **PRE-EXISTING issues (all existed in v2.0.2, non-blocking per team policy):**
+  - **C1:** Missing `package` script (uses `release` instead)
+  - **H1:** Source files not in `src/` directory (all at module root)
+  - **H3:** manifest.json uses Windows backslash `..\\index.js` instead of `../index.js`
+  - **M1:** Missing `engines` field
+  - **M2:** Missing `"type": "connection"` (not required for v1.x but good practice)
+  - **M3:** manifest.json name fields not user-friendly (`softouch-easyworship` vs `Softouch EasyWorship`)
+  - **M4:** Empty maintainers array
+  - **L1:** No prettier configuration
+  - **L2:** Variables use 0/1 instead of boolean strings
+- **What's solid:** v1.x API compliance perfect (runEntrypoint, array-format setVariableDefinitions, etc.). 14 well-named actions with validation. 6 feedbacks with clear descriptions. 5 variables tracking display state. 21 comprehensive presets with custom PNG icons. Dynamic mDNS server discovery. HELP.md significantly expanded (153 lines).
+- **Verdict:** APPROVED WITH NOTES. Fix H2 (manifest version) before shipping. All other issues are PRE-EXISTING and should be addressed in next release.
+- **Findings file:** `.squad/decisions/inbox/kaylee-review-findings.md`
+- **Key learning:** The new release diff classification workflow (🆕 NEW vs 🔙 REGRESSION vs ⚠️ PRE-EXISTING) works well. Prevents blocking releases over old technical debt. Only changes introduced in the new release can block approval.
+
+**Orchestration Log:** `.squad/orchestration-log/2026-04-02T041821Z-kaylee.md`
+**Session Log:** `.squad/log/2026-04-02T041821Z-easyworship-review.md`

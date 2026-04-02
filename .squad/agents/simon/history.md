@@ -48,3 +48,13 @@
 - **Structure:** No tests/ directory, no test files, no jest/vitest config
 - **Verdict:** No tests present — not required per team policy (first release)
 - **Findings written to:** `.squad/decisions/inbox/simon-review-findings.md`
+
+### 2026-04-02: companion-module-softouch-easyworship v2.1.0
+- **Test detection:** No jest config, no test files found
+- **Package.json:** "test" script = placeholder error command (standard for no-test modules)
+- **Structure:** No tests/ directory, no test files, no jest/vitest config
+- **Verdict:** No tests present — not required per team policy
+- **Findings written to:** `.squad/decisions/inbox/simon-review-findings.md`
+
+**Orchestration Log:** `.squad/orchestration-log/2026-04-02T041821Z-simon.md`
+**Session Log:** `.squad/log/2026-04-02T041821Z-easyworship-review.md`

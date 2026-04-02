@@ -195,3 +195,102 @@ Findings: `.squad/decisions/inbox/wash-snmp-review-findings.md`
 **Session Closed:** 2026-04-02
 **Verdict:** REJECTED — 2 critical blocking issues (C1, C2) must be fixed before release
 **Findings File:** `.squad/decisions/inbox/wash-review-findings.md`
+
+### 2026-04-02: Softouch EasyWorship Review (v2.1.0)
+
+**Module:** `companion-module-softouch-easyworship` v2.1.0 (previous: v2.0.2)
+**Protocol:** TCP (custom JSON over newline-delimited text) + Bonjour/mDNS (service discovery via `bonjour-service`)
+**Key Files:**
+- `index.js` — Module class, TCP connection lifecycle, Bonjour discovery, message parsing, keepalive
+- `actions.js` — Action definitions with display overlay toggles (logo/black/clear)
+- `config.js` — Configuration with dynamic server dropdown populated from Bonjour discovery
+- `feedbacks.js`, `variables.js`, `presets.js` — UI layer
+
+**Architecture Pattern:**
+- TCPHelper for connection management (Companion SDK abstraction over `net.Socket`)
+- Bonjour/mDNS for automatic server discovery on local network (type: 'ezwremote', protocol: 'tcp')
+- Dual connection modes: auto-connect to last known server + parallel discovery for address changes
+- Persistent Bonjour instance (created once, lives until destroy)
+- Exponential backoff reconnection (1s → 5s with 1.5x multiplier, capped at 5s)
+- Keepalive heartbeats every 30s to detect dead sockets
+- Newline-delimited JSON protocol (`\r\n` terminated messages)
+- Pairing flow: `connect` action with UUID → `paired`/`notPaired` response → operational or waiting for user approval
+- Optimistic UI updates with revert-on-send-failure pattern
+
+**Connection Lifecycle:**
+- `init()` → tries last known server immediately (fast path) + `startDiscovery()` in parallel
+- `startDiscovery()` creates ONE persistent Bonjour instance, browser.find() for 'ezwremote' services
+- Bonjour 'up' event → auto-connect to matching server (or first discovered if none configured)
+- `connectTCP()` → creates TCPHelper, sends pairing request on 'connect'
+- `paired` response → starts keepalive interval, sets status 'ok', connected=true
+- `notPaired` response → status 'unknown_error', user must approve pairing on EW machine
+- 'close' or 'error' → `scheduleReconnect()` with exponential backoff
+- `destroy()` → `clearRetry()` + `clearKeepalive()` + `destroySocket()` + `stopDiscovery()`
+
+**TCP Socket Management:**
+- `connectTCP()` always calls `clearRetry()`, `clearKeepalive()`, `destroySocket()` before creating new socket
+- `destroySocket()` nulls socket, clears flags, clears buffer, updates variables/feedbacks
+- Error handler does NOT destroy socket — TCPHelper emits 'close' after 'error' (guaranteed by SDK)
+- All `socket.send()` calls have `.catch(err => log)` — no unhandled rejections
+- Checks `this.socket?.isConnected` before send — safe if null
+
+**Bonjour/mDNS:**
+- `this.bonjour` instance lives on module instance (not local variable) — properly cleaned up in `stopDiscovery()`
+- Guard in `startDiscovery()`: `if (this.bonjour) return` — won't create multiple instances
+- Browser events: 'up' (discovered server), 'down' (server disappeared), 'error' (discovery failure)
+- 'down' event for selected server → `destroySocket()` + `scheduleReconnect()` (don't wait for TCP timeout)
+- Server list (`this.ezw` array) updated on 'up'/'down', triggers `updateConfigFields()` to refresh UI dropdown
+
+**Message Parsing:**
+- Receive buffer accumulates incoming data, splits on `\r\n`, processes complete lines
+- Buffer overflow protection: 1MB limit, drops connection on overflow (DoS defense)
+- JSON.parse with try/catch — logs parse errors, continues processing other lines
+- Validates `action` field is a string before using
+- Handles unknown actions gracefully: logs at debug (not warn), sends heartbeat, continues (forward-compatible)
+- Tracks `requestrev` from server (sequence number), echoes in all heartbeats
+- `requestrev` type coercion: accepts string or number, converts to string (EW sends both)
+
+**Keepalive Heartbeats:**
+- Starts on successful pairing, clears on disconnect/unpair/error
+- 30s interval (appropriate for idle connection detection)
+- Sends `{ action: 'heartbeat', requestrev: this.requestrev }`
+- Guards with `if (this.connected && this.paired)` — won't spam when unpaired
+
+**Reconnection Logic:**
+- Exponential backoff: 1s → 1.5s → 2.3s → 3.4s → 5s (capped), formula: `min(1000 * 1.5^attempts, 5000)`
+- Verbose logging: every attempt for first 5, then every 20th attempt
+- Clears retry counter on successful pairing
+- `scheduleReconnect()` is idempotent — early returns if `retryTimeout` already set
+- Always calls `startDiscovery()` in retry (ensures discovery is running, won't restart if already up)
+- Only calls `connectTCP()` if address/port are known (waits for discovery otherwise)
+
+**Key Improvements from v2.0.2:**
+1. ✅ **REGRESSION FIX:** Bonjour instance now on `this` and properly destroyed. v2.0.2 had local `bonjour` variable leaked — unreachable in `destroy()`.
+2. ✅ Exponential backoff reconnection (was fixed-interval setInterval in v2.0.2)
+3. ✅ Keepalive heartbeats (new — detects dead sockets on idle connections)
+4. ✅ Receive buffer overflow protection (new — was unbounded in v2.0.2)
+5. ✅ Defensive message parsing (validates action field type, handles unknown actions)
+6. ✅ Centralized cleanup methods (`destroySocket()`, `stopDiscovery()`, `clearRetry()`, `clearKeepalive()`)
+7. ✅ Bonjour 'down' event handling improved (was calling `initTCP()` directly without backoff in v2.0.2)
+
+**Learnings:**
+- **Bonjour instance scoping:** Must live on `this.bonjour`, NOT as a local variable in an init function. Local variables are unreachable in `destroy()` and leak. v2.0.2 had `const bonjour = new Bonjour()` in `initBonjour()`, then referenced undefined `bonjour` in `destroy()`.
+- **Bonjour persistence:** Create ONE Bonjour instance and let it run for the module's lifetime. Don't cycle or restart it — mDNS requires stable listeners to receive multicast responses. Guard with `if (this.bonjour) return` in `startDiscovery()`.
+- **TCPHelper event sequence:** Companion's TCPHelper emits 'close' after 'error' (guaranteed). Don't destroy socket in error handler or you'll double-destroy when 'close' fires. Only update state in error handler, let close handler do cleanup.
+- **Receive buffer overflow defense:** Always enforce a limit on unbounded buffer accumulation (this module: 1MB). Drop connection and reconnect on overflow — correct DoS mitigation.
+- **Keepalive pattern for idle connections:** Send periodic heartbeats to detect dead sockets that don't emit 'close' events (network changes, OS bugs). 30s interval is appropriate for this protocol.
+- **Reconnect backoff:** Exponential backoff with a cap (this module: 1s → 5s, 1.5x multiplier) prevents retry stampedes on persistent failures.
+- **Forward-compatible message parsing:** Handle unknown action types with debug log + heartbeat response, don't crash or disconnect. EW may add new action types in future versions.
+- **Optimistic UI updates:** For responsive button feedback, update local state immediately, then revert if send fails. See `buildStatusPayload()` in actions.js — EW requires full state, not just changed fields.
+
+**Findings Written To:** `.squad/decisions/inbox/wash-review-findings.md`
+
+**Session Closed:** 2026-04-02
+**Verdict:** ✅ APPROVED — significant improvements to connection reliability and resource cleanup. No blocking issues. 4 notes for next release (connection timeout, requestrev validation, status transition logging, Bonjour restart guard — latter withdrawn on review).
+
+**Release Tag:** v2.1.0
+**Comparison Baseline:** v2.0.2
+**Build Status:** ✅ `yarn release` succeeded — package created: `softouch-easyworship-2.1.0.tgz`
+
+**Orchestration Log:** `.squad/orchestration-log/2026-04-02T041821Z-wash.md`
+**Session Log:** `.squad/log/2026-04-02T041821Z-easyworship-review.md`

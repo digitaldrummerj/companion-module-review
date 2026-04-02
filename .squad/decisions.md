@@ -97,3 +97,9 @@
 4. All 284+ `sendParam()` calls in action callbacks not awaited — silent command failures
 
 **Expected verdict once fixed:** APPROVED WITH NOTES
+
+### 2026-04-02T034458Z: User directive
+
+**By:** Lyn (via Copilot)
+**What:** The convention that code files should be in the `src` directory is a suggestion/preference, not a hard rule. Agents should recommend it but not enforce it or block work because of it.
+**Why:** User request — captured for team memory

@@ -88,3 +88,36 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 - JavaScript (CJS) module — no `"type": "module"` set, uses `require()` throughout
 - Empty `UpgradeScripts` is correct for a first release
 - `companion/manifest.json` uses `node22` runtime correctly
+
+### 2025-07-17: softouch-easyworship v2.1.0 review — REJECTED
+
+**Module:** companion-module-softouch-easyworship v2.1.0
+**API:** `@companion-module/base` ^1.11.0 (v1.x rules)
+**Previous:** v2.0.2
+
+**Critical Finding (BLOCKING):**
+- `connectezw` action calls `this.clearIdleTimer()` which is not defined anywhere — runtime TypeError crash. Likely should be `this.clearKeepalive()`.
+
+**Medium Findings:**
+- 13 actions had dummy dropdown options removed without upgrade scripts (options were non-functional single-choice "Not used" dropdowns — not breaking but should be cleaned up)
+- `@companion-module/base` version `1.11.3` doesn't satisfy `@companion-module/tools` peer dep of `^1.12.0`
+- Manifest version says "2.0.2" but package.json says "2.1.0"
+
+**Architecture Notes:**
+- Substantial rewrite of connection handling — exponential backoff, keepalive, buffer management, Bonjour discovery
+- v1.x compliance correct — `runEntrypoint` present, all lifecycle methods implemented
+- JavaScript CJS module (no `"type": "module"`), source files at root (not `src/`)
+- Optimistic state updates with rollback pattern — good
+- `is_connected` feedback and `Connected` variable added — good additions
+- Pre-existing `destroy()` bug (bare `bonjour` reference) fixed in v2.1.0
+- `yarn build` succeeds, yarn-only lockfile, no `dist/` committed
+- No tests exist (not blocking per decisions)
+
+### 2026-04-02: softouch-easyworship v2.1.0 RE-REVIEW — REJECTED
+
+**Module:** companion-module-softouch-easyworship v2.1.0
+**Session:** 2026-04-02T041821Z
+
+**Blocking Issue (NEW FINDING):**
+- Same `clearIdleTimer()` issue from previous review session remains unfixed
+- Orchestration log: `.squad/orchestration-log/2026-04-02T041821Z-mal.md`
