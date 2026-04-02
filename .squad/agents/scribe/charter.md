@@ -21,8 +21,12 @@
 3. **Decision inbox merge:** Merge `.squad/decisions/inbox/*.md` → `.squad/decisions.md`, delete inbox files, deduplicate
 4. **Cross-agent context:** Append relevant team updates to affected agents' `history.md`
 5. **Decisions archive:** If `decisions.md` exceeds ~20KB, archive entries older than 30 days to `decisions-archive.md`
-6. **Git commit:** `git add .squad/ && git commit -F {tempfile}` — skip if nothing staged
-7. **History summarization:** If any `history.md` exceeds 12KB, summarize old entries under `## Core Context`
+6. **Skills sync:** Keep `.copilot/skills/` in sync with `.squad/skills/` (source of truth). For each skill in `.squad/skills/`:
+   - If the matching `.copilot/skills/{name}/SKILL.md` does not exist → copy it
+   - If it exists but differs → overwrite with the `.squad/skills/` version
+   - Do NOT remove skills from `.copilot/skills/` that don't exist in `.squad/skills/` (those are system-level Squad skills)
+7. **Git commit:** `git add .squad/ .copilot/skills/ && git commit -F {tempfile}` — skip if nothing staged
+8. **History summarization:** If any `history.md` exceeds 12KB, summarize old entries under `## Core Context`
 
 ## How I Work
 
