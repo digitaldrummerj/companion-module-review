@@ -1,0 +1,83 @@
+📌 Imported from squad-export on 2026-04-01T20:41:10.786Z. Portable knowledge carried over; project learnings from previous project preserved below.
+
+# Project Context
+
+- **Owner:** Justin James
+- **Project:** BitFocus Companion module for Custom AV Controller for Zoom Room Controller application communicating via OSC protocol
+- **Stack:** TypeScript, Node.js, BitFocus Companion SDK
+- **Created:** 2026-03-13
+
+## Learnings
+
+<!-- Append new learnings below. Each entry is something lasting about the project. -->
+
+- `roomIndex` in `ROOM_TARGET_OPTIONS` is a `textinput` with `useVariables: true`, so `opt.roomIndex` is a string at runtime. The `parseRoomIndex()` helper in `src/actions.ts` converts it to an integer clamped to 1–999 (rounding, with bounds fallback). Always use `parseRoomIndex()` when consuming `opt.roomIndex` as a number.
+- `parseRoomIndex()` now **throws** `Error` on invalid input (non-finite, < 1, or > 999) instead of silently clamping. Both `roomCommand` and `roomCommandWithOpts` catch that error and call `instance.log('error', message)` so the user sees a clear Companion log entry. Any future action callback that calls `getRoomTarget()` directly must also wrap in try/catch with the same pattern.
+- Actions are being split into per-category files in `src/actions/`. The pilot split extracted Join Flow actions to `src/actions/action-join-flow.ts`. Shared OSC helpers (`ROOM_TARGET_OPTIONS`, `CHANNEL_NUM_OPTION`, `parseRoomIndex`, `buildRoomPath`, `getRoomTarget`, `roomCommand`, `roomCommandWithOpts`) live in `src/actions/action-room-utils.ts`. `roomCommand` and `roomCommandWithOpts` now take `instance` as their first parameter (no longer closures). The aggregator `actions.ts` imports helpers from the utils file and spreads each category factory's result into its return object.
+- The aggregator `actions.ts` must assign each category factory result to a typed `const` before the `return`, not inline inside the spread. Pattern: `const actionsJoinFlow: { [id in ActionIdJoinFlow]: CompanionActionDefinition | undefined } = GetActionsJoinFlow(instance)` then `...actionsJoinFlow` in the return. This lets TypeScript enforce enum completeness at the aggregator level. `CompanionActionDefinition` (singular) must be imported alongside `CompanionActionDefinitions` (plural) for the typed-const annotation.
+- `actions.ts` now exports an `ActionId` enum covering every inline action defined directly in the aggregator (not in a category file). The combined `actions` const inside `GetActions()` is typed as `{ [id in ActionId | ActionIdJoinFlow]: CompanionActionDefinition | undefined }`, and every key uses computed enum notation `[ActionId.xxx]`. This enforces completeness: TypeScript errors if any enum member is missing from the object or any extra key is added without a matching enum member.
+- The `companion-action-file-pattern` skill was updated to `confidence: high`. Additions: Pattern 0 (shared helpers in `action-utils.ts`, instance-dependent helpers, `parseRangedInt` validation, try/catch error handling), instance type clarification note in Pattern 1 imports, `useVariables: true` documentation for `textinput` fields, `ActionId` enum sub-section in Pattern 2 covering inline actions in the aggregator, step 3.5 in Pattern 3 covering removal of split actions from `ActionId`, and updated References section with generic paths (removed non-existent file references).
+
+### RTW TouchMonitor Review (2026-04-01)
+
+- **Module:** `rtw-touchmonitor` v1.0.1
+- **Template compliance:** Excellent. Module structure matches TS template except for intentional deviations (modern ESM config in tsconfig.build.json, additional deps for OSC/queuing).
+- **Build:** `yarn package` succeeded cleanly, producing `rtw-touchmonitor-1.0.1.tgz` (12K).
+- **No package-lock.json:** Confirmed clean (only yarn.lock present).
+- **package.json:** Perfect alignment with template. `@companion-module/base` at `~2.0.1` (newer than template's `~1.14.1`, but correct for SDK v2 modules). Node engine `^22.20`, yarn `^4`, packageManager `yarn@4.13.0`. All required scripts present.
+- **companion/ directory:** Present with `manifest.json` and `HELP.md`. Manifest specifies `node22` runtime, correct entrypoint `../dist/main.js`.
+- **Actions:** 11 actions defined with `ActionId` enum. All options have labels. Most options include helpful `description` or `tooltip` fields. Conditional visibility (`isVisibleExpression`) used appropriately for "All Applications" pattern. Expressions include `expressionDescription` guidance. Good grouping by category (Preset, Loudness Meter, Monitoring, Talkback, Device).
+- **Feedbacks:** Empty schema (no feedbacks defined). This is acceptable for OSC send-only modules with no state to query.
+- **Presets:** Not present. **Note:** Given the nature of actions (volume set, mute/dim toggles, input/output selection), presets would improve operator experience — e.g., "Mute On", "Mute Off", "Volume to Reference", "Reset Loudness Meter". These are common button patterns for live show operators.
+- **Variables:** Empty schema (no variables defined). Acceptable for send-only module with no state tracking.
+- **Config fields:** Clean. `host` (textinput with Regex.HOSTNAME), `port` (number, default 58000), `verbose` (checkbox). All typed correctly.
+- **tsconfig deviations:** Module uses `nodenext` moduleResolution (template uses `Node16`). This is a modern ESM-aligned choice and is valid for Node 22. The module's `tsconfig.json` extends `tsconfig.build.json` (not the other way around like the template), but this is functionally equivalent and arguably cleaner.
+
+**Session Closed:** 2026-04-01T21:43:37Z
+**Verdict:** APPROVED WITH NOTES
+Orchestration log: `.squad/orchestration-log/2026-04-01T21:43:37Z-kaylee.md`
+Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
+1 note issued: Missing presets (recommend for next release)
+
+### generic-snmp Review (2026-04-01)
+
+- **Module:** `generic-snmp` v3.0.0 (was v2.3.0)
+- **Build:** `yarn package` succeeded cleanly, producing `generic-snmp-3.0.0.tgz`.
+- **Tests:** 329/329 tests pass across 8 Vitest test files.
+- **No package-lock.json:** Confirmed clean (only yarn.lock present).
+- **manifest.json:** `"type": "connection"` present ✓. Name field uses lowercase hyphenated `"generic-snmp"` — should be `"Generic SNMP"` for Companion UI display.
+- **`engines.node`:** `"^22.22.1"` — overly restrictive vs ecosystem standard `"^22.x"`. Low note, not a blocker.
+- **Upgrade scripts (v2.3.0 → v3.0.0 = `v300()`):** Cover DisplayString→Encoding rename (actions+feedbacks), new config fields (traps, portBind, trapPort, walk), and Engine ID migration (blank→generated). **HIGH BUG:** The `setOid` action ID check in v300 is `'setOid'` (lowercase) but the current enum defines `SetOID = 'setOID'` (uppercase). This means either existing "Set OID (type)" buttons break silently after upgrade, or the OID options aren't migrated. Must be fixed before next release.
+- **Learn callbacks:** All Set actions return only the learned field (correct v2.0 pattern). `GetOID` learn callback always returns `undefined` — no-op, confusing for operators. Should be removed.
+- **Feedback `subscribe` gap:** `getOID` feedback sets up OID tracking in `callback` but has no `subscribe` handler. `unsubscribe` tears down state. The asymmetry means re-subscription doesn't re-initialize tracking immediately.
+- **Dead export:** `DisplayStringOption` still exported from `options.ts` (replaced by `EncodingOption` in v3.0.0). Only referenced in test mocks as hardcoded values, not the actual export. Should be removed.
+- **Vitest mock warning:** `vi.mock()` calls not at top level in `config.test.ts` — will become an error in a future Vitest version.
+- **No presets or module variables:** Acceptable for this module type but would significantly improve operator UX.
+- **`run` in scripts:** The `run` binary comes from `@companion-module/tools` — this is the standard Companion module pattern, not a problem.
+- **Verdict:** APPROVED WITH NOTES. Fix H1 (upgrade ID mismatch) before next release.
+- **Review file:** `companion-module-generic-snmp/review-2026-04-01-173712.md`
+
+### generic-snmp Re-Review (2026-04-02, new process rules)
+
+- **Re-review trigger:** New process — findings now go to `.squad/decisions/inbox/kaylee-review-findings.md` for Coordinator assembly; no `review-*.md` file written to the module directory.
+- **All prior issues remain unresolved** (H1 setOID case mismatch, M1 feedback subscribe gap, M2 GetOID learn no-op, M3 manifest name, M4 engines.node over-constrained). None were addressed between reviews.
+- **New issue found (L3):** `engines` missing `"yarn": "^4"` — template includes it, module omits it.
+- **Build/tests still pass:** `yarn package` → `generic-snmp-3.0.0.tgz`, 329/329 tests pass.
+- **Verdict:** APPROVED WITH NOTES (same as prior). H1 must be fixed before next release.
+
+### TallyCCU Pro Review (2026-04-02)
+
+- **Module:** `companion-module-fiverecords-tallyccupro` v3.0.2 (first release)
+- **Template:** JS template reference
+- **Critical structural violation:** All source files (main.js, actions.js, feedbacks.js, variables.js, connection.js, tcp.js, params.js, upgrades.js) are at module root alongside package.json. Team directive requires all source code in `src/` directory. Template has `src/` directory. Module does not.
+- **Coupled path issues:** `package.json` `"main": "main.js"` must be `"src/main.js"`. `manifest.json` `"entrypoint": "../main.js"` must be `"../src/main.js"`. These are blocking until source files are moved.
+- **Build status:** `yarn package` succeeded, producing `fiverecords-tallyccupro-3.0.2.tgz` (102KB). No package-lock.json. Build works with current structure but structure violates team standards.
+- **Repository URL mismatch (H1):** `package.json` points to `github.com/fiverecords/companion-module-tallyccu-pro` (personal fork, different spelling). `manifest.json` points to `github.com/bitfocus/companion-module-fiverecords-tallyccupro` (canonical org). These must align — Companion modules belong in bitfocus org for discoverability and long-term maintenance.
+- **No presets (M2):** 289 actions covering extensive camera control (lens, video, audio, color, PTZ, tally). Operators would benefit significantly from presets (e.g., "Mute On/Off", "ND Filter presets", "Load Camera Preset 1-4"). Not blocking for first release but strongly recommended for next version.
+- **Mixed language (M3):** Some action names contain Spanish text (`'Zoom - Iniciar'` should be `'Zoom - Start'`). Minor UX issue but should be corrected.
+- **Variables:** Excellent. Module defines comprehensive variables for all 8 cameras covering active presets, preset names, and all camera parameters. Real-time TCP sync on port 8098 keeps variables current. Exemplary design.
+- **Actions:** 289 actions in a single 11,920-line `actions.js` file. Well-organized with consistent patterns (set/increment/decrement/reset for parameters). Consider splitting into category files in future major version for maintainability (pattern documented in history: `action-join-flow.ts` split).
+- **Feedbacks:** Empty (template compatibility file only). Module uses variables for state display, which is valid design choice.
+- **HELP.md:** Comprehensive and well-written. Covers requirements, configuration, all action categories, variables, real-time sync, and troubleshooting.
+- **Verdict:** REJECTED — blocking structural violations (source not in `src/`). Once fixed and rebuild verified, will be APPROVED WITH NOTES (resolve H1 repo mismatch before next release, add presets recommended).
+- **Findings file:** `.squad/decisions/inbox/kaylee-review-findings.md`
