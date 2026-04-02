@@ -58,8 +58,21 @@ All JS files above, **plus**:
 
 ---
 
-## 3. Config File Content Rules
+## 3. Source Code Directory Rule
 
+**All source code files must be in the `src/` directory.** No `.js` or `.ts` source files may exist at the module root or in any directory other than `src/` (and its subdirectories).
+
+**Check:**
+- For JS modules: `src/main.js` must exist; `main.js` at the root is a Critical violation
+- For TS modules: `src/main.ts` must exist; `main.ts` at the root is a Critical violation
+- If source files are at the root, the `package.json` `"main"` field will also be wrong (e.g., `"main.js"` instead of `"src/main.js"`) — flag both
+- If source files are at the root, `manifest.json` `"entrypoint"` will also be wrong (e.g., `"../main.js"` instead of `"../src/main.js"`) — flag both
+
+**Severity:** 🔴 Critical — blocks approval.
+
+---
+
+## 4. Config File Content Rules
 ### `.gitattributes`
 
 **JS and TS (identical):**
@@ -139,7 +152,7 @@ export default generateEslintConfig({ enableTypescript: true })
 
 ---
 
-## 4. `package.json` Rules
+## 5. `package.json` Rules
 
 ### 4a. JavaScript modules
 
@@ -220,7 +233,7 @@ All JS rules above, **plus**:
 
 ---
 
-## 5. `manifest.json` Rules (JS and TS)
+## 6. `manifest.json` Rules (JS and TS)
 
 | Field | Rule |
 |-------|------|
@@ -250,7 +263,7 @@ Flag any keyword that matches these patterns — it adds no value and pollutes s
 
 ---
 
-## 6. `companion/HELP.md` Rules (JS and TS)
+## 7. `companion/HELP.md` Rules (JS and TS)
 
 The file must contain real user-facing documentation. Flag it if:
 
@@ -262,7 +275,7 @@ A good HELP.md covers: what the module does, how to configure it (host/port/auth
 
 ---
 
-## 7. TS-only: `.husky` Directory
+## 8. TS-only: `.husky` Directory
 
 - The `.husky/` directory must be committed to the repo (must NOT appear in `.gitignore`)
 - Must contain a `pre-commit` file
@@ -274,30 +287,33 @@ A good HELP.md covers: what the module does, how to configure it (host/port/auth
 
 ---
 
-## 8. Severity Table
+## 9. Severity Table
+
+> **⚠️ All template compliance violations are CRITICAL severity — they always block approval.**
 
 | Violation | Severity |
 |-----------|----------|
-| Missing required file | **Medium** (blocking) |
-| `package-lock.json` present | **Critical** (auto-reject) |
-| `version` in `package.json` doesn't match git tag | **High** (blocking) |
-| Wrong `repository` URL (package.json or manifest.json) | **Medium** |
-| Placeholder maintainer `name` or `email` in manifest | **Medium** |
-| Empty `maintainers` array | **Medium** |
-| Stub `companion/HELP.md` | **Medium** |
-| Banned keyword in `manifest.json` keywords | **Low** |
-| Missing `engines`, `prettier`, or `packageManager` fields | **Medium** |
-| Missing required `scripts` (TS) | **Medium** |
-| Missing required `devDependencies` | **Medium** |
-| `.husky` missing or not committed (TS) | **Medium** |
-| `manifest.json` id or name doesn't match module name | **Medium** |
-| Config file content differs from template | **Medium** |
-| Extra `.gitignore` entries beyond template | **Low** (note) |
-| `tsconfig` deviations without justification | **Low** |
+| Missing required file | **🔴 Critical** (blocks) |
+| `package-lock.json` present | **🔴 Critical** (blocks) |
+| Source code files not in `src/` directory | **🔴 Critical** (blocks) |
+| `version` in `package.json` doesn't match git tag | **🔴 Critical** (blocks) |
+| Wrong `repository` URL (package.json or manifest.json) | **🔴 Critical** (blocks) |
+| Placeholder maintainer `name` or `email` in manifest | **🔴 Critical** (blocks) |
+| Empty `maintainers` array | **🔴 Critical** (blocks) |
+| Stub `companion/HELP.md` | **🔴 Critical** (blocks) |
+| Banned keyword in `manifest.json` keywords | **🔴 Critical** (blocks) |
+| Missing `engines`, `prettier`, or `packageManager` fields | **🔴 Critical** (blocks) |
+| Missing required `scripts` (TS) | **🔴 Critical** (blocks) |
+| Missing required `devDependencies` | **🔴 Critical** (blocks) |
+| `.husky` missing or not committed (TS) | **🔴 Critical** (blocks) |
+| `manifest.json` id or name doesn't match module name | **🔴 Critical** (blocks) |
+| Config file content differs from template | **🔴 Critical** (blocks) |
+| Extra `.gitignore` entries beyond template | **🔴 Critical** (blocks) |
+| `tsconfig` deviations without justification | **🔴 Critical** (blocks) |
 
 ---
 
-## 9. How to Report Findings
+## 10. How to Report Findings
 
 Show side-by-side comparisons so the maintainer can see exactly what to change:
 

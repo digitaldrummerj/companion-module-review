@@ -56,13 +56,14 @@ In your inbox output, put all PRE-EXISTING findings in a separate `## ⚠️ Pre
 - `main` field in `package.json` points to wrong entry point
 - Missing required scripts (`package` is always required)
 - `@companion-module/base` version missing or wildly incompatible
-- `version` in `package.json` doesn't match git tag (High)
-- Missing required files for the module type (Medium)
-- `companion/HELP.md` is stub/placeholder content (Medium)
-- `manifest.json` `id` or `name` doesn't match module name (Medium)
-- `manifest.json` `maintainers` contain placeholder values (Medium)
-- `manifest.json` `repository` URL is wrong (Medium)
-- `manifest.json` `keywords` include banned terms — "companion", "module", "stream deck", manufacturer name, module name, product name (Low)
+- `version` in `package.json` doesn't match git tag (🔴 Critical)
+- Missing required files for the module type (🔴 Critical)
+- Source code files not in `src/` directory (🔴 Critical)
+- `companion/HELP.md` is stub/placeholder content (🔴 Critical)
+- `manifest.json` `id` or `name` doesn't match module name (🔴 Critical)
+- `manifest.json` `maintainers` contain placeholder values (🔴 Critical)
+- `manifest.json` `repository` URL is wrong (🔴 Critical)
+- `manifest.json` `keywords` include banned terms — "companion", "module", "stream deck", manufacturer name, module name, product name (🔴 Critical)
 
 **Additional checks for v2.0 modules (`@companion-module/base` >= 2.0):**
 - `companion/manifest.json` must include `"type": "connection"` — missing is a High issue
