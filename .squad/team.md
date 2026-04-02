@@ -25,7 +25,23 @@
 
 ## How the Queue Works
 
-Modules arrive as new subdirectories in the workspace root and are **removed by Justin once review is complete**. At any point, the reviewable modules are:
+Modules are discovered via the **BitFocus developer portal API** and cloned into the workspace root. Once a review is complete, Justin removes the directory. The queue has two layers:
+
+### Layer 1 — BitFocus Pending Queue (authoritative)
+
+The BitFocus portal tracks which module releases need manual review:
+
+```bash
+TOKEN=$(gh auth token)
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://developer.bitfocus.io/api/v1/modules-pending-review"
+```
+
+Returns `{versions: [{moduleName, moduleType, gitTag, createdAt}]}`. See `.squad/skills/companion-bitfocus-dashboard/SKILL.md` for full API docs, previous-tag lookup, and GitHub URL derivation.
+
+### Layer 2 — Local Workspace Queue (cloned modules)
+
+Modules that have been cloned but not yet reviewed appear as subdirectories here:
 
 ```bash
 ls /Users/lynbh/Development/companion-module-review/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'

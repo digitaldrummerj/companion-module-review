@@ -2,18 +2,34 @@
 
 ## How to Identify What Needs Review
 
+### From the BitFocus API (Authoritative)
+
+The BitFocus developer portal exposes a REST API that lists all modules currently queued for manual review. Use this as the authoritative source.
+
+```bash
+TOKEN=$(gh auth token)
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://developer.bitfocus.io/api/v1/modules-pending-review"
+```
+
+Returns `{versions: [{moduleName, moduleType, gitTag, createdAt}]}`. GitHub repo URL pattern: `https://github.com/bitfocus/companion-module-{moduleName}`.
+
+Read `.squad/skills/companion-bitfocus-dashboard/SKILL.md` for full API patterns, previous-tag lookup, and clone workflow.
+
+### From the Workspace (Local State)
+
 **Permanent directories (never review these as modules):**
 - `companion-module-template-js/` — JS reference template
 - `companion-module-template-ts/` — TS reference template
 
-**Modules awaiting review:**  
-Any other `companion-module-*` directory present in the workspace root is a module waiting to be reviewed. To find them:
+**Modules already cloned and awaiting review:**  
+Any other `companion-module-*` directory present in the workspace root has been cloned and is ready to review:
 
 ```bash
 ls /Users/lynbh/Development/companion-module-review/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
 ```
 
-When a module is done being reviewed, Justin removes it from the directory. New modules appear as new directories.
+When a module is done being reviewed, Justin removes it from the directory.
 
 ---
 
@@ -22,7 +38,11 @@ When a module is done being reviewed, Justin removes it from the directory. New 
 | Signal | Route To | Mode |
 |--------|----------|------|
 | "review `{module}`" / "review this module" / "what do you think of `{module}`" | Mal + Wash + Kaylee + Zoe (parallel fan-out) | Background |
-| "what modules are waiting?" / "what needs review?" / "show the queue" | Coordinator scans workspace root (direct) | Direct |
+| "what's pending" / "what needs reviewing" / "show the queue" / "check the dashboard" / "check the BitFocus portal" | Coordinator: call BitFocus API + cross-ref workspace, print table | Direct |
+| "what modules are waiting?" / "what's cloned?" / "show local queue" | Coordinator scans workspace root (direct) | Direct |
+| "clone `{module}`" / "set up `{module}`" / "pull down `{module}`" | Coordinator: derive GitHub URL, `git clone`, confirm cloned | Direct |
+| "review all pending" / "work through the queue" / "pick the next module" | Ralph loop: fetch API → clone each → review each in order | Ralph |
+| "next module" / "what should we review next" | Coordinator: call API, find oldest pending not in workspace | Direct |
 | "architecture" / "SDK usage" / "structure" | Mal | Standard |
 | "protocol" / "TCP" / "UDP" / "OSC" / "HTTP" / "Bonjour" | Wash | Standard |
 | "build" / "package" / "yarn" / "template" / "actions" / "feedbacks" / "presets" / "variables" | Kaylee | Standard |

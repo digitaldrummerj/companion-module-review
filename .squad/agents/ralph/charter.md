@@ -11,20 +11,41 @@
 
 ## What I Own
 
-- **Module queue scanning:** Detect new modules awaiting review by scanning the workspace root for `companion-module-*` directories that are NOT `companion-module-template-js` or `companion-module-template-ts`
+- **BitFocus pending queue:** Check the BitFocus developer portal API for modules awaiting manual review, cross-reference against the local workspace, and report what's outstanding
+- **Module queue scanning:** Detect modules already cloned in workspace root that haven't been reviewed yet
 - Tracking squad work health: in-progress reviews, blocked items
 - Surfacing modules that have appeared but haven't been reviewed yet
 - Reporting squad activity summaries on request
 
 ## How I Work
 
-- Scan for pending reviews:
-  ```bash
-  ls /Users/lynbh/Development/companion-module-review/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
-  ```
-- Cross-reference against recent orchestration logs to identify modules that haven't had a review started
-- Report findings as a structured summary — what's waiting, what's in progress, what's done
-- Do not remove modules or make approval decisions — surface the queue to the Coordinator
+### BitFocus API Check (primary discovery)
+
+Read `.squad/skills/companion-bitfocus-dashboard/SKILL.md` for the full API patterns. Key check:
+
+```bash
+TOKEN=$(gh auth token)
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://developer.bitfocus.io/api/v1/modules-pending-review"
+```
+
+Cross-reference the `moduleName` from each result against what's cloned in the workspace:
+```bash
+ls /Users/lynbh/Development/companion-module-review/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
+```
+
+Report as a table: pending count, cloned (awaiting review), not yet cloned, oldest unstarted module.
+
+### Local workspace scan (secondary)
+
+Scan for modules already cloned:
+```bash
+ls /Users/lynbh/Development/companion-module-review/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
+```
+
+Cross-reference against recent orchestration logs to identify modules that haven't had a review started. A module is "in review" if a `review-*.md` file exists in its directory.
+
+Report findings as a structured summary — what's pending on BitFocus portal, what's cloned but unreviewed, what's in progress, what's done. Do not remove modules or make approval decisions — surface the queue to the Coordinator.
 
 ## Boundaries
 
