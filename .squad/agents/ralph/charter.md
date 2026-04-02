@@ -21,31 +21,39 @@
 
 ### BitFocus API Check (primary discovery)
 
-Read `.squad/skills/companion-bitfocus-dashboard/SKILL.md` for the full API patterns. Key check:
+Read `.squad/skills/companion-bitfocus-dashboard/SKILL.md` for full API details.
 
-```bash
-TOKEN=$(gh auth token)
-curl -s -H "Authorization: Bearer $TOKEN" \
-  "https://developer.bitfocus.io/api/v1/modules-pending-review"
+**Quick queue check:**
+```powershell
+pwsh scripts/bitfocus-queue.ps1
 ```
 
-Cross-reference the `moduleName` from each result against what's cloned in the workspace:
-```bash
-ls /Users/lynbh/Development/companion-module-review/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
-```
-
-Report as a table: pending count, cloned (awaiting review), not yet cloned, oldest unstarted module.
+Report as a table: pending count, cloned (awaiting review), not yet cloned, oldest unstarted module (rank 1 = next up).
 
 ### Local workspace scan (secondary)
 
 Scan for modules already cloned:
-```bash
-ls /Users/lynbh/Development/companion-module-review/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
+```powershell
+Get-ChildItem /Users/lynbh/Development/companion-module-review -Directory |
+  Where-Object { $_.Name -like 'companion-module-*' -and $_.Name -notmatch 'template-(js|ts)$' } |
+  Select-Object -ExpandProperty Name
 ```
 
-Cross-reference against recent orchestration logs to identify modules that haven't had a review started. A module is "in review" if a `review-*.md` file exists in its directory.
+Cross-reference against `reviews/` to identify modules that haven't had a review file written yet.
 
 Report findings as a structured summary — what's pending on BitFocus portal, what's cloned but unreviewed, what's in progress, what's done. Do not remove modules or make approval decisions — surface the queue to the Coordinator.
+
+### Review All Pending (loop procedure)
+
+When the user says "review all pending", "work through the queue", or similar:
+
+1. Run `pwsh scripts/bitfocus-queue.ps1` to display the full pending queue
+2. For each module in the list, oldest-first:
+   a. Run `pwsh scripts/bitfocus-setup-module.ps1 -ModuleName {name}` to validate PENDING status, fetch both tags, and clone if needed
+   b. Hand off to the Coordinator: provide module name, review tag, previous tag, and directory path
+   c. Coordinator triggers the full review team fan-out
+   d. Wait for a review file to appear in `reviews/{module-name}/` before proceeding to the next module
+3. After all modules are processed, report a summary: how many reviewed, any that were skipped (non-PENDING status)
 
 ## Boundaries
 

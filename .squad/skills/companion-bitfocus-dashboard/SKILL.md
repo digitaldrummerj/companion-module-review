@@ -19,15 +19,16 @@ Enables the team to autonomously discover which Companion modules need review, d
 
 The BitFocus developer portal accepts **GitHub Bearer tokens**. No extra credentials or cookies needed.
 
-```bash
-TOKEN=$(gh auth token)
+```powershell
+$token = gh auth token
 ```
 
 This uses the token from the GitHub CLI's existing auth. It works out of the box on any machine where `gh auth login` has been run.
 
-All API calls in this skill use this pattern:
-```bash
-curl -s -H "Authorization: Bearer $TOKEN" "https://developer.bitfocus.io/api/v1/..."
+All API calls use this pattern:
+```powershell
+$headers = @{ Authorization = "Bearer $token" }
+$data = Invoke-RestMethod -Uri "https://developer.bitfocus.io/api/v1/..." -Headers $headers
 ```
 
 ## API Endpoints
@@ -38,10 +39,10 @@ OpenAPI spec: `https://developer.bitfocus.io/openapi.yaml`
 
 ### List Pending Reviews
 
-```bash
-TOKEN=$(gh auth token)
-curl -s -H "Authorization: Bearer $TOKEN" \
-  "https://developer.bitfocus.io/api/v1/modules-pending-review"
+```powershell
+$token   = gh auth token
+$headers = @{ Authorization = "Bearer $token" }
+$data    = Invoke-RestMethod -Uri "https://developer.bitfocus.io/api/v1/modules-pending-review" -Headers $headers
 ```
 
 **Response shape:**
@@ -59,10 +60,11 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 ```
 
 **Notes:**
-- Returns all modules currently in the manual review queue (as of 2026-04-02: ~31 pending)
+- `createdAt` is an **epoch millisecond timestamp per `{moduleName, gitTag}` pair** — the date that specific version was submitted for review, NOT the module's original creation date
 - `moduleName` is lowercase kebab-case, no `companion-module-` prefix
 - `moduleType` is always `companion-connection` for this workspace
 - `gitTag` is the tag submitted for review — some have `v` prefix, some don't
+- `/modules-pending-review` may include both `PENDING` and `WITHDRAWN` entries — always verify status via `/versions` before acting
 
 ### Get Module Versions (for finding previous approved tag)
 
@@ -102,63 +104,78 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 - `WITHDRAWN` — withdrawn from auto-publish, may also be awaiting manual review
 - `REJECTED` — review rejected
 
-## Workflows
+## Scripts
+
+All workflows are implemented as PowerShell scripts in `scripts/`. Agents and Justin both run them the same way.
+
+### Show the Pending Queue (read-only)
+
+```powershell
+pwsh scripts/bitfocus-queue.ps1
+```
+
+- Fetches `/modules-pending-review`, sorts by `createdAt` ascending (oldest first)
+- Cross-references workspace for already-cloned modules
+- Prints a ranked table: rank, module, tag, days waiting, clone status
+- **Never clones anything** — purely informational
+
+### Set Up a Module for Review
+
+```powershell
+# Auto-selects the oldest pending module:
+pwsh scripts/bitfocus-setup-module.ps1
+
+# Or specify a module explicitly:
+pwsh scripts/bitfocus-setup-module.ps1 -ModuleName allenheath-sq
+```
+
+- Validates the target version has status `PENDING` (not `WITHDRAWN` or other)
+- Fetches the pending `gitTag` and the previous `APPROVED` tag
+- Clones `https://github.com/bitfocus/companion-module-{name}` if not already present
+- Prints a coordinator summary: module name, review tag, previous tag, directory path
+
+## Workflows (for agents without script access)
 
 ### Workflow 1: Show Pending Queue
 
-```bash
-TOKEN=$(gh auth token)
-WORKSPACE="/Users/lynbh/Development/companion-module-review"
+```powershell
+$token   = gh auth token
+$headers = @{ Authorization = "Bearer $token" }
+$data    = Invoke-RestMethod -Uri "https://developer.bitfocus.io/api/v1/modules-pending-review" -Headers $headers
+$now     = [DateTimeOffset]::UtcNow
 
-# 1. Fetch pending list
-PENDING=$(curl -s -H "Authorization: Bearer $TOKEN" \
-  "https://developer.bitfocus.io/api/v1/modules-pending-review")
-
-# 2. Parse and display
-echo "$PENDING" | python3 -c "
-import sys, json, os
-d = json.load(sys.stdin)
-versions = d.get('versions', [])
-workspace = '$WORKSPACE'
-print(f'## Pending Reviews ({len(versions)} total)\n')
-print('| Module | Tag | Cloned? | Age |')
-print('|--------|-----|---------|-----|')
-for v in versions:
-    name = v['moduleName']
-    tag = v['gitTag']
-    cloned = os.path.isdir(f'{workspace}/companion-module-{name}')
-    from datetime import datetime, timezone
-    ts = datetime.fromtimestamp(v['createdAt']/1000, tz=timezone.utc)
-    age = (datetime.now(tz=timezone.utc) - ts).days
-    status = '✅ Yes' if cloned else '⬜ No'
-    print(f'| {name} | {tag} | {status} | {age}d |')
-"
+$data.versions | Sort-Object createdAt | ForEach-Object {
+    $days  = [math]::Floor(($now - [DateTimeOffset]::FromUnixTimeMilliseconds($_.createdAt)).TotalDays)
+    $cloned = Test-Path (Join-Path $workspace "companion-module-$($_.moduleName)")
+    [PSCustomObject]@{
+        Module  = $_.moduleName
+        Tag     = $_.gitTag
+        Days    = $days
+        Cloned  = $cloned
+    }
+} | Format-Table -AutoSize
 ```
 
 ### Workflow 2: Get Previous Approved Tag
 
-```bash
-TOKEN=$(gh auth token)
-MODULE_NAME="softouch-easyworship"  # substitute target module
+```powershell
+$token      = gh auth token
+$headers    = @{ Authorization = "Bearer $token" }
+$moduleName = "softouch-easyworship"  # substitute target module
 
-VERSIONS=$(curl -s -H "Authorization: Bearer $TOKEN" \
-  "https://developer.bitfocus.io/api/v1/public/modules/companion-connection/$MODULE_NAME/versions")
+$data = Invoke-RestMethod `
+    -Uri "https://developer.bitfocus.io/api/v1/public/modules/companion-connection/$moduleName/versions" `
+    -Headers $headers
 
-echo "$VERSIONS" | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-versions = d.get('versions', [])
-approved = [v for v in versions if v['status'] == 'APPROVED']
-# Sort by createdAt descending
-approved.sort(key=lambda v: v.get('createdAt', ''), reverse=True)
-if approved:
-    print(approved[0]['gitTag'])
-else:
-    print('NO_PREVIOUS_TAG')
-"
+$previousTag = $data.versions |
+    Where-Object { $_.status -eq 'APPROVED' } |
+    Sort-Object createdAt -Descending |
+    Select-Object -First 1 -ExpandProperty gitTag
+
+if ($previousTag) { $previousTag } else { "NO_PREVIOUS_TAG" }
 ```
 
-If the result is `NO_PREVIOUS_TAG`, it means this is the module's first-ever release — all code is new and all findings are eligible to block.
+If the result is `NO_PREVIOUS_TAG`, this is the module's first-ever release — all code is new and all findings are eligible to block.
 
 ### Workflow 3: Derive GitHub Repo URL
 
@@ -180,96 +197,57 @@ https://developer.bitfocus.io/modules/companion-connection/{moduleName}
 
 ### Workflow 4: Clone a Module
 
-```bash
-MODULE_NAME="softouch-easyworship"  # substitute target module
-WORKSPACE="/Users/lynbh/Development/companion-module-review"
-REPO_URL="https://github.com/bitfocus/companion-module-$MODULE_NAME"
-TARGET_DIR="$WORKSPACE/companion-module-$MODULE_NAME"
+```powershell
+$workspace  = "/Users/lynbh/Development/companion-module-review"
+$moduleName = "softouch-easyworship"  # substitute target module
+$cloneDir   = Join-Path $workspace "companion-module-$moduleName"
 
-# Check if already cloned
-if [ -d "$TARGET_DIR" ]; then
-  echo "Already cloned at $TARGET_DIR"
-else
-  cd "$WORKSPACE" && git clone "$REPO_URL"
-  echo "Cloned to $TARGET_DIR"
-fi
+if (Test-Path $cloneDir) {
+    Write-Host "Already cloned at $cloneDir"
+} else {
+    Push-Location $workspace
+    git clone "https://github.com/bitfocus/companion-module-$moduleName"
+    Pop-Location
+}
 ```
 
-### Workflow 5: Full Discovery-to-Review Pipeline
+### Workflow 5: Verify PENDING Status Before Acting
 
-For a single module (triggered by "review {moduleName}" when it's not yet cloned):
+Always check the module's actual status via `/versions` before cloning or reviewing. `/modules-pending-review` may include `WITHDRAWN` entries alongside `PENDING` ones.
 
-```bash
-TOKEN=$(gh auth token)
-MODULE_NAME="allenheath-sq"
-WORKSPACE="/Users/lynbh/Development/companion-module-review"
+```powershell
+$token      = gh auth token
+$headers    = @{ Authorization = "Bearer $token" }
+$moduleName = "softouch-easyworship"
+$pendingTag = "v2.1.0"
 
-# 1. Get pending tag
-PENDING_TAG=$(curl -s -H "Authorization: Bearer $TOKEN" \
-  "https://developer.bitfocus.io/api/v1/modules-pending-review" | \
-  python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-for v in d.get('versions', []):
-    if v['moduleName'] == '$MODULE_NAME':
-        print(v['gitTag'])
-        break
-")
+$data = Invoke-RestMethod `
+    -Uri "https://developer.bitfocus.io/api/v1/public/modules/companion-connection/$moduleName/versions" `
+    -Headers $headers
 
-# 2. Get previous approved tag
-PREV_TAG=$(curl -s -H "Authorization: Bearer $TOKEN" \
-  "https://developer.bitfocus.io/api/v1/public/modules/companion-connection/$MODULE_NAME/versions" | \
-  python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-approved = sorted([v for v in d.get('versions',[]) if v['status']=='APPROVED'],
-                  key=lambda v: v.get('createdAt',''), reverse=True)
-print(approved[0]['gitTag'] if approved else 'NO_PREVIOUS_TAG')
-")
+$normalizedPending = $pendingTag -replace '^v', ''
 
-# 3. Clone if needed
-TARGET_DIR="$WORKSPACE/companion-module-$MODULE_NAME"
-if [ ! -d "$TARGET_DIR" ]; then
-  cd "$WORKSPACE" && git clone "https://github.com/bitfocus/companion-module-$MODULE_NAME"
-fi
+$entry = $data.versions | Where-Object {
+    ($_.gitTag -replace '^v', '') -eq $normalizedPending
+} | Select-Object -First 1
 
-echo "Module: $MODULE_NAME"
-echo "Review tag: $PENDING_TAG"
-echo "Previous tag: $PREV_TAG"
-echo "Directory: $TARGET_DIR"
+if ($entry.status -ne 'PENDING') {
+    Write-Error "Status is '$($entry.status)' — skipping, only PENDING versions are reviewed"
+}
 ```
-
-After this, hand the module name + both tags to the Coordinator to start the standard review fan-out.
 
 ## Ralph's Queue Check
 
-When Ralph checks work health, he should:
-1. Run Workflow 1 to get the pending list with clone status
-2. Report: how many pending, how many cloned (awaiting review), how many not yet cloned
-3. Identify the oldest pending module not yet reviewed (by `createdAt`)
+When Ralph checks work health, run the queue script:
 
-```bash
-TOKEN=$(gh auth token)
-WORKSPACE="/Users/lynbh/Development/companion-module-review"
-
-curl -s -H "Authorization: Bearer $TOKEN" \
-  "https://developer.bitfocus.io/api/v1/modules-pending-review" | python3 -c "
-import sys, json, os
-from datetime import datetime, timezone
-d = json.load(sys.stdin)
-versions = d.get('versions', [])
-cloned = [v for v in versions if os.path.isdir(f'$WORKSPACE/companion-module-{v[\"moduleName\"]}')]
-not_cloned = [v for v in versions if not os.path.isdir(f'$WORKSPACE/companion-module-{v[\"moduleName\"]}')]
-oldest = sorted(not_cloned, key=lambda v: v['createdAt'])[0] if not_cloned else None
-print(f'Pending: {len(versions)} total')
-print(f'Cloned (awaiting review): {len(cloned)}')
-print(f'Not yet cloned: {len(not_cloned)}')
-if oldest:
-    ts = datetime.fromtimestamp(oldest[\"createdAt\"]/1000, tz=timezone.utc)
-    age = (datetime.now(tz=timezone.utc) - ts).days
-    print(f'Next up: {oldest[\"moduleName\"]} {oldest[\"gitTag\"]} (waiting {age} days)')
-"
+```powershell
+pwsh scripts/bitfocus-queue.ps1
 ```
+
+Ralph should report:
+1. Total pending count
+2. How many are already cloned (awaiting review)
+3. The oldest pending module (rank 1 in the table) as the next-up recommendation
 
 ## Troubleshooting
 
@@ -279,7 +257,8 @@ if oldest:
 | API returns `{"error": "Unauthorized"}` | Run `gh auth login` and re-authenticate with GitHub |
 | Module repo not found at derived URL | Verify with `gh repo view bitfocus/companion-module-{name}` |
 | `NO_PREVIOUS_TAG` from previous-tag lookup | First-ever release — all findings are eligible to block (treat as new code) |
-| Module already in workspace but old | `cd companion-module-{name} && git fetch --tags` |
+| Module already in workspace but old | `cd companion-module-{name}; git fetch --tags` |
+| `status` is `WITHDRAWN` not `PENDING` | Skip the module — only `PENDING` versions are reviewed |
 
 ## References
 
