@@ -154,6 +154,13 @@ Include in your findings file:
 - All findings organized by severity: 🔴 Critical → 🟠 High → 🟡 Medium → 🟢 Low → 💡 Nice to Have → 🔮 Next Release
 - ✅ What's Solid section
 
+**Finding format — every finding that references a specific error in a file MUST include the file path and line number:**
+```
+**File:** `src/main.ts`, line 42
+**Issue:** [description of the issue]
+```
+If a finding spans multiple lines: `lines 42–47`. If a finding is file-level (e.g., missing file, wrong top-level config value), omit the line number — file path alone is sufficient.
+
 The **Coordinator** assembles all agents' findings into the single final review file:
 ```
 {module_directory}/review-{YYYY-MM-DD-HHmmss}.md

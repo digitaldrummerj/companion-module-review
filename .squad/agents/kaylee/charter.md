@@ -123,6 +123,12 @@ When reviewing a v1.x module, read `.squad/skills/companion-v1-api-compliance/SK
 
 Include your verdict (APPROVED / APPROVED WITH NOTES / REJECTED), all findings by severity, and what's solid. The Coordinator assembles the single final review from all agents' findings.
 
+**Finding format — every finding that references a specific error in a file MUST include the file path and line number:**
+```
+**File:** `src/main.ts`, line 42
+**Issue:** [description of the issue]
+```
+If a finding spans multiple lines: `lines 42–47`. If a finding is file-level (e.g., missing file, wrong top-level config value), omit the line number — file path alone is sufficient.
 ## Collaboration
 
 Before starting work, use the `TEAM ROOT` provided in the spawn prompt. All `.squad/` paths are relative to this root.

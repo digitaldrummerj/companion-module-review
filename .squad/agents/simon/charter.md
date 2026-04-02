@@ -103,6 +103,13 @@ Do NOT flag every untested line — only cases where a critical, clearly-testabl
 
 Include your test verdict, pass/fail counts, any quality notes. The Coordinator assembles the single final review from all agents' findings.
 
+**Finding format — every finding that references a specific error in a file MUST include the file path and line number:**
+```
+**File:** `src/main.ts`, line 42
+**Issue:** [description of the issue]
+```
+If a finding spans multiple lines: `lines 42–47`. If a finding is file-level (e.g., missing file, wrong top-level config value), omit the line number — file path alone is sufficient.
+
 ## Collaboration
 
 Before starting work, use the `TEAM ROOT` provided in the spawn prompt. All `.squad/` paths are relative to this root.
