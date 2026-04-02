@@ -38,9 +38,19 @@ git diff {PREV_RELEASE_TAG} {NEW_RELEASE_TAG} -- src/*.ts tsconfig*.json compani
 For each finding, classify it:
 - 🆕 **NEW** — code introduced in this release (can block)
 - 🔙 **REGRESSION** — was working correctly in prev release, broke in this release (can block)  
-- ⚠️ **PRE-EXISTING** — existed in prev release unchanged (note only — NEVER blocks the review)
+- ⚠️ **PRE-EXISTING** — existed in prev release unchanged (can still block — see severity rules below)
 
-In your inbox output, put all PRE-EXISTING findings in a separate `## ⚠️ Pre-existing Issues (Non-blocking)` section. Only NEW and REGRESSION findings carry severity ratings that affect the verdict.
+**Severity blocking rules — "pre-existing" tells the maintainer WHERE the issue came from, not whether it matters:**
+
+| Severity | Source | Policy |
+|----------|--------|--------|
+| 🔴 Critical | Any | **Blocks** — always |
+| 🟠 High | Any | **Blocks** — always. Pre-existing issues may be unknown to the maintainer (prior reviews may have missed them). Surfacing them now is the point. |
+| 🟡 Medium | 🆕 NEW or 🔙 REGRESSION | Blocks |
+| 🟡 Medium | ⚠️ Pre-existing | Non-blocking — note in `## ⚠️ Pre-existing Notes` section |
+| 🟢 Low | Any | Non-blocking — note only |
+
+Do NOT say "fix in next release" for High or Critical issues. If it blocks, it blocks. Saying "fix in next release" is unenforceable — there is no guarantee of when or whether a next release happens. The only enforcement is withholding approval until the fix is submitted.
 
 ## Review Criteria
 

@@ -8,23 +8,92 @@
 
 ---
 
-## Verdict: ✅ APPROVED WITH NOTES
+## Verdict: ❌ REJECTED
 
-This release is a clean architectural improvement — the feedback and action system has been generalized from director-specific to a full component abstraction (INPUT / CONTROLLER / DIRECTOR / AUTO_CUT). A proper upgrade script handles the breaking feedback rename. Build passes, no new regressions introduced.
+This release introduces a clean architectural improvement and is well-structured. However, **three high-severity issues that were present in v1.0.2 are blocking this release.** These issues were not flagged by prior reviews — the maintainer is likely unaware of them. They must be fixed before v1.0.3 can be approved.
 
-**All blocking-level findings are pre-existing from v1.0.2.** Per review policy, pre-existing issues are never blockers. They are documented below for the maintainer to track for the next release.
+Pre-existing issues are labeled as such so the maintainer knows these are inherited debt, not regressions introduced in this release. That context matters — but it does not change whether they must be fixed.
 
 ---
 
 ## 🔴 Critical
 
-*No critical issues introduced in this release.*
+*No critical issues.*
 
 ---
 
 ## 🟠 High
 
-*No high-severity issues introduced in this release.*
+### H1: EventSource not closed in `destroy()` ⚠️ Pre-existing (v1.0.2)
+**File:** `src/main.ts` + `src/scripts/eventhandler.ts`
+**Classification:** ⚠️ PRE-EXISTING — existed in v1.0.2, not introduced in this release
+**Issue:** `destroy()` does not call `closeEventHandler()`. When a user removes the connection, the SSE stream stays open indefinitely. The orphaned EventSource continues receiving events and trying to update state on a destroyed module instance, causing runtime errors and preventing garbage collection.
+
+```typescript
+// Current — connection never closed:
+async destroy(): Promise<void> {
+    this.log('debug', 'Destroying module')
+}
+
+// Fix — closeEventHandler() already exists (eventhandler.ts lines 106–110):
+async destroy(): Promise<void> {
+    this.log('debug', 'Destroying module')
+    closeEventHandler()
+}
+```
+
+**Impact:** Runtime errors when Companion processes events on a destroyed module; memory leak on repeated add/remove cycles.
+**Required fix:** v1.0.4
+
+---
+
+### H2: EventSource not closed before config change reinit ⚠️ Pre-existing (v1.0.2)
+**File:** `src/main.ts` lines 42–47
+**Classification:** ⚠️ PRE-EXISTING
+**Issue:** When the host or port changes, `configUpdated()` calls `init()` immediately without closing the existing EventSource first. The old connection keeps firing events against the new module state — mixing events from two different servers, causing state corruption and confusing log output.
+
+```typescript
+// Fix:
+async configUpdated(config: ModuleConfig): Promise<void> {
+    this.log('debug', 'Config updated')
+    if (config.host !== this.config.host || config.port !== this.config.port) {
+        closeEventHandler()   // tear down before reinit
+        await this.init(config)
+    }
+}
+```
+
+**Impact:** State corruption during host/port config changes; ghost events from old server.
+**Required fix:** v1.0.4 (same one-line change pattern as H1)
+
+---
+
+### H3: HTTP error handler resets status to `Ok` after failure ⚠️ Pre-existing (v1.0.2)
+**File:** `src/api/backend.ts` lines 36–44
+**Classification:** ⚠️ PRE-EXISTING
+**Issue:** `checkedFetch` sets `ConnectionFailure` on a non-2xx response but then unconditionally sets `Ok` on the next line. The module shows green in Companion even when every HTTP request is failing — operators have no indication the connection is broken.
+
+```typescript
+// Current (broken):
+if (!response.ok) {
+    this.self.updateStatus(InstanceStatus.ConnectionFailure)
+    this.self.log('error', 'Backend returned code ' + response.status)
+}
+this.self.updateStatus(InstanceStatus.Ok)   // <-- overwrites the failure status
+return response
+
+// Fix:
+if (!response.ok) {
+    this.self.updateStatus(InstanceStatus.ConnectionFailure)
+    this.self.log('error', 'Backend returned code ' + response.status)
+    return response   // exit here — do NOT set Ok
+}
+this.self.updateStatus(InstanceStatus.Ok)
+return response
+```
+
+**Impact:** Module always appears connected even when the backend is unreachable; operators cannot diagnose outages.
+**Required fix:** v1.0.4
 
 ---
 
@@ -33,9 +102,9 @@ This release is a clean architectural improvement — the feedback and action sy
 ### L1: Build script `rimraf dist` removal may leave stale files
 **File:** `package.json` line 10
 **Classification:** 🆕 NEW
-**Issue:** `rimraf dist` was removed from the build script. TypeScript's incremental build doesn't remove files that are no longer produced — if a source file is deleted or renamed, stale compiled output may accumulate in `dist/`.
-**Impact:** Low — unlikely to cause issues in practice as TypeScript generally overwrites correctly.
-**Recommendation:** Monitor for stale file issues. If they appear, re-add `rimraf dist &&` before the `tsc` call.
+**Issue:** `rimraf dist` was removed from the build script. TypeScript's incremental build doesn't remove files that are no longer produced — deleted or renamed source files may leave stale compiled output in `dist/`.
+**Impact:** Low — unlikely in practice; TypeScript overwrites correctly in most cases.
+**Recommendation:** Re-add `rimraf dist &&` before `tsc` if stale files become an issue.
 
 ---
 
@@ -44,108 +113,20 @@ This release is a clean architectural improvement — the feedback and action sy
 ### N1: Unused import in `upgrades.ts`
 **File:** `src/upgrades.ts` line 11
 **Classification:** 🆕 NEW
-**Issue:** `CompanionUpgradeContext` is imported but the upgrade function parameter is named `_` (unused). The linter may flag this.
-**Suggestion:** Remove the import or rename the parameter if it may be needed later.
+**Issue:** `CompanionUpgradeContext` is imported but the upgrade function parameter is `_` (unused). The linter may flag this.
+**Suggestion:** Remove the import or use the parameter if it may be needed.
 
 ---
 
-## 🔮 Next Release
+## ⚠️ Pre-existing Notes (non-blocking)
 
-### NR1: Fix EventSource not closed in `destroy()`
-**File:** `src/main.ts` + `src/scripts/eventhandler.ts`
-**Classification:** ⚠️ Pre-existing (existed in v1.0.2)
-**Issue:** `destroy()` does not call `closeEventHandler()`. The SSE connection remains open after module deletion, preventing garbage collection of the module instance.
+These were present before v1.0.3 and carry lower severity. Address when convenient.
 
-```typescript
-// Current destroy():
-async destroy(): Promise<void> {
-    this.log('debug', 'Destroying module')
-}
-
-// Fix:
-async destroy(): Promise<void> {
-    this.log('debug', 'Destroying module')
-    closeEventHandler()
-}
-```
-
-`closeEventHandler()` already exists in `src/scripts/eventhandler.ts` (lines 106–110) — it just needs to be called. This is the highest-priority issue for v1.0.4.
-
-### NR2: Fix EventSource connection leak on config change
-**File:** `src/main.ts` lines 42–47
-**Classification:** ⚠️ Pre-existing
-**Issue:** `configUpdated()` calls `init()` when host/port changes without first closing the existing EventSource. The old connection continues firing events against the new module state.
-
-```typescript
-// Fix:
-async configUpdated(config: ModuleConfig): Promise<void> {
-    this.log('debug', 'Config updated')
-    if (config.host !== this.config.host || config.port !== this.config.port) {
-        closeEventHandler()   // close old connection first
-        await this.init(config)
-    }
-}
-```
-
-### NR3: Add `onerror` handler to EventSource
-**File:** `src/scripts/eventhandler.ts` line 14
-**Classification:** ⚠️ Pre-existing
-**Issue:** EventSource has no `onerror` handler. Network failures and server shutdowns are silently ignored — `InstanceStatus` is not updated and no log entry is written.
-
-```typescript
-evtSource.onerror = (error: any) => {
-    self.log('error', 'SSE connection error: ' + error)
-    self.updateStatus(InstanceStatus.ConnectionFailure)
-}
-```
-
-### NR4: Fix `_getVideoDevicesFromData()` ignoring its parameter
-**File:** `src/scripts/store.ts` lines 52–54
-**Classification:** ⚠️ Pre-existing
-**Issue:** The method ignores its `_data` parameter and always filters `this.devices`. Change detection logic using this method may fire on incorrect data.
-
-```typescript
-// Fix:
-_getVideoDevicesFromData(data: Device[] | undefined): Device[] {
-    return (data ?? []).filter((device) => getInputComponentType(device) === 'VIDEO')
-}
-```
-
-### NR5: HTTP error handler sets status to `Ok` after logging failure
-**File:** `src/api/backend.ts` lines 36–44
-**Classification:** ⚠️ Pre-existing
-**Issue:** `checkedFetch` logs the error and sets `ConnectionFailure`, then immediately sets `Ok` on the next line. Status flips back to `Ok` on every failed request.
-
-```typescript
-// Fix: only set Ok on success path:
-if (!response.ok) {
-    this.self.updateStatus(InstanceStatus.ConnectionFailure)
-    this.self.log('error', 'Backend returned code ' + response.status)
-    // do NOT set Ok here
-    return response
-}
-this.self.updateStatus(InstanceStatus.Ok)
-return response
-```
-
-### NR6: Add `engines` field to `package.json`
-**Classification:** ⚠️ Pre-existing
-**Issue:** Template specifies `engines.node` and `engines.yarn`. Missing from this module.
-```json
-"engines": {
-    "node": "^22.20",
-    "yarn": "^4"
-}
-```
-
-### NR7: Consider migrating to Yarn v4
-**Classification:** ⚠️ Pre-existing
-**Issue:** Module uses `yarn@1.22.22`. Template recommends Yarn v4. Module builds correctly as-is; migration is low urgency but improves template alignment.
-
-### NR8: Add unit tests for the upgrade script
-**Classification:** Suggestion
-**Context:** The v1.0.3 upgrade script migrates `enabledDirector` feedbacks to `enabledComponentType`. No tests cover this path.
-**Suggestion:** Add Jest tests verifying the migration correctly transforms affected feedbacks and leaves unrelated feedbacks untouched. Protects against regressions if the upgrade script is modified.
+- **Missing `onerror` on EventSource** (`src/scripts/eventhandler.ts` line 14) — network failures are silently ignored; `InstanceStatus` is not updated. Add `evtSource.onerror` to log errors and set `ConnectionFailure`.
+- **`_getVideoDevicesFromData()` ignores its parameter** (`src/scripts/store.ts` lines 52–54) — always filters `this.devices` regardless of input; change detection may fire incorrectly. Fix: filter the `data` parameter instead.
+- **Missing `engines` field in `package.json`** — template specifies `node` and `yarn` version constraints; add for consistency.
+- **Yarn v1 instead of v4** — module uses `yarn@1.22.22`; template targets Yarn v4. Functional as-is; migrate when convenient.
+- **No tests for upgrade script** — the `enabledDirector` → `enabledComponentType` migration has no unit test coverage.
 
 ---
 
@@ -167,9 +148,8 @@ return response
 **Protocol (Wash):**
 - HTTP client uses `openapi-fetch` with TypeScript types generated from OpenAPI spec — strong type safety
 - All network calls are properly awaited — no floating promises
-- `InstanceStatus` transitions (Connecting, Ok, ConnectionFailure) are set appropriately
 - No blocking network calls on the main thread
-- v1.0.3 feature additions (generalized component control) did not introduce any new protocol issues
+- v1.0.3 feature additions did not introduce any new protocol issues
 
 **QA (Zoe):**
 - New `toggleComponent()` and `getComponentsOfType()` implementations are correct
@@ -185,6 +165,12 @@ return response
 
 ## Summary for Maintainer
 
-v1.0.3 is approved. The component abstraction work is solid and the upgrade script correctly handles the breaking feedback rename.
+v1.0.3 is rejected due to three high-severity pre-existing issues (H1–H3). These existed in v1.0.2 and were not flagged by prior reviews — they are not regressions you introduced in this release, but they must be fixed before approval.
 
-The items in the **Next Release** section are all pre-existing issues that were present before this submission. The highest-priority fix is **NR1** (calling `closeEventHandler()` in `destroy()`): the function already exists and the fix is literally one line. We recommend addressing NR1–NR3 together in v1.0.4 since they're all part of the same EventSource lifecycle gap.
+The good news: **all three fixes are small and self-contained.**
+
+1. **H1** — `destroy()` never closes the EventSource. `closeEventHandler()` already exists — just call it in `destroy()`. One line.
+2. **H2** — `configUpdated()` doesn't close the old EventSource before reinit. Same fix: call `closeEventHandler()` before `await this.init(config)`. One line.
+3. **H3** — HTTP error handler resets status to `Ok` after a failure. Remove the unconditional `updateStatus(Ok)` and only set it on the success path.
+
+Fix these three, cut a new tag, and resubmit.
