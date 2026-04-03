@@ -9,5 +9,6 @@
 # Squad archives
 .squad-archive*/
 
-# Cloned companion modules (local review checkouts — not committed)
-companion-module-*/
+# Note: companion-module-*/ is excluded via .git/info/exclude (local only)
+# This allows Copilot to @-reference cloned modules while still excluding
+# them from git commits.
