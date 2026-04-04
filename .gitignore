@@ -9,7 +9,10 @@
 # Squad archives
 .squad-archive*/
 
-# Cloned companion-module-*/ review checkouts are NOT listed here so that
-# Copilot can @-reference them. Accidental commits are blocked by the
-# pre-commit hook in .githooks/. Run `git config core.hooksPath .githooks`
-# once after cloning (or run setup.ps1) to activate the hook.
+# Companion module checkouts belong in the companion-modules-reviewing/ sibling directory,
+# NOT inside this repo. This entry is a safety net in case one is accidentally cloned here.
+# The pre-commit hook in .githooks/ provides a second layer of protection.
+companion-module-*/
+
+.DS_Store
+squad-export.json

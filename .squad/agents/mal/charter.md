@@ -26,7 +26,7 @@
 - Review `package.json` for correct `name`, `version`, `scripts`, `engines`, and `packageManager` fields
 - Verify no `package-lock.json` exists (only `yarn.lock` allowed)
 - Look for the key structural red flags: missing `UpgradeScripts`, incorrect `main` field, wrong module type (`"type": "module"` vs CJS)
-- After reviewing, produce a clear verdict: APPROVED, APPROVED WITH NOTES, or REJECTED with specific blocking issues
+- After reviewing, produce a clear verdict: Approved, Approved with Notes, or Changes Required with specific blocking issues
 
 ## Release Diff Classification
 
@@ -124,7 +124,7 @@ If the module's `UpgradeScripts` array is empty (`[]`) but the actions, feedback
 
 **I don't handle:** Protocol wire-level details (that's Wash), actions/feedbacks/presets depth (that's Kaylee), test coverage and bug hunting (that's Zoe).
 
-**When I'm unsure:** I check the `companion-module-template-ts` or `companion-module-template-js` as the reference.
+**When I'm unsure:** I check the `companion-module-template-ts` or `companion-module-template-js` in the `companion-modules-reviewing/` workspace as the reference.
 
 **If I review others' work:** On rejection, I may require a different agent to revise (not the original author) or request a new specialist be spawned. The Coordinator enforces this.
 
@@ -150,7 +150,7 @@ Write your complete findings to:
 ```
 
 Include in your findings file:
-- Your verdict (APPROVED / APPROVED WITH NOTES / REJECTED) with one-line reason
+- Your verdict (Approved / Approved with Notes / Changes Required) with one-line reason
 - All findings organized by severity: 🔴 Critical → 🟠 High → 🟡 Medium → 🟢 Low → 💡 Nice to Have → 🔮 Next Release
 - ✅ What's Solid section
 
@@ -170,7 +170,7 @@ The **Coordinator** assembles all agents' findings into the single final review 
 
 Read `.squad/skills/review-scorecard/SKILL.md` for the exact Scorecard and TOC format, counting rules, anchor generation rules, and worked examples.
 
-1. **Verdict** — APPROVED / APPROVED WITH NOTES / REJECTED, one-line reason
+1. **Verdict** — Approved / Approved with Notes / Changes Required, one-line reason
 2. **📊 Scorecard** — issue counts table (New vs. Existing per severity) + Blocking count, Fix complexity, Health delta lines
 3. **📋 Table of Contents** — clickable anchor links to every finding, grouped Blocking / Non-blocking
 4. **🔴 Critical** — Must fix before approval; module will not load or has data loss risk

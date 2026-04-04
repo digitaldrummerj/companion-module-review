@@ -1,18 +1,24 @@
 # Review: autodirector-mirusuite v1.0.3
 
-**Module:** `companion-module-autodirector-mirusuite`
-**Review tag:** `v1.0.3`
-**Previous tag:** `v1.0.2`
-**Review date:** 2026-04-02
+**Module:** `companion-module-autodirector-mirusuite`  
+**Review tag:** `v1.0.3`  
+**Previous tag:** `v1.0.2`  
+**Review date:** 2026-04-02  
 **Reviewers:** Mal (Lead), Wash (Protocol), Kaylee (Module Dev), Zoe (QA), Simon (Tests)
 
 ---
 
-## Verdict: ❌ REJECTED
+## Summary for Maintainer
 
-This release introduces a clean architectural improvement and is well-structured. However, **three high-severity issues that were present in v1.0.2 are blocking this release.** These issues were not flagged by prior reviews — the maintainer is likely unaware of them. They must be fixed before v1.0.3 can be approved.
+v1.0.3 is rejected due to three high-severity pre-existing issues (H1–H3). These existed in v1.0.2 and were not flagged by prior reviews — they are not regressions you introduced in this release, but they must be fixed before approval.
 
-Pre-existing issues are labeled as such so the maintainer knows these are inherited debt, not regressions introduced in this release. That context matters — but it does not change whether they must be fixed.
+The good news: **all three fixes are small and self-contained.**
+
+1. **H1** — `destroy()` never closes the EventSource. `closeEventHandler()` already exists — just call it in `destroy()`. One line.
+2. **H2** — `configUpdated()` doesn't close the old EventSource before reinit. Same fix: call `closeEventHandler()` before `await this.init(config)`. One line.
+3. **H3** — HTTP error handler resets status to `Ok` after a failure. Remove the unconditional `updateStatus(Ok)` and only set it on the success path.
+
+Fix these three, cut a new tag, and resubmit.
 
 ---
 
@@ -33,7 +39,15 @@ Pre-existing issues are labeled as such so the maintainer knows these are inheri
 
 ---
 
-## 📋 Table of Contents
+## Verdict: ❌ Changes Required
+
+This release introduces a clean architectural improvement and is well-structured. However, **three high-severity issues that were present in v1.0.2 are blocking this release.** These issues were not flagged by prior reviews — the maintainer is likely unaware of them. They must be fixed before v1.0.3 can be approved.
+
+Pre-existing issues are labeled as such so the maintainer knows these are inherited debt, not regressions introduced in this release. That context matters — but it does not change whether they must be fixed.
+
+---
+
+## 📋 Issues
 
 **Blocking**
 - [H1: EventSource not closed in `destroy()`](#h1-eventsource-not-closed-in-destroy)
@@ -190,17 +204,3 @@ These were present before v1.0.3 and carry lower severity. Address when convenie
 
 **Tests (Simon):**
 - ✅ No tests present — not required
-
----
-
-## Summary for Maintainer
-
-v1.0.3 is rejected due to three high-severity pre-existing issues (H1–H3). These existed in v1.0.2 and were not flagged by prior reviews — they are not regressions you introduced in this release, but they must be fixed before approval.
-
-The good news: **all three fixes are small and self-contained.**
-
-1. **H1** — `destroy()` never closes the EventSource. `closeEventHandler()` already exists — just call it in `destroy()`. One line.
-2. **H2** — `configUpdated()` doesn't close the old EventSource before reinit. Same fix: call `closeEventHandler()` before `await this.init(config)`. One line.
-3. **H3** — HTTP error handler resets status to `Ok` after a failure. Remove the unconditional `updateStatus(Ok)` and only set it on the success path.
-
-Fix these three, cut a new tag, and resubmit.

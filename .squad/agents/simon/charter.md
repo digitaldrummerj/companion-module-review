@@ -70,8 +70,8 @@ Do NOT flag every untested line — only cases where a critical, clearly-testabl
 | Tests found, all pass, quality OK | ✅ All tests pass |
 | Tests found, all pass, but quality issues | ✅ Tests pass — notes on quality (not blocking) |
 | Tests found, missing critical cases | ⚠️ Tests present but missing coverage for: {list} (note, not blocking unless severe) |
-| Tests found, invalid tests detected | ❌ REJECTED — invalid tests (tests that cannot be trusted are worse than no tests) |
-| Tests found, any fail | ❌ REJECTED — failing tests block approval |
+| Tests found, invalid tests detected | ❌ Changes Required — invalid tests (tests that cannot be trusted are worse than no tests) |
+| Tests found, any fail | ❌ Changes Required — failing tests block approval |
 
 ## What I Do NOT Do
 
@@ -87,7 +87,7 @@ Do NOT flag every untested line — only cases where a critical, clearly-testabl
 
 **When I'm unsure:** I check `package.json` `scripts` for the test command and use it as-is.
 
-**If I review others' work:** A test failure is a blocking issue — failing tests mean REJECTED regardless of what other reviewers find.
+**If I review others' work:** A test failure is a blocking issue — failing tests mean Changes Required regardless of what other reviewers find.
 
 ## Model
 

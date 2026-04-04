@@ -24,7 +24,28 @@ if (Test-Path $hookFile) {
     Write-Host "[OK] pre-commit hook is ready" -ForegroundColor Green
 }
 
+# 3. Create the companion-modules-reviewing sibling directory if it doesn't exist.
+#    This is where module git repos are cloned — outside the review repo so each
+#    has its own independent git context.
+$modulesDir = if ($env:COMPANION_MODULES_DIR) {
+    $env:COMPANION_MODULES_DIR
+} else {
+    Join-Path (Split-Path -Parent $PSScriptRoot) "companion-modules-reviewing"
+}
+
+if (Test-Path $modulesDir) {
+    Write-Host "[OK] Modules directory already exists: $modulesDir" -ForegroundColor Green
+} else {
+    New-Item -ItemType Directory -Path $modulesDir | Out-Null
+    Write-Host "[OK] Created modules directory: $modulesDir" -ForegroundColor Green
+}
+
 Write-Host ""
-Write-Host "Setup complete. You can now clone companion modules into this directory" -ForegroundColor Cyan
-Write-Host "and reference them with @companion-module-* in Copilot." -ForegroundColor Cyan
+Write-Host "Workspace structure:" -ForegroundColor Cyan
+Write-Host "  $(Split-Path -Parent $PSScriptRoot)/"
+Write-Host "  ├── companion-module-review/          <- this repo"
+Write-Host "  └── companion-modules-reviewing/      <- module checkouts go here"
+Write-Host ""
+Write-Host "Open companion-module-review.code-workspace in VS Code for full multi-repo support." -ForegroundColor Cyan
+Write-Host "Clone modules with: pwsh scripts/bitfocus-setup-module.ps1" -ForegroundColor Cyan
 Write-Host ""

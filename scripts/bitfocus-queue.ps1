@@ -20,7 +20,8 @@
 
 $ErrorActionPreference = 'Stop'
 
-$workspace = Split-Path -Parent $PSScriptRoot
+$workspace  = Split-Path -Parent $PSScriptRoot
+$modulesDir = if ($env:COMPANION_MODULES_DIR) { $env:COMPANION_MODULES_DIR } else { Join-Path (Split-Path -Parent $workspace) "companion-modules-reviewing" }
 $token = gh auth token
 
 if (-not $token) {
@@ -53,7 +54,7 @@ $rank = 1
 foreach ($v in $versions) {
     $submitted  = [DateTimeOffset]::FromUnixTimeMilliseconds($v.createdAt)
     $days       = [math]::Floor(($now - $submitted).TotalDays)
-    $clonePath  = Join-Path $workspace "companion-module-$($v.moduleName)"
+    $clonePath  = Join-Path $modulesDir "companion-module-$($v.moduleName)"
     $cloneLabel = if (Test-Path $clonePath) { "cloned" } else { "not cloned" }
     $rankLabel  = "$rank.".PadRight(4)
 

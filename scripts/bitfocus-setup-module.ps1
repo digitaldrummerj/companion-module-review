@@ -29,8 +29,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-$workspace  = Split-Path -Parent $PSScriptRoot
-$baseUrl    = "https://developer.bitfocus.io/api/v1"
+$workspace   = Split-Path -Parent $PSScriptRoot
+$modulesDir  = if ($env:COMPANION_MODULES_DIR) { $env:COMPANION_MODULES_DIR } else { Join-Path (Split-Path -Parent $workspace) "companion-modules-reviewing" }
+$baseUrl     = "https://developer.bitfocus.io/api/v1"
 $token      = gh auth token
 
 if (-not $token) {
@@ -116,7 +117,7 @@ if (-not $previousTag) {
 
 # ── Step 5: Clone if not already present ─────────────────────────────────────
 
-$cloneDir = Join-Path $workspace "companion-module-$name"
+$cloneDir = Join-Path $modulesDir "companion-module-$name"
 
 if (Test-Path $cloneDir) {
     Write-Host "Already cloned at: $cloneDir" -ForegroundColor DarkGray

@@ -146,3 +146,153 @@ reviews/{module-name}/review-{module-name}-{tag}-{YYYY-MM-DD-HHmmss}.md
 ```
 Example: `reviews/softouch-easyworship/review-softouch-easyworship-v2.1.0-2026-04-02-041821.md`
 **Why:** User request — captured for team memory
+
+### 2026-04-02T21:20:36Z: User directive — Template compliance required for all reviews
+
+**By:** Justin James (via Copilot)
+**What:** Template compliance checks are now required for all module reviews. Both JavaScript and TypeScript modules must be checked against the official templates.
+
+**JavaScript modules** — verify these files exist and match template values:
+- `.gitattributes` — must match template
+- `.gitignore` — must match template
+- `.prettierignore` — must match template
+- `.yarnrc.yml` — must match template
+- `LICENSE` — must match template
+- `companion/manifest.json` — see manifest rules below
+- `package.json` — see package.json rules below
+
+**TypeScript modules** — same as JS plus:
+- `eslint.config.mjs`
+- `tsconfig.build.json`
+- `tsconfig.json`
+- `.husky/` directory must be committed with lint-staged hook
+
+**package.json rules (JS):**
+- `repository.url` must be the bitfocus GitHub URL
+- `version` must match the git tag without the leading `v`
+- `engines.node` must exist with correct values
+- `prettier` field must exist
+- `packageManager` field must exist
+- `dependencies` must include `@companion-module/base`
+- `devDependencies` must include `@companion-module/tools` and `prettier`
+
+**package.json rules (TS):**
+- All of the above JS rules, plus:
+- All template `scripts` must be present
+- All template `devDependencies` must be present
+- `lint-staged` section must be present
+- All fields: packageManager, engines, lint-staged, prettier, repository
+
+**manifest.json rules (both JS and TS):**
+- `id` must equal the module name (without `companion-module-` prefix)
+- `name` must equal the `id`
+- `maintainers` must be filled out with real name and email (not placeholder values)
+- `repository` must be the bitfocus GitHub repo URL
+- `keywords` must NOT include: companion, module, stream deck, manufacturer name, module name, product name
+
+**help.md rules (both):**
+- Must be filled out (not placeholder/stub content)
+
+**Reporting:** Highlight when values differ from the template. Flag missing files as blocking issues.
+**Why:** User request — ensures module submissions meet the BitFocus template baseline.
+
+### 2026-04-02T21:27:21Z: User directive — Template compliance violations are critical
+
+**By:** Justin James (via Copilot)
+**What:** Template compliance failures are CRITICAL severity. Any file that does not match the template is a critical fail — all template compliance violations block approval.
+**Why:** User request — captured for team memory
+
+### 2026-04-02T210137Z: User directive — Pre-existing severity policy
+
+**By:** Justin (via Copilot)
+**What:** Pre-existing issues are NOT automatically non-blocking. Severity drives the blocking decision:
+- **Pre-existing CRITICAL** → Always blocks (maintainer must fix, likely unaware since prior reviews missed it)
+- **Pre-existing HIGH** → Strongly flagged as "Required Fix" for next release, but non-blocking for this release
+- **Pre-existing MEDIUM/LOW** → Noted, non-blocking
+
+The distinction between new vs. pre-existing must still be clearly shown in the review so the maintainer understands what's a regression vs. inherited debt. But "pre-existing" is never an excuse to ignore a critical flaw.
+
+**Why:** User request — previous reviewers may have missed the critical issues, so the maintainer may have no awareness of them. Flagging them as "non-blocking" because they predate the current release means the bug never gets surfaced.
+
+### 2026-04-02T23:47:02Z: User directive — Include line numbers in findings
+
+**By:** Justin (via Copilot)
+**What:** When a review identifies an error in a file, the finding must include the line number so the reviewer can easily locate it.
+**Why:** User request — makes reviews actionable without requiring the maintainer to search for the issue manually.
+
+### 2026-04-04T18:37:53Z: User directive — manifest.json version field rule
+
+**By:** Lyn (via Copilot)
+**What:** `companion/manifest.json` version field rule: The recommended value is `0.0.0`. If the version is `0.0.0`, no action needed (non-blocking note at most). If the version is NOT `0.0.0`, it MUST exactly match the `version` in `package.json` — a mismatch is a blocking (High) issue.
+**Why:** User request — captured for team memory
+
+### 2026-04-04T19:50:00Z: User directive — Version bump required on auto-fix branches
+
+**By:** Lyn (via Copilot)
+**What:** When creating an auto-fix branch for a module review, **the fix branch must include a version bump commit** before it is pushed. This is required because the maintainer will need to submit a new release, and the version must be incremented accordingly.
+
+**Specifics:**
+
+| File | Action |
+|------|--------|
+| `package.json` | Increment **patch version** (e.g., `2.1.0` → `2.1.1`) |
+| `companion/manifest.json` | Set `"version"` to `"0.0.0"` (already required by prior directive) |
+
+The manifest.json rule (`0.0.0`) was established in an earlier directive. This directive adds the `package.json` patch version increment requirement.
+
+**Rationale:**
+Auto-fix branches represent a release-candidate state: the fixes address review findings and the module is ready for the maintainer to submit as a new version. Setting the version at the time of the fix branch ensures:
+- The maintainer doesn't have to guess which version to publish
+- The package.json version won't collide with the reviewed version
+- The manifest.json `0.0.0` sentinel + bumped package.json version clearly signals "this is pre-release work"
+
+**Commit:** Include the version bump in a single commit at the **end** of the fix branch, after all issue fixes:
+```
+chore: bump version to {new_version} for next release
+```
+
+**Scope:** Applies to all auto-fix branches going forward. Retroactively apply to any in-progress fix branches before they are pushed.
+
+**Why:** User request — captured for team memory.
+
+### 2026-04-04T20:00:00Z: User directive — Upgrade scripts must live in upgrades.js
+
+**By:** Lyn (via Copilot)
+**What:** When writing upgrade scripts as part of an auto-fix, they must **not** be defined inline in the entry point file. They must be placed in a dedicated `upgrades.js` file (in `src/` if the module uses the src structure, or at root if not).
+
+**Pattern (v1.x API — runEntrypoint):**
+
+**`src/upgrades.js`:**
+```js
+module.exports = [
+    // Each upgrade function is permanent — never remove
+    function v200_someDescription(_context, props) {
+        // ... transform props.actions / props.feedbacks / props.config
+        return { updatedConfig: null, updatedActions: [], updatedFeedbacks: [] }
+    },
+]
+```
+
+**`src/index.js` (entry point):**
+```js
+const UpgradeScripts = require('./upgrades')
+// ...
+runEntrypoint(ModuleInstance, UpgradeScripts)
+```
+
+**Pattern (v2.x API — getUpgradeScripts export):**
+
+```js
+// src/upgrades.js — same structure, but consumed differently
+export const upgradeScripts = [ ... ]
+
+// src/main.js (or index.js)
+import { upgradeScripts } from './upgrades.js'
+export { upgradeScripts as getUpgradeScripts }
+```
+
+**Reference:** See `companion-module-template-js/src/upgrades.js` and `companion-module-template-js/src/main.js` for the canonical pattern.
+
+**Scope:** Applies to all auto-fix branches. If an existing module has inline upgrade scripts and auto-fix is adding or touching upgrade scripts, extract all of them to `upgrades.js` in the same commit.
+
+**Why:** User request — captured for team memory.

@@ -5,11 +5,14 @@
 
 ---
 
-## Verdict: ❌ REJECTED
+## Fix Summary for Maintainer
 
-**Reason:** One runtime crash introduced in this release — the Reconnect action calls `this.clearIdleTimer()` which does not exist. Fix is a single-line change. Once corrected, this module is ready to ship.
+To unblock this release, fix **two things** and re-tag:
 
-**Expected verdict once fixed:** APPROVED WITH NOTES
+1. **`actions.js:247`** — Replace `this.clearIdleTimer()` with `this.clearKeepalive()`
+2. **`companion/manifest.json`** — Update `"version"` from `"2.0.2"` to `"2.1.0"` (or run `yarn release` and commit the regenerated manifest)
+
+Everything else above can wait for the next release.
 
 ---
 
@@ -29,10 +32,18 @@
 
 ---
 
-## 📋 Table of Contents
+## Verdict: ❌ Changes Required
+
+**Reason:** One runtime crash introduced in this release — the Reconnect action calls `this.clearIdleTimer()` which does not exist. Fix is a single-line change. Once corrected, this module is ready to ship.
+
+**Expected verdict once fixed:** Approved with Notes
+
+---
+
+## 📋 Issues
 
 **Blocking**
-- [C1: `clearIdleTimer()` called in Reconnect action — method does not exist](#c1-clearidletimer-called-in-reconnect-action--method-does-not-exist)
+- [C1: `clearIdleTimer()` called in Reconnect action — method does not exist](#c1-clearidletimer-called-in-reconnect-action-method-does-not-exist)
 
 **Non-blocking**
 - [M1: Manifest version shows v2.0.2, package.json says v2.1.0](#m1-manifest-version-shows-v202-packagejson-says-v210)
@@ -213,14 +224,3 @@ This is a substantial, high-quality rewrite (1,252 insertions, 1,027 deletions a
 - `yarn release` succeeds → `softouch-easyworship-2.1.0.tgz` (89.6 KB) ✅
 - No `package-lock.json` ✅
 - No committed `dist/` ✅
-
----
-
-## Fix Summary for Maintainer
-
-To unblock this release, fix **two things** and re-tag:
-
-1. **`actions.js:247`** — Replace `this.clearIdleTimer()` with `this.clearKeepalive()`
-2. **`companion/manifest.json`** — Update `"version"` from `"2.0.2"` to `"2.1.0"` (or run `yarn release` and commit the regenerated manifest)
-
-Everything else above can wait for the next release.

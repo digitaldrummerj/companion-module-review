@@ -78,7 +78,7 @@ In your inbox output, put all PRE-EXISTING findings in a separate `## ⚠️ Pre
 .squad/decisions/inbox/zoe-review-findings.md
 ```
 
-Include your verdict (APPROVED / APPROVED WITH NOTES / REJECTED), all findings by severity, and what's solid. The Coordinator assembles the single final review from all agents' findings.
+Include your verdict (Approved / Approved with Notes / Changes Required), all findings by severity, and what's solid. The Coordinator assembles the single final review from all agents' findings.
 
 **Finding format — every finding that references a specific error in a file MUST include the file path and line number:**
 ```

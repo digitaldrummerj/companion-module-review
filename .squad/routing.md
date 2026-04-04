@@ -69,9 +69,9 @@ When a full review is requested for a module, spawn all four reviewers in parall
 - 🧪 **Zoe** — Bugs, edge cases, error handling, async correctness, test quality (if tests exist)
 
 Each reviewer produces an independent verdict. Mal synthesizes into a final decision:
-- **APPROVED** — all clear
-- **APPROVED WITH NOTES** — passes, but issues should be addressed before next release
-- **REJECTED** — one or more blocking issues; list them explicitly
+- **Approved** — all clear
+- **Approved with Notes** — passes, but issues should be addressed before next release
+- **Changes Required** — one or more blocking issues; list them explicitly
 
 ---
 
@@ -92,7 +92,7 @@ Each reviewer reports:
 ```
 ## {Reviewer Name} — {Module Name}
 
-**Verdict:** APPROVED | APPROVED WITH NOTES | REJECTED
+**Verdict:** Approved | Approved with Notes | Changes Required
 
 ### Blocking Issues
 - (none) | list each one

@@ -11,16 +11,18 @@ After a review is assembled and the final review file is committed to the review
 
 ## Key Rule: Work Inside the Module Repo
 
-The module subfolders (e.g., `companion-module-softouch-easyworship/`, `companion-module-autodirector-mirusuite/`) are **independent git repositories**. All git operations for the fix branch — `git checkout`, `git add`, `git commit`, `git push` — happen **inside the module folder**, not in the parent review repo.
+The module repos (e.g., `companion-module-softouch-easyworship/`, `companion-module-autodirector-mirusuite/`) live in the **`companion-modules-reviewing/`** sibling directory next to the review repo. They are **independent git repositories**. All git operations for the fix branch — `git checkout`, `git add`, `git commit`, `git push` — happen **inside the module folder**.
 
 ```
-companion-module-review/                         ← review repo (untouched by auto-fix)
-├── reviews/
-├── .squad/
-├── companion-module-softouch-easyworship/       ← fix branch created HERE
-│   └── (independent git repo)
-└── companion-module-autodirector-mirusuite/     ← fix branch created HERE
-    └── (independent git repo)
+~/Development/
+├── companion-module-review/                         ← review repo (untouched by auto-fix)
+│   ├── reviews/
+│   └── .squad/
+└── companion-modules-reviewing/
+    ├── companion-module-softouch-easyworship/       ← fix branch created HERE
+    │   └── (independent git repo)
+    └── companion-module-autodirector-mirusuite/     ← fix branch created HERE
+        └── (independent git repo)
 ```
 
 ---
@@ -34,8 +36,8 @@ fix/v{version}-{YYYY-MM-DD}-issues
 ```
 
 Examples:
-- `fix/v2.1.0-2026-04-02-issues` — inside `companion-module-softouch-easyworship/`
-- `fix/v1.0.3-2026-04-02-issues` — inside `companion-module-autodirector-mirusuite/`
+- `fix/v2.1.0-2026-04-02-issues` — inside `../companion-modules-reviewing/companion-module-softouch-easyworship/`
+- `fix/v1.0.3-2026-04-02-issues` — inside `../companion-modules-reviewing/companion-module-autodirector-mirusuite/`
 
 ### Branch creation
 
@@ -71,8 +73,26 @@ Examples:
 - `fix(H1): call closeEventHandler() in destroy() to prevent SSE leak`
 - `fix(H2): call closeEventHandler() before reinit in configUpdated()`
 - `fix(H3): only set InstanceStatus.Ok on successful HTTP response path`
-- `fix(M1): update manifest.json version from 2.0.2 to 2.1.0`
+- `fix(M1): set manifest.json version to 0.0.0`
 - `fix(M3): bump @companion-module/base to ^1.12.0 in package.json`
+
+### Version bump — one commit, last on the branch
+
+Every fix branch **must** end with a version bump commit before it is pushed. The maintainer will need to submit a new release, so the version must be incremented:
+
+| File | Action |
+|------|--------|
+| `package.json` | Increment **patch version** (e.g., `2.1.0` → `2.1.1`) |
+| `companion/manifest.json` | Set `"version"` to `"0.0.0"` (already required by manifest directive; do this in its own `fix` commit earlier) |
+
+Commit message:
+```
+chore: bump version to {new_version} for next release
+```
+
+Example: `chore: bump version to 2.1.1 for next release`
+
+This commit goes **after** all issue fix commits and any template compliance commits.
 
 ### Template and structural fixes — one commit for all
 
@@ -114,7 +134,8 @@ Update all import paths and the `main` field in `package.json` in the same commi
 | 🟡 Medium — PRE-EXISTING (in main High/Medium sections) | ✅ Attempt if straightforward |
 | 🟢 Low — NEW | ✅ Attempt if straightforward |
 | Structural/template fixes (file moves, script renames, missing files) | ✅ Include |
-| ⚠️ Pre-existing Non-blocking (notes table only) | ⏭️ Skip — leave for next release |
+| ⚠️ Pre-existing — template compliance (src/ structure, script renames, missing `package.json`/manifest fields) | ✅ Always include — module is being released anyway, clean it up |
+| ⚠️ Pre-existing — logic, style, or content issues (notes table only) | ⏭️ Skip — leave for next release |
 
 ---
 

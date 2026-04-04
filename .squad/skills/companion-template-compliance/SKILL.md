@@ -10,8 +10,8 @@ When in doubt, compare directly against the authoritative templates in the works
 
 | Type | Directory |
 |------|-----------|
-| **JavaScript** | `companion-module-template-js/` (workspace root) |
-| **TypeScript** | `companion-module-template-ts/` (workspace root) |
+| **JavaScript** | `companion-module-template-js/` (in `companion-modules-reviewing/` workspace root) |
+| **TypeScript** | `companion-module-template-ts/` (in `companion-modules-reviewing/` workspace root) |
 
 ---
 

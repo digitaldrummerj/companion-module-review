@@ -62,7 +62,7 @@ Insert this section immediately after the Verdict section.
 
 Omit the "Nice to Have" row if there are no findings at that level.
 
-### Example — REJECTED with pre-existing blocking issues
+### Example — Changes Required with pre-existing blocking issues
 
 ```markdown
 ## 📊 Scorecard
@@ -81,7 +81,7 @@ Omit the "Nice to Have" row if there are no findings at that level.
 **Health delta:** 2 introduced · 3 pre-existing surfaced  
 ```
 
-### Example — REJECTED with new critical issue
+### Example — Changes Required with new critical issue
 
 ```markdown
 ## 📊 Scorecard
@@ -118,7 +118,7 @@ Insert this section immediately after the Scorecard section.
 To generate the anchor for a heading:
 1. Lowercase the entire heading text
 2. Remove everything that is NOT: letters, digits, spaces, hyphens
-3. Replace each remaining space with a hyphen
+3. Replace **one or more** consecutive spaces/hyphens/underscores with a **single** hyphen (they collapse — `—` surrounded by spaces becomes one `-`, not two)
 4. Backtick content keeps its inner text (backticks themselves are removed)
 5. Emoji characters and their variation selectors are removed
 6. Special characters removed: `:` `(` `)` `—` `.` `@` `/` `'` `` ` `` `!` `?`
@@ -129,7 +129,7 @@ To generate the anchor for a heading:
 
 | Heading | Anchor |
 |---------|--------|
-| `### C1: \`clearIdleTimer()\` called in Reconnect action — method does not exist` | `#c1-clearidletimer-called-in-reconnect-action--method-does-not-exist` |
+| `### C1: \`clearIdleTimer()\` called in Reconnect action — method does not exist` | `#c1-clearidletimer-called-in-reconnect-action-method-does-not-exist` |
 | `### H1: EventSource not closed in \`destroy()\`` | `#h1-eventsource-not-closed-in-destroy` |
 | `### M3: \`@companion-module/base\` version doesn't satisfy peer dependency` | `#m3-companion-modulebase-version-doesnt-satisfy-peer-dependency` |
 | `### L1: Build script \`rimraf dist\` removal may leave stale files` | `#l1-build-script-rimraf-dist-removal-may-leave-stale-files` |
@@ -155,18 +155,18 @@ To generate the anchor for a heading:
 ## Updated Section Order in Assembled Review
 
 1. Title + meta header
-2. **Verdict**
+2. **Fix Summary for Maintainer**
 3. **📊 Scorecard** ← this skill
-4. **📋 Table of Contents** ← this skill
-5. 🔴 Critical
-6. 🟠 High
-7. 🟡 Medium
-8. 🟢 Low
-9. 💡 Nice to Have
-10. 🔮 Next Release
-11. ⚠️ Pre-existing Notes
-12. 🧪 Tests
-13. ✅ What's Solid
-14. Fix Summary for Maintainer
+4. **Verdict**
+5. **📋 Issues** ← this skill (formerly "Table of Contents")
+6. 🔴 Critical
+7. 🟠 High
+8. 🟡 Medium
+9. 🟢 Low
+10. 💡 Nice to Have
+11. 🔮 Next Release
+12. ⚠️ Pre-existing Notes
+13. 🧪 Tests
+14. ✅ What's Solid
 
 Omit any section that has no findings.

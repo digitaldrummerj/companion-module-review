@@ -32,9 +32,11 @@ Report as a table: pending count, cloned (awaiting review), not yet cloned, olde
 
 ### Local workspace scan (secondary)
 
-Scan for modules already cloned:
+Scan for modules already cloned in the `companion-modules-reviewing/` sibling directory:
 ```powershell
-Get-ChildItem /Users/lynbh/Development/companion-module-review -Directory |
+$reviewRoot = "/Users/lynbh/Development/companion-module-review"  # adjust as needed
+$modulesDir = if ($env:COMPANION_MODULES_DIR) { $env:COMPANION_MODULES_DIR } else { Join-Path (Split-Path -Parent $reviewRoot) "companion-modules-reviewing" }
+Get-ChildItem $modulesDir -Directory |
   Where-Object { $_.Name -like 'companion-module-*' -and $_.Name -notmatch 'template-(js|ts)$' } |
   Select-Object -ExpandProperty Name
 ```

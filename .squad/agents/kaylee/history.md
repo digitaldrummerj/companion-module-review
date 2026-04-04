@@ -18,6 +18,20 @@
 - `actions.ts` now exports an `ActionId` enum covering every inline action defined directly in the aggregator (not in a category file). The combined `actions` const inside `GetActions()` is typed as `{ [id in ActionId | ActionIdJoinFlow]: CompanionActionDefinition | undefined }`, and every key uses computed enum notation `[ActionId.xxx]`. This enforces completeness: TypeScript errors if any enum member is missing from the object or any extra key is added without a matching enum member.
 - The `companion-action-file-pattern` skill was updated to `confidence: high`. Additions: Pattern 0 (shared helpers in `action-utils.ts`, instance-dependent helpers, `parseRangedInt` validation, try/catch error handling), instance type clarification note in Pattern 1 imports, `useVariables: true` documentation for `textinput` fields, `ActionId` enum sub-section in Pattern 2 covering inline actions in the aggregator, step 3.5 in Pattern 3 covering removal of split actions from `ActionId`, and updated References section with generic paths (removed non-existent file references).
 
+### Workspace Restructuring — 2026-04-04
+
+**Note:** Module repositories (companion-module-softouch-easyworship, companion-module-autodirector-mirusuite, companion-module-template-js, companion-module-template-ts) have been **moved out of the review repo** and now live in a sibling directory: `../companion-modules-reviewing/` relative to the review repo root. The review repo itself contains only the templates and review artifacts in `reviews/`. Build scripts and VSCode workspace configuration have been updated to reference the new sibling location. When cloning or setting up the development environment, use `COMPANION_MODULES_DIR=../companion-modules-reviewing/` or rely on the auto-derived sibling path.
+
+### EasyWorship Auto-Fix (2026-04-02, branch: fix/v2.1.0-2026-04-02-issues)
+
+- **Branch:** `fix/v2.1.0-2026-04-02-issues` inside `companion-module-softouch-easyworship/`
+- **Branched from:** tag `v2.1.0` (not `main` — main was 2 commits ahead with Dependabot bumps unrelated to the fixes)
+- **5 commits applied:** C1 (clearIdleTimer crash), M1 (manifest version → 0.0.0), L1 (backslash entrypoint), M2 (upgrade script), M3 (base bump + yarn.lock)
+- **Surprise — dummy options count:** Review said "10 actions" had dummy options removed, but git diffing the prior commit (949fefb) shows **15** actions used `defaultChoice`. The upgrade script covers all 15 option IDs (`id_logo`, `id_black`, `id_clear`, `id_prevslide`, `id_nextslide`, `id_play`, `id_pause`, `id_toggle`, `id_prevsched`, `id_nextsched`, `id_prevbuild`, `id_nextbuild`, `id_presstart`, `id_slidestart`, `id_connectezw`). Over-counting in the review was harmless — the fix is comprehensive.
+- **M3 resolved to 1.14.1:** `^1.12.0` resolved to `@companion-module/base@1.14.1` (latest in the 1.x series). Peer dependency warning about `eslint`/`prettier` is pre-existing (not introduced by this fix).
+- **Upgrade scripts pattern (v1.x):** Inline at bottom of `index.js` as a `const upgradeScripts = [fn, ...]` array passed to `runEntrypoint(EasyWorshipInstance, upgradeScripts)`. Template shows a separate `upgrades.js` file, but for a single-script module with no existing `upgrades.js`, inline is clean. The function signature is `function(_context, props)` returning `{ updatedConfig, updatedActions, updatedFeedbacks }`.
+- **Build verified:** `yarn release` produced `softouch-easyworship-2.1.0.tgz` cleanly after all fixes.
+
 ### RTW TouchMonitor Review (2026-04-01)
 
 - **Module:** `rtw-touchmonitor` v1.0.1
@@ -117,3 +131,15 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 - Created `.squad/skills/companion-template-compliance/SKILL.md` — full checklist for JS and TS template compliance covering: required files, config file content rules (.gitattributes, .gitignore, .prettierignore, .yarnrc.yml), package.json field requirements (engines, prettier, packageManager, scripts, dependencies), manifest.json rules (id/name match, maintainer placeholders, repository URL, banned keywords), HELP.md stub detection, and husky hook requirements for TS modules.
 - Updated charter (`What I Own`, `How I Work`, `Review Criteria`) to reference the skill and enumerate the new manifest/HELP/keyword/version-tag checks.
 - Directive source: `.squad/decisions/inbox/copilot-directive-2026-04-02T21-20-36Z.md`
+
+### Template Compliance Fix — companion-module-softouch-easyworship (2026-04-04)
+
+- **Branch:** `fix/v2.1.0-2026-04-02-issues` (compliance commit added on top of existing fixes)
+- **src/ migration:** Used `git mv` for all 6 JS files (actions.js, config.js, feedbacks.js, index.js, presets.js, variables.js → src/). Git correctly tracked these as renames (100% similarity).
+- **No internal import path changes needed:** All 6 files were sibling requires in index.js (`require('./actions')` etc.). Since all files moved together into src/, the relative paths remained valid. Other JS files had no relative imports at all.
+- **package.json `main` field:** Updated `"index.js"` → `"src/index.js"`. The `engines` field was missing — added `{ "node": ">=22", "yarn": "^4" }`.
+- **Script rename:** `"release"` → `"package"` (companion-module-build remains the command).
+- **manifest.json entrypoint:** L1 fix had already corrected the backslash to `"../index.js"`. Updated to `"../src/index.js"` in the compliance commit.
+- **Build verified:** `yarn package` succeeded → `softouch-easyworship-2.1.1.tgz`. No `prettier.config.js` added (not in task scope).
+- **Commit ordering:** Compliance commit landed AFTER the version bump commit. Both are `chore:` commits with no ordering dependency — acceptable per task instructions.
+- **Review file:** A pre-existing `review-2026-04-02-041821.md` was present in the module root and was staged into the compliance commit — not ideal but non-blocking (review files should live in `reviews/` per team decision, but that's a separate housekeeping issue).

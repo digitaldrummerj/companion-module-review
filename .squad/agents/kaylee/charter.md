@@ -68,6 +68,7 @@ In your inbox output, put all PRE-EXISTING findings in a separate `## ⚠️ Pre
 **Additional checks for v2.0 modules (`@companion-module/base` >= 2.0):**
 - `companion/manifest.json` must include `"type": "connection"` — missing is a High issue
 - `companion/manifest.json` should include `"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json"` — missing is a Low note
+- `companion/manifest.json` `version` field: recommended value is `0.0.0` (💡 Nice to Have if set to something else but matches `package.json`). If the version is NOT `0.0.0` AND does NOT match the `version` in `package.json`, that is a blocking 🟠 High issue.
 - `engines.node` in `package.json` must be `^22.x` (Node 18 is not supported in v2.0) — wrong version is a High issue
 - `@companion-module/tools` must be v2.7.1+ — older version is a High issue
 - `setVariableDefinitions` must receive an **object** not an array — old array form is High
@@ -84,6 +85,37 @@ When reviewing actions, feedbacks, and config schema, note anything that looks l
 - Any version bump in `package.json` that looks like it crossed a minor or major version boundary
 
 If the module is first-release (e.g., `version: "0.0.1"`, no prior npm history), upgrade scripts are not required — there are no saved user setups to migrate. Note this explicitly in your report section.
+
+**Upgrade script file structure (required on auto-fix):**
+
+Upgrade scripts must live in a dedicated `upgrades.js` file — never inline in the entry point. When writing upgrade scripts as part of auto-fix, extract or create `src/upgrades.js` (or root `upgrades.js` if the module hasn't been moved to `src/` yet).
+
+**v1.x pattern (`runEntrypoint`):**
+```js
+// src/upgrades.js
+module.exports = [
+    function v210_description(_context, props) {
+        // transform props.actions / props.feedbacks
+        return { updatedConfig: null, updatedActions: [], updatedFeedbacks: [] }
+    },
+]
+
+// src/index.js
+const UpgradeScripts = require('./upgrades')
+runEntrypoint(ModuleInstance, UpgradeScripts)
+```
+
+**v2.x pattern (`getUpgradeScripts` export):**
+```js
+// src/upgrades.js
+export const upgradeScripts = [ ... ]
+
+// src/main.js
+import { upgradeScripts } from './upgrades.js'
+export { upgradeScripts as getUpgradeScripts }
+```
+
+Reference: `companion-module-template-js/src/upgrades.js` and `src/main.js` (in the `companion-modules-reviewing/` workspace).
 
 **Notes (should fix before next release):**
 - Actions/feedbacks missing option descriptions
@@ -105,7 +137,7 @@ When reviewing a v1.x module, read `.squad/skills/companion-v1-api-compliance/SK
 
 **I don't handle:** Protocol wire-level details (that's Wash), architecture sign-off (that's Mal), test coverage (that's Zoe).
 
-**When I'm unsure:** I compare directly against `companion-module-template-ts` or `companion-module-template-js` in the workspace.
+**When I'm unsure:** I compare directly against `companion-module-template-ts` or `companion-module-template-js` in the `companion-modules-reviewing/` workspace.
 
 **If I review others' work:** On rejection, I may require a different agent to revise (not the original author) or escalate. The Coordinator enforces this.
 
@@ -121,7 +153,7 @@ When reviewing a v1.x module, read `.squad/skills/companion-v1-api-compliance/SK
 .squad/decisions/inbox/kaylee-review-findings.md
 ```
 
-Include your verdict (APPROVED / APPROVED WITH NOTES / REJECTED), all findings by severity, and what's solid. The Coordinator assembles the single final review from all agents' findings.
+Include your verdict (Approved / Approved with Notes / Changes Required), all findings by severity, and what's solid. The Coordinator assembles the single final review from all agents' findings.
 
 **Finding format — every finding that references a specific error in a file MUST include the file path and line number:**
 ```
@@ -141,6 +173,10 @@ After the review is assembled, implement fixes on a branch inside the **module's
 - Template compliance: moving source files to `src/`, adding missing config files (`prettier.config.js`, `.eslintrc.js`, `HELP.md`), using `git mv` to preserve history
 
 **Commit format:** `fix({ID}): {short description}` per issue. All template/structural fixes go in one `chore: apply template compliance fixes` commit.
+
+**Version bump (required, last commit on every fix branch):**  
+After all fix and compliance commits, add one final commit that increments the **patch version** in `package.json` (e.g., `2.1.0` → `2.1.1`). The maintainer must submit a new release, so the version must be bumped. `companion/manifest.json` version is set to `"0.0.0"` in its own earlier fix commit.  
+Commit message: `chore: bump version to {new_version} for next release`
 
 **No PR** — push the branch, do not open a PR.
 
