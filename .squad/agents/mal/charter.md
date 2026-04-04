@@ -168,16 +168,40 @@ The **Coordinator** assembles all agents' findings into the single final review 
 
 **Required section order in the final assembled review:**
 
+Read `.squad/skills/review-scorecard/SKILL.md` for the exact Scorecard and TOC format, counting rules, anchor generation rules, and worked examples.
+
 1. **Verdict** — APPROVED / APPROVED WITH NOTES / REJECTED, one-line reason
-2. **🔴 Critical** — Must fix before approval; module will not load or has data loss risk
-3. **🟠 High** — Significant bugs or broken behavior; fix before next release
-4. **🟡 Medium** — Correctness issues or missing error handling; address soon
-5. **🟢 Low** — Code quality, dead code, minor inconsistencies
-6. **💡 Nice to Have** — Improvements that would benefit users but aren't required
-7. **🔮 Next Release** — Suggestions for future work beyond the current submission
-8. **✅ What's Solid** — Acknowledge what the maintainer got right
+2. **📊 Scorecard** — issue counts table (New vs. Existing per severity) + Blocking count, Fix complexity, Health delta lines
+3. **📋 Table of Contents** — clickable anchor links to every finding, grouped Blocking / Non-blocking
+4. **🔴 Critical** — Must fix before approval; module will not load or has data loss risk
+5. **🟠 High** — Significant bugs or broken behavior; fix before next release
+6. **🟡 Medium** — Correctness issues or missing error handling; address soon
+7. **🟢 Low** — Code quality, dead code, minor inconsistencies
+8. **💡 Nice to Have** — Improvements that would benefit users but aren't required
+9. **🔮 Next Release** — Suggestions for future work beyond the current submission
+10. **⚠️ Pre-existing Notes** — Non-blocking pre-existing issues noted for reference
+11. **🧪 Tests** — Test coverage notes
+12. **✅ What's Solid** — Acknowledge what the maintainer got right
+13. **Fix Summary for Maintainer** — Numbered list of blocking fixes with exact file/line references
 
 Omit any section that has no findings. Never reorder sections. Maintainers read top-to-bottom — Critical must always come first.
+
+## Auto-Fix Workflow
+
+After the review file is assembled and committed, trigger the auto-fix workflow. Read `.squad/skills/review-auto-fix/SKILL.md` for the full workflow.
+
+**Trigger:** After every review, regardless of verdict.
+
+**What happens:**
+- Kaylee implements code fixes (actions, manifest, package.json, template compliance)
+- Wash implements protocol/network fixes
+- You coordinate which issues to fix and verify no regressions are introduced
+
+**Scope:** Blocking issues (Critical, High), new non-blocking issues (Medium, Low), and structural/template fixes (file moves, script renames, missing files). Skip pre-existing non-blocking items from the notes table.
+
+**Branch naming:** `fix/v{version}-{YYYY-MM-DD}-issues` — created inside the module's own git repo (not the review repo).
+
+**No PR** — push the branch, do not open a PR.
 
 ## Voice
 

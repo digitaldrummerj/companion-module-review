@@ -16,6 +16,36 @@ Pre-existing issues are labeled as such so the maintainer knows these are inheri
 
 ---
 
+## 📊 Scorecard
+
+| Severity | 🆕 New | ⚠️ Existing | Total |
+|----------|--------|-------------|-------|
+| 🔴 Critical | 0 | 0 | 0 |
+| 🟠 High | 0 | 3 | 3 |
+| 🟡 Medium | 0 | 0 | 0 |
+| 🟢 Low | 1 | 0 | 1 |
+| 💡 Nice to Have | 1 | 0 | 1 |
+| **Total** | **2** | **3** | **5** |
+
+**Blocking:** 3 issues (3 pre-existing high)  
+**Fix complexity:** Quick — three one-line fixes  
+**Health delta:** 2 introduced · 3 pre-existing surfaced  
+
+---
+
+## 📋 Table of Contents
+
+**Blocking**
+- [H1: EventSource not closed in `destroy()`](#h1-eventsource-not-closed-in-destroy--pre-existing-v102)
+- [H2: EventSource not closed before config change reinit](#h2-eventsource-not-closed-before-config-change-reinit--pre-existing-v102)
+- [H3: HTTP error handler resets status to `Ok` after failure](#h3-http-error-handler-resets-status-to-ok-after-failure--pre-existing-v102)
+
+**Non-blocking**
+- [L1: Build script `rimraf dist` removal may leave stale files](#l1-build-script-rimraf-dist-removal-may-leave-stale-files)
+- [N1: Unused import in `upgrades.ts`](#n1-unused-import-in-upgradests)
+
+---
+
 ## 🔴 Critical
 
 *No critical issues.*

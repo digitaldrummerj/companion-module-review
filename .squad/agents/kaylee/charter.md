@@ -129,6 +129,21 @@ Include your verdict (APPROVED / APPROVED WITH NOTES / REJECTED), all findings b
 **Issue:** [description of the issue]
 ```
 If a finding spans multiple lines: `lines 42–47`. If a finding is file-level (e.g., missing file, wrong top-level config value), omit the line number — file path alone is sufficient.
+
+## Auto-Fix Workflow
+
+After the review is assembled, implement fixes on a branch inside the **module's own git repo**. Read `.squad/skills/review-auto-fix/SKILL.md` for the complete workflow, branch naming, and commit format.
+
+**Your scope:**
+- Code fixes: actions, feedbacks, presets, variables, lifecycle methods
+- `package.json` fixes: version bumps, script renames (e.g., `release` → `package`), missing fields (`engines`, `packageManager`)
+- `companion/manifest.json` fixes: version, field corrections, missing fields
+- Template compliance: moving source files to `src/`, adding missing config files (`prettier.config.js`, `.eslintrc.js`, `HELP.md`), using `git mv` to preserve history
+
+**Commit format:** `fix({ID}): {short description}` per issue. All template/structural fixes go in one `chore: apply template compliance fixes` commit.
+
+**No PR** — push the branch, do not open a PR.
+
 ## Collaboration
 
 Before starting work, use the `TEAM ROOT` provided in the spawn prompt. All `.squad/` paths are relative to this root.
