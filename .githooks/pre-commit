@@ -1,0 +1,16 @@
+#!/bin/sh
+# Prevent accidental commits of cloned companion-module-* directories.
+# These are local review checkouts and should never be committed to this repo.
+
+BLOCKED=$(git diff --cached --name-only | grep -E '^companion-module-[^/]+/')
+
+if [ -n "$BLOCKED" ]; then
+    echo ""
+    echo "ERROR: Staged files are inside a companion-module-* directory:"
+    echo "$BLOCKED" | sed 's/^/  /'
+    echo ""
+    echo "Cloned module directories are local review checkouts — do not commit them."
+    echo "Run: git reset HEAD <file> to unstage."
+    echo ""
+    exit 1
+fi

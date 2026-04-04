@@ -9,6 +9,7 @@
 # Squad archives
 .squad-archive*/
 
-# Note: companion-module-*/ is excluded via .git/info/exclude (local only)
-# This allows Copilot to @-reference cloned modules while still excluding
-# them from git commits.
+# Cloned companion-module-*/ review checkouts are NOT listed here so that
+# Copilot can @-reference them. Accidental commits are blocked by the
+# pre-commit hook in .githooks/. Run `git config core.hooksPath .githooks`
+# once after cloning (or run setup.ps1) to activate the hook.
