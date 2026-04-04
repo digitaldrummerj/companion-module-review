@@ -36,9 +36,9 @@ Pre-existing issues are labeled as such so the maintainer knows these are inheri
 ## 📋 Table of Contents
 
 **Blocking**
-- [H1: EventSource not closed in `destroy()`](#h1-eventsource-not-closed-in-destroy--pre-existing-v102)
-- [H2: EventSource not closed before config change reinit](#h2-eventsource-not-closed-before-config-change-reinit--pre-existing-v102)
-- [H3: HTTP error handler resets status to `Ok` after failure](#h3-http-error-handler-resets-status-to-ok-after-failure--pre-existing-v102)
+- [H1: EventSource not closed in `destroy()`](#h1-eventsource-not-closed-in-destroy)
+- [H2: EventSource not closed before config change reinit](#h2-eventsource-not-closed-before-config-change-reinit)
+- [H3: HTTP error handler resets status to `Ok` after failure](#h3-http-error-handler-resets-status-to-ok-after-failure)
 
 **Non-blocking**
 - [L1: Build script `rimraf dist` removal may leave stale files](#l1-build-script-rimraf-dist-removal-may-leave-stale-files)
@@ -54,7 +54,7 @@ Pre-existing issues are labeled as such so the maintainer knows these are inheri
 
 ## 🟠 High
 
-### H1: EventSource not closed in `destroy()` ⚠️ Pre-existing (v1.0.2)
+### H1: EventSource not closed in `destroy()`
 **File:** `src/main.ts` + `src/scripts/eventhandler.ts`
 **Classification:** ⚠️ PRE-EXISTING — existed in v1.0.2, not introduced in this release
 **Issue:** `destroy()` does not call `closeEventHandler()`. When a user removes the connection, the SSE stream stays open indefinitely. The orphaned EventSource continues receiving events and trying to update state on a destroyed module instance, causing runtime errors and preventing garbage collection.
@@ -77,7 +77,7 @@ async destroy(): Promise<void> {
 
 ---
 
-### H2: EventSource not closed before config change reinit ⚠️ Pre-existing (v1.0.2)
+### H2: EventSource not closed before config change reinit
 **File:** `src/main.ts` lines 42–47
 **Classification:** ⚠️ PRE-EXISTING
 **Issue:** When the host or port changes, `configUpdated()` calls `init()` immediately without closing the existing EventSource first. The old connection keeps firing events against the new module state — mixing events from two different servers, causing state corruption and confusing log output.
@@ -98,7 +98,7 @@ async configUpdated(config: ModuleConfig): Promise<void> {
 
 ---
 
-### H3: HTTP error handler resets status to `Ok` after failure ⚠️ Pre-existing (v1.0.2)
+### H3: HTTP error handler resets status to `Ok` after failure
 **File:** `src/api/backend.ts` lines 36–44
 **Classification:** ⚠️ PRE-EXISTING
 **Issue:** `checkedFetch` sets `ConnectionFailure` on a non-2xx response but then unconditionally sets `Ok` on the next line. The module shows green in Companion even when every HTTP request is failing — operators have no indication the connection is broken.

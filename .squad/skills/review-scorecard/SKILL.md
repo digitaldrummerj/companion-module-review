@@ -118,17 +118,19 @@ Insert this section immediately after the Scorecard section.
 To generate the anchor for a heading:
 1. Lowercase the entire heading text
 2. Remove everything that is NOT: letters, digits, spaces, hyphens
-3. Replace spaces with hyphens
+3. Replace each remaining space with a hyphen
 4. Backtick content keeps its inner text (backticks themselves are removed)
-5. Emoji characters are removed
-6. Special characters removed: `:` `(` `)` `—` `.` `@` `/` `'` `` ` `` `!` `?` `⚠️`
+5. Emoji characters and their variation selectors are removed
+6. Special characters removed: `:` `(` `)` `—` `.` `@` `/` `'` `` ` `` `!` `?`
+
+> ⚠️ **Avoid emoji in issue headings.** Emoji followed by spaces produce ambiguous anchor output across different Markdown renderers (the number of hyphens generated is not consistent). Keep emoji in section-level headings (e.g., `## 🔴 Critical`) but use plain text in issue headings (`### H1:`, `### C1:`, etc.). Classification metadata like "pre-existing" belongs in the `**Classification:**` line below the heading, not in the heading text itself.
 
 ### Anchor Examples
 
 | Heading | Anchor |
 |---------|--------|
 | `### C1: \`clearIdleTimer()\` called in Reconnect action — method does not exist` | `#c1-clearidletimer-called-in-reconnect-action--method-does-not-exist` |
-| `### H1: EventSource not closed in \`destroy()\` ⚠️ Pre-existing (v1.0.2)` | `#h1-eventsource-not-closed-in-destroy--pre-existing-v102` |
+| `### H1: EventSource not closed in \`destroy()\`` | `#h1-eventsource-not-closed-in-destroy` |
 | `### M3: \`@companion-module/base\` version doesn't satisfy peer dependency` | `#m3-companion-modulebase-version-doesnt-satisfy-peer-dependency` |
 | `### L1: Build script \`rimraf dist\` removal may leave stale files` | `#l1-build-script-rimraf-dist-removal-may-leave-stale-files` |
 | `### N1: Unused import in \`upgrades.ts\`` | `#n1-unused-import-in-upgradests` |
