@@ -100,3 +100,29 @@ Agent findings are written to `.squad/decisions/inbox/{agent}-{module-slug}-find
 - **DO NOT auto-commit review output files** — write them, let Lyn review first
 - Module reviews run **serially** — complete one module (all agents + assembly + Scribe) before starting the next
 - PR titles must use plain human terms — no internal finding IDs (C1, H1, etc.)
+
+---
+
+## ✅ Tracker Update (Required at Review Completion)
+
+When Scribe writes the final review file, it MUST also add a row to `reviews/TRACKER.md`.
+
+**Tracker file:** `{REVIEW_REPO}/reviews/TRACKER.md`
+
+**Add a new row** at the bottom of the table using this format:
+
+```markdown
+| ⬜ | {short-module-name} | {version} | {YYYY-MM-DD} | [review]({short-module-name}/review-{short-module-name}-{version}-{timestamp}.md) |
+```
+
+- `⬜` = feedback not yet submitted to maintainer (default — human will change to ✅ when they submit)
+- `{YYYY-MM-DD}` = review date (UTC)
+- The link path is relative to the `reviews/` directory
+
+**Example:**
+
+```markdown
+| ⬜ | allenheath-sq | v1.2.3 | 2026-04-06 | [review](allenheath-sq/review-allenheath-sq-v1.2.3-20260406-143000.md) |
+```
+
+If the module already has an entry in the tracker (re-review of a new version), add a new row — do not edit or remove the existing entry.

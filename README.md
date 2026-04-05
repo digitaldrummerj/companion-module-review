@@ -76,7 +76,7 @@ The squad will discover the module, clone it, run the structured review, and pro
 1. **Discover** — Check what's pending on the BitFocus developer portal (`scripts/bitfocus-queue.ps1`)
 2. **Set up** — Clone the target module into the sibling `companion-modules-reviewing/` workspace (`scripts/bitfocus-setup-module.ps1`)
 3. **Review** — The squad (Mal, Wash, Kaylee, Zoe, Simon) analyse the module across template compliance, API compliance, actions, feedbacks, variables, presets, and OSC integration
-4. **Assemble** — Scribe assembles findings into a single review file under `reviews/{module-name}/`
+4. **Assemble** — Scribe assembles findings into a single review file under `reviews/{module-name}/` and adds a ⬜ entry to `reviews/TRACKER.md`
 5. **Fix** — Kaylee and Wash create a `fix/v{version}-{date}-issues` branch inside the module repo with individual commits per issue
 
 ---
