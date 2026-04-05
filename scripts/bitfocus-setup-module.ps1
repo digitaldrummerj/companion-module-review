@@ -124,9 +124,7 @@ if (Test-Path $cloneDir) {
 } else {
     $repoUrl = "https://github.com/bitfocus/companion-module-$name"
     Write-Host "Cloning $repoUrl ..." -ForegroundColor DarkGray
-    Push-Location $workspace
-    git clone $repoUrl
-    Pop-Location
+    git clone $repoUrl $cloneDir
     Write-Host "Cloned to: $cloneDir" -ForegroundColor Green
 }
 
