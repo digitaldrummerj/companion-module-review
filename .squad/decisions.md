@@ -426,3 +426,26 @@ export { upgradeScripts as getUpgradeScripts }
 **Notable positives:** Clean architecture and application logic despite template compliance failures. Correct `runEntrypoint` usage, proper lifecycle teardown, smart polling optimisation via list signature comparison, thorough GraphQL error handling (HTTP-level and GraphQL-level), all action callbacks wrapped in try/catch, correct `InstanceStatus` transitions, no deprecated v1.x patterns, API key never exposed in logs, build produces a valid artefact.
 
 **Expected verdict once fixed:** APPROVED WITH NOTES
+
+---
+
+## 2026-04-05: Review session — companion-module-red-rcp2 v1.4.6
+
+**Date:** 2026-04-05
+**Module:** companion-module-red-rcp2
+**Version:** v1.4.6 (previous: v1.1.3)
+**Agents:** Mal (Lead/Architecture), Wash (Protocol), Kaylee (Template/Build), Zoe (QA), Simon (Tests) — all parallel
+**Verdict:** ❌ CHANGES REQUIRED / REJECTED — 6 blocking issues (2 critical, 1 high, 3 medium)
+**Review file:** `companion-modules-reviewing/companion-module-red-rcp2/review-2026-04-05-065528.md`
+
+**Blocking issues:**
+1. **C1 — Missing upgrade scripts** (`upgrade.js`, line 1): 3 action IDs renamed (`start_record` → `start_recording`, `stop_record` → `stop_recording`, `toggle_record` → `toggle_recording`) and 1 feedback removed (`websocket_variable`); `upgradeScripts = []` — users upgrading from v1.1.3 will have silently dead buttons.
+2. **C2 — `scripts` section removed from `package.json`**: `yarn package` fails immediately; module cannot be built for distribution. `format` script also missing.
+3. **H1 — LUT subscription name mismatch** (`main.js`, lines 471–472): SUBSCRIBE set uses `CAMERA_LUT_ENABLE_SDI_1/2` but handler cases on `ENABLE_CAMERA_LUT_SDI_1/2`; camera never pushes LUT state, toggle actions read stale state.
+4. **M1 — `process.title` global mutation** (`main.js`, line 6): `process.title = 'RED RCP2'` renames Companion's entire Node.js process at import time, affecting all modules.
+5. **M2 — `ws.on('error')` regression** (`main.js`, line 341): `InstanceStatus.ConnectionFailure` no longer set on WebSocket error — regression from v1.1.3.
+6. **M3 — Untracked `setTimeout` chains** (`main.js`, lines 437, 529): Staggered `setTimeout` batching handles not tracked by `_clearTimers()`; up to 90s of orphaned chains accumulate on rapid config changes.
+
+**Notable positives:** Solid rewrite fixed both critical pre-existing bugs from v1.1.3 (WebSocket not closed in `destroy()`, double-reconnect race). Strong engineering quality overall — Proxy-based variable batching, dynamic parameter discovery, staggered polling, improved WebSocket lifecycle. Excellent HELP.md.
+
+**Expected verdict once fixed:** APPROVED WITH NOTES
