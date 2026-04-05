@@ -23,13 +23,13 @@ Read `.squad/skills/companion-bitfocus-dashboard/SKILL.md` for full API patterns
 - `companion-module-template-ts/` — TS reference template
 
 **Modules already cloned and awaiting review:**  
-Any other `companion-module-*` directory present in the workspace root has been cloned and is ready to review:
+Any other `companion-module-*` directory in `companion-modules-reviewing/` has been cloned and is ready to review:
 
 ```bash
-ls /Users/lynbh/Development/companion-module-review/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
+ls /Users/lynbh/Development/companion-modules-reviewing/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
 ```
 
-When a module is done being reviewed, Justin removes it from the directory.
+When a module is done being reviewed, Justin removes it from the `companion-modules-reviewing/` directory.
 
 ---
 

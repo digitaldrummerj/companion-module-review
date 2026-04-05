@@ -44,12 +44,12 @@ Returns `{versions: [{moduleName, moduleType, gitTag, createdAt}]}`. See `.squad
 Modules that have been cloned but not yet reviewed appear as subdirectories here:
 
 ```bash
-ls /Users/lynbh/Development/companion-module-review/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
+ls /Users/lynbh/Development/companion-modules-reviewing/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
 ```
 
 The two **permanent** reference directories (never reviewed as modules):
-- `companion-module-template-js/` — JavaScript template baseline
-- `companion-module-template-ts/` — TypeScript template baseline
+- `companion-module-template-js/` — JavaScript template baseline (in `companion-modules-reviewing/`)
+- `companion-module-template-ts/` — TypeScript template baseline (in `companion-modules-reviewing/`)
 
 ---
 
