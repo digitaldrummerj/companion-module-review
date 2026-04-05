@@ -333,24 +333,104 @@ websocket.on('error', (error) => {
 ### M2: In-flight `fetch` calls not cancelled on `destroy()`
 
 **Classification:** 🆕 NEW  
-**File:** `src/main.ts`, lines 86–90  
+**File:** `src/main.ts`, lines 47–52, 86–90, 276–285  
 **Source:** Wash (W4)
 
 `destroy()` clears the interval timer and disconnects the WebSocket, but any in-flight `refreshAllState()` fetch continues executing. When it resolves, `updateStatus()`, `setVariableValues()`, and `checkFeedbacks()` are called on a destroyed instance.
 
-**Fix:** Store an `AbortController` as an instance variable, pass its signal to all fetch calls, and abort it in `destroy()`.
+Note: `fetchJson` already accepts an optional `RequestInit` argument (see `src/api.ts` line 6), so a `signal` can be passed without modifying `api.ts`.
+
+**Current code (`src/main.ts`, lines 47–52):**
+```typescript
+private pollTimer: NodeJS.Timeout | undefined
+private pollInFlight = false
+private websocket: WebSocket | undefined
+private websocketReconnectTimer: NodeJS.Timeout | undefined
+private websocketConnected = false
+private audioPresetSignature = ''
+```
+
+**Current code (`src/main.ts`, lines 86–90):**
+```typescript
+async destroy(): Promise<void> {
+    this.stopPolling()
+    this.disconnectWebSocket(false)
+    this.log('debug', 'destroy')
+}
+```
+
+**Current code (`src/main.ts`, lines 276–285):**
+```typescript
+const [statusResponse, playlistResponse, audioResponse] = await Promise.all([
+    fetchJson<QTimerStatusResponse>(`${baseUrl}/api/status`),
+    fetchJson<QTimerPlaylistStateResponse>(`${baseUrl}/api/playlist/state`).catch((error) => {
+        this.log('debug', `Playlist refresh failed: ${this.formatError(error)}`)
+        return undefined
+    }),
+    fetchJson<QTimerAudioSettingsResponse>(`${baseUrl}/api/audio/settings`).catch((error) => {
+        this.log('debug', `Audio refresh failed: ${this.formatError(error)}`)
+        return undefined
+    }),
+])
+```
+
+**Fix:** Add an `AbortController` instance variable, abort it in `destroy()`, and pass its signal to all fetch calls:
+```typescript
+// Add instance variable alongside the others:
+private fetchAbortController: AbortController = new AbortController()
+
+// destroy():
+async destroy(): Promise<void> {
+    this.fetchAbortController.abort()
+    this.stopPolling()
+    this.disconnectWebSocket(false)
+    this.log('debug', 'destroy')
+}
+
+// In refreshAllState(), pass the signal to all fetchJson calls:
+const signal = this.fetchAbortController.signal
+const [statusResponse, playlistResponse, audioResponse] = await Promise.all([
+    fetchJson<QTimerStatusResponse>(`${baseUrl}/api/status`, { signal }),
+    fetchJson<QTimerPlaylistStateResponse>(`${baseUrl}/api/playlist/state`, { signal }).catch((error) => {
+        this.log('debug', `Playlist refresh failed: ${this.formatError(error)}`)
+        return undefined
+    }),
+    fetchJson<QTimerAudioSettingsResponse>(`${baseUrl}/api/audio/settings`, { signal }).catch((error) => {
+        this.log('debug', `Audio refresh failed: ${this.formatError(error)}`)
+        return undefined
+    }),
+])
+```
 
 ---
 
 ### M3: Config change mid-poll — old host response clobbers new connection state
 
 **Classification:** 🆕 NEW  
-**File:** `src/main.ts`, lines 92–96, 262–322  
+**File:** `src/main.ts`, lines 92–96  
 **Source:** Wash (W5)
 
 When `configUpdated()` fires while a poll is in-flight against the **old** host, the old fetch completes and writes `runtimeState = { connected: true, serverUrl: oldHost }`, overwriting new connection state with stale data from the previous server. Amplified by H1 — without a timeout, the old request can hang indefinitely.
 
-**Fix:** Abort in-flight requests in `configUpdated()` before starting new polling (same AbortController approach as M2).
+**Current code (`src/main.ts`, lines 92–96):**
+```typescript
+async configUpdated(config: ModuleConfig): Promise<void> {
+    this.config = config
+    this.startPolling(true)
+    this.connectWebSocket()
+}
+```
+
+**Fix:** Abort in-flight requests and reset the controller before starting new polling (same `AbortController` added for M2):
+```typescript
+async configUpdated(config: ModuleConfig): Promise<void> {
+    this.fetchAbortController.abort()
+    this.fetchAbortController = new AbortController()
+    this.config = config
+    this.startPolling(true)
+    this.connectWebSocket()
+}
+```
 
 ---
 
