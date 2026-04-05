@@ -32,7 +32,17 @@
 14. **Validate `ruleId` is non-empty** before building URL in `audio_set_rule_enabled` and `audio_set_rule_volume`, `src/actions.ts` lines 449/472. (M5)
 15. **Guard against `null`/array in WebSocket payload** — add `payload.data === null || Array.isArray(payload.data)` check, `src/main.ts` line 209. (M6)
 16. **Reset `runtimeState` in `configUpdated()`** before reconnecting — prevents stale server data from persisting, `src/main.ts` line 92. (M7)
-17. **Add `categories` field** to `manifest.json` — e.g., `["utility"]`. (M8)
+
+**After applying all fixes, verify with:**
+
+```bash
+yarn                  # install deps and set up Husky pre-commit hook
+yarn run format       # auto-fix Prettier formatting issues
+yarn run lint         # must pass with 0 errors before committing
+yarn build            # confirm build still succeeds
+```
+
+> ⚠️ **Husky note:** `yarn` must be run at least once after cloning so that the `postinstall` script installs the Husky pre-commit hook. Without this step, the hook is not active and lint-staged will not run on commits.
 
 ---
 
@@ -78,7 +88,6 @@
 - [ ] [M5: Empty `ruleId` sends malformed URL in audio rule actions](#m5-empty-ruleid-sends-malformed-url-in-audio-rule-actions)
 - [ ] [M6: Unsafe `as` cast for WebSocket state payload](#m6-unsafe-as-cast-for-websocket-state-payload)
 - [ ] [M7: `configUpdated()` does not clear stale state before reconnecting](#m7-configupdated-does-not-clear-stale-state-before-reconnecting)
-- [ ] [M8: `manifest.json` missing `categories` field](#m8-manifestjson-missing-categories-field)
 
 **Non-blocking**
 - [ ] [L1: Fixed 2-second WebSocket reconnect delay with no backoff](#l1-fixed-2-second-websocket-reconnect-delay-with-no-backoff)
@@ -396,21 +405,6 @@ this.runtimeState = {
 }
 this.updateVariablesFromState()
 this.checkFeedbacks()
-```
-
----
-
-### M8: `manifest.json` missing `categories` field
-
-**Classification:** 🆕 NEW  
-**File:** `companion/manifest.json`  
-**Source:** Kaylee (K8)
-
-The `categories` field is absent. Companion's module browser uses it to group and filter modules. Without it, the module appears uncategorized.
-
-**Fix:** Add to `manifest.json`:
-```json
-"categories": ["utility"]
 ```
 
 ---
