@@ -335,3 +335,37 @@ export { upgradeScripts as getUpgradeScripts }
 **By:** Lyn (via Copilot)
 **What:** Do NOT push auto-fix branches or create PRs without explicit human intervention. After a review, the auto-fix branch may be prepared locally, but must wait for human approval before any `git push` or `gh pr create`.
 **Why:** User request — captured for team memory. Maintainers need to review fixes before they appear in the public repo.
+
+---
+
+## 2026-04-05: Review session — companion-module-videopathe-qtimer v1.0.0
+
+**Date:** 2026-04-05
+**Module:** companion-module-videopathe-qtimer
+**Version:** v1.0.0 (first release — all code is new, no prior version, all findings eligible to block)
+**Agents:** Mal (Lead/Architecture), Wash (Protocol), Kaylee (Module Dev), Zoe (QA), Simon (Tests) — all parallel
+**Verdict:** ❌ REJECTED — 17 blocking issues (6 critical, 3 high, 8 medium)
+**Review file:** `companion-modules-reviewing/companion-module-videopathe-qtimer/review-2026-04-05-232003.md`
+
+**Blocking issues:**
+1. Missing `.gitattributes` — required template file absent
+2. Missing `.gitignore` — Yarn PnP artefacts (`.pnp.cjs`, `.pnp.loader.mjs`) committed to repo as a result
+3. Missing `.prettierignore` — required template file absent
+4. Missing `.yarnrc.yml` — Yarn 4 defaults to PnP mode; `yarn package` likely produces an unusable artefact
+5. Missing `.husky/pre-commit` hook — `lint-staged` pipeline wired but never fires on commit
+6. `manifest.json` `repository` URL uses wrong GitHub org (`videopathe/` vs `bitfocus/`)
+7. No timeout on `fetch()` calls — `pollInFlight` can lock permanently on TCP-level stall
+8. No WebSocket handshake timeout — socket can stay in `CONNECTING` indefinitely with no recovery
+9. `@types/ws` in `dependencies` instead of `devDependencies`
+10. In-flight `fetch` calls not cancelled in `destroy()` — can write state after teardown
+11. `configUpdated()` does not abort in-flight poll — old URL response can clobber new connection state
+12. `configUpdated()` does not clear stale runtime state before reconnecting
+13. WebSocket `error` event does not update `InstanceStatus`
+14. Audio sounds cleared on partial audio-endpoint failure (no fallback to previous value)
+15. Empty `ruleId` not validated in `audio_set_rule_enabled` / `audio_set_rule_volume`
+16. Unsafe `as` cast for WebSocket state payload — no structural validation before cast
+17. `manifest.json` missing `categories` field
+
+**Notable positives:** Code quality is well above average for a first release — zero `any`, zero `@ts-ignore`, zero `as unknown as`, clean TypeScript, comprehensive API coverage (47 actions, 30 feedbacks, 80+ variables, 79 presets), correct lifecycle implementation, solid null safety and defensive programming throughout. The blockers are template compliance gaps and network hardening, not fundamental design problems.
+
+**Expected verdict once fixed:** APPROVED WITH NOTES
