@@ -218,21 +218,20 @@ async function onDeviceConnected(self: ModuleInstance): Promise<void> {
 5. **Not handling errors**
    - Wrap device calls in try/catch and log errors via `self.log('error', ...)`
 
-6. **Throwing exceptions from callbacks — 🟠 High severity in reviews**
-   - Action callbacks **must never throw**. Throwing causes Companion to surface an unhandled exception in the UI, which is a breaking runtime behaviour.
-   - Replace any `throw new Error(...)` with `self.log('error', ...)` + `return`:
+6. **Error reporting from callbacks — both approaches are valid**
+   - When a callback encounters an invalid input or unexpected state, either throwing or logging is acceptable:
    ```typescript
-   // ❌ Wrong — breaks Companion's UX
-   if (!valid) throw new Error('Invalid value')
+   // ✅ Option A — throw (Companion will catch and surface the error)
+   if (!valid) throw new Error(`Invalid value: ${value}`)
 
-   // ✅ Correct — logs gracefully and exits early
+   // ✅ Option B — log + return (reports gracefully without an exception)
    if (!valid) {
        self.log('error', `Invalid value: ${value}`)
        return
    }
    ```
-   - This applies to all guard checks, validation failures, and unexpected states inside a callback.
-   - Classify as **🟠 High** in reviews (blocking).
+   - Both patterns are correct. `throw` causes Companion to catch and surface the error; `self.log('error', ...)` + `return` reports it without raising an exception. Prefer whichever is consistent with the existing style in the module.
+   - Do **not** flag either approach as a defect in reviews.
 
 ## Import Reference
 
