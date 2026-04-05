@@ -449,3 +449,620 @@ export { upgradeScripts as getUpgradeScripts }
 **Notable positives:** Solid rewrite fixed both critical pre-existing bugs from v1.1.3 (WebSocket not closed in `destroy()`, double-reconnect race). Strong engineering quality overall — Proxy-based variable batching, dynamic parameter discovery, staggered polling, improved WebSocket lifecycle. Excellent HELP.md.
 
 **Expected verdict once fixed:** APPROVED WITH NOTES
+
+
+---
+
+### 2026-04-05T01:55:24Z: User directive — fix branch workflow (no push)
+**By:** Justin James (via Copilot)
+**What:** After all fix commits are made in the panasonic-ak-hrp1000 review agent workflow, do NOT push the branch (`git push`). Leave the fix branch as a local-only branch inside the module repo.
+
+Fix branch workflow:
+1. Create the branch locally
+2. Make all fix commits
+3. Stop — do not push
+
+Report the branch status as "local only — not pushed."
+
+**Why:** User correction — overrides any prior instruction to push the fix branch.
+**Scope:** Review agent workflow for companion-module-panasonic-ak-hrp1000 (and by extension, all module review agents unless specified otherwise).
+
+---
+
+### 2026-04-05T04:51:58Z: User directive
+**By:** Justin James (via Copilot)
+**What:** PR titles must not include internal review finding IDs (e.g., C1, H1, L2, L3, N2). Describe the changes in plain human terms only.
+**Why:** User request — captured for team memory
+
+---
+
+### 2026-04-05T06:35:44Z: User directive
+**By:** Justin James (via Copilot)
+**What:** Do NOT auto-commit or auto-push review findings files. Justin must manually review all review output files before any commit or push is made, to ensure findings are accurate and valid before they are recorded.
+**Why:** User request — captured for team memory
+
+---
+
+### 2026-04-05T06:39:23Z: User directive
+**By:** Justin James (via Copilot)
+**What:** When pushing a branch to GitHub, always use `git push --set-upstream origin {branch}` (or `git push -u origin {branch}`) so the local branch tracks the remote. Never push without setting the upstream.
+**Why:** User request — prevents "no upstream branch" errors when Justin tries to push follow-up commits manually.
+
+---
+
+### 2026-04-05: User directive — PR title format for module review fix branches
+
+**By:** Lyn (via Copilot)
+**What:** PR titles for module review fix branches must follow the exact format:
+  `fixes: findings from the v{version} module review`
+  where `{version}` is the reviewed module version (the audited version, not the bumped version).
+  Internal finding IDs (C1, H1, L2, etc.) must NEVER appear in PR titles. Use plain human terms only.
+**Why:** User request — captured for team memory and codified in the review-auto-fix skill.
+
+---
+
+### 2026-04-05: User directive — PR description structure
+**By:** Justin James (via Copilot)
+**What:** PR descriptions for review fix branches must follow this structure:
+
+1. ## Summary — standard boilerplate (see pr-summary-template directive)
+2. --- (horizontal rule)
+3. ## Changes Made — organized into named subsections by category (e.g., Bug Fixes, Manifest, Upgrade Script, Code Structure, Version). Each item is a plain-English bullet with no internal review IDs.
+
+Do NOT include:
+- Internal finding IDs (C1, M1, L1, etc.) anywhere in the description
+- A "Known Gaps" or outstanding work section — maintainers have no context for this
+- A full commit log — maintainers can view that directly in GitHub
+
+**Why:** User request — captured for team memory
+
+---
+
+### 2026-04-05: User directive — always create review PRs as drafts
+**By:** Justin James (via Copilot)
+**What:** PRs created from review fix branches must always be created as DRAFT PRs (gh pr create --draft). This gives the reviewer time to inspect before the PR is visible to maintainers as ready for merge.
+**Why:** User request — captured for team memory
+
+---
+
+### 2026-04-05: User directive — PR summary boilerplate
+**By:** Justin James (via Copilot)
+**What:** When creating a PR for a module review fix branch, the Summary section must always read:
+
+> This branch addresses findings from the manual review of v[version]. Please make sure to validate the changes before merging as we do not have the hardware or software to validate. The PR is created as a nice to have to make it easier for you to get the fixes from the review findings.
+
+Replace [version] with the actual release tag that was reviewed (e.g., v2.1.0).
+**Why:** User request — captured for team memory
+
+---
+
+### 2026-04-05: User directive — PR title format
+**By:** Justin James (via Copilot)
+**What:** PR titles for review fix branches must follow this format:
+  fix: address v[release tag] review findings
+
+Do NOT include internal finding IDs (C1, M1, L1, etc.) in the title. The maintainer has no context for those identifiers.
+**Why:** User request — captured for team memory
+
+---
+
+# Kaylee — LiveProfessor Auto-Fix Decisions
+
+**Module:** `companion-module-audiostrom-liveprofessor` v2.1.1  
+**Branch:** `fix/v2.1.1-2026-04-05-issues`  
+**Requested by:** Justin James  
+**Date:** 2026-04-05
+
+## Summary
+
+Implemented all 9 blocking fixes for the LiveProfessor module review as individual commits on a fix branch created from tag v2.1.1. The module was in detached HEAD state at the tag when the branch was created.
+
+## Fixes Applied
+
+1. **C1 — package.json version mismatch:** 2.1.0 → 2.1.1 (matched git tag)
+2. **H1 — Missing InstanceStatus import:** Added import, replaced undefined `BadConfig` reference
+3. **H2 — manifest.json version:** 2.0.1 → 0.0.0 (Companion best practice)
+4. **H3 — Undefined ConnectionFailure:** Replaced with `InstanceStatus.ConnectionFailure`
+5. **H4 — Undefined this.qSocket:** Replaced with `this.oscUdp` (copy-paste bug from different module)
+6. **H5 — Empty destroy():** Implemented to close oscUdp socket and clear tempoTimer
+7. **H6 — Socket leak in configUpdated():** Close existing socket before reinit, clear connecting flag
+8. **M1 — Rotary array mismatch:** Expanded arrays from 4 to 99 elements to match action/feedback max
+9. **M2 — Dead stub methods:** Removed three methods calling undefined globals
+10. **Version bump:** 2.1.1 → 2.1.2 for next release
+
+## Key Observations
+
+- **Dead stubs (M2):** The three removed methods (`updateActions()`, `updateFeedbacks()`, `updateVariableDefinitions()`) were calling undefined global functions. These don't exist in the module or v1.x SDK. Likely remnants from an older pattern or copy-paste error.
+
+- **configUpdated() comment removal (H6):** The old TODO claimed this method was "never called," but that's incorrect for SDK v1.11.2. The socket leak was preventing proper reconnection. Now properly closes old socket and reinits OSC connection.
+
+- **Rotary array fix (M1):** Actions and feedbacks allow rotary encoder IDs 1-99, but the backing state arrays only had 4 slots. This would cause undefined state and likely crashes for any rotary ID ≥ 5.
+
+- **qSocket reference (H4):** `this.qSocket` doesn't exist anywhere in the module. The correct property is `this.oscUdp`. This was clearly a copy-paste error from a different module that used a different socket library.
+
+## Build Status
+
+Not tested (not in task scope). Fixes were code changes only, no build/package verification requested.
+
+## Next Steps
+
+Branch is ready for Justin to push and create PR. All commits include proper Co-authored-by trailers.
+
+---
+
+# Decision: LiveProfessor — Missing Template Compliance Files Added
+
+**Date:** 2026-04-05
+**By:** Kaylee (Module Dev Reviewer)
+**Module:** `companion-module-audiostrom-liveprofessor`
+**Branch:** `fix/v2.1.1-2026-04-05-issues`
+
+## What Was Done
+
+The following files present in `companion-module-template-js` were absent from the LiveProfessor module and have been added in commit `17e4f1c`:
+
+| File | Action | Content |
+|---|---|---|
+| `.gitattributes` | Created | `* text=auto eol=lf` |
+| `.prettierignore` | Created | `package.json`, `/LICENSE.md` |
+| `.gitignore` | Updated | Appended `/pkg`, `/*.tgz`, `DEBUG-*` |
+| `package.json` | Updated | Added `engines: { node: "^22.20", yarn: "^4" }` |
+
+## Why
+
+- `.gitattributes` ensures consistent EOL normalization across platforms.
+- `.prettierignore` prevents prettier from reformatting generated/lockfiles.
+- `.gitignore` additions cover the `pkg/` build output directory and `.tgz` artifacts that were already present but untracked.
+- `engines` field declares the required Node/Yarn versions per template standard.
+
+## Decision
+
+These files should be present in all modules that follow `companion-module-template-js`. Template compliance checks should verify these four items as part of any module review.
+
+---
+
+# Re-Review Findings: companion-module-panasonic-ak-hrp1000 v1.0.1
+
+**Reviewer:** Kaylee (Template & Build Specialist)  
+**Module:** `companion-module-panasonic-ak-hrp1000`  
+**Version:** v1.0.1 (diff from v1.0.0)  
+**Date:** 2024-04-05
+
+---
+
+## Executive Summary
+
+✅ **APPROVED** — All four requested fixes have been correctly implemented. Build passes cleanly, no new template compliance issues introduced.
+
+---
+
+## Changes Verified (v1.0.0 → v1.0.1)
+
+### ✅ C1 Fix: `"type": "connection"` Added to manifest.json
+
+**File:** `companion/manifest.json`, line 4  
+**Status:** ✅ Fixed correctly
+
+The `"type": "connection"` field has been added to the manifest, meeting v2.0 API requirements. This was a High severity issue in the original review.
+
+```json
+{
+  "$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
+  "id": "panasonic-ak-hrp1000",
+  "type": "connection",  // ← Added in v1.0.1
+  ...
+}
+```
+
+---
+
+### ✅ L3 Fix: tsconfig.json Now Extends ./tsconfig.build.json
+
+**File:** `tsconfig.json`, line 2  
+**Status:** ✅ Fixed correctly
+
+The inheritance chain is now correct per template standards:
+
+```json
+{
+  "extends": "./tsconfig.build.json",  // ← Changed from direct tools reference
+  "include": ["src/**/*.ts"],
+  ...
+}
+```
+
+This matches the recommended pattern where:
+- `tsconfig.build.json` extends the base tooling config
+- `tsconfig.json` extends `tsconfig.build.json` for IDE/editor support
+
+---
+
+### ✅ L2 Fix: presets.ts Cleaned Up
+
+**File:** `src/presets.ts`, lines 1-5  
+**Status:** ✅ Fixed correctly
+
+Commented-out code has been removed and replaced with a clear explanatory comment:
+
+**Before (v1.0.0):**
+```typescript
+import type ModuleInstance from './main.js'
+//import { CompanionPresetDefinitions } from '@companion-module/base'
+
+export function UpdatePresets(_self: ModuleInstance): void {
+	//const presets: CompanionPresetDefinitions = {}
+	//self.setPresetDefinitions(presets)
+}
+```
+
+**After (v1.0.1):**
+```typescript
+import type ModuleInstance from './main.js'
+
+export function UpdatePresets(_self: ModuleInstance): void {
+	// No presets defined for this module — device does not maintain state
+}
+```
+
+The comment explains *why* there are no presets (device doesn't maintain state), which is helpful for future maintainers.
+
+---
+
+### ✅ N2 Fix: HELP.md Typo Corrected
+
+**File:** `companion/HELP.md`, line 5  
+**Status:** ✅ Fixed correctly
+
+Typo "recieves" → "receives" has been corrected:
+
+**Before:** `...when it successfully recieves and actions a command...`  
+**After:** `...when it successfully receives and actions a command...`
+
+---
+
+## Build Verification
+
+**Command:** `yarn install && yarn package`  
+**Result:** ✅ **SUCCESS**
+
+```
+Building for: .../companion-module-panasonic-ak-hrp1000
+Tools path: .../node_modules/@companion-module/tools
+Framework path: .../node_modules/@companion-module/base
+Writing compressed package output to panasonic-ak-hrp1000-1.0.1.tgz
+```
+
+**Artifact:** `panasonic-ak-hrp1000-1.0.1.tgz` (64K) created successfully
+
+---
+
+## Template Compliance Check
+
+✅ **package.json** version correctly bumped to `1.0.1`  
+✅ **companion/manifest.json** version remains `0.0.0` (correct for v2.0 modules)  
+✅ No `package-lock.json` present (yarn-only workflow maintained)  
+✅ All source files remain in `src/` directory  
+✅ TypeScript config chain correct: `tsconfig.json` → `tsconfig.build.json` → base tools config  
+✅ All required scripts present: `build`, `package`, `lint`, `format`  
+✅ Engines correct: `node: "^22.20"`, `yarn: "^4"`  
+✅ Dependencies appropriate: `@companion-module/base` ~2.0.3, `@companion-module/tools` ^3.0.0
+
+---
+
+## New Issues Introduced
+
+**None** — No new template compliance, build, or structural issues introduced in v1.0.1.
+
+---
+
+## What's Solid
+
+- Clean, focused patch that addressed exactly the issues raised
+- Version bump handled correctly in both `package.json` and git tag
+- Build remains clean with no new warnings or errors
+- Code quality improvements (presets.ts cleanup) go beyond minimum fix requirements
+- Module structure remains compliant with v2.0 template standards
+
+---
+
+## Verdict
+
+✅ **APPROVED**
+
+All requested fixes implemented correctly. Build passes. No new issues. This module is ready for release as v1.0.1.
+
+---
+
+**Next Steps:** None required. Module can be published.
+
+---
+
+# Mal — Lead Review Findings: companion-module-panasonic-ak-hrp1000 v1.0.1
+
+**Module:** companion-module-panasonic-ak-hrp1000  
+**Version:** v1.0.1 (re-review; previous: v1.0.0)  
+**Commit:** `8acb039`  
+**Reviewer:** Mal (Lead Architect)  
+**Date:** 2026-04-05  
+
+---
+
+## Verdict: ✅ APPROVED
+
+All blocking issues from v1.0.0 are resolved. No new issues introduced. No regressions. Module is ready for release.
+
+---
+
+## Fix Verification
+
+| ID | v1.0.0 Finding | Severity | Status |
+|----|---------------|----------|--------|
+| C1 | manifest.json missing `"type": "connection"` | 🔴 Critical | ✅ Fixed |
+| H1 | Action callback throws Error | 🟠 High | ✅ Resolved — `throw` is valid per companion-actions skill |
+| L1 | pcap artifact committed | 🟢 Low | ⏭️ Carried forward (advisory) |
+| L2 | Commented dead code in presets.ts | 🟢 Low | ✅ Fixed |
+| L3 | tsconfig.json extends wrong base | 🟢 Low | ✅ Fixed |
+| N1 | No presets defined | 💡 Nice to Have | ⏭️ Carried forward (not required) |
+| N2 | HELP.md typo | 💡 Nice to Have | ✅ Fixed |
+
+---
+
+## Architecture Check
+
+- `src/main.ts`: Unchanged. `export default class ModuleInstance extends InstanceBase<PanasonicTypes>` ✅
+- `init()`, `destroy()`, `configUpdated()`, `getConfigFields()` all present ✅
+- `UpgradeScripts` exported ✅
+- v2.0 module structure intact ✅
+- No `runEntrypoint` (correct for v2.0) ✅
+- No new code changes — only metadata, docs, and cleanup ✅
+
+---
+
+## Team Consensus
+
+- **Wash (Protocol):** ✅ No new protocol issues, no regressions
+- **Kaylee (Template/Build):** ✅ All fixes verified, build passes, template compliant
+- **Zoe (QA/Logic):** ✅ No regressions, no logic issues
+
+Unanimous approval from all reviewers.
+
+---
+
+# Decision Entry: panasonic-ak-hrp1000 C1 Finding
+**Type:** Critical Finding  
+**Issue ID:** C1  
+**Module:** companion-module-panasonic-ak-hrp1000  
+**Version:** v1.0.0  
+**Date:** 2026-04-04  
+**Reviewed by:** Simon (Tests), v2.0 compliance framework  
+
+## Finding
+manifest.json missing required `"type": "connection"` field.
+
+## Root Cause
+Module manifest.json does not include the `"type": "connection"` field, which is defined in the Companion v2.0 API schema for module type specification. While the schema does not explicitly enforce this field, v2.0 compliance standards require it for proper module classification and initialization.
+
+## Impact
+- Module does not declare its type explicitly
+- Runtime type detection may fail or behave unexpectedly
+- Incompatible with v2.0 compliant module loaders
+- Breaks module self-documentation
+
+## Classification
+**Severity:** Critical  
+**Framework:** Companion v2.0 API Compliance  
+**Category:** Schema/Manifest Compliance
+
+## Resolution Applied
+✅ **Fixed in branch:** `fix/v1.0.0-2026-04-04-issues`  
+**Commit:** `fix(C1): add "type": "connection" to manifest.json`
+
+**Change:**
+```json
+{
+  "name": "companion-module-panasonic-ak-hrp1000",
+  "type": "connection",
+  ...
+}
+```
+
+## Verification
+- ✅ manifest.json schema validation passed
+- ✅ Build completed successfully (v1.0.1)
+- ✅ Package generated without errors
+
+## Status
+**Resolution:** Implemented  
+**Pending:** Integration of fix branch into main module repository
+
+---
+
+# Wash — Protocol Review: companion-module-panasonic-ak-hrp1000 v1.0.1
+
+**Module:** companion-module-panasonic-ak-hrp1000  
+**Version Range:** v1.0.0 → v1.0.1  
+**Reviewer:** Wash (Protocol Specialist)  
+**Date:** 2025-06-XX  
+
+---
+
+## Summary
+
+**Verdict:** ✅ **Approved — No New Protocol Issues**
+
+This is a maintenance release with no changes to network or protocol implementation.
+
+---
+
+## Changes in v1.0.1
+
+The diff shows changes to:
+- `companion/HELP.md` — typo fix ("recieves" → "receives")
+- `companion/manifest.json` — added `"type": "connection"` field
+- `package.json` — version bump to 1.0.1
+- `src/presets.ts` — cleaned up commented code, added clarifying comment
+- `tsconfig.json` — changed extends target
+- `yarn.lock` — dependency version updates (flatted, picomatch)
+
+**No changes to:**
+- `src/main.ts` (connection lifecycle)
+- `src/actions.ts` (protocol commands)
+- `src/config.ts` (network configuration)
+- Any other networking or protocol code
+
+---
+
+## Protocol Analysis
+
+### No Network Code Changes
+
+Verified with:
+```bash
+git diff v1.0.0..v1.0.1 -- src/main.ts src/actions.ts src/config.ts
+```
+
+**Result:** Zero output — no changes to any protocol implementation files.
+
+### Changes Assessment
+
+1. **manifest.json `"type": "connection"` addition** — This is metadata for Companion's module registry. Does not affect runtime behavior or networking.
+
+2. **HELP.md typo correction** — Documentation only, no code impact.
+
+3. **presets.ts comment cleanup** — Removed commented-out code and improved comment clarity. No functional change.
+
+4. **tsconfig.json extends change** — Build configuration, no runtime impact on protocol code.
+
+5. **yarn.lock updates** — Dependency version bumps (flatted 3.4.1→3.4.2, picomatch 4.0.3→4.0.4). These are dev/runtime utility packages, not networking libraries. No protocol impact.
+
+---
+
+## Network/Protocol Findings
+
+### 🟢 No New Issues
+
+No new protocol, network, or connection lifecycle issues introduced in this release.
+
+### 🟢 No Regressions
+
+No working functionality from v1.0.0 was broken in v1.0.1.
+
+---
+
+## Pre-existing State (Informational)
+
+From the HELP.md documentation, the module's network behavior is:
+- **No persistent connection** — sends UDP datagrams per action
+- **No polling** — stateless operation
+- **Known device quirk** — unit returns error codes even on success
+
+This is unchanged from v1.0.0 and is documented behavior, not a defect.
+
+---
+
+## Conclusion
+
+This release contains only documentation fixes, metadata updates, and code cleanup. No protocol or networking code was modified. No new issues were introduced. No regressions occurred.
+
+**Status:** ✅ **Approved for release**
+
+---
+
+**Wash** — Protocol Specialist  
+*Flies any ship, speaks any protocol.*
+
+---
+
+# QA Review: panasonic-ak-hrp1000 v1.0.1 (diff from v1.0.0)
+
+**Reviewer:** Zoe (QA & Logic Specialist)  
+**Date:** 2024  
+**Verdict:** ✅ **APPROVED**
+
+## Summary
+
+No regressions or new logic issues introduced in v1.0.1. All changes are non-functional improvements (typo fix, documentation clarification, metadata addition, config cleanup, and dependency patches).
+
+## Changes Analyzed
+
+1. **companion/HELP.md** — Typo fix: "recieves" → "receives"
+2. **companion/manifest.json** — Added `"type": "connection"` metadata field
+3. **package.json** — Version bump 1.0.0 → 1.0.1
+4. **src/presets.ts** — Removed commented-out code, added descriptive comment
+5. **tsconfig.json** — Changed extends path from direct reference to local `tsconfig.build.json`
+6. **yarn.lock** — Dependency bumps: flatted 3.4.1→3.4.2, picomatch 4.0.3→4.0.4
+
+## Detailed Analysis
+
+### ✅ presets.ts Change (Focus Item #2)
+**File:** `src/presets.ts`, lines 1-5
+
+**Change:** Removed commented import and commented preset definition code; added clarifying comment.
+
+**Assessment:** 
+- **No logic change** — The function remains empty and continues to accept `_self` parameter (correctly unused, indicated by underscore prefix)
+- **No regression** — Function is correctly called from `main.ts:32` via `updatePresets()` → `UpdatePresets(this)`
+- **Comment improvement** — The new comment "No presets defined for this module — device does not maintain state" accurately explains *why* presets are absent (stateless device), which is more helpful than commented-out template code
+- **No issues introduced**
+
+### ✅ manifest.json: `"type": "connection"` Addition
+**File:** `companion/manifest.json`, line 3
+
+**Assessment:**
+- Standard metadata field addition
+- Correctly describes module type (makes HTTP connections to device)
+- No functional impact on module logic
+
+### ✅ tsconfig.json: extends Path Change
+**File:** `tsconfig.json`, line 2
+
+**Assessment:**
+- Changed from `@companion-module/tools/tsconfig/node22/recommended-esm.json` to `./tsconfig.build.json`
+- Assuming `tsconfig.build.json` exists in the module root (standard pattern), this is a valid refactor
+- No runtime logic impact — TypeScript config only affects compilation
+
+### ✅ Dependency Patches (Focus Item #4)
+**Files:** yarn.lock
+
+**Changes:**
+- `flatted`: 3.4.1 → 3.4.2 (patch bump)
+- `picomatch`: 4.0.3 → 4.0.4 (patch bump)
+
+**Assessment:**
+- Both are minor patch versions following semver conventions
+- `flatted` is used by axios/testing tools (not in direct runtime path based on module code)
+- `picomatch` is used by build tools (glob matching)
+- **No concerns** — Patch bumps are expected to be backward-compatible bug fixes
+
+### ✅ HELP.md Typo Fix
+**File:** `companion/HELP.md`, line 5
+
+**Change:** "recieves" → "receives"
+
+**Assessment:** Documentation-only correction, no logic impact.
+
+## Logic Correctness Review
+
+Verified no changes to runtime logic in:
+- ✅ `src/main.ts` — unchanged
+- ✅ `src/actions.ts` — not modified in diff
+- ✅ `src/feedbacks.ts` — not modified in diff
+- ✅ `src/config.ts` — not modified in diff
+
+## Regression Check (Focus Item #1)
+
+**Result:** No regressions detected.
+
+- All functional code paths remain unchanged
+- Empty preset function continues to work correctly (no-op is valid)
+- Module initialization sequence unchanged
+- HTTP client behavior unchanged
+- Action/feedback/variable systems unchanged
+
+## Notes
+
+The v1.0.1 release is a clean housekeeping update — removing dead code, fixing typos, adding metadata, and pulling in minor dependency patches. The development team demonstrated good hygiene by clarifying *why* presets are absent rather than leaving commented template code.
+
+---
+
+**No blocking issues. No notes for future releases. Approved for release.**

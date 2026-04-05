@@ -143,3 +143,43 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 - **Build verified:** `yarn package` succeeded → `softouch-easyworship-2.1.1.tgz`. No `prettier.config.js` added (not in task scope).
 - **Commit ordering:** Compliance commit landed AFTER the version bump commit. Both are `chore:` commits with no ordering dependency — acceptable per task instructions.
 - **Review file:** A pre-existing `review-2026-04-02-041821.md` was present in the module root and was staged into the compliance commit — not ideal but non-blocking (review files should live in `reviews/` per team decision, but that's a separate housekeeping issue).
+
+### LiveProfessor Auto-Fix (2026-04-05, branch: fix/v2.1.1-2026-04-05-issues)
+
+- **Branch:** `fix/v2.1.1-2026-04-05-issues` inside `companion-module-audiostrom-liveprofessor/`
+- **Branched from:** tag `v2.1.1` (detached HEAD state)
+- **9 fix commits + 1 version bump:** All blocking fixes from review implemented as individual commits
+  - C1: package.json version 2.1.0 → 2.1.1 (matched git tag)
+  - H1: Import InstanceStatus, replace undefined `BadConfig` with `InstanceStatus.BadConfig`
+  - H2: manifest.json version 2.0.1 → 0.0.0 (Companion best practice)
+  - H3: Replace undefined `ConnectionFailure` with `InstanceStatus.ConnectionFailure`
+  - H4: Replace undefined `this.qSocket` with `this.oscUdp` in error handler (copy-paste bug from different module)
+  - H5: Implement empty `destroy()` — now closes `this.oscUdp` and clears module-level `tempoTimer`
+  - H6: Fix socket leak in `configUpdated()` — close old socket before reinit, clear `connecting` flag
+  - M1: Expand rotary backing arrays from 4 elements to 99 (matched expanded `max: 99` in actions/feedbacks)
+  - M2: Remove dead stub methods `updateActions()`, `updateFeedbacks()`, `updateVariableDefinitions()` calling undefined globals
+  - Final: Version bump 2.1.1 → 2.1.2 for next release
+- **Module observations:**
+  - Uses OSC UDP (`osc` package v2.4.5) for bidirectional LiveProfessor communication
+  - Module-level `var tempoTimer` drives tempo flash feedback (setInterval-based)
+  - The three dead stubs (M2) were calling `UpdateActions()`, `UpdateFeedbacks()`, `UpdateVariableDefinitions()` — these functions don't exist anywhere in the module. Likely remnants from an older SDK pattern or copy-paste error. The v1.x SDK doesn't use these lifecycle callbacks for updates.
+  - `configUpdated()` TODO comment removed — the comment claimed this method was never called, but that's not true in v1.11.2. The socket leak meant reconnection was broken. Now properly closes old socket and reinits.
+  - The rotary arrays (M1) fix was straightforward — actions/feedbacks allow rotary IDs 1-99, but the state backing arrays only had 4 slots. This would cause `undefined` state and likely crashes for rotaries 5+.
+- **No push, no PR per instructions.**
+
+
+### 2026-04-05: LiveProfessor — Template Compliance Files
+
+- **Module:** `companion-module-audiostrom-liveprofessor`
+- **Branch:** `fix/v2.1.1-2026-04-05-issues`
+- **Commit:** `17e4f1c` — chore: add missing template compliance files
+
+**What was done:**
+- Created `.gitattributes` with `* text=auto eol=lf` for EOL normalization
+- Created `.prettierignore` excluding `package.json` and `/LICENSE.md` from formatting
+- Appended `/pkg`, `/*.tgz`, `DEBUG-*` to `.gitignore` (pkg/ dir and .tgz artifacts were untracked)
+- Added `engines` field to `package.json` (`node ^22.20`, `yarn ^4`) between `repository` and `dependencies`
+
+## Learnings
+- Always diff module against `companion-module-template-js` for missing structural files before closing a review branch
+- `.gitattributes` and `.prettierignore` are commonly missing from older modules — template compliance check should include these
