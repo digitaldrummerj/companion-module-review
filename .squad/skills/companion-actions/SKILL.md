@@ -218,6 +218,22 @@ async function onDeviceConnected(self: ModuleInstance): Promise<void> {
 5. **Not handling errors**
    - Wrap device calls in try/catch and log errors via `self.log('error', ...)`
 
+6. **Throwing exceptions from callbacks — 🟠 High severity in reviews**
+   - Action callbacks **must never throw**. Throwing causes Companion to surface an unhandled exception in the UI, which is a breaking runtime behaviour.
+   - Replace any `throw new Error(...)` with `self.log('error', ...)` + `return`:
+   ```typescript
+   // ❌ Wrong — breaks Companion's UX
+   if (!valid) throw new Error('Invalid value')
+
+   // ✅ Correct — logs gracefully and exits early
+   if (!valid) {
+       self.log('error', `Invalid value: ${value}`)
+       return
+   }
+   ```
+   - This applies to all guard checks, validation failures, and unexpected states inside a callback.
+   - Classify as **🟠 High** in reviews (blocking).
+
 ## Import Reference
 
 ```typescript
