@@ -16,6 +16,26 @@ Defines the standard format for the two sections inserted immediately after the 
 
 ---
 
+## ⚠️ CRITICAL: Review File Output Location
+
+**Read `project-conventions` skill before writing the review file.**
+
+Final review files MUST be written to the **review repo's `reviews/` directory** — NOT the module's folder.
+
+```
+{REVIEW_REPO}/reviews/{short-module-name}/review-{short-module-name}-{version}-{YYYYMMDD}-{HHmmss}.md
+```
+
+- `REVIEW_REPO` = `/Users/lynbh/Development/companion-module-review/`
+- `short-module-name` = module folder name with `companion-module-` prefix stripped
+- Timestamp from: `date -u +"%Y%m%d-%H%M%S"`
+- Create subdirectory if needed: `mkdir -p reviews/{short-module-name}/`
+
+**❌ WRONG:** `/Users/lynbh/Development/companion-modules-reviewing/companion-module-*/review-*.md`  
+**✅ RIGHT:** `/Users/lynbh/Development/companion-module-review/reviews/*/review-*.md`
+
+---
+
 ## Section 1: 📊 Scorecard
 
 Insert this section immediately after the Verdict section.
