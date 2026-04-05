@@ -139,15 +139,11 @@ Update all import paths and the `main` field in `package.json` in the same commi
 
 ---
 
-## No PR
+## No Push, No PR
 
-After committing all fixes, push the branch:
+After committing all fixes, **do NOT push the branch**. Leave it as a local branch inside the module repo.
 
-```bash
-git push origin fix/v{version}-{YYYY-MM-DD}-issues
-```
-
-**Do NOT open a PR.** The branch exists for the maintainer (or reviewer) to inspect before deciding whether to merge, open a PR to upstream, or request further changes.
+The maintainer will inspect the branch locally and decide whether to push, open a PR to upstream, or request further changes.
 
 ---
 
@@ -163,7 +159,7 @@ git push origin fix/v{version}-{YYYY-MM-DD}-issues
 
 ## Post-Fix Summary
 
-After all commits are made and the branch is pushed, report:
+After all commits are made, report:
 
 ```
 🔧 Fix branch created: fix/v{version}-{YYYY-MM-DD}-issues
@@ -173,5 +169,5 @@ Commits:
   fix(M1): update manifest.json version from 2.0.2 to 2.1.0
   chore: apply template compliance fixes
 
-Branch pushed to origin. No PR opened — review manually before merging.
+Branch is local only — not pushed. Review manually before pushing or merging.
 ```
