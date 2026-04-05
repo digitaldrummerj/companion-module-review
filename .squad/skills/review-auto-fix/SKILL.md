@@ -175,6 +175,11 @@ The human reviewer will inspect the branch locally and decide whether to push an
 
 When the human reviewer says to go ahead, push the branch and open a PR:
 
+> **Rule: Always use `-u` (or `--set-upstream`) on the first push of a fix branch.**
+> Without it, the local branch has no upstream and subsequent `git push` commands fail
+> with "no upstream branch". Using `-u` links the local branch to the remote so future
+> pushes work normally.
+
 ```bash
 # From inside the module repo
 git push -u origin fix/v{version}-{YYYY-MM-DD}-issues

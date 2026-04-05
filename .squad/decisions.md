@@ -393,3 +393,36 @@ export { upgradeScripts as getUpgradeScripts }
 9. Dead stub methods (`updateActions`, `updateFeedbacks`, `updateVariableDefinitions`) call undefined globals → `ReferenceError` if ever invoked (🆕 NEW)
 
 **Expected verdict once fixed:** APPROVED WITH NOTES
+
+---
+
+## 2026-04-05: Review session — companion-module-optisigns-digitalsignage v1.0.3
+
+**Date:** 2026-04-05
+**Module:** companion-module-optisigns-digitalsignage
+**Version:** v1.0.3 (first release — all code is new, no prior version, all findings eligible to block)
+**Agents:** Mal (Lead/Architecture), Wash (Protocol), Kaylee (Module Dev), Zoe (QA), Simon (Tests) — all parallel
+**Verdict:** ❌ REJECTED — 16 blocking issues (11 critical, 1 high, 4 medium)
+**Review file:** `companion-modules-reviewing/companion-module-optisigns-digitalsignage/review-2026-04-05-064223.md`
+
+**Blocking issues:**
+1. Missing `.gitattributes` — required JS template file absent
+2. Missing `.prettierignore` — required JS template file absent
+3. `package.json` `build` script must be renamed to `package` — CI/CD calls `yarn package`
+4. `package.json` missing `format` script (`prettier -w .`)
+5. `package.json` missing `prettier` field (`@companion-module/tools/.prettierrc.json`)
+6. `package.json` missing `prettier` devDependency
+7. `package.json` missing `repository` field
+8. `manifest.json` `name` is `"OptiSigns"` but must equal `id` (`"optisigns-digitalsignage"`)
+9. `manifest.json` `repository` URL missing `git+` prefix and `.git` suffix
+10. `manifest.json` `keywords` contains banned word `"optisigns"`
+11. `.gitignore` deviates from JS template (path anchoring, missing `DEBUG-*`, wrong `.yarn` entries)
+12. No timeout on `fetch()` calls — unbounded Promise accumulation under API stall combined with `setInterval` polling
+13. `api_key` config field uses `textinput` instead of `secret-text`
+14. `Promise.all` short-circuits on single endpoint failure — should use `Promise.allSettled`
+15. `sanitizeKey()` produces colliding variable IDs for devices with similar names — silently corrupts device state
+16. `poll_interval` default (300 s) contradicts `HELP.md` documentation ("30 seconds")
+
+**Notable positives:** Clean architecture and application logic despite template compliance failures. Correct `runEntrypoint` usage, proper lifecycle teardown, smart polling optimisation via list signature comparison, thorough GraphQL error handling (HTTP-level and GraphQL-level), all action callbacks wrapped in try/catch, correct `InstanceStatus` transitions, no deprecated v1.x patterns, API key never exposed in logs, build produces a valid artefact.
+
+**Expected verdict once fixed:** APPROVED WITH NOTES
