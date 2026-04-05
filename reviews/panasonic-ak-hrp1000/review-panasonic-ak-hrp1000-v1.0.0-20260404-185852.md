@@ -60,7 +60,7 @@ The module is otherwise well-written. The HTTP fire-and-forget pattern with PQue
 - [x] [H1: Action callback throws Error instead of using log('error', ...)](#h1-action-callback-throws-error-instead-of-using-logerror-)
 
 **Non-blocking**
-- [x] [L1: rp150_to_ak-hrp1000.pcap development artifact committed to repo root](#l1-rp150_to_ak-hrp1000pcap-development-artifact-committed-to-repo-root)
+- [ ] [L1: rp150_to_ak-hrp1000.pcap development artifact committed to repo root](#l1-rp150_to_ak-hrp1000pcap-development-artifact-committed-to-repo-root)
 - [x] [L2: Commented-out dead code in presets.ts](#l2-commented-out-dead-code-in-presetsts)
 - [x] [L3: tsconfig.json extends tools config directly instead of tsconfig.build.json](#l3-tsconfigjson-extends-tools-config-directly-instead-of-tsconfigbuildjson)
 - [ ] [N1: No presets defined for the single action](#n1-no-presets-defined-for-the-single-action)
@@ -143,17 +143,17 @@ callback: async (event) => {
 **Classification:** 🆕 NEW  
 **File:** `rp150_to_ak-hrp1000.pcap` (repo root)
 
-A Wireshark packet capture file (13 KB) is committed at the module root. This is clearly a development/reverse-engineering artifact used while building the module — it has no runtime value and should not ship with the module.
+A Wireshark packet capture file (13 KB) is committed at the module root. This appears to be a development/reverse-engineering artifact used while building the module.
 
-**Fix:** Remove the file from git tracking and add a glob to `.gitignore`:
-
-```bash
-git rm rp150_to_ak-hrp1000.pcap
-# add to .gitignore:
-*.pcap
-```
-
-> Note: Removing a committed file via `git rm` removes it from future checkouts but does not rewrite git history. If the pcap contains sensitive traffic, a history rewrite (`git filter-repo`) would be needed — out of scope here.
+> **Note for maintainer:** This file may be intentionally kept for reference or future development. If you no longer need it in the repo, you can remove it from git tracking:
+>
+> ```bash
+> git rm rp150_to_ak-hrp1000.pcap
+> # optionally add to .gitignore:
+> *.pcap
+> ```
+>
+> If the pcap contains sensitive network traffic, a history rewrite (`git filter-repo`) would be needed to fully remove it — out of scope here. No action required if you want to keep it.
 
 ---
 
