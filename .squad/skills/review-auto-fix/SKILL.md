@@ -1,6 +1,6 @@
 ---
 name: review-auto-fix
-description: 'Defines the auto-fix branch workflow for Companion module reviews. Use after a review is finalized to create a fix branch inside the module repo, implement each fix as an individual commit, and add missing template files as a single commit. Never opens a PR — the branch is for human review before merging.'
+description: 'Defines the auto-fix branch workflow for Companion module reviews. Use after a review is finalized to create a fix branch inside the module repo, implement each fix as an individual commit, and add missing template files as a single commit. The branch is NOT pushed and NO PR is opened until a human reviews the changes and says to proceed.'
 ---
 
 # Review Auto-Fix Workflow
@@ -167,7 +167,34 @@ git commit -m "chore({module}): mark fixed issues in review checklist"
 
 After committing all fixes, **do NOT push the fix branch** in the module repo. Leave it as a local branch.
 
-The maintainer will inspect the branch locally and decide whether to push, open a PR to upstream, or request further changes.
+The human reviewer will inspect the branch locally and decide whether to push and open a PR to upstream.
+
+---
+
+## When a Human Approves Push + PR
+
+When the human reviewer says to go ahead, push the branch and open a PR:
+
+```bash
+# From inside the module repo
+git push -u origin fix/v{version}-{YYYY-MM-DD}-issues
+gh pr create --title "fixes: findings from the v{reviewed_version} module review" \
+  --body "..." --base main
+```
+
+### PR Title Convention
+
+The PR title MUST follow this exact format:
+
+```
+fixes: findings from the v{version} module review
+```
+
+- `{version}` is the **reviewed module version** (e.g., `v1.0.0`, `v2.1.0`) — the version that was audited, NOT the bumped version.
+- **Never include internal finding IDs** (e.g., C1, H1, L2) in the PR title. Use plain human terms only.
+
+**Good:** `fixes: findings from the v1.0.0 module review`
+**Bad:** `fix: address review findings from v1.0.0 audit (C1, H1, L2)` ← contains IDs
 
 ---
 

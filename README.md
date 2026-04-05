@@ -15,17 +15,25 @@ The scripts in this repo are written in PowerShell and require **PowerShell 7.6+
 
 Verify: `pwsh --version`
 
-### 2. Install GitHub Copilot CLI
+### 2. Install GitHub CLI
 
-Follow the instructions at [github.com/features/copilot/cli](https://github.com/features/copilot/cli).
+The `gh` CLI is required for GitHub authentication, repo operations, and PR creation.
 
-Verify: `gh copilot --version`
+- [Install GitHub CLI](https://cli.github.com/)
 
-### 3. Install Squad
+Verify: `gh --version`
+
+### 3. Install GitHub Copilot CLI
+
+The Copilot CLI is a standalone command-line tool, separate from the GitHub CLI. Follow the install instructions for your platform at [docs.github.com/en/copilot/copilot-in-the-cli](https://docs.github.com/en/copilot/copilot-in-the-cli/about-github-copilot-in-the-cli).
+
+Verify: `copilot --version`
+
+### 4. Install Squad
 
 Follow the instructions at [github.com/bradygaster/squad](https://github.com/bradygaster/squad).
 
-### 4. Clone this repo and run setup
+### 5. Clone this repo and run setup
 
 ```powershell
 git clone https://github.com/<org>/companion-module-review.git
@@ -35,7 +43,7 @@ pwsh setup.ps1
 
 `setup.ps1` configures git hooks and creates the sibling `companion-modules-reviewing/` directory where module repos are cloned during reviews.
 
-### 5. Verify GitHub auth
+### 6. Verify GitHub auth
 
 The scripts use the `gh` CLI for GitHub and the BitFocus portal API.
 
@@ -45,7 +53,7 @@ gh auth status
 
 If not authenticated, run `gh auth login` first.
 
-### 6. Open the workspace (optional but recommended)
+### 7. Open the workspace (optional but recommended)
 
 Open `companion-module-review.code-workspace` in VS Code for full multi-repo support across both the review repo and any cloned modules.
 
@@ -75,7 +83,7 @@ The squad will discover the module, clone it, run the structured review, and pro
 
 ## Directory structure
 
-```
+```text
 companion-module-review/          ← this repo
 ├── reviews/                      ← completed review files
 ├── scripts/                      ← PowerShell automation
@@ -131,7 +139,7 @@ pwsh scripts/cleanup-modules.ps1
 ## The squad (Firefly cast)
 
 | Name | Role | Scope |
-|------|------|-------|
+| ------ | ------ | ------- |
 | **Mal** | Lead / Coordinator | Scope, final verdict, decisions |
 | **Wash** | Backend / Protocol | Network lifecycle, OSC, connection errors, status transitions |
 | **Kaylee** | Module Dev | Actions, feedbacks, variables, presets, template compliance, auto-fix |
@@ -147,7 +155,7 @@ pwsh scripts/cleanup-modules.ps1
 Skills are Copilot Agent Skills (SKILL.md files) that teach the squad domain knowledge. They live in two locations:
 
 | Location | Purpose |
-|----------|---------|
+| ---------- | --------- |
 | `.squad/skills/` | Project-specific skills for this review workflow |
 | `.copilot/skills/` | Personal/global skills (also available to all squad agents) |
 
@@ -156,7 +164,7 @@ Skills are Copilot Agent Skills (SKILL.md files) that teach the squad domain kno
 These teach the squad the Bitfocus Companion module API — used both during review and when implementing auto-fixes.
 
 | Skill | Description |
-|-------|-------------|
+| ------- | ------------- |
 | `companion-actions` | Full reference for `CompanionActionDefinition`, option field types, callbacks, subscribe/unsubscribe lifecycle |
 | `companion-action-file-pattern` | Multi-file action pattern: creating `src/actions/action-{category}.ts` files and wiring them into the `actions.ts` aggregator |
 | `companion-add-action-to-category-file` | Add actions to an existing category file (3-step recipe) |
@@ -176,7 +184,7 @@ These teach the squad the Bitfocus Companion module API — used both during rev
 These govern how reviews are conducted and how results are structured.
 
 | Skill | Description |
-|-------|-------------|
+| ------- | ------------- |
 | `companion-template-compliance` | Full checklist for JS and TS template compliance: required files, `package.json` rules, `manifest.json` rules, HELP.md validation, husky hooks. All violations are 🔴 Critical |
 | `companion-v1-api-compliance` | Per-version checklist for `@companion-module/base` v1.5–v1.14 (Companion 3.1–4.2): deprecated patterns, breaking changes, upgrade recommendations |
 | `companion-v2-api-compliance` | Checklist for `@companion-module/base` v2.0+ (Companion 4.3+): removed APIs, breaking changes, expression handling |
@@ -191,7 +199,7 @@ These govern how reviews are conducted and how results are structured.
 These govern how the squad operates as a team and are shared across all projects.
 
 | Skill | Description |
-|-------|-------------|
+| ------- | ------------- |
 | `agent-collaboration` | Worktree awareness, decision recording, cross-agent communication, reviewer lockout protocol |
 | `agent-conduct` | Hard rules: Product Isolation Rule (no hardcoded agent names in product code), Peer Quality Check |
 | `architectural-proposals` | How to write architectural proposals: required sections, tone ceiling, wave restructuring, risk documentation |
