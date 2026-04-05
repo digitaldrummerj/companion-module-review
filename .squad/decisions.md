@@ -369,3 +369,27 @@ export { upgradeScripts as getUpgradeScripts }
 **Notable positives:** Code quality is well above average for a first release — zero `any`, zero `@ts-ignore`, zero `as unknown as`, clean TypeScript, comprehensive API coverage (47 actions, 30 feedbacks, 80+ variables, 79 presets), correct lifecycle implementation, solid null safety and defensive programming throughout. The blockers are template compliance gaps and network hardening, not fundamental design problems.
 
 **Expected verdict once fixed:** APPROVED WITH NOTES
+
+---
+
+## 2026-04-05: Review session — companion-module-audiostrom-liveprofessor v2.1.1
+
+**Date:** 2026-04-05
+**Module:** companion-module-audiostrom-liveprofessor
+**Version:** v2.1.1 (previous: v2.0.0)
+**Agents:** Mal (Lead/Architecture), Wash (Protocol), Kaylee (Template/Build), Zoe (QA/Logic), Simon (Tests) — all parallel
+**Verdict:** ❌ REJECTED — 9 blocking issues (1 critical, 6 high, 2 medium new)
+**Review file:** `companion-modules-reviewing/companion-module-audiostrom-liveprofessor/review-2026-04-05-063331.md`
+
+**Blocking issues:**
+1. `package.json` version `2.1.0` does not match git tag `v2.1.1` — version mismatch
+2. `manifest.json` version `2.0.1` does not match `package.json` or git tag — three divergent versions
+3. `BadConfig` undefined in OSC error handler → `ReferenceError` crash on connection failure (🆕 NEW)
+4. `ConnectionFailure` undefined in close handler → `ReferenceError` crash on socket close (pre-existing)
+5. `this.qSocket` undefined in `ECONNREFUSED` branch → `TypeError` double-fault in error handler (pre-existing)
+6. `destroy()` empty → `oscUdp` socket and `tempoTimer` interval leak on every module reload (pre-existing)
+7. `configUpdated()` does not close old socket before reopening → `EADDRINUSE` on config change (pre-existing)
+8. Rotary `max` expanded to 99 but backing arrays are length 4 → `NaN` sent as OSC float for IDs 5–99 (🆕 NEW)
+9. Dead stub methods (`updateActions`, `updateFeedbacks`, `updateVariableDefinitions`) call undefined globals → `ReferenceError` if ever invoked (🆕 NEW)
+
+**Expected verdict once fixed:** APPROVED WITH NOTES
