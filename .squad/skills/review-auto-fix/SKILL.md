@@ -139,9 +139,33 @@ Update all import paths and the `main` field in `package.json` in the same commi
 
 ---
 
-## No Push, No PR
+## Mark Fixed Issues in the Review File
 
-After committing all fixes, **do NOT push the branch**. Leave it as a local branch inside the module repo.
+After each fix commit is made in the module repo, **update the review markdown file** in the review repo to mark the fixed issue as done. This keeps the review file in sync with the work that has been done.
+
+Find the corresponding line in the `## 📋 Issues` section of the review file and change `- [ ]` to `- [x]`:
+
+```bash
+# Example: marking H1 as fixed
+# Before:  - [ ] [H1: EventSource not closed in `destroy()`](#h1-eventsource-not-closed-in-destroy)
+# After:   - [x] [H1: EventSource not closed in `destroy()`](#h1-eventsource-not-closed-in-destroy)
+```
+
+Use `sed` (or equivalent) to make this change in-place, or edit the file directly. Mark each issue as done **as you go** — one checkbox per completed fix commit, not all at once at the end. This lets the review file accurately reflect partial progress if the auto-fix is interrupted.
+
+After all fixes, commit the updated review file to the review repo:
+
+```bash
+# From inside the review repo
+git add reviews/{module-name}/review-{...}.md
+git commit -m "chore({module}): mark fixed issues in review checklist"
+```
+
+---
+
+## No Push, No PR (module repo)
+
+After committing all fixes, **do NOT push the fix branch** in the module repo. Leave it as a local branch.
 
 The maintainer will inspect the branch locally and decide whether to push, open a PR to upstream, or request further changes.
 
@@ -159,7 +183,7 @@ The maintainer will inspect the branch locally and decide whether to push, open 
 
 ## Post-Fix Summary
 
-After all commits are made, report:
+After all commits are made (and the review file updated), report:
 
 ```
 🔧 Fix branch created: fix/v{version}-{YYYY-MM-DD}-issues
@@ -168,6 +192,8 @@ Commits:
   fix(C1): replace clearIdleTimer() with clearKeepalive() in connectezw action
   fix(M1): update manifest.json version from 2.0.2 to 2.1.0
   chore: apply template compliance fixes
+
+Review file updated: {N} issues marked done in reviews/{module}/review-{...}.md
 
 Branch is local only — not pushed. Review manually before pushing or merging.
 ```

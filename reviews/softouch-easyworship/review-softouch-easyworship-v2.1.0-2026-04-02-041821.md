@@ -43,16 +43,16 @@ Everything else above can wait for the next release.
 ## 📋 Issues
 
 **Blocking**
-- [C1: `clearIdleTimer()` called in Reconnect action — method does not exist](#c1-clearidletimer-called-in-reconnect-action-method-does-not-exist)
+- [ ] [C1: `clearIdleTimer()` called in Reconnect action — method does not exist](#c1-clearidletimer-called-in-reconnect-action-method-does-not-exist)
 
 **Non-blocking**
-- [M1: Manifest version shows v2.0.2, package.json says v2.1.0](#m1-manifest-version-shows-v202-packagejson-says-v210)
-- [M2: Removed dummy action options without upgrade scripts](#m2-removed-dummy-action-options-without-upgrade-scripts)
-- [M3: `@companion-module/base` version doesn't satisfy `@companion-module/tools` peer dependency](#m3-companion-modulebase-version-doesnt-satisfy-companion-moduletools-peer-dependency)
-- [L1: Manifest entrypoint uses Windows path separators](#l1-manifest-entrypoint-uses-windows-path-separators)
-- [L2: Preset action/feedback IDs are hard-coded strings](#l2-preset-actionfeedback-ids-are-hard-coded-strings)
-- [L3: No connection timeout on TCP connect](#l3-no-connection-timeout-on-tcp-connect)
-- [L4: `requestrev` type coercion accepts any string/number without format validation](#l4-requestrev-type-coercion-accepts-any-stringnumber-without-format-validation)
+- [ ] [M1: Manifest version shows v2.0.2, package.json says v2.1.0](#m1-manifest-version-shows-v202-packagejson-says-v210)
+- [ ] [M2: Removed dummy action options without upgrade scripts](#m2-removed-dummy-action-options-without-upgrade-scripts)
+- [ ] [M3: `@companion-module/base` version doesn't satisfy `@companion-module/tools` peer dependency](#m3-companion-modulebase-version-doesnt-satisfy-companion-moduletools-peer-dependency)
+- [ ] [L1: Manifest entrypoint uses Windows path separators](#l1-manifest-entrypoint-uses-windows-path-separators)
+- [ ] [L2: Preset action/feedback IDs are hard-coded strings](#l2-preset-actionfeedback-ids-are-hard-coded-strings)
+- [ ] [L3: No connection timeout on TCP connect](#l3-no-connection-timeout-on-tcp-connect)
+- [ ] [L4: `requestrev` type coercion accepts any string/number without format validation](#l4-requestrev-type-coercion-accepts-any-stringnumber-without-format-validation)
 
 ---
 

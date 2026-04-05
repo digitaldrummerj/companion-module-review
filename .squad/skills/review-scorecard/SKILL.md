@@ -137,17 +137,19 @@ To generate the anchor for a heading:
 
 ### TOC Template
 
+Each item is a GitHub-flavored Markdown task list item (`- [ ]`). The auto-fix workflow marks fixed issues as `- [x]` directly in this section.
+
 ```markdown
-## 📋 Table of Contents
+## 📋 Issues
 
 **Blocking**
-- [C1: Issue title here](#c1-anchor-here)
-- [H1: Issue title here](#h1-anchor-here)
+- [ ] [C1: Issue title here](#c1-anchor-here)
+- [ ] [H1: Issue title here](#h1-anchor-here)
 
 **Non-blocking**
-- [M1: Issue title here](#m1-anchor-here)
-- [L1: Issue title here](#l1-anchor-here)
-- [N1: Issue title here](#n1-anchor-here)
+- [ ] [M1: Issue title here](#m1-anchor-here)
+- [ ] [L1: Issue title here](#l1-anchor-here)
+- [ ] [N1: Issue title here](#n1-anchor-here)
 ```
 
 ---

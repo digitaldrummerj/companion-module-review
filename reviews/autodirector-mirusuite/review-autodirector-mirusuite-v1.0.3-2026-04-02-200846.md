@@ -50,13 +50,13 @@ Pre-existing issues are labeled as such so the maintainer knows these are inheri
 ## 📋 Issues
 
 **Blocking**
-- [H1: EventSource not closed in `destroy()`](#h1-eventsource-not-closed-in-destroy)
-- [H2: EventSource not closed before config change reinit](#h2-eventsource-not-closed-before-config-change-reinit)
-- [H3: HTTP error handler resets status to `Ok` after failure](#h3-http-error-handler-resets-status-to-ok-after-failure)
+- [ ] [H1: EventSource not closed in `destroy()`](#h1-eventsource-not-closed-in-destroy)
+- [ ] [H2: EventSource not closed before config change reinit](#h2-eventsource-not-closed-before-config-change-reinit)
+- [ ] [H3: HTTP error handler resets status to `Ok` after failure](#h3-http-error-handler-resets-status-to-ok-after-failure)
 
 **Non-blocking**
-- [L1: Build script `rimraf dist` removal may leave stale files](#l1-build-script-rimraf-dist-removal-may-leave-stale-files)
-- [N1: Unused import in `upgrades.ts`](#n1-unused-import-in-upgradests)
+- [ ] [L1: Build script `rimraf dist` removal may leave stale files](#l1-build-script-rimraf-dist-removal-may-leave-stale-files)
+- [ ] [N1: Unused import in `upgrades.ts`](#n1-unused-import-in-upgradests)
 
 ---
 
