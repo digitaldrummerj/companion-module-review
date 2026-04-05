@@ -56,15 +56,15 @@ The module is otherwise well-written. The HTTP fire-and-forget pattern with PQue
 ## 📋 Issues
 
 **Blocking**
-- [ ] [C1: manifest.json missing "type": "connection" field](#c1-manifestjson-missing-type-connection-field)
-- [ ] [H1: Action callback throws Error instead of using log('error', ...)](#h1-action-callback-throws-error-instead-of-using-logerror-)
+- [x] [C1: manifest.json missing "type": "connection" field](#c1-manifestjson-missing-type-connection-field)
+- [x] [H1: Action callback throws Error instead of using log('error', ...)](#h1-action-callback-throws-error-instead-of-using-logerror-)
 
 **Non-blocking**
-- [ ] [L1: rp150_to_ak-hrp1000.pcap development artifact committed to repo root](#l1-rp150_to_ak-hrp1000pcap-development-artifact-committed-to-repo-root)
-- [ ] [L2: Commented-out dead code in presets.ts](#l2-commented-out-dead-code-in-presetsts)
-- [ ] [L3: tsconfig.json extends tools config directly instead of tsconfig.build.json](#l3-tsconfigjson-extends-tools-config-directly-instead-of-tsconfigbuildjson)
+- [x] [L1: rp150_to_ak-hrp1000.pcap development artifact committed to repo root](#l1-rp150_to_ak-hrp1000pcap-development-artifact-committed-to-repo-root)
+- [x] [L2: Commented-out dead code in presets.ts](#l2-commented-out-dead-code-in-presetsts)
+- [x] [L3: tsconfig.json extends tools config directly instead of tsconfig.build.json](#l3-tsconfigjson-extends-tools-config-directly-instead-of-tsconfigbuildjson)
 - [ ] [N1: No presets defined for the single action](#n1-no-presets-defined-for-the-single-action)
-- [ ] [N2: HELP.md typo in note text](#n2-helpmd-typo-in-note-text)
+- [x] [N2: HELP.md typo in note text](#n2-helpmd-typo-in-note-text)
 
 ---
 
