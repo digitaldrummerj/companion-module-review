@@ -264,14 +264,28 @@ export async function fetchJson<T>(url: string, init?: RequestInit, timeoutMs = 
 **File:** `src/main.ts`, line 165  
 **Source:** Wash (W2)
 
-The `ws` library is constructed with no `handshakeTimeout` option (default: no timeout). If the host accepts TCP but the HTTP upgrade stalls (reverse proxy, firewall), the socket stays in `CONNECTING` forever. No `error` or `close` fires. No reconnect is ever scheduled.
+**References:**
+- `ws` v8.19.0 source — `node_modules/ws/lib/websocket.js`
+  - Line 641: JSDoc declares `options.handshakeTimeout` as optional with no default value
+  - Line 755: `opts.timeout = opts.handshakeTimeout` — when omitted, `opts.timeout` is `undefined`
+  - Line 876: `if (opts.timeout) { req.on('timeout', () => { abortHandshake(...) }) }` — the timeout handler is **never registered** when the option is absent
+- GitHub source: https://github.com/websockets/ws/blob/8.19.0/lib/websocket.js#L876
 
-**Impact:** WebSocket channel permanently dead with no recovery path.
+The WebSocket constructor is called with no options object. The `ws` library's `handshakeTimeout` option is purely opt-in — there is no default. When omitted, `opts.timeout` is `undefined`, the `if (opts.timeout)` guard at line 876 of `websocket.js` is never entered, and no timeout handler is registered on the HTTP request. If the host accepts TCP but the HTTP `Upgrade` response stalls (e.g., reverse proxy, firewall, slow QTimer boot), the socket sits in `CONNECTING` indefinitely. The `ws` library only fires `error` and `close` events when the connection attempt actively fails — a permanently stalled handshake produces neither. Without `close`, the reconnect timer in the module's `close` handler never fires.
+
+**Impact:** If the handshake stalls, the WebSocket channel is permanently dead with no recovery path. The module will appear to be connecting but never establish a channel.
+
+**Current code (`src/main.ts`, line 165):**
+```typescript
+const websocket = new WebSocket(wsUrl)
+```
 
 **Fix:**
 ```typescript
 const websocket = new WebSocket(wsUrl, { handshakeTimeout: 10_000 })
 ```
+
+When `handshakeTimeout` is set, `ws` calls `req.on('timeout', ...)` which invokes `abortHandshake()`, closing the request and emitting `error` + `close` — triggering the existing reconnect logic normally.
 
 ---
 
