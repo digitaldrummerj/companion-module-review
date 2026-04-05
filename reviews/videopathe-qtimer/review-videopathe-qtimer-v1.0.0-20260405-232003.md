@@ -25,7 +25,7 @@
 7. **Add `AbortController` timeout to `fetchJson()`** in `src/api.ts` — without it, a TCP stall permanently locks `pollInFlight` and kills all state updates. (H1)
 8. **Add `handshakeTimeout: 10000`** to WebSocket constructor in `src/main.ts` line 165 — prevents WS from getting stuck in CONNECTING forever. (H2)
 9. **Move `@types/ws`** from `dependencies` to `devDependencies` in `package.json`. (H3)
-10. **Add `InstanceStatus` update** in WebSocket `error` handler, `src/main.ts` line 201. (M1)
+10. **Add `InstanceStatus` update and change log level to `error`** in WebSocket `error` handler, `src/main.ts` line 201. (M1)
 11. **Abort in-flight fetches in `destroy()`** — store an `AbortController` and abort it on teardown, `src/main.ts`. (M2)
 12. **Abort in-flight fetches in `configUpdated()`** before starting new polling — prevents old-host responses from clobbering new connection state. (M3)
 13. **Preserve audio sounds on partial failure** — use `this.runtimeState.audioSounds` fallback when `audioResponse` is `undefined`, `src/main.ts` line 289. (M4)
@@ -309,13 +309,21 @@ When `handshakeTimeout` is set, `ws` calls `req.on('timeout', ...)` which invoke
 **File:** `src/main.ts`, lines 196–202  
 **Source:** Wash (W3)
 
-The `error` handler only logs at `debug` level. While `ws` guarantees a `close` event after `error` (so reconnect still fires), there's a window where the error isn't surfaced to the operator via InstanceStatus.
+The `error` handler only logs at `debug` level and does not call `updateStatus()`. While `ws` guarantees a `close` event after `error` (so reconnect still fires), there is a window where the error is not surfaced to the operator via InstanceStatus. Additionally, logging at `debug` means errors are invisible in production unless debug logging is explicitly enabled — WebSocket errors should always be visible.
 
-**Fix:** Add status update:
+**Current code (`src/main.ts`, lines 196–202):**
 ```typescript
 websocket.on('error', (error) => {
     if (this.websocket !== websocket) return
     this.log('debug', `WebSocket error: ${this.formatError(error)}`)
+})
+```
+
+**Fix:**
+```typescript
+websocket.on('error', (error) => {
+    if (this.websocket !== websocket) return
+    this.log('error', `WebSocket error: ${this.formatError(error)}`)
     this.updateStatus(InstanceStatus.ConnectionFailure, this.formatError(error))
 })
 ```
