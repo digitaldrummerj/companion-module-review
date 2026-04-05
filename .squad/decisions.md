@@ -296,3 +296,42 @@ export { upgradeScripts as getUpgradeScripts }
 **Scope:** Applies to all auto-fix branches. If an existing module has inline upgrade scripts and auto-fix is adding or touching upgrade scripts, extract all of them to `upgrades.js` in the same commit.
 
 **Why:** User request — captured for team memory.
+
+---
+
+## 2026-04-05: Review session — companion-module-spacecommz-intercom v1.1.0
+
+**Date:** 2026-04-05
+**Module:** companion-module-spacecommz-intercom
+**Version:** v1.1.0 (previous: v1.0.0)
+**Agents:** Mal (Lead/Architecture), Wash (Protocol), Kaylee (Module Dev), Zoe (QA), Simon (Tests) — all parallel
+**Verdict:** ❌ REJECTED — 10 blocking issues
+**Review file:** `companion-modules-reviewing/companion-module-spacecommz-intercom/review-2026-04-05-060928.md`
+
+**Blocking issues:**
+1. HTTP server (`this.http`) never closed in `destroy()` — port leak on every module reload
+2. Socket.IO server (`this.io`) never closed in `destroy()` — lingering connections accumulate
+3. `configUpdated()` does not restart server on port change — silently ignores new port
+4. `talkState` feedback uses wrong field (`activePls` vs `talkingPls`) — feedback never lights up (regression in v1.1.0)
+5. Disconnect event handler references wrong field — `activePls` splice on disconnect has no effect
+6. Missing `.husky/` directory and pre-commit hooks (TypeScript template required)
+7. Missing `eslint.config.mjs` (TypeScript template required)
+8. Missing `.yarnrc.yml` (both JS and TS template required)
+9. Missing `.gitattributes` (both JS and TS template required)
+10. Missing `LICENSE` file (both JS and TS template required)
+
+**Expected verdict once fixed:** APPROVED WITH NOTES
+
+---
+
+### 2026-04-05T05:45:45Z: User directive — Review modules serially
+
+**By:** Lyn (via Copilot)
+**What:** When reviewing multiple modules in a single prompt, review them serially — one at a time — not in parallel.
+**Why:** User request — parallel multi-module reviews risk hitting API rate limits, especially with opus-tier fan-outs (5 agents × N modules). Serial execution trades speed for reliability.
+
+### 2026-04-05T05:56:58Z: User directive — No push or PR without human approval
+
+**By:** Lyn (via Copilot)
+**What:** Do NOT push auto-fix branches or create PRs without explicit human intervention. After a review, the auto-fix branch may be prepared locally, but must wait for human approval before any `git push` or `gh pr create`.
+**Why:** User request — captured for team memory. Maintainers need to review fixes before they appear in the public repo.
