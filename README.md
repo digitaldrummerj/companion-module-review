@@ -78,8 +78,6 @@ The squad will discover the module, clone it, run the structured review, and pro
 ```
 companion-module-review/          ← this repo
 ├── reviews/                      ← completed review files
-│   ├── autodirector-mirusuite/
-│   └── softouch-easyworship/
 ├── scripts/                      ← PowerShell automation
 │   ├── bitfocus-queue.ps1        ← show pending review queue (read-only)
 │   ├── bitfocus-setup-module.ps1 ← clone + validate a module for review
