@@ -338,7 +338,14 @@ websocket.on('error', (error) => {
 
 `destroy()` clears the interval timer and disconnects the WebSocket, but any in-flight `refreshAllState()` fetch continues executing. When it resolves, `updateStatus()`, `setVariableValues()`, and `checkFeedbacks()` are called on a destroyed instance.
 
+`AbortController` is a global available in Node.js 14.17+ (this module requires Node 22) and in all modern browsers. It exposes a `signal` property that can be passed to `fetch()` via its `RequestInit` options. When `abort()` is called, any in-flight fetch using that signal rejects with an `AbortError`. No additional dependencies are needed.
+
 Note: `fetchJson` already accepts an optional `RequestInit` argument (see `src/api.ts` line 6), so a `signal` can be passed without modifying `api.ts`.
+
+**References:**
+- MDN — AbortController: https://developer.mozilla.org/en-US/docs/Web/API/AbortController
+- MDN — fetch() `signal` option: https://developer.mozilla.org/en-US/docs/Web/API/RequestInit#signal
+- Node.js 22 globals — AbortController: https://nodejs.org/docs/latest-v22.x/api/globals.html#class-abortcontroller
 
 **Current code (`src/main.ts`, lines 47–52):**
 ```typescript
