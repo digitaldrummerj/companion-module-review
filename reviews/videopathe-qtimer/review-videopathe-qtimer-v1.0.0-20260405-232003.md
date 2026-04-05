@@ -23,7 +23,7 @@
 5. **Add `.prettierignore`** — prevents prettier from reformatting `package.json`. (C5)
 6. **Fix `manifest.json` line 9** — change `repository` URL from `videopathe` org to `bitfocus` org to match `bugs` URL and `package.json`. (C6)
 7. **Add `AbortController` timeout to `fetchJson()`** in `src/api.ts` — without it, a TCP stall permanently locks `pollInFlight` and kills all state updates. (H1)
-8. **Add `handshakeTimeout: 10_000`** to WebSocket constructor in `src/main.ts` line 165 — prevents WS from getting stuck in CONNECTING forever. (H2)
+8. **Add `handshakeTimeout: 10000`** to WebSocket constructor in `src/main.ts` line 165 — prevents WS from getting stuck in CONNECTING forever. (H2)
 9. **Move `@types/ws`** from `dependencies` to `devDependencies` in `package.json`. (H3)
 10. **Add `InstanceStatus` update** in WebSocket `error` handler, `src/main.ts` line 201. (M1)
 11. **Abort in-flight fetches in `destroy()`** — store an `AbortController` and abort it on teardown, `src/main.ts`. (M2)
@@ -282,7 +282,7 @@ const websocket = new WebSocket(wsUrl)
 
 **Fix:**
 ```typescript
-const websocket = new WebSocket(wsUrl, { handshakeTimeout: 10_000 })
+const websocket = new WebSocket(wsUrl, { handshakeTimeout: 10000 })
 ```
 
 When `handshakeTimeout` is set, `ws` calls `req.on('timeout', ...)` which invokes `abortHandshake()`, closing the request and emitting `error` + `close` — triggering the existing reconnect logic normally.
