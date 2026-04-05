@@ -161,10 +161,24 @@ Include in your findings file:
 ```
 If a finding spans multiple lines: `lines 42–47`. If a finding is file-level (e.g., missing file, wrong top-level config value), omit the line number — file path alone is sufficient.
 
-The **Coordinator** assembles all agents' findings into the single final review file:
+The **Coordinator** assembles all agents' findings into the single final review file.
+
+**Output path — review repo, NOT the module repo:**
 ```
-{module_directory}/review-{YYYY-MM-DD-HHmmss}.md
+{TEAM_ROOT}/reviews/{module-name}/review-{module-name}-{version}-{YYYYMMDD}-{HHmmss}.md
 ```
+
+Where:
+- `{TEAM_ROOT}` = `/Users/lynbh/Development/companion-module-review` (the review repo root)
+- `{module-name}` = module name **without** the `companion-module-` prefix (e.g., `spacecommz-intercom`, `panasonic-ak-hrp1000`)
+- `{version}` = the version tag being reviewed (e.g., `v1.1.0`)
+- `{YYYYMMDD}` = date in `20260405` format
+- `{HHmmss}` = time in `185852` format
+
+Example: `reviews/panasonic-ak-hrp1000/review-panasonic-ak-hrp1000-v1.0.1-20260405-071234.md`
+
+**Create the `reviews/{module-name}/` subdirectory if it does not exist.**
+**Do NOT write the review file into the module's own directory.**
 
 **Required section order in the final assembled review:**
 
