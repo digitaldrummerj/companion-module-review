@@ -53,9 +53,9 @@ yarn build            # confirm build still succeeds
 | 🔴 Critical | 6 | 0 | 6 |
 | 🟠 High | 3 | 0 | 3 |
 | 🟡 Medium | 8 | 0 | 8 |
-| 🟢 Low | 3 | 0 | 3 |
+| 🟢 Low | 0 | 0 | 0 |
 | 💡 Nice to Have | 4 | 0 | 4 |
-| **Total** | **24** | **0** | **24** |
+| **Total** | **21** | **0** | **21** |
 
 **Blocking:** 17 issues (6 new critical, 3 new high, 8 new medium)  
 **Fix complexity:** Medium — template files are copy-from-template; network fixes require AbortController pattern (~30 lines)  
@@ -90,9 +90,6 @@ yarn build            # confirm build still succeeds
 - [ ] [M7: `configUpdated()` does not clear stale state before reconnecting](#m7-configupdated-does-not-clear-stale-state-before-reconnecting)
 
 **Non-blocking**
-- [ ] [L1: Fixed 2-second WebSocket reconnect delay with no backoff](#l1-fixed-2-second-websocket-reconnect-delay-with-no-backoff)
-- [ ] [L2: No TLS/HTTPS option](#l2-no-tlshttps-option)
-- [ ] [L3: Empty `soundId` in `audio_play` not validated](#l3-empty-soundid-in-audio_play-not-validated)
 - [ ] [N1: `manifest.json` version should be `0.0.0`](#n1-manifestjson-version-should-be-000)
 - [ ] [N2: `InstanceStatus.Disconnected` never used](#n2-instancestatusdisconnected-never-used)
 - [ ] [N3: Yarn peer dependency warning](#n3-yarn-peer-dependency-warning)
@@ -515,44 +512,6 @@ this.runtimeState = {
 this.updateVariablesFromState()
 this.checkFeedbacks()
 ```
-
----
-
-## 🟢 Low
-
-### L1: Fixed 2-second WebSocket reconnect delay with no backoff
-
-**Classification:** 🆕 NEW  
-**File:** `src/main.ts`, line 150  
-**Source:** Wash (W6)
-
-A flat 2-second reconnect is reasonable for normal drops, but creates a steady stream of connection attempts against an unresponsive host during extended outages.
-
-**Suggestion:** Implement exponential backoff capped at ~30 seconds. Reset delay on successful `open`.
-
----
-
-### L2: No TLS/HTTPS option
-
-**Classification:** 🆕 NEW  
-**File:** `src/main.ts`, line 164; `src/api.ts`, line 3  
-**Source:** Wash (W7)
-
-WebSocket scheme is hardcoded to `ws://` and HTTP to `http://`. QTimer is typically local-network, but users behind TLS proxies cannot use the module.
-
-**Suggestion:** Add a `useSSL` config boolean for future enhancement.
-
----
-
-### L3: Empty `soundId` in `audio_play` not validated
-
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, lines 343–350  
-**Source:** Zoe (Z12)
-
-An empty `soundId` sends `{ soundId: '', volume: ... }` which the server rejects. The error propagates, but no diagnostic helps the operator understand why.
-
-**Suggestion:** Add early return with warn log when `soundId` is empty.
 
 ---
 
