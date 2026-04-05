@@ -17,9 +17,10 @@
 
 ## Fix Summary for Maintainer
 
-**1 Critical issue requires a fix before approval:**
+**2 issues require a fix before approval:**
 
 - **C1:** Add `"type": "connection"` to `companion/manifest.json` — one line, required for v2.0 API compliance.
+- **H1:** Action callback throws `Error` instead of logging — replace `throw new Error(...)` with `self.log('error', ...)` + `return` in `src/actions.ts`.
 
 All other findings are Low or Nice-to-Have and can be addressed at any time. A fix branch has been created: `fix/v1.0.0-2026-04-04-issues`.
 
@@ -30,14 +31,14 @@ All other findings are Low or Nice-to-Have and can be addressed at any time. A f
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
 | 🔴 Critical | 1 | 0 | 1 |
-| 🟠 High | 0 | 0 | 0 |
+| 🟠 High | 1 | 0 | 1 |
 | 🟡 Medium | 0 | 0 | 0 |
-| 🟢 Low | 3 | 0 | 3 |
-| 💡 Nice to Have | 3 | 0 | 3 |
+| 🟢 Low | 2 | 0 | 2 |
+| 💡 Nice to Have | 2 | 0 | 2 |
 | **Total** | **7** | **0** | **7** |
 
-**Blocking:** 1 issue (1 new critical)  
-**Fix complexity:** Quick — one-line fix to `manifest.json`  
+**Blocking:** 2 issues (1 new critical, 1 new high)  
+**Fix complexity:** Quick — one-line manifest fix + replace throw with log('error', ...)  
 **Health delta:** 7 introduced · 0 pre-existing  
 
 ---
@@ -46,7 +47,7 @@ All other findings are Low or Nice-to-Have and can be addressed at any time. A f
 
 ### ❌ Changes Required
 
-One critical v2.0 API compliance gap must be resolved before this module can be approved. The fix is trivial: add a single `"type": "connection"` field to `companion/manifest.json`. All other issues are low-severity housekeeping items.
+One critical v2.0 API compliance gap and one high-severity runtime issue must be resolved before this module can be approved. Both fixes are straightforward: add `"type": "connection"` to `manifest.json` and replace the `throw` in the action callback with `self.log('error', ...)` + `return`. All other issues are low-severity housekeeping items.
 
 The module is otherwise well-written. The HTTP fire-and-forget pattern with PQueue rate-limiting and AbortController cancellation is clean and appropriate for this device. Build and lint pass cleanly.
 
@@ -56,6 +57,7 @@ The module is otherwise well-written. The HTTP fire-and-forget pattern with PQue
 
 **Blocking**
 - [C1: manifest.json missing "type": "connection" field](#c1-manifestjson-missing-type-connection-field)
+- [H1: Action callback throws Error instead of using log('error', ...)](#h1-action-callback-throws-error-instead-of-using-logerror-)
 
 **Non-blocking**
 - [L1: rp150_to_ak-hrp1000.pcap development artifact committed to repo root](#l1-rp150_to_ak-hrp1000pcap-development-artifact-committed-to-repo-root)
@@ -63,7 +65,6 @@ The module is otherwise well-written. The HTTP fire-and-forget pattern with PQue
 - [L3: tsconfig.json extends tools config directly instead of tsconfig.build.json](#l3-tsconfigjson-extends-tools-config-directly-instead-of-tsconfigbuildjson)
 - [N1: No presets defined for the single action](#n1-no-presets-defined-for-the-single-action)
 - [N2: HELP.md typo in note text](#n2-helpmd-typo-in-note-text)
-- [N3: Action callback throws Error instead of logging a warning](#n3-action-callback-throws-error-instead-of-logging-a-warning)
 
 ---
 
@@ -99,6 +100,39 @@ The manifest does not include the top-level `"type"` field required for v2.0 mod
   ...
 }
 ```
+
+---
+
+## 🟠 High
+
+### H1: Action callback throws Error instead of using log('error', ...)
+
+**Classification:** 🆕 NEW  
+**File:** `src/actions.ts`
+
+```typescript
+callback: async (event) => {
+    const camera = event.options.camera
+    if (!Number.isInteger(camera) || camera < 1 || camera > 99)
+        throw new Error(`Invalid camera selection: ${camera}`)
+    await self.httpGet(`aw_cam?cmd=XPT:${camera}&res=1`)
+},
+```
+
+Throwing from an action callback is a breaking behaviour — Companion surfaces the unhandled exception as a crash-level error in the UI rather than a graceful log message. Action callbacks must never throw; errors should be logged via `self.log('error', ...)` and the callback should return early:
+
+```typescript
+callback: async (event) => {
+    const camera = event.options.camera
+    if (!Number.isInteger(camera) || camera < 1 || camera > 99) {
+        self.log('error', `Invalid camera selection: ${camera} — must be 1-99`)
+        return
+    }
+    await self.httpGet(`aw_cam?cmd=XPT:${camera}&res=1`)
+},
+```
+
+**Fix:** Replace `throw new Error(...)` with `self.log('error', ...)` + `return`.
 
 ---
 
@@ -240,37 +274,6 @@ export function UpdatePresets(self: ModuleInstance): void {
 ```
 
 Should be **receives** (not **recieves**).
-
----
-
-### N3: Action callback throws Error instead of logging a warning
-
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`
-
-```typescript
-callback: async (event) => {
-    const camera = event.options.camera
-    if (!Number.isInteger(camera) || camera < 1 || camera > 99)
-        throw new Error(`Invalid camera selection: ${camera}`)
-    await self.httpGet(`aw_cam?cmd=XPT:${camera}&res=1`)
-},
-```
-
-Throwing from an action callback causes Companion to surface an unhandled exception UX to the user. Since the option field already enforces `min: 1, max: 99, asInteger: true`, this guard is a double-safety check. If it fires, the more user-friendly approach is to log at warn level and return early rather than throw:
-
-```typescript
-callback: async (event) => {
-    const camera = event.options.camera
-    if (!Number.isInteger(camera) || camera < 1 || camera > 99) {
-        self.log('warn', `Invalid camera selection: ${camera} — must be 1-99`)
-        return
-    }
-    await self.httpGet(`aw_cam?cmd=XPT:${camera}&res=1`)
-},
-```
-
-This is low-risk defensive code; the real guard is the field constraints. At minimum, replace `throw` with `self.log('warn', ...)` + `return`.
 
 ---
 
