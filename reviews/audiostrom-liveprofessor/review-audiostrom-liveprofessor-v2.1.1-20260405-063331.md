@@ -15,7 +15,7 @@
 
 ## Fix Summary for Maintainer
 
-The following **9 blocking fixes** are required before approval:
+The following **10 blocking fixes** are required before approval:
 
 1. **`package.json` line 3** — Change `"version": "2.1.0"` → `"2.1.1"` to match the git tag
 2. **`companion/manifest.json` line 6** — Change `"version": "2.0.1"` → `"0.0.0"` (let the build system set it)
@@ -27,6 +27,7 @@ The following **9 blocking fixes** are required before approval:
 8. **`LiveProfessor.js` lines 44–50** — In `configUpdated()`, close `this.oscUdp` before calling `init_osc()`
 9. **`actions.js` lines 81, 113, 145, 175** — Either revert rotary `max` to 4, or expand `rotaryValues`/`rotaryPush` arrays in `init()` to match max
 10. **`LiveProfessor.js` lines 300–309** — Remove the three dead stub methods (`updateActions`, `updateFeedbacks`, `updateVariableDefinitions`)
+11. **`LiveProfessor.js` lines 182, 187, 192, 200** — Replace `console.log()` calls with Companion instance logger (`this.log()`)
 
 ---
 
@@ -35,13 +36,13 @@ The following **9 blocking fixes** are required before approval:
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
 | 🔴 Critical | 1 | 0 | 1 |
-| 🟠 High | 2 | 4 | 6 |
+| 🟠 High | 3 | 4 | 7 |
 | 🟡 Medium | 2 | 3 | 5 |
 | 🟢 Low | 1 | 5 | 6 |
 | 💡 Nice to Have | 0 | 6 | 6 |
-| **Total** | **6** | **18** | **24** |
+| **Total** | **7** | **18** | **25** |
 
-**Blocking:** 9 issues (1 new critical, 2 new high, 4 pre-existing high, 2 new medium)
+**Blocking:** 10 issues (1 new critical, 3 new high, 4 pre-existing high, 2 new medium)
 **Fix complexity:** Medium — import fix, version bumps, ~30 lines of destroy/cleanup code, array expansion
 **Health delta:** 6 introduced · 18 pre-existing surfaced
 
@@ -51,7 +52,7 @@ The following **9 blocking fixes** are required before approval:
 
 **❌ Changes Required**
 
-Nine blocking issues prevent approval. Five are newly introduced in v2.1.1 (version mismatches, undefined `BadConfig`, dead stubs, rotary array bounds). Four are pre-existing high-severity issues that were never caught (undefined `ConnectionFailure`, undefined `qSocket`, empty `destroy()`, socket leak in `configUpdated()`). All must be fixed.
+Ten blocking issues prevent approval. Six are newly introduced in v2.1.1 (version mismatches, undefined `BadConfig`, dead stubs, rotary array bounds, console.log logging). Four are pre-existing high-severity issues that were never caught (undefined `ConnectionFailure`, undefined `qSocket`, empty `destroy()`, socket leak in `configUpdated()`). All must be fixed.
 
 ---
 
@@ -65,6 +66,7 @@ Nine blocking issues prevent approval. Five are newly introduced in v2.1.1 (vers
 - [ ] [H4: `this.qSocket` undefined — error handler double-fault](#h4-thissocket-undefined-error-handler-double-fault)
 - [ ] [H5: `destroy()` empty — socket and timer leak](#h5-destroy-empty-socket-and-timer-leak)
 - [ ] [H6: `configUpdated()` leaks old OSC socket](#h6-configupdated-leaks-old-osc-socket)
+- [ ] [H7: console.log used instead of Companion instance logger](#h7-consolelog-used-instead-of-companion-instance-logger)
 - [ ] [M1: Rotary max expanded to 99 but backing arrays are length 4](#m1-rotary-max-expanded-to-99-but-backing-arrays-are-length-4)
 - [ ] [M2: Dead stub methods call undefined globals](#m2-dead-stub-methods-call-undefined-globals)
 
@@ -181,6 +183,24 @@ async configUpdated(config) {
     this.init_osc()
 }
 ```
+
+---
+
+### H7: console.log used instead of Companion instance logger
+
+**Classification:** 🆕 NEW
+**File:** `LiveProfessor.js`, lines 182, 187, 192, 200
+**Issue:** The module uses `console.log()` for all logging output instead of the Companion instance logger. Raw `console.log` output is invisible to Companion users — it bypasses the logging infrastructure entirely and appears only in the Companion server console, if at all. Companion modules must use `this.log(level, message)` so output is routed through Companion's log viewer.
+
+**Fix:** Replace all four `console.log(level, msg)` calls with `this.log(level, msg)`. The level strings (`'error'`, `'debug'`, `'info'`) are already correct — only the function name needs to change:
+```js
+// line 182: this.log('error', 'Error: ' + err.message)
+// line 187: this.log('error', 'ECONNREFUSED')
+// line 192: this.log('debug', 'Connection to LiveProfessor Closed')
+// line 200: this.log('info', 'Connected to LiveProfessor:' + this.config.host)
+```
+
+**Status:** Fixed in branch `fix/v2.1.1-2026-04-05-issues`
 
 ---
 

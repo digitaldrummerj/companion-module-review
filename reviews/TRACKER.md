@@ -4,8 +4,8 @@ Track completed reviews and whether feedback has been submitted to the module ma
 
 | Feedback Submitted | Module | Version | Review Date | Review File |
 |:-----------------:|--------|---------|-------------|-------------|
-| ⬜ | audiostrom-liveprofessor | v2.1.1 | 2026-04-05 | [review](audiostrom-liveprofessor/review-audiostrom-liveprofessor-v2.1.1-20260405-063331.md) |
-| ⬜ | autodirector-mirusuite | v1.0.3 | 2026-04-02 | [review](autodirector-mirusuite/review-autodirector-mirusuite-v1.0.3-2026-04-02-200846.md) |
+| ✅ | audiostrom-liveprofessor | v2.1.1 | 2026-04-05 | [review](audiostrom-liveprofessor/review-audiostrom-liveprofessor-v2.1.1-20260405-063331.md) |
+| ✅ | autodirector-mirusuite | v1.0.3 | 2026-04-02 | [review](autodirector-mirusuite/review-autodirector-mirusuite-v1.0.3-2026-04-02-200846.md) |
 | ⬜ | optisigns-digitalsignage | v1.0.3 | 2026-04-05 | [review](optisigns-digitalsignage/review-optisigns-digitalsignage-v1.0.3-20260405-064223.md) |
 | ✅ | panasonic-ak-hrp1000 | v1.0.0 | 2026-04-04 | [review](panasonic-ak-hrp1000/review-panasonic-ak-hrp1000-v1.0.0-20260404-185852.md) |
 | ✅ | panasonic-ak-hrp1000 | v1.0.1 | 2026-04-05 | [review](panasonic-ak-hrp1000/review-panasonic-ak-hrp1000-v1.0.1-20260405-071346.md) |
