@@ -4,6 +4,65 @@ An AI-powered review system for [Bitfocus Companion](https://bitfocus.io/compani
 
 ---
 
+## Prerequisites & Installation
+
+### 1. Install PowerShell 7.6
+
+The scripts in this repo are written in PowerShell and require **PowerShell 7.6+**.
+
+- **macOS:** [Install PowerShell on macOS](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-macos?view=powershell-7.6)
+- **Windows:** [Install PowerShell on Windows](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-windows?view=powershell-7.6)
+
+Verify: `pwsh --version`
+
+### 2. Install GitHub Copilot CLI
+
+Follow the instructions at [github.com/features/copilot/cli](https://github.com/features/copilot/cli).
+
+Verify: `gh copilot --version`
+
+### 3. Install Squad
+
+Follow the instructions at [github.com/bradygaster/squad](https://github.com/bradygaster/squad).
+
+### 4. Clone this repo and run setup
+
+```powershell
+git clone https://github.com/<org>/companion-module-review.git
+cd companion-module-review
+pwsh setup.ps1
+```
+
+`setup.ps1` configures git hooks and creates the sibling `companion-modules-reviewing/` directory where module repos are cloned during reviews.
+
+### 5. Verify GitHub auth
+
+The scripts use the `gh` CLI for GitHub and the BitFocus portal API.
+
+```powershell
+gh auth status
+```
+
+If not authenticated, run `gh auth login` first.
+
+### 6. Open the workspace (optional but recommended)
+
+Open `companion-module-review.code-workspace` in VS Code for full multi-repo support across both the review repo and any cloned modules.
+
+---
+
+## Running a review
+
+1. Open a terminal and run `copilot` to enter the Copilot CLI
+2. Run `/agents` and select **Squad** as the agent
+3. Ask the team to start a review:
+   - Auto-select the next pending module: `"hey team, let's review the next module"`
+   - Review a specific module: `"hey team, let's review companion-module-allenheath-sq"`
+
+The squad will discover the module, clone it, run the structured review, and produce a fix branch automatically.
+
+---
+
 ## How it works
 
 1. **Discover** — Check what's pending on the BitFocus developer portal (`scripts/bitfocus-queue.ps1`)
