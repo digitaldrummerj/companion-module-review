@@ -16,8 +16,8 @@
 
 1. **Add missing template files:** `.gitattributes`, `.prettierignore`, `.yarnrc.yml` — Root directory
 2. **Fix `.gitignore`:** Replace with template content (`node_modules/`, `package-lock.json`, `/pkg`, `/*.tgz`, `DEBUG-*`, `/.yarn`) — `.gitignore`
-3. **Fix `package.json` structure:** Add `repository.type`, change URL to `bitfocus`, add `engines.yarn: "^4"`, add `packageManager`, add `prettier` field, add `devDependencies` (`@companion-module/tools`, `prettier`), replace `scripts` with `format` and `package`, remove banned keywords (`companion`, `glensound`), update `engines.node` to `"^22.20"` — `package.json`
-4. **Fix `manifest.json`:** Change `runtime.type` to `node22`, change `name` to `glensound-gtmmobile`, change repository URL to `bitfocus`, add `email` to maintainer, add `$schema` field — `companion/manifest.json`
+3. **Fix `package.json` structure:** Add `repository.type`, change URL to `bitfocus`, add `engines.yarn: "^4"`, add `packageManager`, add `prettier` field, add `devDependencies` (`@companion-module/tools`, `prettier`), replace `scripts` with `format` and `package`, remove `keywords` field entirely, update `engines.node` to `"^22.20"` — `package.json`
+4. **Fix `manifest.json`:** Change `runtime.type` to `node22`, change `name` to `glensound-gtmmobile`, set `version` to `"0.0.0"`, change repository URL to `bitfocus`, add `email` to maintainer, add `$schema` field — `companion/manifest.json`
 5. **Fix channel array indexing:** Decide channel range (1-13 or 2-14) and make consistent across array init, volume parsing, variable definitions, and action/feedback choices — `src/main.js:77,288-306`, `src/variables.js:7`, `src/feedbacks.js:51`
 6. **Add status update on sendCmd error:** Update `InstanceStatus.ConnectionFailure` when send fails — `src/main.js:215-218`
 7. **Make socket closure async-safe:** Await socket close before calling `start()` in `configUpdated()` — `src/main.js:98-106`
@@ -29,22 +29,22 @@
 
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
-| 🔴 Critical | 15 | 0 | 15 |
+| 🔴 Critical | 16 | 0 | 16 |
 | 🟠 High | 0 | 0 | 0 |
 | 🟡 Medium | 6 | 0 | 6 |
-| 🟢 Low | 10 | 0 | 10 |
-| 💡 Nice to Have | 2 | 0 | 2 |
-| **Total** | **33** | **0** | **33** |
+| 🟢 Low | 9 | 0 | 9 |
+| 💡 Nice to Have | 1 | 0 | 1 |
+| **Total** | **32** | **0** | **32** |
 
-**Blocking:** 15 issues (15 new critical — primarily template compliance + 3 logic errors)  
+**Blocking:** 16 issues (16 new critical — primarily template compliance + 3 logic errors)  
 **Fix complexity:** Medium — template fixes are mechanical, logic fixes require code changes (~30 lines)  
-**Health delta:** 33 introduced · 0 pre-existing (first release)
+**Health delta:** 32 introduced · 0 pre-existing (first release)
 
 ---
 
 ## Verdict: ❌ Changes Required
 
-**Reason:** Build fails due to missing template files and incorrect `package.json` configuration. Additionally, 3 critical logic errors (channel array indexing, silent command failures, race condition on config update) must be fixed before approval.
+**Reason:** Build fails due to missing template files and incorrect `package.json` configuration. `manifest.json` `version` must be set to `"0.0.0"`. Additionally, 3 critical logic errors (channel array indexing, silent command failures, race condition on config update) must be fixed before approval.
 
 ---
 
@@ -66,6 +66,7 @@
 - [ ] [C13: Channel volume array index mismatch — logic error](#c13-channel-volume-array-index-mismatch-logic-error)
 - [ ] [C14: Floating promise rejection in sendCmd() — unhandled error](#c14-floating-promise-rejection-in-sendcmd-unhandled-error)
 - [ ] [C15: Race condition in configUpdated() — state corruption risk](#c15-race-condition-in-configupdated-state-corruption-risk)
+- [ ] [C16: Incorrect `manifest.json` `version` field](#c16-incorrect-manifestjson-version-field)
 
 **Non-blocking**
 - [ ] [M1: Manifest declares node18 but apiVersion 1.12.1 — consider node22](#m1-manifest-declares-node18-but-apiversion-1121-consider-node22)
@@ -77,15 +78,13 @@
 - [ ] [L1: Inconsistent whitespace in feedbacks.js channel choices](#l1-inconsistent-whitespace-in-feedbacksjs-channel-choices)
 - [ ] [L2: Unhandled promise rejection risk in action callbacks](#l2-unhandled-promise-rejection-risk-in-action-callbacks)
 - [ ] [L3: No reconnection logic after socket close/error](#l3-no-reconnection-logic-after-socket-closeerror)
-- [ ] [L4: Potential race condition in configUpdated](#l4-potential-race-condition-in-configupdated)
-- [ ] [L5: dropMembership called without checking if membership was added](#l5-dropmembership-called-without-checking-if-membership-was-added)
-- [ ] [L6: Message parsing lacks buffer bounds validation](#l6-message-parsing-lacks-buffer-bounds-validation)
-- [ ] [L7: Comment mismatch in variable loop](#l7-comment-mismatch-in-variable-loop)
-- [ ] [L8: Channel 1 not controllable but listed in feedbacks](#l8-channel-1-not-controllable-but-listed-in-feedbacks)
-- [ ] [L9: No validation of config.port type](#l9-no-validation-of-configport-type)
-- [ ] [L10: Performance: 500ms poll rate](#l10-performance-500ms-poll-rate)
+- [ ] [L4: dropMembership called without checking if membership was added](#l4-dropmembership-called-without-checking-if-membership-was-added)
+- [ ] [L5: Message parsing lacks buffer bounds validation](#l5-message-parsing-lacks-buffer-bounds-validation)
+- [ ] [L6: Comment mismatch in variable loop](#l6-comment-mismatch-in-variable-loop)
+- [ ] [L7: Channel 1 not controllable but listed in feedbacks](#l7-channel-1-not-controllable-but-listed-in-feedbacks)
+- [ ] [L8: Performance: 500ms poll rate](#l8-performance-500ms-poll-rate)
+- [ ] [L9: README Developer Mode instructions use `npm install` instead of `yarn`](#l9-readme-developer-mode-instructions-use-npm-install-instead-of-yarn)
 - [ ] [N1: Variables defined for channels 2-14 but feedback allows channel 1](#n1-variables-defined-for-channels-2-14-but-feedback-allows-channel-1)
-- [ ] [N2: Port config field uses textinput instead of number type](#n2-port-config-field-uses-textinput-instead-of-number-type)
 
 ---
 
@@ -320,6 +319,18 @@ Channel ranges are inconsistent across the codebase:
 
 ---
 
+### C16: Incorrect `manifest.json` `version` field
+
+**File:** `companion/manifest.json`  
+**Classification:** 🆕 NEW
+
+**Found:** Non-zero version value  
+**Expected:** `"version": "0.0.0"`
+
+The `version` field in `manifest.json` must be `"0.0.0"`. The Companion registry manages module versioning — the manifest version is not the release version and must always be set to `0.0.0`.
+
+---
+
 ## 🟡 Medium
 
 ### M1: Manifest declares node18 but apiVersion 1.12.1 — consider node22
@@ -416,16 +427,7 @@ When socket error occurs, module logs error but doesn't attempt reconnection. Ti
 
 ---
 
-### L4: Potential race condition in configUpdated
-
-**File:** `src/main.js:98-106`  
-**Classification:** 🆕 NEW
-
-(Lower severity note related to C15) Very low risk in practice since UDP cleanup is fast.
-
----
-
-### L5: dropMembership called without checking if membership was added
+### L4: dropMembership called without checking if membership was added
 
 **File:** `src/main.js:202`  
 **Classification:** 🆕 NEW
@@ -434,7 +436,7 @@ When socket error occurs, module logs error but doesn't attempt reconnection. Ti
 
 ---
 
-### L6: Message parsing lacks buffer bounds validation
+### L5: Message parsing lacks buffer bounds validation
 
 **File:** `src/main.js:254-310`  
 **Classification:** 🆕 NEW
@@ -443,7 +445,7 @@ Bounds checking is actually present and correct — this is an acknowledgment no
 
 ---
 
-### L7: Comment mismatch in variable loop
+### L6: Comment mismatch in variable loop
 
 **File:** `src/main.js:288`  
 **Classification:** 🆕 NEW
@@ -452,7 +454,7 @@ Comment says offset formula is `knob + 61` but code uses `knob * 2 + 52`. No imp
 
 ---
 
-### L8: Channel 1 not controllable but listed in feedbacks
+### L7: Channel 1 not controllable but listed in feedbacks
 
 **File:** `src/feedbacks.js:52`  
 **Classification:** 🆕 NEW
@@ -461,21 +463,23 @@ Feedback lists "Channel 1 (stereo)" but actions don't include channel 1. Operato
 
 ---
 
-### L9: No validation of config.port type
-
-**File:** `src/main.js:213`  
-**Classification:** 🆕 NEW
-
-`parseInt(this.config?.port)` is redundant if port is already a number. Falls back to 41161 silently on invalid port.
-
----
-
-### L10: Performance: 500ms poll rate
+### L8: Performance: 500ms poll rate
 
 **File:** `src/main.js:179`  
 **Classification:** 🆕 NEW
 
 Polling every 500ms generates 2 packets/second. Acceptable for single device but could be configurable.
+
+---
+
+### L9: README Developer Mode instructions use `npm install` instead of `yarn`
+
+**File:** `README.md:36`  
+**Classification:** 🆕 NEW
+
+The Developer Mode section instructs users to run `npm install`, but this module uses Yarn. The correct command is `yarn`.
+
+**Fix:** Replace `npm install` with `yarn` in the Developer Mode steps.
 
 ---
 
@@ -487,15 +491,6 @@ Polling every 500ms generates 2 packets/second. Acceptable for single device but
 **Classification:** 🆕 NEW
 
 Not breaking — feedback returns false for channel 1 — but inconsistent.
-
----
-
-### N2: Port config field uses textinput instead of number type
-
-**File:** `src/main.js:119-125`  
-**Classification:** 🆕 NEW
-
-Could use `type: 'number'` with min/max constraints for better UX.
 
 ---
 
