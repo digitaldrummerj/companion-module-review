@@ -1066,3 +1066,143 @@ The v1.0.1 release is a clean housekeeping update — removing dead code, fixing
 ---
 
 **No blocking issues. No notes for future releases. Approved for release.**
+## 2026-04-06: neol-epowerswitch v1.1.1 — Review Findings
+
+**Session:** neol-epowerswitch-review (2026-04-06T02:25:54Z)
+**Module:** companion-module-neol-epowerswitch
+**Version:** 1.1.1 (first release)
+**Final Verdict:** ❌ CHANGES REQUIRED (10 critical template compliance violations)
+
+### Critical Issues (Block Approval)
+
+**Source:** Kaylee (Template & Build Review)
+
+1. **Source files at module root instead of src/ directory**
+   - Root-level index.js wrapper found
+   - Template requires: `"main": "src/main.js"` with no wrapper files
+   - Fix: Rename src/index.js → src/main.js, remove root index.js, update package.json
+
+2. **manifest.json runtime.entrypoint points to root index.js**
+   - Found: `"entrypoint": "../index.js"`
+   - Template requires: `"entrypoint": "../src/main.js"`
+
+3. **package.json missing required format script**
+   - Missing: `"format": "prettier -w ."`
+   - Template requires this script for code formatting
+
+4. **package.json build script should be named package**
+   - Found: `"build": "companion-module-build"`
+   - Template standardizes: `"package": "companion-module-build"`
+
+5. **package.json engines.node does not match template**
+   - Found: `">=18 <21"`
+   - Template requires: `"^22.20"`
+
+6. **package.json missing engines.yarn field**
+   - Missing: `"yarn": "^4"`
+   - Template requires this for package manager specification
+
+7. **package.json prettier field points to wrong path**
+   - Found: `"prettier": "@companion-module/tools/prettier"`
+   - Template requires: `"prettier": "@companion-module/tools/.prettierrc.json"`
+
+8. **package.json repository.url missing git+ prefix**
+   - Found: `"https://github.com/bitfocus/companion-module-neol-epowerswitch.git"`
+   - Template requires: `"git+https://github.com/bitfocus/companion-module-neol-epowerswitch.git"`
+
+9. **manifest.json repository URL missing git+ prefix**
+   - Found: `"https://github.com/bitfocus/companion-module-neol-epowerswitch.git"`
+   - Template requires: `"git+https://github.com/bitfocus/companion-module-neol-epowerswitch.git"`
+
+10. **manifest.json contains banned keywords**
+    - Banned keywords found: "neol" (manufacturer), "epowerswitch" (product name)
+    - Template rule: Keywords must not contain manufacturer/product names or "companion"/"module"/"stream deck"
+    - Fix: Remove "neol" and "epowerswitch" from keywords array
+
+### High Priority Issues (Fix Before Next Release)
+
+**Source:** Kaylee (Template & Build Review)
+
+1. **.prettierignore contains extra entries beyond template**
+   - Found: node_modules/, yarn.lock, package-lock.json, .yarn/, dist/, build/
+   - Template expects: Only package.json and /LICENSE.md
+   - Note: Not harmful but deviates from baseline
+
+2. **manifest.json runtime.type is node18 instead of node22**
+   - Found: `"type": "node18"`
+   - Template recommends: `"type": "node22"` for security patches and LTS
+   - Note: Not blocking since Node 18 still supported by base v1.11.3
+
+3. **@companion-module/tools version too old**
+   - Found: version 2.5.0 (pinned)
+   - Template uses: ^2.6.1
+   - Issue: Peer dependency warning with @companion-module/base — tools requires ^1.12.0 but module uses ~1.11.3
+   - Recommendation: Upgrade base to ~1.12.0 or tools to compatible version
+
+### Should Fix Before Next Release (Medium Priority)
+
+**Source:** Kaylee (Template & Build Review), Zoe (QA & Bugs)
+
+From Kaylee:
+1. Upgrade scripts reference non-existent actions (post, put, patch) — dead code
+2. Upgrade scripts reference non-existent config field (rejectUnauthorized) — dead code
+
+From Zoe:
+1. **Race condition in configUpdated()**
+   - Missing explicit stopPolling() call at start of configUpdated()
+   - Recommendation: Add stopPolling(this) before re-initializing state
+   
+2. **No validation of statusPollInterval config value**
+   - Should validate against NaN/invalid values with explicit warning
+
+3. **Swallowed errors with no failure tracking**
+   - No distinction between one-time glitch and repeated failures
+   - Could add failure counter for better diagnostics
+
+4. **Potential state inconsistency during rapid toggle**
+   - If polling is slow/disabled, toggle state could be stale
+   - Current mitigation (early poll) helps but doesn't guarantee sync
+
+### What's Solid
+
+**Mal (Architecture & SDK Review) — ✅ APPROVED WITH NOTES**
+- ✅ SDK compliance excellent — proper use of runEntrypoint() and InstanceBase
+- ✅ ESM module structure correct with proper extensions on imports
+- ✅ package.json well-configured for v1.x module
+- ✅ companion/manifest.json correct (except entrypoint and keywords issues)
+- ✅ Code structure clean with proper separation of concerns
+- ✅ Polling implementation robust with proper timer management
+- ✅ HTTP handling appropriate with got library
+- ✅ Actions, feedbacks, presets well-designed
+
+**Wash (Protocol & Connection Review) — ✅ APPROVED**
+- ✅ HTTP error handling comprehensive — all got calls in try/catch
+- ✅ Timeout configuration correct for got v14
+- ✅ Polling lifecycle clean and idempotent
+- ✅ URL construction handles duplicate slashes correctly
+- ✅ Response parsing defensive with validation
+- ✅ Early refresh after command ensures quick updates
+- ✅ destroy() properly cleans resources — no socket leaks
+
+**Zoe (QA & Bugs) — ⚠️ CONDITIONAL PASS**
+- ✅ Error handling structure solid
+- ✅ No unhandled promise rejections
+- ✅ Resource cleanup in destroy()
+- ✅ No memory leaks
+- ✅ HTTP timeouts configured (5s)
+- ✅ Null safety throughout
+- ✅ Consistent status updates
+
+**Simon (Test Detection) — ℹ️ NO TESTS**
+- Module does not include a test suite (not required for first release)
+
+### Summary
+
+This is a solid first release with excellent protocol implementation and code structure. The module demonstrates good understanding of v1.x SDK patterns, proper ESM usage, and clean code organization.
+
+**Blocking items are all configuration/structural** — not code quality issues. Once the 10 critical template violations are fixed, the module will be ready for approval.
+
+**Recommendation:** Fix all 10 critical issues in Kaylee's review, apply Zoe's race condition fix, then re-review for approval.
+
+---
+
