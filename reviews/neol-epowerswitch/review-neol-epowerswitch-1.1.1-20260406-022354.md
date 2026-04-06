@@ -70,11 +70,11 @@ The module code is genuinely solid — good HTTP implementation, clean architect
 - [ ] [M3: Race condition in `configUpdated()` — missing explicit `stopPolling()` call](#m3-race-condition-in-configupdated--missing-explicit-stoppolling-call)
 
 **Non-blocking**
-- [ ] [L2: Swallowed errors in poll intervals — no persistent-failure signal](#l2-swallowed-errors-in-poll-intervals--no-persistent-failure-signal)
+- [ ] [L1: Swallowed errors in poll intervals — no persistent-failure signal](#l1-swallowed-errors-in-poll-intervals--no-persistent-failure-signal)
 - [ ] [N1: Use `Connecting` status during initial startup](#n1-use-connecting-status-during-initial-startup)
 - [ ] [N2: Default config object duplicated in `init()` and `configUpdated()`](#n2-default-config-object-duplicated-in-init-and-configupdated)
 - [ ] [N3: Error logs missing URL/outlet context](#n3-error-logs-missing-urloutlet-context)
-- [ ] [N5: Action and feedback descriptions are too technical](#n5-action-and-feedback-descriptions-are-too-technical)
+- [ ] [N4: Action and feedback descriptions are too technical](#n4-action-and-feedback-descriptions-are-too-technical)
 
 ---
 
@@ -323,7 +323,7 @@ configUpdated(config) {
 
 ## 🟢 Low
 
-### L2: Swallowed errors in poll intervals — no persistent-failure signal
+### L1: Swallowed errors in poll intervals — no persistent-failure signal
 
 **File:** `src/polling.js` lines 19, 22, 71  
 **Classification:** 🆕 NEW  
@@ -363,7 +363,7 @@ Error log messages don't include the target URL or outlet number. Adding context
 
 ---
 
-### N5: Action and feedback descriptions are too technical
+### N4: Action and feedback descriptions are too technical
 
 **File:** `src/actions.js` line 6, `src/feedbacks.js` line 7  
 **Classification:** 🆕 NEW  
