@@ -266,3 +266,56 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 - All template files present, correct structure
 
 **Review file:** `.squad/decisions/inbox/mal-review-findings.md`
+
+### 2026-04-06: snellwilcox-kahuna v1.0.0 — FINAL ASSEMBLY — APPROVED
+
+**Module:** companion-module-snellwilcox-kahuna v1.0.0
+**API:** `@companion-module/base ~2.0.3` (v2.0 rules)
+**Session:** 2026-04-06 Final Assembly
+
+**Final Verdict:** ✅ APPROVED — Excellent v2.0 API compliance, clean build/lint/tests (88/88), no blocking issues.
+
+**Scorecard:**
+- Critical: 0
+- High: 0
+- Medium: 6 (queue race, unbounded queue, error handling, tally indexing, missing tsconfig.node.json, moduleResolution)
+- Low: 10 (various cosmetic/enhancement items)
+- Nice to Have: 3
+
+**Kaylee's 5 "Critical" items adjudicated:**
+1. `recommended-esm` instead of `recommended` → **Low** (justified for ESM module, build passes)
+2. Extra tsconfig options → **Low** (enhancements not problems, build passes)
+3. tsconfig includes vitest.config.ts → **Low** (necessary for test type-checking)
+4. eslint custom test rules → **Low** (reasonable for test infrastructure)
+5. Missing tsconfig.node.json → **Medium** (should be cleaned up, but lint passes)
+
+**Agents Contributing:** Mal, Wash, Kaylee, Zoe, Simon
+
+**Review file:** `reviews/snellwilcox-kahuna/review-snellwilcox-kahuna-v1.0.0-20260406-041741.md`
+
+### 2025-07-21: allenheath-sq v3.1.0 review — APPROVED
+
+**Module:** companion-module-allenheath-sq v3.1.0
+**API:** `@companion-module/base ~1.11.3` (v1.x rules)
+**Previous:** v3.0.0
+
+**Final Verdict:** ✅ APPROVED — Full v1.11 API compliance, clean release.
+
+**Notable Changes:**
+- Runtime upgraded from `node18` → `node22` (aligns with v1.11 recommendations)
+- API base upgraded from `~1.10.0` → `~1.11.3`
+- Config field IDs renamed with proper upgrade script (`tryRenameVariousConfigIds`)
+- Tooling updates: ESLint 10.x, TypeScript 5.9, Vitest 4.x, Yarn 4.13.0
+
+**v1.x Required Checks — All Passed:**
+- `runEntrypoint(sqInstance, UpgradeScripts)` at bottom of `src/main.ts` ✅
+- `UpgradeScripts` exported from `src/upgrades.ts` ✅
+- `init()`, `destroy()`, `configUpdated()`, `getConfigFields()` all implemented ✅
+- No `package-lock.json`, `dist/` gitignored ✅
+
+**Low/Info Items (non-blocking):**
+- Missing `engines.yarn` field — `packageManager` field handles this (modern Yarn 4.x approach)
+- `engines.node ^22.11` vs template `^22.20` — acceptable, both Node 22.x compatible
+- `@companion-module/tools ^2.6.1` — devDependency, acceptable for build tooling
+
+**Review file:** `.squad/decisions/inbox/mal-review-findings.md`

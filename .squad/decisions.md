@@ -1483,3 +1483,61 @@ This is a solid first release with excellent protocol implementation and code st
 
 Review files in `.squad/orchestration-log/` and `.squad/log/` document all findings. Decision to ship now, patch follow-ups as optional robustness improvements.
 
+---
+
+## 2026-04-06: companion-module-allenheath-sq v3.1.0 — Squad Review Consensus
+
+**By:** Mal (Architect), Wash (Protocol), Kaylee (Dev), Zoe (QA), Simon (Tests)  
+**Module:** companion-module-allenheath-sq  
+**Version:** v3.1.0 (update from v3.0.0)  
+**What:** Multi-agent squad review verdict on Node 22 runtime upgrade, config refactor, and MIDI channel type safety improvements.
+
+### Cross-Agent Consensus
+
+| Agent | Domain | Verdict | Key Finding |
+|-------|--------|---------|-------------|
+| **Mal** | v1.11 API Compliance | ✅ APPROVED | Node 22 upgrade aligned with v1.11 recommendations |
+| **Wash** | Protocol Lifecycle | ⚠️ PASS (Non-Blocking) | Pre-existing EventEmitter listener leak on reconnect (recommend fix in v3.1.1) |
+| **Kaylee** | Build & Template | 🔴 4 CRITICAL VIOLATIONS | Missing .gitattributes, engines.yarn, engines.node version, .gitignore cleanup required |
+| **Zoe** | QA & Safety | ✅ APPROVED | Refactor is safe, type improvements reduce off-by-one bugs |
+| **Simon** | Test Suite | ✅ EXCELLENT | 527/527 tests pass (100%), comprehensive MIDI protocol coverage |
+
+### Blocking Issues
+
+**Template Compliance Violations (Kaylee):**
+1. **Missing `.gitattributes`** — required for TS modules, must contain: `* text=auto eol=lf`
+2. **Missing `engines.yarn`** — required field: `"yarn": "^4"`
+3. **Wrong `engines.node`** — has ^22.11, requires ^22.20
+4. **Extra `.gitignore` entries** — remove .DS_Store, /pkg.tgz, /allenheath-sq-*.tgz (covered by /*.tgz pattern)
+
+**Status:** 🔴 TEMPLATE COMPLIANCE BLOCKERS — Fix required before approval.
+
+### Non-Blocking Findings
+
+**Pre-Existing EventEmitter Listener Leak (Wash):**
+- Location: `src/mixer/mixer.ts:348-427`
+- Impact: Memory accumulation on each reconnect (config change or network restart)
+- Severity: Low (no functional impact in short sessions, affects long-running instances)
+- Recommendation: Add `removeAllListeners()` cleanup in `Mixer.#stop()` — 5-10 line fix for v3.1.1
+
+**Type Safety Improvements (NEW in v3.1.0):**
+- MIDI channel 0-based vs 1-based distinction formalized with types
+- Reduces off-by-one errors throughout codebase
+- All test cases updated consistently
+- **Assessment:** Positive change
+
+### Build & Quality Status
+
+- **Build:** ✅ PASS — `yarn install && yarn package` succeeds, artifact: `allenheath-sq-3.1.0.tgz`
+- **Tests:** ✅ EXCELLENT — 527/527 pass, 30 test files, excellent coverage of MIDI protocol
+- **Architecture:** ✅ APPROVED — v1.11 API all required checks pass
+- **QA:** ✅ APPROVED — No new regressions, safe refactor
+
+### Why
+
+Technical implementation is strong (build passes, excellent tests, proper API compliance), but template compliance violations are explicit rejections per SKILL.md. These are fixable issues unrelated to the core module functionality.
+
+### Next Step
+
+**PENDING:** Module author must fix 4 template violations before final approval. Once corrected, module is ready for v3.1.0 release.
+
