@@ -15,6 +15,45 @@ When in doubt, compare directly against the authoritative templates in the works
 
 ---
 
+## ⛔ Instant Rejection Checklist — Check These First
+
+**Before doing anything else, verify every item below. Each one is an automatic 🔴 Critical blocking finding if it fails. Do not skip any of them.**
+
+### Config Files — Content Must Match Template Exactly
+
+| File | Expected content | Common failure |
+|------|-----------------|----------------|
+| `.gitattributes` | `* text=auto eol=lf` (single line) | Missing file, extra lines, wrong line endings |
+| `.gitignore` | See Section 4 for exact content per JS/TS | Extra entries, missing entries, wrong entries |
+| `.prettierignore` | `package.json` and `/LICENSE.md` (two lines) | Missing file, extra entries, different casing |
+| `.yarnrc.yml` | `nodeLinker: node-modules` (single line) | Missing file, different value, extra content |
+
+If the file is missing **or** the content doesn't match the template: **🔴 Critical — blocks approval.**
+
+### `package.json` — Required Fields
+
+| Field | Required | Common failure |
+|-------|----------|----------------|
+| `engines.node` | `"^22.20"` or `"^22.x"` | Field missing entirely, or still set to `^18` |
+| `engines.yarn` | `"^4"` | Field missing entirely, or `engines` block absent |
+| `prettier` | `"@companion-module/tools/.prettierrc.json"` | Field missing entirely |
+| `packageManager` | `"yarn@4.x.x"` (must start with `yarn@4`) | Field missing, or set to npm/older yarn |
+| `repository.type` | `"git"` | Field missing entirely |
+| `repository.url` | `"git+https://github.com/bitfocus/companion-module-{name}.git"` | Field missing, wrong org, wrong format |
+
+If **any** of these fields are missing or wrong: **🔴 Critical — blocks approval.**
+
+### `LICENSE` File — Content Must Be Valid MIT License
+
+- The `LICENSE` file must exist (see Required Files checklist)
+- The content must be a valid MIT License — not a placeholder, not empty, not a different license
+- The copyright line must reference a real author/organization — not `"Your name"` or similar placeholder
+- Compare against the template: `companion-module-template-js/LICENSE`
+
+If `LICENSE` is missing, is a placeholder, or is not MIT: **🔴 Critical — blocks approval.**
+
+---
+
 ## 1. Detecting JS vs TS
 
 A module is **TypeScript** if either of these is true:
@@ -297,7 +336,9 @@ A good HELP.md covers: what the module does, how to configure it (host/port/auth
 | `package-lock.json` present | **🔴 Critical** (blocks) |
 | Source code files not in `src/` directory | **🔴 Critical** (blocks) |
 | `version` in `package.json` doesn't match git tag | **🔴 Critical** (blocks) |
+| Missing `repository` field in `package.json` (entirely absent) | **🔴 Critical** (blocks) |
 | Wrong `repository` URL (package.json or manifest.json) | **🔴 Critical** (blocks) |
+| `LICENSE` file is missing, is a placeholder, or is not MIT | **🔴 Critical** (blocks) |
 | Placeholder maintainer `name` or `email` in manifest | **🔴 Critical** (blocks) |
 | Empty `maintainers` array | **🔴 Critical** (blocks) |
 | Stub `companion/HELP.md` | **🔴 Critical** (blocks) |
@@ -307,7 +348,7 @@ A good HELP.md covers: what the module does, how to configure it (host/port/auth
 | Missing required `devDependencies` | **🔴 Critical** (blocks) |
 | `.husky` missing or not committed (TS) | **🔴 Critical** (blocks) |
 | `manifest.json` id or name doesn't match module name | **🔴 Critical** (blocks) |
-| Config file content differs from template | **🔴 Critical** (blocks) |
+| Config file content differs from template (`.gitattributes`, `.gitignore`, `.prettierignore`, `.yarnrc.yml`) | **🔴 Critical** (blocks) |
 | Extra `.gitignore` entries beyond template | **🔴 Critical** (blocks) |
 | `tsconfig` deviations without justification | **🔴 Critical** (blocks) |
 

@@ -50,6 +50,29 @@ In your inbox output, put all PRE-EXISTING findings in a separate `## ⚠️ Pre
 ## Review Criteria
 
 **Blocking issues (will reject):**
+
+> **⚠️ Always check the Instant Rejection Checklist in `.squad/skills/companion-template-compliance/SKILL.md` first.** These items are 🔴 Critical every time — do not skip them.
+
+**Config files — content must match template exactly (🔴 Critical if wrong or missing):**
+- `.gitattributes` content doesn't match template (`* text=auto eol=lf`)
+- `.gitignore` content doesn't match template (wrong entries, extra entries, missing entries)
+- `.prettierignore` content doesn't match template (`package.json` and `/LICENSE.md`)
+- `.yarnrc.yml` content doesn't match template (`nodeLinker: node-modules`)
+
+**`package.json` required fields — missing or wrong (🔴 Critical):**
+- `engines.node` missing or not `^22.x`
+- `engines.yarn` missing or not `^4`
+- `prettier` field missing or wrong value
+- `packageManager` missing or doesn't start with `yarn@4`
+- `repository` field missing entirely
+- `repository.url` wrong (must be `git+https://github.com/bitfocus/companion-module-{name}.git`)
+
+**`LICENSE` file (🔴 Critical):**
+- Missing
+- Not MIT license
+- Contains placeholder copyright (e.g. "Your name")
+
+**Other hard rejections:**
 - `package-lock.json` present
 - `yarn package` fails with errors
 - `companion/` directory missing or incomplete
