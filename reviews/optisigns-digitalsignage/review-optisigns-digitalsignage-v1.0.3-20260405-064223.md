@@ -15,7 +15,7 @@
 
 ## Fix Summary for Maintainer
 
-**16 blocking issues must be resolved before approval.** Most are template compliance fixes — straightforward file additions and `package.json`/`manifest.json` field corrections.
+**17 blocking issues must be resolved before approval.** Most are template compliance fixes — straightforward file additions and `package.json`/`manifest.json` field corrections.
 
 1. **C1:** Add `.gitattributes` with content: `* text=auto eol=lf`
 2. **C2:** Add `.prettierignore` with content: `package.json` + `/LICENSE.md`
@@ -33,6 +33,7 @@
 14. **M2:** Replace `Promise.all` with `Promise.allSettled` in `src/main.js` line 84, handle partial failures
 15. **M3:** Fix `sanitizeKey()` in `src/variables.js` line 52 to avoid variable ID collisions (e.g., append device ID suffix)
 16. **M4:** Fix `HELP.md` to say "every 5 minutes" (not "30 seconds") or change `poll_interval` default to 30
+17. **N1:** Remove `keywords` field from `package.json`
 
 ---
 
@@ -42,20 +43,20 @@
 |----------|--------|-------------|-------|
 | 🔴 Critical | 11 | 0 | 11 |
 | 🟠 High | 1 | 0 | 1 |
-| 🟡 Medium | 4 | 0 | 4 |
+| 🟡 Medium | 5 | 0 | 5 |
 | 🟢 Low | 6 | 0 | 6 |
-| 💡 Nice to Have | 3 | 0 | 3 |
+| 💡 Nice to Have | 2 | 0 | 2 |
 | **Total** | **25** | **0** | **25** |
 
-**Blocking:** 16 issues (11 critical, 1 high, 4 medium — all new)
-**Fix complexity:** Medium — 11 template/config fixes (one-liners), 1 one-liner fetch timeout, 4 small code changes
+**Blocking:** 17 issues (11 critical, 1 high, 5 medium — all new)
+**Fix complexity:** Medium — 11 template/config fixes (one-liners), 1 one-liner fetch timeout, 5 small code/config changes
 **Health delta:** 25 introduced · 0 pre-existing (first release)
 
 ---
 
 ## Verdict
 
-**❌ Changes Required** — 16 blocking issues. The module's architecture and application logic are solid, but template compliance violations and one operational risk (no fetch timeout) must be resolved.
+**❌ Changes Required** — 17 blocking issues. The module's architecture and application logic are solid, but template compliance violations and one operational risk (no fetch timeout) must be resolved.
 
 ---
 
@@ -71,13 +72,14 @@
 - [ ] [C7: Missing `repository` field in `package.json`](#c7-missing-repository-field-in-packagejson)
 - [ ] [C8: `manifest.json` `name` does not match `id`](#c8-manifestjson-name-does-not-match-id)
 - [ ] [C9: `manifest.json` `repository` URL wrong format](#c9-manifestjson-repository-url-wrong-format)
-- [ ] [C10: Banned keyword in `manifest.json` keywords](#c10-banned-keyword-in-manifestjson-keywords)
+- [ ] [C10: Product/manufacturer name in `manifest.json` keywords](#c10-productmanufacturer-name-in-manifestjson-keywords)
 - [ ] [C11: `.gitignore` deviates from JS template](#c11-gitignore-deviates-from-js-template)
 - [ ] [H1: No request timeout on `fetch()` calls](#h1-no-request-timeout-on-fetch-calls)
 - [ ] [M1: API key config field should use `secret-text`](#m1-api-key-config-field-should-use-secret-text)
 - [ ] [M2: `Promise.all` coupling causes full-refresh failure on single-endpoint error](#m2-promiseall-coupling-causes-full-refresh-failure-on-single-endpoint-error)
 - [ ] [M3: `sanitizeKey()` collision silently corrupts device variables](#m3-sanitizekey-collision-silently-corrupts-device-variables)
 - [ ] [M4: Poll interval default contradicts HELP.md documentation](#m4-poll-interval-default-contradicts-helpmd-documentation)
+- [ ] [N1: `keywords` field not permitted in `package.json`](#n1-keywords-field-not-permitted-in-packagejson)
 
 **Non-blocking**
 - [ ] [L1: No action/feedback definitions if initial `refreshData()` fails](#l1-no-actionfeedback-definitions-if-initial-refreshdata-fails)
@@ -86,7 +88,6 @@
 - [ ] [L4: Optimistic cache update targets orphaned object after concurrent poll](#l4-optimistic-cache-update-targets-orphaned-object-after-concurrent-poll)
 - [ ] [L5: `err.message` undefined for non-Error rejections](#l5-errmessage-undefined-for-non-error-rejections)
 - [ ] [L6: Concurrent `configUpdated()` calls race on shared state](#l6-concurrent-configupdated-calls-race-on-shared-state)
-- [ ] [N1: Banned/noisy keywords in `package.json`](#n1-bannednoisy-keywords-in-packagejson)
 - [ ] [N2: `manifest.json` version should be `0.0.0`](#n2-manifestjson-version-should-be-000)
 - [ ] [N3: Several action options missing `tooltip`](#n3-several-action-options-missing-tooltip)
 
@@ -232,13 +233,13 @@ Missing `git+` prefix and `.git` suffix.
 
 ---
 
-### C10: Banned keyword in `manifest.json` keywords
+### C10: Product/manufacturer name in `manifest.json` keywords
 
 **Classification:** 🆕 NEW
 **File:** `companion/manifest.json`, line 26
 **Reviewer:** Kaylee
 
-`"optisigns"` is the manufacturer/product name and is a banned keyword.
+`"optisigns"` is the product/manufacturer name. Module keywords should not include the product or manufacturer name — those are already represented by the `shortname` and `name` fields.
 
 Found: `["digital signage", "optisigns", "screens", "displays"]`
 Fix: `["digital signage", "screens", "displays"]`
@@ -368,6 +369,19 @@ Fix: Update HELP.md to say "every **5 minutes** (configurable)" or change the de
 
 ---
 
+### N1: `keywords` field not permitted in `package.json`
+
+**Classification:** 🆕 NEW
+**File:** `package.json`, line 15
+**Reviewer:** Kaylee
+
+The `keywords` field should not be present in `package.json` for Companion modules. Remove it entirely.
+
+Found: `"keywords": ["bitfocus", "companion", "optisigns"]`
+Fix: Remove the `keywords` field from `package.json`.
+
+---
+
 ## 🟢 Low
 
 ### L1: No action/feedback definitions if initial `refreshData()` fails
@@ -446,18 +460,6 @@ Fix: `self.log('error', \`… failed: ${err?.message ?? String(err)}\`)`
 ---
 
 ## 💡 Nice to Have
-
-### N1: Banned/noisy keywords in `package.json`
-
-**Classification:** 🆕 NEW
-**File:** `package.json`, line 15
-**Reviewer:** Kaylee
-
-`keywords` contains `"bitfocus"`, `"companion"`, and `"optisigns"` — all match banned patterns. While `package.json` keywords are less strictly enforced than manifest keywords, these add no search value.
-
-Suggested: `["digital-signage"]` or `[]`
-
----
 
 ### N2: `manifest.json` version should be `0.0.0`
 
