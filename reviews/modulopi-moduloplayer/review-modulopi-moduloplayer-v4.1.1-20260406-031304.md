@@ -32,12 +32,13 @@
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
 | 🔴 Critical | 1 | 2 | 3 |
-| 🟠 High | 2 | 1 | 3 |
-| 🟢 Low | 1 | 2 | 3 |
+| 🟠 High | 2 | 0 | 2 |
+| 🟡 Medium | 1 | 2 | 3 |
+| 🟢 Low | 0 | 1 | 1 |
 | 💡 Nice to Have | 1 | 0 | 1 |
 | **Total** | **5** | **5** | **10** |
 
-**Blocking:** 5 issues (3 Critical + 2 High)  
+**Blocking:** 8 issues (3 Critical + 2 High + 3 Medium)  
 **Fix complexity:** Quick — file creates, two code fixes, and one upgrade script  
 **Health delta:** 4 introduced · 6 pre-existing surfaced
 
@@ -45,7 +46,7 @@
 
 ## Verdict
 
-**❌ Changes Required** — 5 blocking issues: 3 template compliance mismatches, 1 stale interval timer in `destroy()`, and 1 missing upgrade script for option type change. The code quality is solid — all issues are structural or configuration.
+**❌ Changes Required** — 8 blocking issues: 3 template compliance mismatches, 1 stale interval timer in `destroy()`, 1 missing upgrade script for option type change, 1 duplicate action label, 1 non-English source comments, and 1 ungraceful WebSocket teardown. The code quality is solid — all issues are structural or configuration.
 
 ---
 
@@ -57,11 +58,12 @@
 - [ ] [C3: Missing `.husky/pre-commit` file](#c3-missing-huskypre-commit-file)
 - [ ] [H1: `pollAPI` interval not cleared in `destroy()`](#h1-pollapi-interval-not-cleared-in-destroy)
 - [ ] [H2: Missing upgrade script for `current_Cue` option type change](#h2-missing-upgrade-script-for-current_cue-option-type-change)
-**Non-blocking**
-- [ ] [H3: Deprecated `isVisible: () => false` usage](#h3-deprecated-isvisible---false-usage)
 - [ ] [L1: Duplicate action name "Next Cue on Playlist"](#l1-duplicate-action-name-next-cue-on-playlist)
 - [ ] [L2: French comments in source files](#l2-french-comments-in-source-files)
 - [ ] [L3: No explicit `close()` in `WSConnection.destroy()` before nulling](#l3-no-explicit-close-in-wsconnectiondestroy-before-nulling)
+
+**Non-blocking**
+- [ ] [H3: Deprecated `isVisible: () => false` usage](#h3-deprecated-isvisible---false-usage)
 - [ ] [N1: Remove unused hidden `task` option from `launch_task` action](#n1-remove-unused-hidden-task-option-from-launch_task-action)
 
 ---
@@ -173,29 +175,7 @@ The feedback callback does have a numeric fallback (lines ~89–90), but the sto
 
 ---
 
-### H3: Deprecated `isVisible: () => false` usage
-
-**Classification:** ⚠️ PRE-EXISTING  
-**File:** `src/actions.ts` (22 occurrences), `src/feedbacks.ts` (7 occurrences)  
-**Issue:** The module uses `isVisible: () => false` (function form) on hidden legacy/migration options. This was deprecated in `@companion-module/base` v1.12. The module is on v1.12.1. Per review policy, pre-existing High issues block regardless of source — prior reviews missed this.
-
-**All usages are the same pattern — constant false:**
-```typescript
-isVisible: () => false,   // deprecated
-```
-
-**Required replacement:**
-```typescript
-isVisibleExpression: "false",   // API v1.12+
-```
-
-**Affected files:** `src/actions.ts` lines 34, 74, 81, 124, 131, 166, 192, 218, 244, 277, 318, 357, 397, 438, 477 (and others); `src/feedbacks.ts` lines 15, 36, 43, 50, 75, 82, 143.
-
-Since all usages are constant `false` (not conditional), migration is a straight find-and-replace.
-
----
-
-## 🟢 Low
+## 🟡 Medium
 
 ### L1: Duplicate action name "Next Cue on Playlist"
 
@@ -218,6 +198,30 @@ Since all usages are constant `false` (not conditional), migration is a straight
 **Classification:** ⚠️ PRE-EXISTING  
 **File:** `src/wsconnection.ts`, lines 87–93  
 **Issue:** `destroy()` sets `this.websocket = null` without first calling `this.websocket?.terminate()`. The socket becomes eligible for GC and Node.js will eventually close it, but no TCP FIN is sent immediately. The server may see an ungraceful disconnect until TCP timeout. Compare with `disconnect()` which correctly calls `this.websocket?.close()` before releasing the reference.
+
+---
+
+## 🟢 Low
+
+### H3: Deprecated `isVisible: () => false` usage
+
+**Classification:** ⚠️ PRE-EXISTING  
+**File:** `src/actions.ts` (22 occurrences), `src/feedbacks.ts` (7 occurrences)  
+**Issue:** The module uses `isVisible: () => false` (function form) on hidden legacy/migration options. This was deprecated in `@companion-module/base` v1.12. The module is on v1.12.1.
+
+**All usages are the same pattern — constant false:**
+```typescript
+isVisible: () => false,   // deprecated
+```
+
+**Suggested replacement:**
+```typescript
+isVisibleExpression: "false",   // API v1.12+
+```
+
+**Affected files:** `src/actions.ts` lines 34, 74, 81, 124, 131, 166, 192, 218, 244, 277, 318, 357, 397, 438, 477 (and others); `src/feedbacks.ts` lines 15, 36, 43, 50, 75, 82, 143.
+
+Since all usages are constant `false` (not conditional), migration is a straight find-and-replace.
 
 ---
 
