@@ -13,7 +13,7 @@
 
 ## Verdict: 🔴 CHANGES REQUIRED
 
-Two critical blockers prevent approval: the `yarn package` build script is missing (build fails entirely) and upgrade scripts were copied from an unrelated module and reference actions and config fields that have never existed in this codebase. Additionally, there are several High/Medium template compliance items that must be addressed before resubmission. The underlying module logic — polling, actions, feedbacks, variables — is solid and well-structured.
+One critical blocker prevents approval: the `yarn package` build script is missing (build fails entirely). Additionally, there are several High/Medium template compliance items that must be addressed before resubmission. The underlying module logic — polling, actions, feedbacks, variables — is solid and well-structured.
 
 ---
 
@@ -21,26 +21,7 @@ Two critical blockers prevent approval: the `yarn package` build script is missi
 
 ### 🔴 Critical
 
-#### C1 — Upgrade scripts reference non-existent actions and config fields from another module
-
-**File:** `src/upgrade.js`, lines 1–36  
-
-The two upgrade scripts in this file were copied from a different module (likely `companion-module-generic-http` or similar) and reference action IDs and config fields that have never existed in this module at any version:
-
-- `v1_1_4` (lines 2–20): checks for action IDs `post`, `put`, `patch` with a `contenttype` option. This module has exactly **one** action: `toggle_outlet_hidden` (see `src/actions.js`). These action IDs do not exist and never have.
-- `v1_1_6` (lines 22–35): attempts to set `config.rejectUnauthorized = true`. This config field does not exist in this module. Config fields are: `prefix`, `hiddenPath`, `statusPollInterval` only (see `src/config.js`).
-
-This is additionally a **first release** — there are no prior saved user configurations to migrate. Upgrade scripts are not required.
-
-**Required fix:** Replace the entire contents of `src/upgrade.js` with:
-
-```js
-export const upgradeScripts = []
-```
-
----
-
-#### C2 — `yarn package` fails: missing `package` script
+#### C1 — `yarn package` fails: missing `package` script
 
 **File:** `package.json`, lines 17–20  
 
@@ -125,7 +106,22 @@ manifest.json:     "entrypoint": "../src/main.js"
 
 ### 🟡 Medium
 
-#### M1 — Wrong prettier config path in `package.json`
+#### M1 — Upgrade scripts may reference pre-release action IDs and config fields
+
+**File:** `src/upgrade.js`, lines 1–36
+
+The upgrade scripts reference action IDs and config fields not present in the current codebase:
+
+- `v1_1_4` (lines 2–20): checks for action IDs `post`, `put`, `patch` with a `contenttype` option. The current module has one action: `toggle_outlet_hidden` (`src/actions.js`).
+- `v1_1_6` (lines 22–35): sets `config.rejectUnauthorized = true`. The current config fields are `prefix`, `hiddenPath`, and `statusPollInterval` (`src/config.js`).
+
+If these action IDs and config fields existed in pre-release testing versions sent to testers, these scripts are valid and needed to migrate those saved configurations. If they never existed in this module and were carried in from another codebase, they should be removed.
+
+**Clarification needed:** Please confirm whether testing releases of this module included `post`, `put`, `patch` actions or a `rejectUnauthorized` config field. If so, no change needed. If not, replace with `export const upgradeScripts = []`.
+
+---
+
+#### M2 — Wrong prettier config path in `package.json`
 
 **File:** `package.json`, line 29  
 
@@ -300,10 +296,10 @@ The two methods perform exactly the same operations in the same order with no be
 
 | Severity | Count | Blocking |
 |---|---|---|
-| 🔴 Critical | 2 | Yes |
+| 🔴 Critical | 1 | Yes |
 | 🟠 High | 3 | Yes |
-| 🟡 Medium | 5 | Yes (M1–M3); No (M4–M5) |
+| 🟡 Medium | 6 | Yes (M2–M4); No (M1, M5–M6) |
 | 🟢 Low | 5 | No |
 | 💡 Nice to Have | 2 | No |
 
-The fix surface is well-defined. The module logic itself is clean — once the template compliance issues and the orphaned upgrade scripts are corrected and the build passes, this should be ready for re-review.
+The fix surface is well-defined. The module logic itself is clean — once the build script is fixed, template compliance issues are addressed, and the upgrade script question is clarified with the maintainer, this should be ready for re-review.
