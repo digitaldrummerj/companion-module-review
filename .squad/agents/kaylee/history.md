@@ -183,3 +183,19 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 ## Learnings
 - Always diff module against `companion-module-template-js` for missing structural files before closing a review branch
 - `.gitattributes` and `.prettierignore` are commonly missing from older modules — template compliance check should include these
+
+### 2026-04-05: VideoPathé QTimer — N1, N4 Fixes
+
+- **Module:** `companion-module-videopathe-qtimer`
+- **Branch:** `fix/review-template-compliance` (pre-existing)
+- **Commit:** `3497f17` — chore: fix manifest version and package.json script convention (N1, N4)
+
+**Fixes applied:**
+- **N1:** `companion/manifest.json` line 7: version `1.0.0` → `0.0.0` (Companion runtime uses package.json for actual version; manifest is always 0.0.0)
+- **N4:** `package.json` scripts: replaced `yarn <scriptname>` with workspace-agnostic `run <scriptname>` convention
+  - Line 22: `build` script `yarn build:main` → `run build:main`
+  - Line 26: `lint` script `yarn lint:raw .` → `run lint:raw .`
+  - Line 27: `package` script `yarn build && companion-module-build` → `run build && companion-module-build`
+  - Preserved `postinstall: husky` (no change needed)
+
+**Template convention:** Module templates now use `run` instead of `yarn` in package.json scripts for package manager agnosticism. The `run` command resolves to yarn, npm, or pnpm depending on runtime.

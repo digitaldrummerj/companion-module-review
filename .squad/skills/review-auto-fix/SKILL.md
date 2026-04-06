@@ -139,6 +139,45 @@ Update all import paths and the `main` field in `package.json` in the same commi
 
 ---
 
+## Code Fix Format — Always Show Before AND After
+
+When writing a review finding that includes a code fix, **always show both the current code and the proposed replacement**. Never show only the fix without the before state.
+
+### Required format for every code-level finding:
+
+````markdown
+**Current code (`src/main.ts`, line N):**
+```typescript
+// what is there now
+someFunction(oldArg)
+```
+
+**Fix:**
+```typescript
+// what it should be
+someFunction(newArg, { timeout: 10_000 })
+```
+````
+
+**Rules:**
+- Include a `**Current code (`{file}`, line N):**` block before every fix block
+- Show enough surrounding context (1–3 lines) to identify the exact location
+- If the current code is an absence (e.g., a missing field), write `*(field absent)*` instead of a code block
+- This applies to ALL severity levels: Critical, High, Medium, Low, and Nitpick
+
+**Example — absence (missing field):**
+````markdown
+**Current code (`companion/manifest.json`):**
+*(field absent)*
+
+**Fix:** Add to `manifest.json`:
+```json
+"categories": ["utility"]
+```
+````
+
+---
+
 ## Mark Fixed Issues in the Review File
 
 After each fix commit is made in the module repo, **update the review markdown file** in the review repo to mark the fixed issue as done. This keeps the review file in sync with the work that has been done.
