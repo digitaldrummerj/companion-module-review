@@ -32,13 +32,13 @@ The module code is genuinely solid — good HTTP implementation, clean architect
 | 🔴 Critical | 10 | 0 | 10 |
 | 🟠 High | 3 | 0 | 3 |
 | 🟡 Medium | 3 | 0 | 3 |
-| 🟢 Low | 2 | 0 | 2 |
+| 🟢 Low | 1 | 0 | 1 |
 | 💡 Nice to Have | 5 | 0 | 5 |
-| **Total** | **23** | **0** | **23** |
+| **Total** | **22** | **0** | **22** |
 
 **Blocking:** 16 issues (10 new critical, 3 new high, 3 new medium)  
 **Fix complexity:** Medium — multiple one-line config fixes plus a source file rename and entry point restructure  
-**Health delta:** 23 introduced · 0 pre-existing
+**Health delta:** 22 introduced · 0 pre-existing
 
 ---
 
@@ -71,7 +71,6 @@ The module code is genuinely solid — good HTTP implementation, clean architect
 
 **Non-blocking**
 - [ ] [L2: Swallowed errors in poll intervals — no persistent-failure signal](#l2-swallowed-errors-in-poll-intervals--no-persistent-failure-signal)
-- [ ] [L4: Toggle state inconsistency during delayed poll](#l4-toggle-state-inconsistency-during-delayed-poll)
 - [ ] [N1: Use `Connecting` status during initial startup](#n1-use-connecting-status-during-initial-startup)
 - [ ] [N2: Default config object duplicated in `init()` and `configUpdated()`](#n2-default-config-object-duplicated-in-init-and-configupdated)
 - [ ] [N3: Error logs missing URL/outlet context](#n3-error-logs-missing-urloutlet-context)
@@ -333,17 +332,6 @@ configUpdated(config) {
 `pollStatus()` is called with `.catch(() => {})` in three places. While individual errors are caught and logged inside `pollStatus()`, there's no mechanism to signal "this has been failing for an extended period." An operator has no way to distinguish a one-time hiccup from a module that's been offline for an hour.
 
 A simple failure counter (reset on success, log a warning after N consecutive failures) would improve troubleshooting on live shows.
-
----
-
-### L4: Toggle state inconsistency during delayed poll
-
-**File:** `src/polling.js` line 53  
-**Classification:** 🆕 NEW  
-
-When `mode === 'toggle'`, the command is derived from `self.outletStates?.[outlet]`. If two toggles are pressed in rapid succession before the early-refresh poll (line 71) completes, the second toggle reads stale state and may send the same command direction as the first.
-
-The early `pollStatus()` call mitigates this in most cases. Document the behavior in HELP.md or add a "last command sent" cache to improve reliability.
 
 ---
 
