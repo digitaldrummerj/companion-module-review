@@ -1206,3 +1206,29 @@ This is a solid first release with excellent protocol implementation and code st
 
 ---
 
+
+---
+
+## modulopi-moduloplayer v4.1.1 — Changes Required
+
+**Review Date:** 2026-04-06  
+**Verdict:** Changes Required — 6 blocking issues  
+
+**Blocking Issues:**
+
+### Critical (3)
+1. **Missing `.prettierignore`** — Template requirement (Kaylee)
+2. **Wrong `.gitattributes` content** — Should be `* text=auto eol=lf` (Kaylee)
+3. **Missing `.husky/pre-commit`** — TypeScript module requirement (Kaylee)
+
+### High (3)
+1. **`pollAPI` interval not cleared in `destroy()`** — Memory leak in module teardown (Mal)
+2. **Missing upgrade script for `current_Cue` feedback** — Type change from number to textinput without migration (Mal)
+3. **Deprecated `isVisible: () => boolean` usage** — 22 occurrences in actions/feedbacks, deprecated in API v1.12 (Kaylee)
+
+**Team Notes:**
+- ✅ Protocol implementation solid (Wash: APPROVED)
+- ✅ Code quality excellent, no QA blockers (Zoe: APPROVED)
+- ✅ No tests required (Simon: PASS)
+
+**Action:** Fix 6 blocking issues and re-review.
