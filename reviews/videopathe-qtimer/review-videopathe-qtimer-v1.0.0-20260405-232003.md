@@ -14,7 +14,7 @@
 
 ## Fix Summary for Maintainer
 
-**17 blocking issues must be fixed before approval.** Numbered by priority:
+**21 blocking issues must be fixed before approval.** Numbered by priority:
 
 1. **Add `.yarnrc.yml`** with `nodeLinker: node-modules` — without it, Yarn 4 defaults to PnP and `yarn package` fails. (C1)
 2. **Add `.gitignore`** from template — prevents `dist/`, `node_modules/`, and PnP artifacts from being committed. (C2)
@@ -32,6 +32,10 @@
 14. **Validate `ruleId` is non-empty** before building URL in `audio_set_rule_enabled` and `audio_set_rule_volume`, `src/actions.ts` lines 449/472. (M5)
 15. **Guard against `null`/array in WebSocket payload** — add `payload.data === null || Array.isArray(payload.data)` check, `src/main.ts` line 209. (M6)
 16. **Reset `runtimeState` in `configUpdated()`** before reconnecting — prevents stale server data from persisting, `src/main.ts` line 92. (M7)
+17. **Set `manifest.json` version to `0.0.0`** — runtime uses `package.json`; manifest version should follow template convention. (M8)
+18. **Set `InstanceStatus.Connecting`** in `disconnectWebSocket()` when `scheduleReconnect` is `true` — prevents status showing `Ok` while WebSocket is reconnecting. (M9)
+19. **Investigate and resolve Yarn peer dependency warning** — `yarn install` emits `YN0086: Some peer dependencies are incorrectly met`. (M10)
+20. **Update `package.json` scripts** to use workspace-agnostic `run build` / `run build:main` instead of `yarn build` / `yarn build:main`. (M11)
 
 **After applying all fixes, verify with:**
 
@@ -52,20 +56,19 @@ yarn build            # confirm build still succeeds
 |----------|--------|-------------|-------|
 | 🔴 Critical | 6 | 0 | 6 |
 | 🟠 High | 3 | 0 | 3 |
-| 🟡 Medium | 8 | 0 | 8 |
+| 🟡 Medium | 12 | 0 | 12 |
 | 🟢 Low | 0 | 0 | 0 |
-| 💡 Nice to Have | 4 | 0 | 4 |
 | **Total** | **21** | **0** | **21** |
 
-**Blocking:** 17 issues (6 new critical, 3 new high, 8 new medium)  
+**Blocking:** 21 issues (6 new critical, 3 new high, 12 new medium)  
 **Fix complexity:** Medium — template files are copy-from-template; network fixes require AbortController pattern (~30 lines)  
-**Health delta:** 24 introduced · 0 pre-existing (first release)
+**Health delta:** 21 introduced · 0 pre-existing (first release)
 
 ---
 
 ## Verdict
 
-**❌ CHANGES REQUIRED** — 6 critical template compliance violations, 3 high-severity network reliability issues, and 8 medium issues block approval. The code architecture and logic quality are genuinely strong — the blocking items are primarily missing configuration files and missing network timeouts, all straightforward to fix.
+**❌ CHANGES REQUIRED** — 6 critical template compliance violations, 3 high-severity network reliability issues, and 12 medium issues block approval. The code architecture and logic quality are genuinely strong — the blocking items are primarily missing configuration files and missing network timeouts, all straightforward to fix.
 
 ---
 
@@ -88,12 +91,10 @@ yarn build            # confirm build still succeeds
 - [ ] [M5: Empty `ruleId` sends malformed URL in audio rule actions](#m5-empty-ruleid-sends-malformed-url-in-audio-rule-actions)
 - [ ] [M6: Unsafe `as` cast for WebSocket state payload](#m6-unsafe-as-cast-for-websocket-state-payload)
 - [ ] [M7: `configUpdated()` does not clear stale state before reconnecting](#m7-configupdated-does-not-clear-stale-state-before-reconnecting)
-
-**Non-blocking**
-- [ ] [N1: `manifest.json` version should be `0.0.0`](#n1-manifestjson-version-should-be-000)
-- [ ] [N2: `InstanceStatus.Disconnected` never used](#n2-instancestatusdisconnected-never-used)
-- [ ] [N3: Yarn peer dependency warning](#n3-yarn-peer-dependency-warning)
-- [ ] [N4: `package.json` scripts use `yarn` instead of `run`](#n4-packagejson-scripts-use-yarn-instead-of-run)
+- [ ] [M8: `manifest.json` version should be `0.0.0`](#m8-manifestjson-version-should-be-000)
+- [ ] [M9: `InstanceStatus.Disconnected` never used](#m9-instancestatusdisconnected-never-used)
+- [ ] [M10: Yarn peer dependency warning](#m10-yarn-peer-dependency-warning)
+- [ ] [M11: `package.json` scripts use `yarn` instead of `run`](#m11-packagejson-scripts-use-yarn-instead-of-run)
 
 ---
 
@@ -515,19 +516,19 @@ this.checkFeedbacks()
 
 ---
 
-## 💡 Nice to Have
-
-### N1: `manifest.json` version should be `0.0.0`
+### M8: `manifest.json` version should be `0.0.0`
 
 **Classification:** 🆕 NEW  
 **File:** `companion/manifest.json`, line 6  
 **Source:** Kaylee (K10), Zoe (Z13)
 
-Convention is `"version": "0.0.0"` in manifest (runtime uses `package.json`). Current value `"1.0.0"` matches `package.json`, so non-blocking, but diverges from convention.
+Convention is `"version": "0.0.0"` in manifest — the runtime uses `package.json` as the source of version truth. Current value `"1.0.0"` diverges from template convention and could cause confusion.
+
+**Fix:** Set `"version": "0.0.0"` in `companion/manifest.json`.
 
 ---
 
-### N2: `InstanceStatus.Disconnected` never used
+### M9: `InstanceStatus.Disconnected` never used
 
 **Classification:** 🆕 NEW  
 **File:** `src/main.ts`  
@@ -539,17 +540,17 @@ The module uses `BadConfig`, `Connecting`, `Ok`, and `ConnectionFailure` but nev
 
 ---
 
-### N3: Yarn peer dependency warning
+### M10: Yarn peer dependency warning
 
 **Classification:** 🆕 NEW  
 **File:** *(install output)*  
 **Source:** Kaylee (K9)
 
-`yarn install` emits `YN0086: Some peer dependencies are incorrectly met`. Non-blocking but worth investigating.
+`yarn install` emits `YN0086: Some peer dependencies are incorrectly met`. Investigate and resolve to keep the dependency tree clean.
 
 ---
 
-### N4: `package.json` scripts use `yarn` instead of `run`
+### M11: `package.json` scripts use `yarn` instead of `run`
 
 **Classification:** 🆕 NEW  
 **File:** `package.json`, lines 22, 27  
