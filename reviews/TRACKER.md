@@ -13,4 +13,5 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | softouch-easyworship | v2.1.0 | 2026-04-02 | [review](softouch-easyworship/review-softouch-easyworship-v2.1.0-2026-04-02-041821.md) |
 | ✅ | spacecommz-intercom | v1.1.0 | 2026-04-05 | [review](spacecommz-intercom/review-spacecommz-intercom-v1.1.0-20260405-060928.md) |
 | ✅ | videopathe-qtimer | v1.0.0 | 2026-04-05 | [review](videopathe-qtimer/review-videopathe-qtimer-v1.0.0-20260405-232003.md) |
-| ⬜ | neol-epowerswitch | v1.1.1 | 2026-04-06 | [review](neol-epowerswitch/review-neol-epowerswitch-v1.1.1-20260406-015513.md) |
+| ✅ | neol-epowerswitch | v1.1.1 | 2026-04-06 | [review](neol-epowerswitch/review-neol-epowerswitch-v1.1.1-20260406-015513.md) |
+| ✅ | modulopi-moduloplayer | v4.1.1 | 2026-04-06 | [review](modulopi-moduloplayer/review-modulopi-moduloplayer-v4.1.1-20260406-031304.md) |
