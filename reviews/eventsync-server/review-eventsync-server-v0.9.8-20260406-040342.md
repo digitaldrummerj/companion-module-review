@@ -13,12 +13,12 @@
 
 ## Fix Summary for Maintainer
 
-**Blocking fixes required (17 issues):**
+**Blocking fixes required (19 issues):**
 
 1. **C1:** Create `.gitattributes` with `* text=auto eol=lf` (root directory)
 2. **C2:** Create `.prettierignore` with `package.json` and `/LICENSE.md` (root directory)
 3. **C3:** Create `.yarnrc.yml` with `nodeLinker: node-modules` (root directory)
-4. **C4:** Create `tsconfig.build.json` from template and update `tsconfig.json` (root directory)
+4. **C4:** Add missing `tsconfig.build.json` (from template) and update `tsconfig.json` to match the template — root directory
 5. **C5:** Create `.husky/pre-commit` with `lint-staged` content (`.husky/` directory)
 6. **C6:** Replace `.gitignore` content with template version (root directory)
 7. **C7:** Add `engines` field to `package.json:~3` with `"node": "^22.20", "yarn": "^4"`
@@ -27,11 +27,13 @@
 10. **C10:** Fix `repository.url` in `package.json:~10` to `bitfocus/companion-module-eventsync-server`
 11. **C11:** Fix `repository` in `companion/manifest.json:~5` to match package.json URL
 12. **C12:** Replace all `scripts` in `package.json:~20` with template versions
-13. **H1:** Add `ws.removeAllListeners()` before `ws.close()` in `src/connection.ts:67-75`
-14. **H2:** Add `shouldReconnect` flag to prevent reconnect on auth failure in `src/connection.ts:89-92`
-15. **H3:** Upgrade `@companion-module/base` to `~1.14.1` in `package.json:~30`
-16. **H4:** Upgrade `@companion-module/tools` to `^2.7.1` in `package.json:~35`
-17. **H5:** Add `lint-staged` configuration section to `package.json:~50`
+13. **C13:** Add missing `devDependencies` to `package.json`: `husky`, `lint-staged`, and `rimraf`
+14. **H1:** Add `ws.removeAllListeners()` before `ws.close()` in `src/connection.ts:67-75`
+15. **H2:** Add `shouldReconnect` flag to prevent reconnect on auth failure in `src/connection.ts:89-92`
+16. **H3:** Upgrade `@companion-module/base` to `~1.14.1` in `package.json:~30`
+17. **H4:** Upgrade `@companion-module/tools` to `^2.7.1` in `package.json:~35`
+18. **H5:** Add `lint-staged` configuration section to `package.json:~50`
+19. **M3:** Remove banned keywords from `package.json`
 
 ---
 
@@ -39,22 +41,22 @@
 
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
-| 🔴 Critical | 12 | 0 | 12 |
+| 🔴 Critical | 13 | 0 | 13 |
 | 🟠 High | 5 | 0 | 5 |
-| 🟡 Medium | 5 | 0 | 5 |
+| 🟡 Medium | 3 | 0 | 3 |
 | 🟢 Low | 4 | 0 | 4 |
-| 💡 Nice to Have | 2 | 0 | 2 |
-| **Total** | **28** | **0** | **28** |
+| 💡 Nice to Have | 1 | 0 | 1 |
+| **Total** | **26** | **0** | **26** |
 
-**Blocking:** 17 issues (12 critical, 5 high)  
+**Blocking:** 19 issues (13 critical, 5 high, 1 medium)  
 **Fix complexity:** Medium — template compliance fixes are straightforward but numerous; WebSocket lifecycle changes require careful implementation  
-**Health delta:** 28 introduced · 0 pre-existing (first release)
+**Health delta:** 26 introduced · 0 pre-existing (first release)
 
 ---
 
 ## Verdict
 
-🔴 **CHANGES REQUIRED** — 12 critical template compliance violations and 5 high-severity WebSocket/dependency issues block approval. Module cannot build until template files are added and dependencies upgraded.
+🔴 **CHANGES REQUIRED** — 13 critical template compliance violations, 5 high-severity WebSocket/dependency issues, and 1 medium blocking issue block approval. Module cannot build until template files are added and dependencies upgraded.
 
 ---
 
@@ -64,7 +66,7 @@
 - [ ] [C1: Missing `.gitattributes` file](#c1-missing-gitattributes-file)
 - [ ] [C2: Missing `.prettierignore` file](#c2-missing-prettierignore-file)
 - [ ] [C3: Missing `.yarnrc.yml` file](#c3-missing-yarnrcyml-file)
-- [ ] [C4: Missing `tsconfig.build.json` file](#c4-missing-tsconfigbuildjson-file)
+- [ ] [C4: `tsconfig.build.json` missing; `tsconfig.json` does not match template](#c4-tsconfigbuildjson-missing-tsconfigjson-does-not-match-template)
 - [ ] [C5: Missing `.husky` directory and pre-commit hook](#c5-missing-husky-directory-and-pre-commit-hook)
 - [ ] [C6: `.gitignore` content does not match template](#c6-gitignore-content-does-not-match-template)
 - [ ] [C7: Missing `engines` field in `package.json`](#c7-missing-engines-field-in-packagejson)
@@ -73,24 +75,22 @@
 - [ ] [C10: Wrong `repository.url` in `package.json`](#c10-wrong-repositoryurl-in-packagejson)
 - [ ] [C11: Wrong `repository` in `manifest.json`](#c11-wrong-repository-in-manifestjson)
 - [ ] [C12: Missing required `package.json` scripts](#c12-missing-required-packagejson-scripts)
+- [ ] [C13: Missing `devDependencies` in `package.json`](#c13-missing-devdependencies-in-packagejson)
 - [ ] [H1: WebSocket Event Listeners Not Removed (Resource Leak)](#h1-websocket-event-listeners-not-removed-resource-leak)
 - [ ] [H2: Reconnect on `authFailed` Creates Persistent Failure Loop](#h2-reconnect-on-authfailed-creates-persistent-failure-loop)
 - [ ] [H3: Outdated `@companion-module/base` version](#h3-outdated-companion-modulebase-version)
 - [ ] [H4: Outdated `@companion-module/tools` version](#h4-outdated-companion-moduletools-version)
 - [ ] [H5: Missing `lint-staged` configuration](#h5-missing-lint-staged-configuration)
+- [ ] [M3: Remove banned keywords from `package.json`](#m3-remove-banned-keywords-from-packagejson)
 
 **Non-blocking**
-- [ ] [M1: Version Mismatch Between package.json and manifest.json](#m1-version-mismatch-between-packagejson-and-manifestjson)
-- [ ] [M2: Passcode Field Should Use `secret-text` Type](#m2-passcode-field-should-use-secret-text-type)
-- [ ] [M3: No Backoff on Reconnect Attempts](#m3-no-backoff-on-reconnect-attempts)
-- [ ] [M4: Unhandled Promise Rejection in Action Callbacks](#m4-unhandled-promise-rejection-in-action-callbacks)
-- [ ] [M5: `send()` Called on Closed WebSocket Silently Fails](#m5-send-called-on-closed-websocket-silently-fails)
+- [ ] [M1: `manifest.json` version should be `0.0.0`](#m1-manifestjson-version-should-be-000)
+- [ ] [M2: `send()` Called on Closed WebSocket Silently Fails](#m2-send-called-on-closed-websocket-silently-fails)
 - [ ] [L1: Ping Interval May Accumulate](#l1-ping-interval-may-accumulate)
 - [ ] [L2: `onStateUpdate()` Overwrites `serverStatus` from Server](#l2-onstateupdate-overwrites-serverstatus-from-server)
 - [ ] [L3: Empty Dropdown Defaults Can Cause Invalid Action Options](#l3-empty-dropdown-defaults-can-cause-invalid-action-options)
 - [ ] [L4: No Timeout on WebSocket Connection Attempt](#l4-no-timeout-on-websocket-connection-attempt)
-- [ ] [N1: Remove banned keywords from package.json](#n1-remove-banned-keywords-from-packagejson)
-- [ ] [N2: Consider adding connection retry logic improvements](#n2-consider-adding-connection-retry-logic-improvements)
+- [ ] [N1: Consider adding connection retry logic improvements](#n1-consider-adding-connection-retry-logic-improvements)
 
 ---
 
@@ -148,44 +148,19 @@ nodeLinker: node-modules
 
 ---
 
-### C4: Missing `tsconfig.build.json` file
-**File:** (missing)  
+### C4: `tsconfig.build.json` missing; `tsconfig.json` does not match template
+**File:** root directory  
 **Classification:** 🆕 NEW
 
-The `tsconfig.build.json` file does not exist. The module only has `tsconfig.json`, which does not match the template structure.
+Two separate tsconfig issues:
 
-**Current tsconfig.json:**
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022"],
-    "module": "ES2022",
-    "moduleResolution": "node",
-    ...
-  }
-}
-```
+1. **`tsconfig.build.json` is missing.** The template repo includes `tsconfig.build.json` and it must be present. The `package.json` build scripts reference it, so the build will fail without it.
 
-**Expected tsconfig.build.json:**
-```json
-{
-  "extends": "@companion-module/tools/tsconfig/node22/recommended",
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules/**", "src/**/*spec.ts", "src/**/__tests__/*", "src/**/__mocks__/*"],
-  "compilerOptions": {
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "paths": { "*": ["./node_modules/*"] },
-    "module": "Node16",
-    "moduleResolution": "Node16"
-  }
-}
-```
+2. **`tsconfig.json` does not match the template.** The module's `tsconfig.json` uses a custom compiler options block. It must match the content in the template repo (`companion-module-template-ts/tsconfig.json`).
 
-**Impact:** The current tsconfig does not use the recommended Companion module configuration. The `package.json` scripts reference `tsconfig.build.json`, which doesn't exist, so the build will fail.
-
-**Fix:** Rename `tsconfig.json` to `tsconfig.build.json` and replace its content with the template version.
+**Fix:**
+- Add `tsconfig.build.json` matching the template repo's version
+- Replace `tsconfig.json` content with the template repo's version
 
 ---
 
@@ -519,79 +494,20 @@ error @companion-module/base@1.10.0: The engine "node" is incompatible. Expected
 
 ## 🟡 Medium
 
-### M1: Version Mismatch Between package.json and manifest.json
+### M1: `manifest.json` version should be `0.0.0`
 **Files:** `package.json:3`, `companion/manifest.json:7`  
 **Classification:** 🆕 NEW
 
 - `package.json:3` — `"version": "0.9.8"`
 - `companion/manifest.json:7` — `"version": "0.9.6"`
 
-**Impact:** Companion uses manifest.json for display, package.json for npm. Mismatched versions cause confusion in bug reports.
+The `manifest.json` `version` field must be set to `0.0.0`. This value is managed automatically by the build tooling and must not be set to the release version manually.
 
-**Fix:** Update `companion/manifest.json` line 7 to `"version": "0.9.8"`.
-
----
-
-### M2: Passcode Field Should Use `secret-text` Type
-**File:** `src/config.ts:29-35`  
-**Classification:** 🆕 NEW
-
-```typescript
-{
-    type: 'textinput',   // ← should be 'secret-text'
-    id: 'passcode',
-    label: 'Passcode',
-    ...
-}
-```
-
-**Issue:** The `passcode` config field is a credential. Using `textinput` exposes it in Companion configuration exports. Since API v1.13, `secret-text` type is available.
-
-**Note:** Module uses API ~1.10.0. Upgrading to ~1.13.0+ would enable `secret-text`.
-
-**Recommended Fix (requires API upgrade):**
-```typescript
-{
-    type: 'secret-text',
-    id: 'passcode',
-    label: 'Passcode',
-    ...
-}
-```
+**Fix:** Set `companion/manifest.json` line 7 to `"version": "0.0.0"`.
 
 ---
 
-### M3: No Backoff on Reconnect Attempts
-**File:** `src/connection.ts:107-114`  
-**Classification:** 🆕 NEW
-
-Reconnect always waits exactly 5 seconds. If the server is down, this hammers it with connection attempts indefinitely.
-
-**Recommendation:** Implement exponential backoff (5s → 10s → 20s → 40s, capped at ~60s).
-
----
-
-### M4: Unhandled Promise Rejection in Action Callbacks
-**File:** `src/actions.ts:16-448`  
-**Classification:** 🆕 NEW
-
-All action callbacks are defined as `async` but never use `await`, and they call methods that could throw. Since callbacks are fire-and-forget, errors are silently swallowed.
-
-```typescript
-callback: async () => {
-    instance.getConnection()?.globalGo()  // If this throws, no error handling
-},
-```
-
-**Impact:**
-- Operators press buttons but actions fail silently
-- No feedback that command was not sent
-
-**Recommendation:** Wrap action callback bodies in try/catch or make callbacks NOT async since they don't await anything.
-
----
-
-### M5: `send()` Called on Closed WebSocket Silently Fails
+### M2: `send()` Called on Closed WebSocket Silently Fails
 **File:** `src/connection.ts:77-80`  
 **Classification:** 🆕 NEW
 
@@ -608,6 +524,18 @@ send(message: object): void {
 **Impact:** Actions silently fail when disconnected; operators may think command was sent.
 
 **Recommendation:** Log a warning when send is called but socket is not open.
+
+---
+
+### M3: Remove banned keywords from `package.json`
+**File:** `package.json`  
+**Classification:** 🆕 NEW
+
+**Current keywords:** `["bitfocus", "companion", "eventsync", "show-control", "osc"]`
+
+The `keywords` field must be removed from `package.json` entirely.
+
+**Fix:** Remove the `keywords` section from `package.json`.
 
 ---
 
@@ -666,22 +594,7 @@ If the server is unreachable, the WebSocket constructor will hang indefinitely w
 
 ## 💡 Nice to Have
 
-### N1: Remove banned keywords from package.json
-**File:** `package.json`  
-**Classification:** 🆕 NEW
-
-**Current keywords:** `["bitfocus", "companion", "eventsync", "show-control", "osc"]`
-
-**Banned keywords:**
-- `"bitfocus"` — manufacturer name
-- `"companion"` — generic term
-- `"eventsync"` — module/product name
-
-**Recommendation:** Remove banned keywords, keep only `"show-control"` and `"osc"`.
-
----
-
-### N2: Consider adding connection retry logic improvements
+### N1: Consider adding connection retry logic improvements
 **File:** `src/connection.ts`  
 **Classification:** 🆕 NEW
 
