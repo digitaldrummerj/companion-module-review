@@ -33,12 +33,12 @@ The module code is genuinely solid — good HTTP implementation, clean architect
 | 🟠 High | 3 | 0 | 3 |
 | 🟡 Medium | 3 | 0 | 3 |
 | 🟢 Low | 1 | 0 | 1 |
-| 💡 Nice to Have | 5 | 0 | 5 |
-| **Total** | **22** | **0** | **22** |
+| 💡 Nice to Have | 4 | 0 | 4 |
+| **Total** | **21** | **0** | **21** |
 
 **Blocking:** 16 issues (10 new critical, 3 new high, 3 new medium)  
 **Fix complexity:** Medium — multiple one-line config fixes plus a source file rename and entry point restructure  
-**Health delta:** 22 introduced · 0 pre-existing
+**Health delta:** 21 introduced · 0 pre-existing
 
 ---
 
@@ -74,7 +74,6 @@ The module code is genuinely solid — good HTTP implementation, clean architect
 - [ ] [N1: Use `Connecting` status during initial startup](#n1-use-connecting-status-during-initial-startup)
 - [ ] [N2: Default config object duplicated in `init()` and `configUpdated()`](#n2-default-config-object-duplicated-in-init-and-configupdated)
 - [ ] [N3: Error logs missing URL/outlet context](#n3-error-logs-missing-urloutlet-context)
-- [ ] [N4: Config fields use `tooltip` instead of `help`](#n4-config-fields-use-tooltip-instead-of-help)
 - [ ] [N5: Action and feedback descriptions are too technical](#n5-action-and-feedback-descriptions-are-too-technical)
 
 ---
@@ -361,15 +360,6 @@ Both `init()` and `configUpdated()` set `InstanceStatus.Ok` before any successfu
 **Classification:** 🆕 NEW  
 
 Error log messages don't include the target URL or outlet number. Adding context (e.g., `"Hidden command error for outlet 2: ECONNREFUSED"`) makes log inspection faster on live shows.
-
----
-
-### N4: Config fields use `tooltip` instead of `help`
-
-**File:** `src/config.js`  
-**Classification:** 🆕 NEW  
-
-The config fields use the older `tooltip` property (hover-only hint) rather than `help` (always-visible hint text below the input). `help` is the modern standard in `@companion-module/base` v1.13+.
 
 ---
 
