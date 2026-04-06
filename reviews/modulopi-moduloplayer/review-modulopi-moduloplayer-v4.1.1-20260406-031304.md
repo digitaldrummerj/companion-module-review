@@ -37,7 +37,7 @@
 | 💡 Nice to Have | 1 | 0 | 1 |
 | **Total** | **5** | **5** | **10** |
 
-**Blocking:** 6 issues (3 Critical + 3 High)  
+**Blocking:** 5 issues (3 Critical + 2 High)  
 **Fix complexity:** Quick — file creates, two code fixes, and one upgrade script  
 **Health delta:** 4 introduced · 6 pre-existing surfaced
 
@@ -45,7 +45,7 @@
 
 ## Verdict
 
-**❌ Changes Required** — 6 blocking issues: 3 template compliance mismatches, 1 stale interval timer in `destroy()`, 1 missing upgrade script for option type change, and 1 deprecated API pattern. The code quality is solid — all issues are structural or configuration.
+**❌ Changes Required** — 5 blocking issues: 3 template compliance mismatches, 1 stale interval timer in `destroy()`, and 1 missing upgrade script for option type change. The code quality is solid — all issues are structural or configuration.
 
 ---
 
@@ -57,9 +57,8 @@
 - [ ] [C3: Missing `.husky/pre-commit` file](#c3-missing-huskypre-commit-file)
 - [ ] [H1: `pollAPI` interval not cleared in `destroy()`](#h1-pollapi-interval-not-cleared-in-destroy)
 - [ ] [H2: Missing upgrade script for `current_Cue` option type change](#h2-missing-upgrade-script-for-current_cue-option-type-change)
-- [ ] [H3: Deprecated `isVisible: () => false` usage](#h3-deprecated-isvisible---false-usage)
-
 **Non-blocking**
+- [ ] [H3: Deprecated `isVisible: () => false` usage](#h3-deprecated-isvisible---false-usage)
 - [ ] [L1: Duplicate action name "Next Cue on Playlist"](#l1-duplicate-action-name-next-cue-on-playlist)
 - [ ] [L2: French comments in source files](#l2-french-comments-in-source-files)
 - [ ] [L3: No explicit `close()` in `WSConnection.destroy()` before nulling](#l3-no-explicit-close-in-wsconnectiondestroy-before-nulling)
