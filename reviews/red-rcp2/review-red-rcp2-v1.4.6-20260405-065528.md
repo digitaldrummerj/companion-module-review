@@ -12,14 +12,22 @@
 
 ## Fix Summary for Maintainer
 
-The following **6 blocking issues** must be resolved before approval:
+The following **14 blocking issues** must be resolved before approval:
 
 1. **C1** — Add upgrade scripts to `upgrade.js` that remap `start_record` → `start_recording`, `stop_record` → `stop_recording`, `toggle_record` → `toggle_recording`, and remove/migrate `websocket_variable` feedbacks. (`upgrade.js`, line 1)
 2. **C2** — Restore `scripts` section in `package.json` with at minimum `"package": "companion-module-build"` and `"format": "prettier -w ."`. (`package.json`)
 3. **H1** — Change `CAMERA_LUT_ENABLE_SDI_1` → `ENABLE_CAMERA_LUT_SDI_1` and `CAMERA_LUT_ENABLE_SDI_2` → `ENABLE_CAMERA_LUT_SDI_2` in the SUBSCRIBE set. (`main.js`, lines 471–472)
-4. **M1** — Remove `process.title = 'RED RCP2'` — it renames Companion's entire Node.js process globally. (`main.js`, line 6)
-5. **M2** — Restore `this.updateStatus(InstanceStatus.ConnectionFailure, err.toString())` in `ws.on('error')`. (`main.js`, line 341)
-6. **M3** — Track staggered `setTimeout` handles on the instance and cancel them in `_clearTimers()`. (`main.js`, lines 437, 529)
+4. **H2** — Move source into `src/` and split `main.js` into `src/actions.js`, `src/feedbacks.js`, `src/upgrades.js`, `src/variables.js`. Update `package.json` `main` to `"src/main.js"` and `manifest.json` `runtime.entrypoint` to `"../src/main.js"`.
+5. **M1** — Remove `process.title = 'RED RCP2'` — it renames Companion's entire Node.js process globally. (`main.js`, line 6)
+6. **M2** — Restore `this.updateStatus(InstanceStatus.ConnectionFailure, err.toString())` in `ws.on('error')`. (`main.js`, line 341)
+7. **M3** — Track staggered `setTimeout` handles on the instance and cancel them in `_clearTimers()`. (`main.js`, lines 437, 529)
+8. **M4** — Restore `repository` field in `package.json`.
+9. **M5** — Restore `prettier` config field in `package.json`.
+10. **M6** — Add missing config files: `.gitattributes` (`* text=auto eol=lf`), `.prettierignore` (`package.json` / `/LICENSE.md`), `.yarnrc.yml` (`nodeLinker: node-modules`).
+11. **M7** — Update `LICENSE` copyright line to `Copyright (c) 2022 Bitfocus AS - Open Source`.
+12. **M8** — Add missing `.gitignore` entries: `/pkg`, `/*.tgz`, `DEBUG-*`, `/.yarn`.
+13. **M9** — Add `"packageManager": "yarn@4.12.0"` and `"engines": { "node": "^22.20", "yarn": "^4" }` to `package.json`.
+14. **M10** — Remove `"RED"`, `"RCP"`, and `"RCP2"` from `manifest.json` `keywords` — these duplicate the `manufacturer` and `name` fields.
 
 ---
 
@@ -28,15 +36,15 @@ The following **6 blocking issues** must be resolved before approval:
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
 | 🔴 Critical | 2 | 0 | 2 |
-| 🟠 High | 1 | 0 | 1 |
-| 🟡 Medium | 3 | 0 | 3 |
-| 🟢 Low | 4 | 0 | 4 |
+| 🟠 High | 1 | 1 | 2 |
+| 🟡 Medium | 6 | 4 | 10 |
+| 🟢 Low | 2 | 0 | 2 |
 | 💡 Nice to Have | 0 | 2 | 2 |
-| **Total** | **10** | **2** | **12** |
+| **Total** | **11** | **7** | **18** |
 
-**Blocking:** 6 issues (2 new critical, 1 regression high, 3 new/regression medium)
-**Fix complexity:** Medium — upgrade script requires ~20 lines of new code; rest are one-liners or simple renames
-**Health delta:** 10 introduced · 11 pre-existing noted
+**Blocking:** 14 issues
+**Fix complexity:** Medium-High — code restructuring (src/ split) is the largest change; config/manifest fixes are mechanical one-liners
+**Health delta:** 11 introduced · 7 pre-existing noted
 
 ---
 
@@ -44,7 +52,7 @@ The following **6 blocking issues** must be resolved before approval:
 
 ### ❌ Changes Required
 
-Two critical issues (empty upgrade scripts with breaking ID renames, missing `scripts` in `package.json`), one high (LUT subscription name mismatch), and three new/regression medium issues block approval. The upgrade scripts issue is the hard stop — users upgrading from v1.1.3 will have silently broken recording control buttons.
+Two critical issues (empty upgrade scripts with breaking ID renames, missing `scripts` in `package.json`), one high regression (LUT subscription name mismatch), one structural non-compliance (source not in `src/`, `main.js` not split into module files), three medium issues, and seven Low-severity findings block approval. The upgrade scripts issue is the hard stop — users upgrading from v1.1.3 will have silently dead recording control buttons. The structural refactor (H2) is the most effort-intensive fix.
 
 ---
 
@@ -54,15 +62,21 @@ Two critical issues (empty upgrade scripts with breaking ID renames, missing `sc
 - [ ] [C1: Empty upgrade scripts with renamed action/feedback IDs](#c1-empty-upgrade-scripts-with-renamed-actionfeedback-ids)
 - [ ] [C2: `scripts` section removed from `package.json`](#c2-scripts-section-removed-from-packagejson)
 - [ ] [H1: LUT subscription name mismatch causes stale toggle state](#h1-lut-subscription-name-mismatch-causes-stale-toggle-state)
+- [ ] [H2: Source code not in `src/` and `main.js` not split into module files](#h2-source-code-not-in-src-and-mainjs-not-split-into-module-files)
 - [ ] [M1: `process.title` global mutation at import time](#m1-processtitle-global-mutation-at-import-time)
 - [ ] [M2: `ws.on('error')` no longer updates InstanceStatus](#m2-wsonerror-no-longer-updates-instancestatus)
 - [ ] [M3: Untracked `setTimeout` chains not canceled by `_clearTimers()`](#m3-untracked-settimeout-chains-not-canceled-by-_cleartimers)
+- [ ] [M4: `repository` field removed from `package.json`](#m4-repository-field-removed-from-packagejson)
+- [ ] [M5: `prettier` config field removed from `package.json`](#m5-prettier-config-field-removed-from-packagejson)
+- [ ] [M6: Missing required config files (`.gitattributes`, `.prettierignore`, `.yarnrc.yml`)](#m6-missing-required-config-files-gitattributes-prettierignore-yarnrcyml)
+- [ ] [M7: LICENSE copyright attribution incorrect](#m7-license-copyright-attribution-incorrect)
+- [ ] [M8: `.gitignore` missing template entries](#m8-gitignore-missing-template-entries)
+- [ ] [M9: `package.json` missing `packageManager` and `engines` fields](#m9-packagejson-missing-packagemanager-and-engines-fields)
+- [ ] [M10: `manifest.json` keywords duplicate module name and manufacturer](#m10-manifestjson-keywords-duplicate-module-name-and-manufacturer)
 
 **Non-blocking**
-- [ ] [L1: `repository` field removed from `package.json`](#l1-repository-field-removed-from-packagejson)
-- [ ] [L2: `prettier` config field removed from `package.json`](#l2-prettier-config-field-removed-from-packagejson)
-- [ ] [L3: `set_iso` action missing NaN guard](#l3-set_iso-action-missing-nan-guard)
-- [ ] [L4: `set_sensor_fps` action missing NaN guard](#l4-set_sensor_fps-action-missing-nan-guard)
+- [ ] [L1: `set_iso` action missing NaN guard](#l1-set_iso-action-missing-nan-guard)
+- [ ] [L2: `set_sensor_fps` action missing NaN guard](#l2-set_sensor_fps-action-missing-nan-guard)
 - [ ] [N1: `manifest.json` version should be `"0.0.0"`](#n1-manifestjson-version-should-be-000)
 - [ ] [N2: `manifest.json` missing `$schema` field](#n2-manifestjson-missing-schema-field)
 
@@ -166,6 +180,31 @@ The subscription request for the wrong name goes to the camera for a parameter t
 
 ---
 
+### H2: Source code not in `src/` and `main.js` not split into module files
+
+**Classification:** ⚠️ PRE-EXISTING
+**Files:** `main.js`, `upgrade.js`, `companion/manifest.json`, `package.json`
+**Found by:** Kaylee
+
+The template-js places all source files in `src/` and splits concerns across separate files:
+- `src/main.js` — module class and lifecycle
+- `src/actions.js` — action definitions
+- `src/feedbacks.js` — feedback definitions
+- `src/upgrades.js` — upgrade scripts
+- `src/variables.js` — variable definitions
+
+`companion-module-red-rcp2` places `main.js` and `upgrade.js` directly at the repo root with all actions, feedbacks, variables, and upgrade logic inlined into `main.js`. `package.json` `"main"` points to `"main.js"` and `manifest.json` `runtime.entrypoint` is `"../main.js"`.
+
+**Fix:**
+1. Create `src/` and move `main.js` and `upgrade.js` into it (rename `upgrade.js` → `src/upgrades.js` to match template convention)
+2. Extract action definitions to `src/actions.js`
+3. Extract feedback definitions to `src/feedbacks.js`
+4. Extract variable definitions to `src/variables.js`
+5. Update `package.json` `"main"` from `"main.js"` to `"src/main.js"`
+6. Update `companion/manifest.json` `runtime.entrypoint` from `"../main.js"` to `"../src/main.js"`
+
+---
+
 ## 🟡 Medium
 
 ### M1: `process.title` global mutation at import time
@@ -227,9 +266,7 @@ if (this._staggerTimers) { for (const t of this._staggerTimers) clearTimeout(t);
 
 ---
 
-## 🟢 Low
-
-### L1: `repository` field removed from `package.json`
+### M4: `repository` field removed from `package.json`
 
 **Classification:** 🔙 REGRESSION
 **File:** `package.json`
@@ -241,7 +278,7 @@ v1.1.3 had `"repository": { "type": "git", "url": "git+https://github.com/bitfoc
 
 ---
 
-### L2: `prettier` config field removed from `package.json`
+### M5: `prettier` config field removed from `package.json`
 
 **Classification:** 🔙 REGRESSION
 **File:** `package.json`
@@ -253,7 +290,121 @@ v1.1.3 had `"prettier": "@companion-module/tools/.prettierrc.json"`. Removed in 
 
 ---
 
-### L3: `set_iso` action missing NaN guard
+### M6: Missing required config files (`.gitattributes`, `.prettierignore`, `.yarnrc.yml`)
+
+**Classification:** ⚠️ PRE-EXISTING
+**Files:** (absent)
+**Found by:** Kaylee
+
+Three files present in the template are absent from the repo:
+
+`.gitattributes`:
+```
+* text=auto eol=lf
+```
+Ensures consistent line endings across platforms.
+
+`.prettierignore`:
+```
+package.json
+/LICENSE.md
+```
+Tells Prettier which files to skip when running `format`.
+
+`.yarnrc.yml`:
+```
+nodeLinker: node-modules
+```
+Required for Yarn 4 to use the `node-modules` linker (vs PnP, which is incompatible with `companion-module-build`).
+
+**Fix:** Add all three files to the repo root with the exact contents shown above.
+
+---
+
+### M7: LICENSE copyright attribution incorrect
+
+**Classification:** 🆕 NEW
+**File:** `LICENSE`
+**Found by:** Kaylee
+
+The module's `LICENSE` file attributes copyright to `"Seth Haberman AS - Open Source"`. The template copyright and the standard for Companion modules hosted under the `bitfocus` GitHub organization reads `"Bitfocus AS - Open Source"`. Maintainer attribution belongs in `manifest.json` `maintainers`, not the copyright line.
+
+Current:
+```
+Copyright (c) 2025-2026 Seth Haberman AS - Open Source
+```
+
+Expected:
+```
+Copyright (c) 2022 Bitfocus AS - Open Source
+```
+
+**Fix:** Update the copyright line in `LICENSE` to match the template.
+
+---
+
+### M8: `.gitignore` missing template entries
+
+**Classification:** ⚠️ PRE-EXISTING
+**File:** `.gitignore`
+**Found by:** Kaylee
+
+The current `.gitignore` is missing four entries present in the template:
+```
+/pkg
+/*.tgz
+DEBUG-*
+/.yarn
+```
+
+`/pkg` and `/*.tgz` are the build outputs produced by `companion-module-build` when running `yarn package`. Without them, a developer who packages the module locally will accidentally commit the output. `/.yarn` prevents Yarn 4's cache and install state directory from being committed. `DEBUG-*` is the conventional debug output pattern.
+
+**Fix:** Add the four missing lines to `.gitignore`.
+
+---
+
+### M9: `package.json` missing `packageManager` and `engines` fields
+
+**Classification:** ⚠️ PRE-EXISTING
+**File:** `package.json`
+**Found by:** Kaylee
+
+Template requires:
+```json
+"engines": {
+    "node": "^22.20",
+    "yarn": "^4"
+},
+"packageManager": "yarn@4.12.0"
+```
+
+Both are absent from v1.4.6. `packageManager` pins the exact Yarn version for Corepack compatibility — without it, `corepack` may use a different Yarn version and produce inconsistent installs. `engines` communicates minimum Node and Yarn requirements to the build system and CI.
+
+**Fix:** Add both fields to `package.json`.
+
+---
+
+### M10: `manifest.json` keywords duplicate module name and manufacturer
+
+**Classification:** ⚠️ PRE-EXISTING
+**File:** `companion/manifest.json`
+**Found by:** Kaylee
+
+Keywords should describe what the module *does* or *how it connects* — not repeat information already present in the `name`, `shortname`, or `manufacturer` fields. Companion uses those fields for search and display; duplicating them in `keywords` adds noise without benefit.
+
+The manifest already has `"manufacturer": "RED"` and `"name": "RED RCP2 Camera Control"`. The keywords `"RED"` and `"RCP2"` repeat the manufacturer and product name directly. `"RCP"` is an abbreviation of the product name and has the same problem.
+
+```json
+"keywords": ["websocket", "RED", "Raptor", "R3D", "RCP", "RCP2"]
+```
+
+**Fix:** Remove `"RED"`, `"RCP"`, and `"RCP2"` from the `keywords` array. The retained keywords should be: `["websocket", "Raptor", "R3D"]`.
+
+---
+
+## 🟢 Low
+
+### L1: `set_iso` action missing NaN guard
 
 **Classification:** 🆕 NEW
 **File:** `main.js`, lines 1338–1340
@@ -270,13 +421,13 @@ No `isNaN(iso)` check before sending. The option is a dropdown so risk is low, b
 
 ---
 
-### L4: `set_sensor_fps` action missing NaN guard
+### L2: `set_sensor_fps` action missing NaN guard
 
 **Classification:** 🆕 NEW
 **File:** `main.js`, line 1357
 **Found by:** Zoe
 
-Same issue as L3. The `parseInt` result is inlined into `send()` without NaN validation.
+Same issue as L1. The `parseInt` result is inlined into `send()` without NaN validation.
 
 **Fix:** Extract to a variable, add `if (isNaN(fps)) return`.
 
@@ -310,15 +461,8 @@ These issues existed in v1.1.3 and remain unchanged. Per review policy, pre-exis
 
 | # | Issue | Files |
 |---|---|---|
-| PE1 | Source files at module root, not in `src/` | `main.js`, `upgrade.js` |
-| PE2 | Missing required config files (`.gitattributes`, `.prettierignore`, `.yarnrc.yml`) | — |
-| PE3 | Missing `engines` and `packageManager` fields in `package.json` | `package.json` |
-| PE4 | Unused `zx` dependency (~2MB) — not imported anywhere | `package.json` |
-| PE5 | Banned keywords in `manifest.json` ("RED", "RCP", "RCP2") | `companion/manifest.json` |
-| PE6 | `.gitignore` deviates from template (missing `/pkg`, `/*.tgz`, `DEBUG-*`, `/.yarn`) | `.gitignore` |
-| PE7 | `configUpdated()` reconnects unconditionally without checking if config changed | `main.js`, line 257 |
-| PE8 | `send_command` action sends raw user JSON without `JSON.parse` validation | `main.js`, lines 1519–1520 |
-| PE9 | Missing `prettier` devDependency | `package.json` |
+| PE1 | Unused `zx` dependency (~2MB) — not imported anywhere | `package.json` |
+| PE2 | `send_command` action sends raw user JSON without `JSON.parse` validation | `main.js`, lines 1519–1520 |
 
 ---
 
