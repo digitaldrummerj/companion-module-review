@@ -23,10 +23,10 @@
 |----------|--------|-------------|-------|
 | 🔴 Critical | 0 | 0 | 0 |
 | 🟠 High | 0 | 0 | 0 |
-| 🟡 Medium | 6 | 0 | 6 |
-| 🟢 Low | 10 | 0 | 10 |
+| 🟡 Medium | 4 | 0 | 4 |
+| 🟢 Low | 2 | 0 | 2 |
 | 💡 Nice to Have | 3 | 0 | 3 |
-| **Total** | **19** | **0** | **19** |
+| **Total** | **9** | **0** | **9** |
 
 **Blocking:** 0 issues  
 **Fix complexity:** N/A — no blocking issues  
@@ -41,21 +41,11 @@
 
 **Non-blocking**
 - [ ] [M1: Race condition in `configUpdated()` — queue not awaited](#m1-race-condition-in-configupdated-queue-not-awaited)
-- [ ] [M2: p-queue can grow unbounded on repeated action calls](#m2-p-queue-can-grow-unbounded-on-repeated-action-calls)
-- [ ] [M3: Response ERROR doesn't emit event or reject promise early](#m3-response-error-doesnt-emit-event-or-reject-promise-early)
 - [ ] [M4: Tally indexing inconsistency (1-indexed vs 0-indexed)](#m4-tally-indexing-inconsistency-1-indexed-vs-0-indexed)
 - [ ] [M5: Missing `tsconfig.node.json` referenced in `eslint.config.mjs`](#m5-missing-tsconfignodejson-referenced-in-eslintconfigmjs)
 - [ ] [M6: `moduleResolution` uses `Node16` instead of `nodenext`](#m6-moduleresolution-uses-node16-instead-of-nodenext)
 - [ ] [L1: Empty `updatePresets()` method stub](#l1-empty-updatepresets-method-stub)
 - [ ] [L2: Event listener cleanup gap in `triggerMacro()`](#l2-event-listener-cleanup-gap-in-triggermacro)
-- [ ] [L3: TypeScript `as` cast could hide runtime errors](#l3-typescript-as-cast-could-hide-runtime-errors)
-- [ ] [L4: No safe default in `kahunaTally` getter](#l4-no-safe-default-in-kahunatally-getter)
-- [ ] [L5: Tally stream runaway discards without diagnostics](#l5-tally-stream-runaway-discards-without-diagnostics)
-- [ ] [L6: tsconfig extends `recommended-esm` instead of `recommended`](#l6-tsconfig-extends-recommended-esm-instead-of-recommended)
-- [ ] [L7: tsconfig extra compiler options beyond template](#l7-tsconfig-extra-compiler-options-beyond-template)
-- [ ] [L8: tsconfig.json includes `vitest.config.ts`](#l8-tsconfigjson-includes-vitestconfigts)
-- [ ] [L9: eslint.config.mjs contains custom test rules](#l9-eslintconfigmjs-contains-custom-test-rules)
-- [ ] [L10: vitest infrastructure not in template](#l10-vitest-infrastructure-not-in-template)
 - [ ] [N1: Add explicit queue size limit](#n1-add-explicit-queue-size-limit)
 - [ ] [N2: Connection-ready guard in `triggerMacro()`](#n2-connection-ready-guard-in-triggermacro)
 - [ ] [N3: Document overflow behavior for project/macro values](#n3-document-overflow-behavior-for-projectmacro-values)
@@ -85,32 +75,6 @@ None.
 The abort signal is sent and a new `AbortController` is immediately created, but `initKahuna()` is called without waiting for in-flight p-queue tasks to fully clean up. Event listeners from the old Kahuna instance might still fire after the new instance starts.
 
 **Recommendation:** Add `await this.#queue.onIdle()` after `this.#queue.clear()` to wait for aborting tasks to complete.
-
----
-
-### M2: p-queue can grow unbounded on repeated action calls
-
-**File:** `src/main.ts:22`  
-**Classification:** 🆕 NEW  
-**Source:** Zoe (QA), Wash (Protocol)
-
-The p-queue has `intervalCap: 1, interval: 10` (rate limiting) but no size limit. Rapid button-mashing could cause unbounded queue growth.
-
-**Mitigations present:** Queue cleared on `destroy()` and `configUpdated()`, timeouts clear stale tasks, memory per task is small.
-
-**Recommendation:** Consider adding `queueSize: 100` or manual size checking in `triggerMacro()`.
-
----
-
-### M3: Response ERROR doesn't emit event or reject promise early
-
-**File:** `src/kahuna_plugin.ts:295-299`  
-**Classification:** 🆕 NEW  
-**Source:** Wash (Protocol)
-
-When the mixer responds with `ERROR`, the module discards the command and moves to the next, but does not emit a `macro_complete` event or reject the waiting promise. The promise times out after 5 seconds instead of rejecting immediately.
-
-**Recommendation:** Emit a `macro_error` event or modify queue to reject pending promise early.
 
 ---
 
@@ -167,86 +131,6 @@ Empty method. Consider removing the stub or adding presets if applicable for thi
 **Source:** Zoe (QA)
 
 If `configUpdated()` is called while a macro is mid-flight, the `onComplete` listener on the old Kahuna instance may orphan until timeout cleanup. The 5-second timeout ensures eventual cleanup.
-
----
-
-### L3: TypeScript `as` cast could hide runtime errors
-
-**File:** `src/variables.ts:11`  
-**Classification:** 🆕 NEW  
-**Source:** Zoe (QA)
-
-The `variables` object is cast from `Partial<...>` to the full type. Consider removing `Partial` and initializing directly to leverage TypeScript's exhaustiveness checking.
-
----
-
-### L4: No safe default in `kahunaTally` getter
-
-**File:** `src/main.ts:179-184` and `src/feedbacks.ts:30`  
-**Classification:** 🆕 NEW  
-**Source:** Zoe (QA)
-
-The `kahunaTally` getter throws if called before initialization. The feedback callback calls this without try-catch. Companion likely handles this gracefully, but returning `0` as a safe default would be cleaner.
-
----
-
-### L5: Tally stream runaway discards without diagnostics
-
-**File:** `src/kahuna_plugin.ts:332-336`  
-**Classification:** 🆕 NEW  
-**Source:** Wash (Protocol)
-
-When the 1000-byte buffer limit is triggered, all accumulated data is discarded silently. Consider logging first/last 50 bytes for diagnostics before discarding.
-
----
-
-### L6: tsconfig extends `recommended-esm` instead of `recommended`
-
-**File:** `tsconfig.build.json:2`  
-**Classification:** 🆕 NEW  
-**Source:** Kaylee (Module Dev)
-
-Uses `recommended-esm.json` instead of `recommended`. This is appropriate for ESM modules with `"type": "module"` and the build passes. Justified deviation but noted.
-
----
-
-### L7: tsconfig extra compiler options beyond template
-
-**File:** `tsconfig.build.json:11-15`  
-**Classification:** 🆕 NEW  
-**Source:** Kaylee (Module Dev)
-
-Adds `"target": "es2023"`, `"lib": ["ES2023"]`, `"strict": true` beyond template. These are enhancements (stricter checking) rather than problems. Build passes.
-
----
-
-### L8: tsconfig.json includes `vitest.config.ts`
-
-**File:** `tsconfig.json:3`  
-**Classification:** 🆕 NEW  
-**Source:** Kaylee (Module Dev)
-
-Template expects only `src/**/*.ts` in include. Adding `vitest.config.ts` is necessary for vitest type-checking. File is outside `src/` and won't be packaged.
-
----
-
-### L9: eslint.config.mjs contains custom test rules
-
-**File:** `eslint.config.mjs:3-21`  
-**Classification:** 🆕 NEW  
-**Source:** Kaylee (Module Dev)
-
-Extends base eslint config with test-specific rules (`n/no-unpublished-import: off`, `@typescript-eslint/unbound-method: off`). These are reasonable accommodations for test infrastructure.
-
----
-
-### L10: vitest infrastructure not in template
-
-**File:** `vitest.config.ts:1-7`  
-**Classification:** 🆕 NEW  
-**Source:** Kaylee (Module Dev)
-
-The module includes vitest testing infrastructure not present in template. Testing is excellent practice and this deviation is beneficial.
 
 ---
 
