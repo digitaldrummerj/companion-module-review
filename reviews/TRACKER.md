@@ -19,7 +19,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | eventsync-server | v0.9.8 | 2026-04-06 | [review](eventsync-server/review-eventsync-server-v0.9.8-20260406-040342.md) |
 | ✅ | cosmomedia-slidelizer | v1.0.0 | 2026-04-06 | [review](cosmomedia-slidelizer/review-cosmomedia-slidelizer-v1.0.0-20260406-041041.md) |
 | ✅ | snellwilcox-kahuna | v1.0.0 | 2026-04-06 | [review](snellwilcox-kahuna/review-snellwilcox-kahuna-v1.0.0-20260406-041741.md) |
-| ⬜ | allenheath-sq | v3.1.0 | 2026-04-06 | [review](allenheath-sq/review-allenheath-sq-v3.1.0-20260406-042531.md) |
+| ✅ | allenheath-sq | v3.1.0 | 2026-04-06 | [review](allenheath-sq/review-allenheath-sq-v3.1.0-20260406-042531.md) |
 | ⬜ | logos-proclaim | v1.2.0 | 2026-04-06 | [review](logos-proclaim/review-logos-proclaim-v1.2.0-20260406-043151.md) |
 | ⬜ | leolabs-ableset | v1.8.0 | 2026-04-06 | [review](leolabs-ableset/review-leolabs-ableset-v1.8.0-20260406-043810.md) |
 | ⬜ | generic-websocket | v2.3.0 | 2026-04-06 | [review](generic-websocket/review-generic-websocket-v2.3.0-20260406-044352.md) |

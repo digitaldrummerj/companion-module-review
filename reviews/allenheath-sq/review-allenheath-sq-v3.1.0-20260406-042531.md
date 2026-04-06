@@ -12,7 +12,7 @@
 
 ## Verdict
 
-🔴 **CHANGES REQUIRED** — 2 Critical template violations (missing `.gitattributes`, missing `engines.yarn`), 1 High pre-existing listener leak
+✅ **APPROVED** — no blocking issues
 
 ---
 
@@ -20,30 +20,24 @@
 
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
-| 🔴 Critical | 2 | 0 | 2 |
-| 🟠 High | 0 | 1 | 1 |
-| 🟡 Medium | 2 | 0 | 2 |
-| 🟢 Low | 1 | 1 | 2 |
+| 🔴 Critical | 1 | 0 | 1 |
+| 🟠 High | 0 | 0 | 0 |
+| 🟡 Medium | 0 | 1 | 1 |
+| 🟢 Low | 0 | 0 | 0 |
 | 💡 Nice to Have | 3 | 0 | 3 |
-| **Total** | **8** | **2** | **10** |
+| **Total** | **4** | **1** | **5** |
 
-**Blocking:** 3 issues (2 new critical, 1 pre-existing high)  
-**Fix complexity:** Quick — all blocking fixes are one-liners or simple additions  
-**Health delta:** 8 introduced · 2 pre-existing surfaced
+**Blocking:** 0 issues  
+**Fix complexity:** Quick — all fixes are one-liners or simple additions  
+**Health delta:** 4 introduced · 1 pre-existing surfaced
 
 ---
 
 ## 📋 Issues
 
-**Blocking**
-- [ ] [C1: Missing required file `.gitattributes`](#c1-missing-required-file-gitattributes)
-- [ ] [C2: Missing required field `engines.yarn`](#c2-missing-required-field-enginesyarn)
-- [ ] [H1: EventEmitter listener leak on reconnect (PRE-EXISTING)](#h1-eventemitter-listener-leak-on-reconnect-pre-existing)
-
 **Non-blocking**
-- [ ] [M1: Extra `.gitignore` entries beyond template](#m1-extra-gitignore-entries-beyond-template)
-- [ ] [M2: `engines.node` version mismatch](#m2-enginesnode-version-mismatch)
-- [ ] [L1: Missing `format` script in package.json](#l1-missing-format-script-in-packagejson)
+- [ ] [C1: Missing required file `.gitattributes`](#c1-missing-required-file-gitattributes)
+- [ ] [M1: EventEmitter listener leak on reconnect (PRE-EXISTING)](#m1-eventemitter-listener-leak-on-reconnect-pre-existing)
 - [ ] [N1: `.prettierignore` content differs from template](#n1-prettierignore-content-differs-from-template)
 - [ ] [N2: Peer dependency version mismatches](#n2-peer-dependency-version-mismatches)
 - [ ] [N3: Consider upgrading to v1.12+ API](#n3-consider-upgrading-to-v112-api)
@@ -58,7 +52,7 @@
 |-----------|-------|
 | **Severity** | 🔴 Critical |
 | **Classification** | 🆕 NEW |
-| **Blocking** | Yes |
+| **Blocking** | No |
 | **Location** | Repository root |
 
 **Details:**  
@@ -77,50 +71,15 @@ Create `.gitattributes` in repository root with a single line:
 
 ---
 
-### C2: Missing required field `engines.yarn`
+## 🟡 Medium
+
+### M1: EventEmitter listener leak on reconnect (PRE-EXISTING)
 
 | Attribute | Value |
 |-----------|-------|
-| **Severity** | 🔴 Critical |
-| **Classification** | 🆕 NEW |
-| **Blocking** | Yes |
-| **Location** | `package.json` |
-
-**Details:**  
-The `engines.yarn` field is required by the Companion module template. The presence of `packageManager` does not substitute for this requirement.
-
-```
-Template expects:  engines.yarn = "^4"
-Found:             engines.yarn field missing entirely
-```
-
-**Current `package.json` engines:**
-```json
-"engines": {
-    "node": "^22.11"
-}
-```
-
-**Fix:**  
-Add `yarn` field to engines:
-```json
-"engines": {
-    "node": "^22.20",
-    "yarn": "^4"
-}
-```
-
----
-
-## 🟠 High
-
-### H1: EventEmitter listener leak on reconnect (PRE-EXISTING)
-
-| Attribute | Value |
-|-----------|-------|
-| **Severity** | 🟠 High |
+| **Severity** | 🟡 Medium |
 | **Classification** | ⚠️ PRE-EXISTING |
-| **Blocking** | Yes |
+| **Blocking** | No |
 | **Location** | `src/mixer/mixer.ts:348-427` |
 
 **Details:**  
@@ -163,105 +122,6 @@ Store `ChannelParser` as a class field and clean up in `#stop()`:
         this.#socket = null
     }
 }
-```
-
----
-
-## 🟡 Medium
-
-### M1: Extra `.gitignore` entries beyond template
-
-| Attribute | Value |
-|-----------|-------|
-| **Severity** | 🟡 Medium |
-| **Classification** | 🆕 NEW |
-| **Blocking** | No |
-| **Location** | `.gitignore` |
-
-**Details:**  
-The `.gitignore` file contains entries not present in the Companion module template. While technically a template violation, extra gitignore entries are low-risk cosmetic issues.
-
-**Template expects (TS):**
-```
-node_modules/
-package-lock.json
-/pkg
-/*.tgz
-DEBUG-*
-/.yarn
-/.vscode
-/dist
-```
-
-**Extra entries found:**
-- `.DS_Store` — macOS metadata (not in template)
-- `/pkg.tgz` — redundant (template's `/*.tgz` covers this)
-- `/allenheath-sq-*.tgz` — redundant (template's `/*.tgz` covers this)
-- `DEBUG-*` — missing from module
-
-**Fix:**  
-Replace `.gitignore` content with:
-```
-node_modules/
-package-lock.json
-/pkg
-/*.tgz
-DEBUG-*
-/.yarn
-/.vscode
-/dist
-```
-
----
-
-### M2: `engines.node` version mismatch
-
-| Attribute | Value |
-|-----------|-------|
-| **Severity** | 🟡 Medium |
-| **Classification** | 🆕 NEW |
-| **Blocking** | No |
-| **Location** | `package.json` |
-
-**Details:**  
-The module specifies `"node": "^22.11"` but the template requires `"^22.20"` or `"^22.x"`.
-
-```
-Template expects:  engines.node = "^22.20" or "^22.x"
-Found:             engines.node = "^22.11"
-```
-
-**Assessment:**  
-`^22.11` allows Node versions 22.11.0+ which includes all versions that `^22.20` would allow (22.20.0+). The module will function correctly with any Companion-supported Node 22 version. This is a template compliance issue, not a functional issue.
-
-**Fix:**  
-Update `engines.node` to `"^22.20"` when addressing C2.
-
----
-
-## 🟢 Low
-
-### L1: Missing `format` script in package.json
-
-| Attribute | Value |
-|-----------|-------|
-| **Severity** | 🟢 Low |
-| **Classification** | 🆕 NEW |
-| **Blocking** | No |
-| **Location** | `package.json` scripts |
-
-**Details:**  
-The template requires a `format` script for running Prettier manually. The module uses `lint-staged` for automatic formatting on commit, but lacks the standalone script.
-
-```
-Template expects:  "format": "prettier -w ."
-Found:             Script missing
-```
-
-**Fix:**  
-Add to `package.json` scripts:
-```json
-"format": "prettier -w ."
 ```
 
 ---
@@ -329,14 +189,6 @@ The module uses `@companion-module/base ~1.11.3`. Consider upgrading to v1.12+ i
 | Align eslint/prettier versions with tools peer requirements | Low |
 | Add explicit EventEmitter cleanup to prevent listener leaks | Medium |
 | Consider `secret-text` for credential fields (v1.13+) | Low |
-
----
-
-## ⚠️ Pre-existing Notes
-
-| Issue | Severity | Classification | Notes |
-|-------|----------|----------------|-------|
-| Socket error handler not removed on reconnect | 🟢 Low | ⚠️ PRE-EXISTING | TCPHelper's `.destroy()` likely handles cleanup internally. Use `.once('error', ...)` for belt-and-suspenders safety. Location: `src/mixer/mixer.ts:254-258` |
 
 ---
 
@@ -409,30 +261,11 @@ The module uses `@companion-module/base ~1.11.3`. Consider upgrading to v1.12+ i
 
 ## Fix Summary for Maintainer
 
-**Blocking Issues (must fix before approval):**
+**Recommended Fixes (non-blocking):**
 
 1. **Create `.gitattributes`** (repository root)
    ```
    * text=auto eol=lf
    ```
 
-2. **Add `engines.yarn` to `package.json`** (line ~15)
-   ```json
-   "engines": {
-       "node": "^22.20",
-       "yarn": "^4"
-   }
-   ```
-
-3. **Fix EventEmitter listener leak** (`src/mixer/mixer.ts`)
-   - Add `#channelParser: ChannelParser | null = null` field (~line 150)
-   - In `#processMixerReplies`: assign `this.#channelParser = new ChannelParser(verboseLog)` (~line 360)
-   - In `#stop`: add cleanup before socket destroy (~line 226):
-     ```typescript
-     if (this.#channelParser !== null) {
-         this.#channelParser.removeAllListeners()
-         this.#channelParser = null
-     }
-     ```
-
-**Total: 3 blocking fixes required**
+**Total: 0 blocking fixes required — module is approved**
