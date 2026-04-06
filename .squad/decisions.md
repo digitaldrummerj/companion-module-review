@@ -1279,3 +1279,83 @@ This is a solid first release with excellent protocol implementation and code st
 **Rationale:** Manifest carries `0.0.0` as static metadata; actual version lives in package.json. The `run` command resolves to appropriate package manager at runtime.
 
 **Commit:** 3497f17 — both fixes applied and committed with Co-authored-by trailer.
+
+### 2026-04-06: Module review verdict — eventsync-server v0.9.8
+
+**By:** Mal (Lead Reviewer with Wash, Kaylee, Zoe, Simon)  
+**Status:** Changes Required (17 blocking)  
+**Module:** companion-module-eventsync-server v0.9.8  
+**Date:** 2026-04-06
+
+**Verdict:** 🔴 **CHANGES REQUIRED** — 17 blocking issues must be fixed before approval.
+
+**Issue Summary by Severity:**
+- **🔴 Critical (12):** Template compliance violations (missing .gitattributes, .prettierignore, .yarnrc.yml, tsconfig.build.json, .husky/pre-commit, incorrect .gitignore, missing package.json fields engines/packageManager/prettier/lint-staged, wrong repository URLs)
+- **🟠 High (5):** WebSocket event listener leak (memory issue), reconnect loop on auth failure, outdated @companion-module/base (Node 18 vs Node 22 requirement), outdated @companion-module/tools, missing lint-staged
+- **🟡 Medium (5):** Version mismatch manifest vs package.json, passcode exposure in exports, race condition in configUpdated(), unhandled promise rejections, silent send failures
+- **🟢 Low (4):** Ping accumulation risk, serverStatus override, empty dropdown defaults, no connection timeout
+- **💡 Nice-to-have (2):** Remove banned keywords, connection retry improvements
+
+**Build Status:** ❌ FAILED — @companion-module/base@1.10.0 requires Node 18, template requires Node 22.
+
+**Module Strengths:**
+- Clean v1.x API compliance (runEntrypoint, lifecycle methods correct)
+- Well-organized TypeScript (proper types, no `any` abuse)
+- Comprehensive feature set (32 actions, 14 feedbacks, rich presets)
+- Good WebSocket implementation fundamentals
+- Excellent HELP.md documentation
+- No package-lock.json (yarn-only ✓)
+- Proper ESM setup
+
+**Fix Complexity:** Medium — Template compliance fixes mechanical (copy template files, update fields). WebSocket lifecycle fixes require ~20 lines of careful code changes.
+
+**Estimated Fix Time:** 2-3 hours for experienced developer.
+
+**Critical Issues Detail:**
+
+*Kaylee (Template/Build):*
+1. Missing .gitattributes (line ending enforcement)
+2. Missing .prettierignore (formatter exclusions)
+3. Missing .yarnrc.yml (Yarn config)
+4. Missing tsconfig.build.json (TypeScript config)
+5. Missing .husky/pre-commit (commit hook)
+6. .gitignore content mismatch with template
+7. Missing engines field in package.json
+8. Missing packageManager field in package.json
+9. Incorrect .prettierrc.json content
+10. Wrong repository URLs in manifest
+11. Missing postinstall script for husky
+12. Missing lint-staged configuration
+
+*Wash (Protocol):*
+1. WebSocket listeners not removed on disconnect() → memory leak, ghost events
+2. Auth failure triggers infinite reconnect loop (server abuse)
+   - Bad passcode → server sends authFailed → disconnect → close event fires → scheduleReconnect() called → repeat
+
+*Zoe (QA):*
+1. Event listener accumulation risk if connect() called without disconnect()
+2. Race condition: old connection not awaited before new connection in configUpdated()
+3. Unhandled promise rejections in action callbacks → silent failures
+
+**WebSocket Issue: Listener Leak**
+- Location: `src/connection.ts:67-75` (disconnect method)
+- Current: `this.ws?.close()` closes socket but listeners remain
+- Fix: Add `this.ws.removeAllListeners()` before closing
+
+**WebSocket Issue: Auth Failure Loop**
+- Location: `src/connection.ts:89-92` (handleMessage authFailed case)
+- Current: disconnect() called → close event fires → scheduleReconnect() called → tries to reconnect → repeats
+- Fix: Add flag to prevent reconnect on permanent failures (auth, user disconnect)
+
+**Next Steps:**
+1. Address all 12 Critical template compliance issues
+2. Fix 2 High-severity WebSocket bugs (listener cleanup, auth failure loop)
+3. Upgrade @companion-module/base to ~1.14.1 and @companion-module/tools to ^2.7.1
+4. Add lint-staged configuration
+5. Run `yarn install && yarn package` to verify build succeeds
+6. Request re-review
+
+**Review Files:**
+- Verdict: `reviews/eventsync-server/review-eventsync-server-v0.9.8-*.md`
+- Specialist findings: `.squad/decisions/inbox/` (mal, wash, kaylee, zoe, simon review findings)
+

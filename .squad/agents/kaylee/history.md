@@ -241,3 +241,87 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 **Post-fix recommendation:** Once template compliance is achieved, recommend upgrading from v1.8.0 to v1.14.1 for modern features (automated config layout, `secret-text` fields, value feedbacks, Node 22 support).
 
 **Personal account vs bitfocus:** The module uses `github.com/Althertime/companion-module-glensound-gtmmobile` in both `package.json` and `manifest.json` repository URLs. This is acceptable during development, but must be changed to `github.com/bitfocus/companion-module-glensound-gtmmobile` before official submission to the Bitfocus module library. This is a common pattern for first-time contributors developing in their personal account before transferring/forking to bitfocus.
+
+### EventSync Server Review (2026-04-05) — v0.9.8 FIRST RELEASE
+
+**Module:** `companion-module-eventsync-server` v0.9.8  
+**Type:** TypeScript (has tsconfig.json, `"type": "module"`)  
+**API Version:** `@companion-module/base@~1.10.0` (targets Companion 3.4+, Node 18)  
+**Requested by:** Justin James
+
+**Approval Status:** ❌ BLOCKED — 12 Critical template compliance violations
+
+**Build Status:**
+- `yarn install` — ❌ FAILED with Node engine incompatibility
+  ```
+  error @companion-module/base@1.10.0: The engine "node" is incompatible with this module. 
+  Expected version "^18.12". Got "22.22.2"
+  ```
+- Root cause: Module uses v1.10 SDK (requires Node 18) but template requires Node 22
+- Resolution: Upgrade to `@companion-module/base@~1.14.1` (supports Node 22)
+
+**Critical Missing Files (5):**
+1. `.gitattributes` — must be `* text=auto eol=lf`
+2. `.prettierignore` — must be `package.json` and `/LICENSE.md`
+3. `.yarnrc.yml` — must be `nodeLinker: node-modules`
+4. `tsconfig.build.json` — module only has `tsconfig.json`, doesn't match template structure
+5. `.husky/pre-commit` — required for TS modules, must contain `lint-staged`
+
+**Critical Config File Content Mismatches (1):**
+6. `.gitignore` — contains many extra entries not in template (comments, OS files, env files), missing required entries (`package-lock.json`, `/pkg`, `/*.tgz`, `DEBUG-*`), and paths don't match exactly (`dist/` should be `/dist`)
+
+**Critical package.json Violations (5):**
+7. Missing `engines` field — should be `{"node": "^22.20", "yarn": "^4"}`
+8. Missing `packageManager` field — should be `"yarn@4.12.0"`
+9. Wrong `prettier` field — uses inline config object instead of `"@companion-module/tools/.prettierrc.json"`
+10. Wrong `repository.url` — points to `eventsync/companion-module-eventsync` instead of `bitfocus/companion-module-eventsync-server`
+11. Missing/incorrect scripts — missing `postinstall`, `package`, `build:main`, `lint:raw`; incorrect `build`, `dev`, `lint`, `format` implementations
+
+**Critical manifest.json Violations (1):**
+12. Wrong `repository` — must match corrected package.json URL (bitfocus org, correct module name)
+
+**High Priority Recommendations (3):**
+- Upgrade `@companion-module/base` from v1.10 to v1.14 (Node 22 compatibility, modern features)
+- Upgrade `@companion-module/tools` from v2.6.1 to v2.7.1+ (Node 22 tsconfig, latest tooling)
+- Add `lint-staged` configuration to package.json (required for husky pre-commit hook)
+
+**What's Working Well (Code Quality Excellent):**
+- ✅ Well-organized module structure (separate files for actions/feedbacks/variables/presets/config/connection/state)
+- ✅ `runEntrypoint(EventSyncModule, [])` called correctly at bottom of main.ts
+- ✅ UpgradeScripts array present (empty, correct for first release)
+- ✅ All required methods implemented: `init()`, `destroy()`, `configUpdated()`, `getConfigFields()`
+- ✅ Proper WebSocket connection cleanup in `destroy()`
+- ✅ Feedbacks use boolean type with `defaultStyle` colors
+- ✅ Actions use proper async callbacks
+- ✅ Comprehensive `HELP.md` (configuration, actions, variables, feedbacks, presets, ContentOSC addressing, troubleshooting)
+- ✅ Valid MIT License with real copyright (EventSync)
+- ✅ manifest.json has proper maintainer (not placeholder)
+- ✅ manifest.json runtime is `node22` and entrypoint is `../dist/main.js` (correct)
+- ✅ All source code in `src/` directory
+- ✅ No `package-lock.json` present
+- ✅ `eslint.config.mjs` matches template exactly
+
+**Key Pattern — tsconfig.build.json vs tsconfig.json:**
+The TS template requires TWO tsconfig files:
+- `tsconfig.build.json` — extends `@companion-module/tools/tsconfig/node22/recommended`, used by build scripts
+- `tsconfig.json` — extends `tsconfig.build.json`, used by IDE for editing
+
+This module only has `tsconfig.json` with custom config (`module: "ES2022"`). The template's required structure uses `module: "Node16"` from the shared config. This is not just a style issue — the `package.json` scripts reference `tsconfig.build.json`, which doesn't exist, so the build would fail even if dependencies installed.
+
+**Key Learning — Node Version Mismatch Detection:**
+This review caught a version mismatch that would have been silent with correct `engines` field: the module uses v1.10 SDK (Node 18 only) but attempts to run on Node 22. With proper `engines.node` enforcement, Yarn would have rejected the installation. The fix is to upgrade to v1.14 SDK (Node 22 compatible) AND add the `engines` field.
+
+**Repository URL Pattern:**
+Module uses `eventsync/companion-module-eventsync` in both package.json and manifest.json. This appears to be development in the org's own account before bitfocus submission. The correct pattern for bitfocus submission is:
+- Repository name should match module name: `companion-module-eventsync-server` (not shortened to just `eventsync`)
+- Organization should be `bitfocus` (not the vendor's org)
+
+**Estimated Fix Time:** 1-2 hours for an experienced developer (all findings are config/structure, no code changes needed)
+
+**Next Review Requirements:**
+After fixes are applied, re-run:
+1. `yarn install` — verify dependencies install on Node 22
+2. `yarn package` — verify module builds and packages successfully
+3. Test in Companion — verify functionality with real EventSync server
+
+**Review Findings Written To:** `.squad/decisions/inbox/kaylee-review-findings.md`

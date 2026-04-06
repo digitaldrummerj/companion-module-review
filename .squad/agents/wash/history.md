@@ -401,3 +401,34 @@ Findings: `.squad/decisions/inbox/wash-snmp-review-findings.md`
 **Release Tag:** v1.0.0 (first release)
 **Comparison Baseline:** None (new module)
 **Requested by:** Justin James
+
+---
+
+## Learnings
+
+### Session: eventsync-server v0.9.8 Review (2024)
+
+**Context:** WebSocket client module connecting to EventSync Server control protocol. First release review.
+
+**Key Findings:**
+- **WebSocket listener cleanup critical:** When calling `ws.close()`, event listeners remain attached to the closed socket object. Must call `ws.removeAllListeners()` before close/null to prevent memory leaks and ghost event handlers.
+- **Auth failure must prevent reconnect:** When server sends `authFailed`, the `'close'` event handler will trigger automatic reconnect, creating infinite retry loop. Need flag to distinguish user/auth disconnect (permanent) from network disconnect (auto-retry).
+- **Exponential backoff best practice:** Fixed 5-second reconnect interval hammers unreachable servers. Industry standard: 5s → 10s → 20s → 40s → cap at 60s. Reset to 5s on successful connection.
+- **Connection timeout needed for ws:** Node.js `ws` library has no built-in timeout on connection attempts. If host unreachable, WebSocket constructor hangs indefinitely. Set manual timeout (10s reasonable) that calls `ws.terminate()` and schedules reconnect.
+- **ReadyState check sufficient for stale pings:** If ping interval outlives connection, the `send()` method's `readyState === WebSocket.OPEN` check prevents errors. However, calling `stopPing()` before reconnect is good defensive practice.
+- **`'close'` event is catch-all:** WebSocket `'close'` event fires on normal close, auth failure, network error, timeout—any disconnect. Cannot use it alone to decide whether to reconnect. Must track intent (permanent vs temporary failure).
+
+**Good Patterns Observed:**
+- Error event handler registered (prevents unhandled error crashes)
+- JSON parsing in try-catch (defensive against malformed messages)
+- Reconnect timer guard (prevents duplicate timers)
+- Module lifecycle properly calls `connection?.disconnect()` in `destroy()`
+
+**Findings Written To:** `.squad/decisions/inbox/wash-review-findings.md`
+
+**Session Closed:** 2024
+**Verdict:** ❌ REJECT — 2 blocking issues (listener leak, auth retry loop) + 3 recommended improvements. Core implementation solid but lifecycle management needs fixes before production.
+
+**Release Tag:** v0.9.8 (first release)
+**Comparison Baseline:** None (new module)
+**Requested by:** Justin James

@@ -157,3 +157,45 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 **Fix Complexity:** Medium — template fixes are mechanical copy-paste, logic fixes require ~30 lines of code changes
 
 **Review file:** `reviews/glensound-gtmmobile/review-glensound-gtmmobile-v1.0.0-20260406-035504.md`
+
+### 2026-04-06: eventsync-server v0.9.8 review — CHANGES REQUIRED (Final Assembly)
+
+**Module:** companion-module-eventsync-server v0.9.8
+**API:** `@companion-module/base ~1.10.0` (v1.x rules)
+**Release type:** First release — all code is new
+
+**Final Verdict:** CHANGES REQUIRED — 17 blocking issues (12 Critical, 5 High)
+
+**Critical Findings (12 — template compliance):**
+- Missing required files: `.gitattributes`, `.prettierignore`, `.yarnrc.yml`, `tsconfig.build.json`, `.husky/pre-commit`
+- Incorrect `.gitignore` content (missing entries, wrong paths, extra comments)
+- Missing `package.json` fields: `engines`, `packageManager`
+- Wrong `prettier` config (inline object instead of shared config reference)
+- Wrong repository URLs in both `package.json` and `manifest.json` (eventsync org instead of bitfocus)
+- Missing required scripts: `postinstall`, `package`, `build:main`, `lint:raw`
+
+**High Findings (5 — protocol and dependencies):**
+- WebSocket event listeners not removed in `disconnect()` — memory leak (`src/connection.ts:67-75`)
+- Auth failure reconnect loop — infinite 5s reconnect cycle on bad passcode (`src/connection.ts:89-92`)
+- Outdated `@companion-module/base ~1.10.0` requires Node 18, incompatible with Node 22 runtime
+- Outdated `@companion-module/tools ^2.6.1` — missing Node 22 TypeScript config
+- Missing `lint-staged` configuration in `package.json`
+
+**Medium Findings (5):**
+- Version mismatch: `package.json` 0.9.8 vs `manifest.json` 0.9.6
+- Passcode uses `textinput` instead of `secret-text` (credential exposure)
+- No exponential backoff on reconnect attempts
+- Unhandled promise rejections in async action callbacks
+- Silent failures when `send()` called on closed WebSocket
+
+**Architecture Notes (positive):**
+- v1.x compliance correct — `runEntrypoint(EventSyncModule, [])` at end of main.ts
+- All lifecycle methods implemented correctly
+- Clean TypeScript — no `any` abuse, proper interfaces
+- WebSocket with reconnection logic, ping keepalive
+- Good separation of concerns across 8 source files
+- 32 actions, 14 feedbacks, rich preset library
+
+**Build Status:** ❌ FAILED (`@companion-module/base@1.10.0` incompatible with Node 22)
+
+**Review file:** `reviews/eventsync-server/review-eventsync-server-v0.9.8-20260406-040342.md`

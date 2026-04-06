@@ -223,3 +223,23 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 **Session Closed:** 2025-01-03
 **Requested by:** Justin James
 **Review file:** `.squad/decisions/inbox/zoe-review-findings.md`
+
+### 2025-01-14: eventsync-server v0.9.8 review — WebSocket reconnect race, state reset UX
+
+**Module:** companion-module-eventsync-server v0.9.8 (first release)
+**Protocol:** WebSocket control over EventSync server (show control system)
+**Key files:** main.ts, connection.ts, actions.ts, feedbacks.ts, state.ts
+
+**Verdict:** REJECTED — 3 blocking issues (B2, B3 most critical), 6 warnings
+
+**Critical pattern — configUpdated race condition:** `configUpdated()` calls `this.connection?.disconnect()` then immediately creates a new connection. The old WebSocket's `close` event fires *after* the new connection starts, triggering `scheduleReconnect()` for the orphaned connection. Multiple reconnect chains can overlap. Fix: add `isDestroyed` flag checked in event handlers, OR clear timers in `disconnect()` before closing socket.
+
+**Unhandled async callbacks:** All action callbacks are `async` but never `await` anything. If `send()` throws (e.g., JSON.stringify circular reference), unhandled promise rejection occurs. Pattern: either remove `async` from callbacks that don't await, OR wrap body in try/catch with logging.
+
+**State reset during config change:** `this.state = new EventSyncState()` at line 30 of main.ts runs before new connection establishes, causing UI dropdowns/variables to show empty/default values until server sends first state update. Creates jarring UX. Better: keep old state until new state arrives, OR indicate loading state.
+
+**Silent send failures:** `send()` method checks `readyState === OPEN` but doesn't log when called on closed socket. Operators press buttons, nothing happens, no feedback. Always log or update status when send is attempted but fails.
+
+**Ping interval safety:** `startPing()` doesn't check if `this.pingInterval` already exists before creating new interval. Currently safe (only called once per connection), but brittle. Add `if (this.pingInterval) return` or clear before setting new interval.
+
+**Server status override:** Client always overwrites `newState.serverStatus` with local connection state (line 71 main.ts), making server's reported status field useless. If server wants to report "degraded" or "maintenance", it's ignored. Either trust server's status OR use separate variable names for connection vs application state.
