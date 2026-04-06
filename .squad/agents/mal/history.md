@@ -200,28 +200,69 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 
 **Review file:** `reviews/eventsync-server/review-eventsync-server-v0.9.8-20260406-040342.md`
 
-### 2026-04-06: cosmomedia-slidelizer v1.0.0 review — APPROVED
+### 2026-04-06: cosmomedia-slidelizer v1.0.0 review — CHANGES REQUIRED (Final Assembly)
 
 **Module:** companion-module-cosmomedia-slidelizer v1.0.0
 **API:** `@companion-module/base ~1.14.1` (v1.x rules)
 **Release type:** First release — all code is new
 
-**Verdict:** APPROVED — clean first-release module with no blocking issues.
+**Final Verdict:** CHANGES REQUIRED — 3 High severity issues need attention
 
-**Minor Finding:**
-- `.gitignore` should include `dist/` — currently has `package-lock.json` but not `dist/`. Not blocking since no dist exists yet.
+**Blocking Findings (3 High):**
+- Race condition in `configUpdated()` — multiple parallel connections possible (`src/main.js:38-42`)
+- Event listener accumulation / memory leak risk in `_connect()` (`src/main.js:69-134`)
+- Unhandled promise rejection in `configUpdated()` — no try-catch (`src/main.js:38-42`)
+
+**Severity Adjudications (overridden from Kaylee's Critical):**
+- `@companion-module/tools ^2.6.1` → Downgraded to Medium. Build succeeds; template skill doesn't mandate specific version.
+- Missing `keywords` in package.json → Downgraded to Low. Not a required field per template compliance skill; manifest.json has keywords.
+- Missing `author` in package.json → Downgraded to Low. Not a required field per template compliance skill.
 
 **Architecture Notes (positive):**
 - v1.14 compliance correct — `runEntrypoint(SlidelizerInstance, [])` at line 330 of `src/main.js`
 - All lifecycle methods implemented: `init()`, `destroy()`, `configUpdated()`, `getConfigFields()`
 - Clean socket cleanup in `destroy()` — closes TCP socket AND clears reconnect timer
 - Good reconnection logic with exponential backoff (1s to 10s max)
-- 9 variables covering timer, clock, and video modes with multiple format variants
-- 5 advanced feedbacks returning formatted text
+- TCP line-buffered parsing handles partial packets correctly
+- 11 actions, 5 feedbacks, 9 variables
 - Uses `node22` runtime in manifest (correct for v1.14)
 - JavaScript CJS module, source in `src/` directory
-- Empty UpgradeScripts correct for first release
-- No deprecated v1.12+ patterns (`isVisible`, redundant `parseVariablesInString`)
-- No `package-lock.json` committed, uses yarn-only
+- Build succeeds: `yarn install && yarn package` → `cosmomedia-slidelizer-1.0.0.tgz`
+
+**Fix Complexity:** Medium — requires connection locking logic and try-catch wrapper (~20 lines)
+
+**Review file:** `reviews/cosmomedia-slidelizer/review-cosmomedia-slidelizer-v1.0.0-20260406-041041.md`
+
+### 2025-07-18: snellwilcox-kahuna v1.0.0 review — APPROVED
+
+**Module:** companion-module-snellwilcox-kahuna v1.0.0
+**API:** `@companion-module/base ~2.0.3` (v2.0 rules)
+**Release type:** First release — all code is new
+
+**Final Verdict:** APPROVED — Excellent v2.0 API compliance, no blocking issues.
+
+**Medium Findings (1):**
+- `tsconfig.build.json:13` uses `"moduleResolution": "Node16"` instead of recommended `"nodenext"` — works but diverges from v2.0 spec guidance
+
+**Low Findings (1):**
+- `src/main.ts:194-195` empty `updatePresets()` stub — consider removing or implementing
+
+**Architecture Notes (positive):**
+- v2.0 compliance exemplary:
+  - Default export class `ModuleInstance extends InstanceBase<KahunaTypes>` at line 19
+  - Named export `UpgradeScripts` at line 17 (re-exported from upgrades.ts)
+  - No `runEntrypoint()` call (correctly removed for v2.0)
+  - `manifest.json` has `"type": "connection"` and `"node22"` runtime
+  - `@companion-module/tools ^3.0.0` (correct)
+  - `KahunaTypes` interface has full InstanceTypes shape: config, secrets, actions, feedbacks, variables
+  - `setVariableDefinitions` uses object form (not array)
+- No removed v2.0 APIs used — no `parseVariablesInString`, no bare `checkFeedbacks()`, no `optionsToIgnoreForSubscribe`
+- Clean TypeScript with strict mode, no `any` abuse
+- Proper ESM with `.js` extensions on imports
+- Well-designed dual-TCP plugin architecture (command socket + tally socket)
+- PQueue-based command serialization with abort support
+- 88 passing tests across 2 test files
+- Build/lint/test all pass
+- All template files present, correct structure
 
 **Review file:** `.squad/decisions/inbox/mal-review-findings.md`
