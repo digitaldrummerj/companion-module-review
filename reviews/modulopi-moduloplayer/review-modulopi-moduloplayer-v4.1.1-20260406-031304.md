@@ -16,14 +16,16 @@
 
 ## Fix Summary for Maintainer
 
-**6 issues must be fixed before approval. All are quick:**
+**8 issues must be fixed before approval. All are quick:**
 
 1. **[C1]** Create `.prettierignore` with content: `package.json` / `/LICENSE.md`
 2. **[C2]** Replace `.gitattributes` content with: `* text=auto eol=lf`
 3. **[C3]** Create `.husky/pre-commit` file containing: `lint-staged`
 4. **[H1]** Clear `this.pollAPI` interval in `destroy()` — `src/main.ts` ~line 91
 5. **[H2]** Add upgrade script for `current_Cue` feedback option changing from `type: 'number'` to `type: 'textinput'`
-6. **[H3]** Replace all `isVisible: () => false` with `isVisibleExpression: "false"` in `src/actions.ts` (22 occurrences) and `src/feedbacks.ts` (7 occurrences)
+6. **[M1]** Fix duplicate label on `prev_cue` action — change `"Next Cue on Playlist"` to `"Previous Cue on Playlist"` in `src/actions.ts`
+7. **[M2]** Replace all French comments with English equivalents across `src/types.ts`, `src/variables.ts`, `src/spydog.ts`, `src/main.ts`
+8. **[M3]** Call `this.websocket?.terminate()` before nulling in `WSConnection.destroy()` — `src/wsconnection.ts` ~line 87
 
 ---
 
@@ -58,12 +60,12 @@
 - [ ] [C3: Missing `.husky/pre-commit` file](#c3-missing-huskypre-commit-file)
 - [ ] [H1: `pollAPI` interval not cleared in `destroy()`](#h1-pollapi-interval-not-cleared-in-destroy)
 - [ ] [H2: Missing upgrade script for `current_Cue` option type change](#h2-missing-upgrade-script-for-current_cue-option-type-change)
-- [ ] [L1: Duplicate action name "Next Cue on Playlist"](#l1-duplicate-action-name-next-cue-on-playlist)
-- [ ] [L2: French comments in source files](#l2-french-comments-in-source-files)
-- [ ] [L3: No explicit `close()` in `WSConnection.destroy()` before nulling](#l3-no-explicit-close-in-wsconnectiondestroy-before-nulling)
+- [ ] [M1: Duplicate action name "Next Cue on Playlist"](#m1-duplicate-action-name-next-cue-on-playlist)
+- [ ] [M2: French comments in source files](#m2-french-comments-in-source-files)
+- [ ] [M3: No explicit `close()` in `WSConnection.destroy()` before nulling](#m3-no-explicit-close-in-wsconnectiondestroy-before-nulling)
 
 **Non-blocking**
-- [ ] [H3: Deprecated `isVisible: () => false` usage](#h3-deprecated-isvisible---false-usage)
+- [ ] [L1: Deprecated `isVisible: () => false` usage](#l1-deprecated-isvisible---false-usage)
 - [ ] [N1: Remove unused hidden `task` option from `launch_task` action](#n1-remove-unused-hidden-task-option-from-launch_task-action)
 
 ---
@@ -177,7 +179,7 @@ The feedback callback does have a numeric fallback (lines ~89–90), but the sto
 
 ## 🟡 Medium
 
-### L1: Duplicate action name "Next Cue on Playlist"
+### M1: Duplicate action name "Next Cue on Playlist"
 
 **Classification:** ⚠️ PRE-EXISTING  
 **File:** `src/actions.ts`, lines ~209 and ~235  
@@ -185,7 +187,7 @@ The feedback callback does have a numeric fallback (lines ~89–90), but the sto
 
 ---
 
-### L2: French comments in source files
+### M2: French comments in source files
 
 **Classification:** 🆕 NEW  
 **Files:** `src/types.ts` (lines 1–4, 59–64, 88–90), `src/variables.ts` (line 102), `src/spydog.ts` (lines 60–61), `src/main.ts` (line 49)  
@@ -193,7 +195,7 @@ The feedback callback does have a numeric fallback (lines ~89–90), but the sto
 
 ---
 
-### L3: No explicit `close()` in `WSConnection.destroy()` before nulling
+### M3: No explicit `close()` in `WSConnection.destroy()` before nulling
 
 **Classification:** ⚠️ PRE-EXISTING  
 **File:** `src/wsconnection.ts`, lines 87–93  
@@ -203,7 +205,7 @@ The feedback callback does have a numeric fallback (lines ~89–90), but the sto
 
 ## 🟢 Low
 
-### H3: Deprecated `isVisible: () => false` usage
+### L1: Deprecated `isVisible: () => false` usage
 
 **Classification:** ⚠️ PRE-EXISTING  
 **File:** `src/actions.ts` (22 occurrences), `src/feedbacks.ts` (7 occurrences)  
