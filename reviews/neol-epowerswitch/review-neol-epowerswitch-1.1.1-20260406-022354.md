@@ -32,13 +32,13 @@ The module code is genuinely solid — good HTTP implementation, clean architect
 | 🔴 Critical | 10 | 0 | 10 |
 | 🟠 High | 3 | 0 | 3 |
 | 🟡 Medium | 3 | 0 | 3 |
-| 🟢 Low | 3 | 0 | 3 |
+| 🟢 Low | 2 | 0 | 2 |
 | 💡 Nice to Have | 5 | 0 | 5 |
-| **Total** | **24** | **0** | **24** |
+| **Total** | **23** | **0** | **23** |
 
 **Blocking:** 16 issues (10 new critical, 3 new high, 3 new medium)  
 **Fix complexity:** Medium — multiple one-line config fixes plus a source file rename and entry point restructure  
-**Health delta:** 24 introduced · 0 pre-existing
+**Health delta:** 23 introduced · 0 pre-existing
 
 ---
 
@@ -71,7 +71,6 @@ The module code is genuinely solid — good HTTP implementation, clean architect
 
 **Non-blocking**
 - [ ] [L2: Swallowed errors in poll intervals — no persistent-failure signal](#l2-swallowed-errors-in-poll-intervals--no-persistent-failure-signal)
-- [ ] [L3: Action timeout failures not visible to operator](#l3-action-timeout-failures-not-visible-to-operator)
 - [ ] [L4: Toggle state inconsistency during delayed poll](#l4-toggle-state-inconsistency-during-delayed-poll)
 - [ ] [N1: Use `Connecting` status during initial startup](#n1-use-connecting-status-during-initial-startup)
 - [ ] [N2: Default config object duplicated in `init()` and `configUpdated()`](#n2-default-config-object-duplicated-in-init-and-configupdated)
@@ -334,17 +333,6 @@ configUpdated(config) {
 `pollStatus()` is called with `.catch(() => {})` in three places. While individual errors are caught and logged inside `pollStatus()`, there's no mechanism to signal "this has been failing for an extended period." An operator has no way to distinguish a one-time hiccup from a module that's been offline for an hour.
 
 A simple failure counter (reset on success, log a warning after N consecutive failures) would improve troubleshooting on live shows.
-
----
-
-### L3: Action timeout failures not visible to operator
-
-**File:** `src/actions.js` lines 34–38  
-**Classification:** 🆕 NEW  
-
-When `sendOutletCommand()` times out, the module status updates to `UnknownError`, but operators pressing buttons on a live surface won't necessarily notice the status panel. No in-button feedback is provided to indicate the command failed.
-
-This is partially a Companion platform limitation, but consider whether the current UX is sufficient for live show use.
 
 ---
 
