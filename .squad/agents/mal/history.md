@@ -121,3 +121,39 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 **Blocking Issue (NEW FINDING):**
 - Same `clearIdleTimer()` issue from previous review session remains unfixed
 - Orchestration log: `.squad/orchestration-log/2026-04-02T041821Z-mal.md`
+
+### 2026-04-06: glensound-gtmmobile v1.0.0 review — CHANGES REQUIRED
+
+**Module:** companion-module-glensound-gtmmobile v1.0.0
+**API:** `@companion-module/base ~1.8.0` (v1.x rules)
+**Release type:** First release — all code is new
+
+**Critical Findings (15 total — all blocking):**
+- 12 template compliance violations: missing required files (.gitattributes, .prettierignore, .yarnrc.yml, yarn.lock), incorrect .gitignore, incorrect package.json structure (repository, engines, scripts, devDependencies, banned keywords), incorrect manifest.json fields (name, repository, runtime, $schema, maintainer email)
+- 3 logic errors: channel array index mismatch (inconsistent 1-13 vs 2-14 ranges), silent command failures (no InstanceStatus update on sendCmd error), race condition in configUpdated (socket close is async but start() called immediately)
+
+**Medium/Low Findings:**
+- Missing error handler on bind operations (Medium)
+- Inconsistent socket error handling (Medium)
+- Mute/volume toggle with null state defaults unexpectedly (Medium)
+- Missing error propagation in action callbacks (Medium)
+- Async action callbacks without await (Low)
+- No reconnection logic after socket error (Low)
+- Various cosmetic and defensive programming issues (Low)
+
+**Architecture Notes (positive):**
+- v1.x compliance correct — `runEntrypoint(GlenSoundGTMMobile, [])` present at end of main.js
+- All lifecycle methods implemented: `init()`, `destroy()`, `configUpdated()`, `getConfigFields()`
+- Clean dual-socket UDP architecture: command socket for sending, multicast socket for status
+- Proper cleanup in `closeSockets()` — clears intervals, drops multicast membership, closes sockets
+- Good auto-detection of multicast interface based on device IP subnet
+- Connection timeout handling with `resetTimeout()` for offline device detection
+- Clean protocol implementation with proper GlenSound packet building
+- JavaScript CJS module, source files in `src/` directory
+- No `dist/` committed, no `package-lock.json`
+- Empty upgrade scripts correct for first release
+- Well-documented HELP.md
+
+**Fix Complexity:** Medium — template fixes are mechanical copy-paste, logic fixes require ~30 lines of code changes
+
+**Review file:** `reviews/glensound-gtmmobile/review-glensound-gtmmobile-v1.0.0-20260406-035504.md`

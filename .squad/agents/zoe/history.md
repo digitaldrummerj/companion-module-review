@@ -172,3 +172,54 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 
 **Orchestration Log:** `.squad/orchestration-log/2026-04-02T041821Z-zoe.md`
 **Session Log:** `.squad/log/2026-04-02T041821Z-easyworship-review.md`
+
+---
+
+### 2025-01-03: GlenSound GTM Mobile v1.0.0 review — first release, UDP multicast protocol
+
+**Module:** companion-module-glensound-gtmmobile v1.0.0 (first release)
+**Protocol:** UDP command packets + multicast status subscriptions (GlenSound proprietary)
+**Key files:** main.js (314 lines), actions.js (166 lines), feedbacks.js (91 lines), variables.js (17 lines)
+
+**Verdict:** REJECTED — 3 blocking issues, 9 notes
+
+**B-01: Channel volume array index mismatch** — `channelVolumes` declared as 14-element array (main.js:77) but volume parsing loop iterates `knob = 2; knob <= 14` (line 288), accessing index 14. Variable definitions loop `k = 2; k <= 14` (variables.js:7) but variable update loop uses `k = 1; k <= 13` (main.js:302). Inconsistent channel range (1-13 vs 2-14) across array init, parsing, variables, actions, and feedbacks. Channel 1 volume never populated but variable defined. Channel 14 may work by JS array expansion but is semantically out-of-bounds. Operators will see "unknown" for channel 1 and inconsistent behavior for channel 14.
+
+**B-02: Floating promise rejection in sendCmd()** — `udpCmd.send()` callback logs errors but doesn't propagate to InstanceStatus (main.js:215-218). Actions (mute/unmute/volume) appear to succeed but silently fail when network unavailable or socket closed. No operator feedback.
+
+**B-03: Race condition in configUpdated()** — `closeSockets()` calls `udpStatus.close()` (async) then immediately starts new socket on same multicast address/port (main.js:98-106). If old socket hasn't fully closed, new bind fails with EADDRINUSE. Module stuck in ConnectionFailure, requires restart.
+
+**N-01: Inconsistent error handling in socket creation** — try/catch blocks around socket creation (lines 150-158, 161-190) don't catch errors in async callbacks (bind, addMembership). If `addMembership()` fails (line 172), error is caught but status socket already bound, leaving socket in inconsistent state. Resource leak on init failure paths.
+
+**N-02: Mute toggle with null state** — `sendToggle()` defaults to unmute when `muteState === null` (line 222). Initial toggle before first status response always unmutes. Not intuitive — should request status first or log warning.
+
+**N-03: Channel volume toggle unsafe on null** — actions.js:154-160 toggles to 100% when `channelVolumes[ch] === null`. First toggle always sets 100% regardless of actual device state. Could cause unexpected audio level changes.
+
+**N-04: Missing error propagation in action callbacks** — All action callbacks marked `async` but never throw or return errors (actions.js:55-161). `sendCmd()` can fail silently (see B-02). Operators have no indication when actions fail. Companion can't provide visual feedback.
+
+**N-05: Comment mismatch in volume formula** — Line 288 comment says "offset = knob + 61" but formula is `knob * 2 + 52` (line 28). For knob 2: `2 * 2 + 52 = 56`, not `2 + 61 = 63`. Formula verified correct, comment wrong.
+
+**N-06: Channel 1 not controllable but listed in feedbacks** — feedbacks.js:52 lists "Channel 1 (stereo)" but actions.js CHANNEL_CHOICES starts at channel 2. Operators can set feedback for channel 1 but have no action to control it. Feedback will always show false/unknown. Either add channel 1 to actions or remove from feedbacks with comment explaining it's read-only.
+
+**N-07: No validation of config.port type** — `parseInt(this.config?.port)` (line 213) works on numbers but is redundant. If port invalid (NaN), falls back to 41161 silently. Low impact (Companion validates via Regex.PORT).
+
+**N-08: 500ms poll rate** — `setInterval(..., 500)` generates 2 packets/second even when idle (line 179). Comment justifies this for physical button latency. Acceptable for single device but worth documenting. Could be configurable (200-2000ms range).
+
+**N-09: Inconsistent whitespace** — feedbacks.js:52-53 has excessive tab indentation before line 53. Cosmetic only.
+
+**Strengths noted:**
+- ✅ Proper multicast join with interface auto-detection + manual override fallback (lines 168-173)
+- ✅ Connection timeout mechanism (5s) with recovery on next message (lines 226-233)
+- ✅ Generation indices used to detect volume changes — only requests report when needed (lines 268-274)
+- ✅ Filters status messages by port (41162) and source IP to avoid noise (lines 239-240)
+- ✅ Clean packet building with proper buffer allocation and GS_MAGIC header verification
+- ✅ Proper socket cleanup in destroy() and configUpdated() (both call closeSockets())
+- ✅ Well-structured: separate files for actions/feedbacks/variables
+
+**Critical pattern — generation-based change detection:** Device sends generation indices in Status packet (offsets 0x1a for mute, 0x1c for volume). Module tracks `lastGenMute` and `lastGenVolume`, only requesting detailed Report when generation changes. Avoids unnecessary 100-byte Report multicast when nothing changed. Good bandwidth optimization.
+
+**UDP multicast design validated:** Command socket sends to device unicast, status socket joins multicast group to receive device broadcasts. Auto-detection of correct network interface via subnet mask calculation (lines 56-69) handles multi-NIC systems correctly. Fallback to undefined interface if auto-detect fails (relies on OS default routing).
+
+**Session Closed:** 2025-01-03
+**Requested by:** Justin James
+**Review file:** `.squad/decisions/inbox/zoe-review-findings.md`

@@ -294,3 +294,110 @@ Findings: `.squad/decisions/inbox/wash-snmp-review-findings.md`
 
 **Orchestration Log:** `.squad/orchestration-log/2026-04-02T041821Z-wash.md`
 **Session Log:** `.squad/log/2026-04-02T041821Z-easyworship-review.md`
+
+### 2026-04-02: GlenSound GTM Mobile Review (v1.0.0)
+
+**Module:** `companion-module-glensound-gtmmobile` v1.0.0
+**Protocol:** UDP (dgram) — direct socket management, multicast receive + unicast send
+**Review Type:** First release — all code is new
+**Key Files:**
+- `main.js` — Module class, UDP lifecycle, multicast join, message parsing, timeout detection, polling
+- `actions.js` — Action definitions with mute/unmute and mixer channel volume control
+- `feedbacks.js` — Feedback definitions for mute state and channel volume
+- `variables.js` — Variable definitions for Companion
+
+**Architecture Pattern:**
+- Dual UDP socket design: one for command send (unicast), one for status receive (multicast)
+- Command socket (`udpCmd`) — ephemeral port, unicast to device IP on port 41161
+- Status socket (`udpStatus`) — bound to multicast group 239.254.50.123:6111, receives device broadcasts
+- Multicast membership with auto-detected local interface via subnet matching (fallback to no interface hint)
+- Polling: GetStatus every 500ms to reflect physical button presses on device
+- Timeout detection: 5s without Status message → ConnectionFailure
+- Generation counters in Status packet trigger volume Report requests (on-demand polling)
+
+**Connection Lifecycle:**
+- `init()` → `start()` — creates both sockets, joins multicast, starts poll timer
+- `configUpdated()` → `closeSockets()` → `start()` — full reconnect on config change
+- `destroy()` → `closeSockets()` — cleans up both sockets, timers, multicast membership
+
+**UDP Socket Management:**
+- `udpCmd` created with `dgram.createSocket('udp4')`, bound to ephemeral port (0)
+- `udpStatus` created with `{ type: 'udp4', reuseAddr: true }` (required for multicast)
+- Error handlers registered immediately after socket creation (lines 152, 163)
+- `closeSockets()` properly cleans up:
+  - Clears `pollTimer` and `noResponseTimer`
+  - Wraps `udpCmd.close()` in try/catch, nulls socket
+  - Calls `dropMembership()` before `udpStatus.close()`, wraps in try/catch, nulls socket
+- No socket recreation in error handlers — errors logged, status updated, sockets left for manual reconnect
+
+**Multicast:**
+- `bind(STATUS_MULTICAST_PORT, STATUS_MULTICAST_GROUP)` before `addMembership()` — CORRECT order (bind first, then join)
+- Auto-detection: `findInterfaceForDevice()` scans local network interfaces, subnet matches device IP (lines 56-69)
+- Falls back to no interface hint if auto-detection fails — may work on single-NIC systems, logs warning for multi-NIC
+- `dropMembership()` always called in `closeSockets()` regardless of whether `addMembership()` succeeded (caught)
+
+**Message Parsing:**
+- Defensive validation: magic byte check, source IP filter, source port filter (lines 239-242)
+- Length checks before buffer access (lines 241, 255, 268, 279, 289)
+- Opcode dispatch: 1=Status, 10=Report (lines 247-251)
+- Bounds checks in volume report parsing: `if (offset >= msg.length) continue` (line 289)
+
+**Timeout Detection:**
+- `resetTimeout()` called on every valid Status message (line 243)
+- 5s timer → `log('warn', ...)` + `updateStatus(ConnectionFailure)` + variables reset to 'unknown'
+- No automatic reconnection — status visible to user, manual intervention required
+
+**Polling Logic:**
+- `setInterval(() => this.sendCmd(PKT_GET_STATUS), 500)` starts after successful multicast join (line 179)
+- 500ms interval balances responsiveness (physical button presses) with network load
+- Cleared in `closeSockets()` to prevent orphaned timers
+- Generation counter optimization (lines 268-275): only request volume Report when generation changes in Status packet
+
+**InstanceStatus Transitions:**
+- Connecting (line 87) → BadConfig (no host, line 145) / ConnectionFailure (socket errors, lines 156, 184, 189) / Ok (line 174)
+- Ok → ConnectionFailure (timeout, line 230)
+- Status checked before redundant updates: `if (this.instanceStatus !== InstanceStatus.Ok)` (line 244)
+
+**Protocol Design Quality:**
+- Uses multicast for read-only monitoring (efficient) + unicast for commands (reliable targeting)
+- Application-level keepalive via GetStatus polling (compensates for UDP's lack of connection state)
+- Source IP filtering prevents cross-instance interference in multi-device setups (line 240)
+- Generation counters minimize volume Report requests (only when mixer state changes)
+- No blocking operations — all I/O is async UDP send/receive
+
+**Findings (Minor):**
+1. **NOTE:** Missing error handler on bind operation itself (line 166) — error handler is registered on line 163 (before bind), so this is handled correctly. No issue.
+2. **NOTE:** Action callbacks declared as `async` but never use `await` (actions.js lines 55-154) — hygiene issue, not a bug. Should remove `async` keyword.
+3. **NOTE:** No automatic reconnection after timeout or socket error — status updated, but user must reload instance. Could improve UX by calling `closeSockets() → start()` in timeout handler.
+4. **NOTE:** Potential race condition in `configUpdated()` — `closeSockets()` not awaited before `start()`. Add 100ms delay or make closeSockets return a Promise.
+5. **NOTE:** `dropMembership()` called even if `addMembership()` failed (line 202) — throws error, caught by try/catch. Could track `this.multicastJoined` flag.
+
+**Positive Patterns:**
+- ✅ Both sockets properly closed in `destroy()`
+- ✅ Timers (`pollTimer`, `noResponseTimer`) correctly cleared
+- ✅ Multicast membership dropped before socket close
+- ✅ All socket operations wrapped in try/catch
+- ✅ Error listeners registered on both sockets
+- ✅ Send errors handled with callback (line 215-217)
+- ✅ InstanceStatus state machine correct (Connecting → BadConfig/ConnectionFailure/Ok)
+- ✅ Defensive message parsing (magic bytes, IP filter, length checks)
+- ✅ No synchronous/blocking network calls
+- ✅ Resource management: null-checks before close, state reset on config change
+
+**Learnings:**
+- **Multicast bind order:** Must bind to multicast group address BEFORE calling `addMembership()`. Binding to group address is correct for multicast receive (not 0.0.0.0 or localhost).
+- **Multicast interface auto-detection:** Subnet matching is reliable for finding correct interface when device IP is known. Fall back to no interface hint if detection fails — works on single-NIC systems, may fail on multi-NIC without manual config.
+- **UDP timeout detection:** Since UDP has no connection state, modules must implement application-level keepalive (GetStatus polling) + timeout detection (no response for N seconds). 5s timeout is appropriate.
+- **Source IP filtering in multicast:** When multiple instances share the same multicast group, filter incoming messages by source IP to prevent cross-instance interference.
+- **Generation counters for optimization:** Rather than polling Report continuously, track generation counters in Status messages and only request Report when counter changes. Minimizes network traffic.
+- **Fire-and-forget vs timeout:** Module uses fire-and-forget UDP sends with no retries. Timeout detection is passive (no response = failure). This is correct for this protocol — device broadcasts Status at ~10 Hz, so missing one packet is tolerable.
+- **`async` keyword hygiene:** If callback doesn't use `await`, don't declare it `async`. Unnecessary Promise wrapping, misleads readers.
+
+**Findings Written To:** `.squad/decisions/inbox/wash-review-findings.md`
+
+**Session Closed:** 2026-04-02
+**Verdict:** ✅ PASS WITH NOTES — well-engineered UDP implementation, proper socket lifecycle, no blocking issues. 6 notes for minor improvements (async hygiene, auto-reconnect, race condition, multicast join tracking, message bounds validation already correct).
+
+**Release Tag:** v1.0.0 (first release)
+**Comparison Baseline:** None (new module)
+**Requested by:** Justin James

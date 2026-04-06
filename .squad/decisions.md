@@ -1232,3 +1232,50 @@ This is a solid first release with excellent protocol implementation and code st
 - ✅ No tests required (Simon: PASS)
 
 **Action:** Fix 6 blocking issues and re-review.
+
+---
+
+### 2026-04-05T23:10:27Z: User directive — Code review format
+
+**By:** Justin James (via Copilot)  
+**What:** For all review findings that include code fixes, always show the current (before) code alongside the proposed fix — not just the suggested replacement. Both the "current code" and "fix" blocks must appear in every finding that touches code.  
+**Why:** User request — captured for team memory.
+
+### 2026-04-06: User directive — Config/license compliance blocking
+
+**By:** Justin James (via Copilot)  
+**What:** Mismatches between the module and the template for `.gitignore`, `.gitattributes`, `.yarnrc.yml`, `.prettierignore`, `package.json` fields (`engines`, `prettier`, `packageManager`, `repository`), and the `LICENSE` file not matching the MIT template are ALL blocking findings (🔴 Critical). Reviewers must not treat these as notes or non-blocking. They block approval every time, whether the issue is new or pre-existing.  
+**Why:** User request — reviewers kept treating these as non-blocking notes. Captured for team memory so all reviewers apply consistent severity.
+
+### 2026-04-05: Module fix decision — glensound-gtmmobile v1.0.0
+
+**By:** Mal (via Final Assembly Review)  
+**Status:** Changes Required (15 Critical)  
+**Module:** glensound-gtmmobile v1.0.0  
+**Date:** 2026-04-06
+
+**Blocking Categories:**
+- **Template Compliance:** 12 critical violations (missing .gitattributes, .prettierignore, .yarnrc.yml, yarn.lock; incorrect .gitignore; missing package.json fields; missing manifest fields)
+- **Logic Errors:** 3 critical issues (channel indexing mismatch 1-13 vs 2-14; silent command failures; race condition in configUpdated)
+
+**Module Strengths:** Clean protocol implementation, proper socket lifecycle, defensive programming, comprehensive documentation.
+
+**Fix Complexity:** Medium — Template fixes mechanical (copy/paste), logic fixes ~30 lines of code.
+
+**Next Steps:** Maintainer addresses all 15 issues, runs `yarn install && yarn package` to verify, requests re-review.
+
+**Review File:** `reviews/glensound-gtmmobile/review-glensound-gtmmobile-v1.0.0-20260406-035504.md`
+
+### 2026-04-05: Module verdict — VideoPathé QTimer N1, N4
+
+**By:** Kaylee (Module Dev Reviewer)  
+**Status:** COMPLETE  
+**Date:** 2026-04-05
+
+**Fixes Applied:**
+- **N1 (Manifest Version):** Changed manifest.json version to 0.0.0 per framework convention
+- **N4 (Package Scripts):** Updated package.json build/lint/package scripts to use `run` instead of `yarn` for workspace-agnostic compatibility
+
+**Rationale:** Manifest carries `0.0.0` as static metadata; actual version lives in package.json. The `run` command resolves to appropriate package manager at runtime.
+
+**Commit:** 3497f17 — both fixes applied and committed with Co-authored-by trailer.

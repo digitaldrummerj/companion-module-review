@@ -199,3 +199,45 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
   - Preserved `postinstall: husky` (no change needed)
 
 **Template convention:** Module templates now use `run` instead of `yarn` in package.json scripts for package manager agnosticism. The `run` command resolves to yarn, npm, or pnpm depending on runtime.
+
+### GlenSound GTM Mobile Review (2026-04-06)
+
+- **Module:** `glensound-gtmmobile` v1.0.0 (First Release)
+- **Maintainer:** Przemysław Matusiak (GitHub: Althertime)
+- **Language:** JavaScript (no tsconfig.json)
+- **API Version:** v1.8.0 (`@companion-module/base ~1.8.0`)
+- **Build verdict:** 🔴 **FAIL** — Cannot build; missing all required template files
+
+**Critical template compliance violations (12 blocking issues):**
+1. Missing `.gitattributes`, `.prettierignore`, `.yarnrc.yml`, `yarn.lock`
+2. Incorrect `.gitignore` content (missing required entries: `package-lock.json`, `/pkg`, `/*.tgz`, `DEBUG-*`, `/.yarn`; extra entries: `*.log`, `.DS_Store`)
+3. Missing `package.json` fields: `repository.type`, `engines.yarn`, `prettier`, `packageManager`
+4. Wrong `engines.node`: `">=18.0.0"` instead of `"^22.20"` or `"^22.x"`
+5. `repository` not structured as object (plain string instead of `{type, url}`)
+6. Repository URL uses personal account `Althertime` instead of `bitfocus`
+7. Missing required `scripts`: `format` and `package` (has wrong `start` script instead)
+8. Missing `devDependencies`: `@companion-module/tools`, `prettier`
+9. Banned keywords in `package.json`: `"companion"`, `"glensound"` (manufacturer name)
+10. `manifest.json` issues: `runtime.type` is `"node18"` (should be `"node22"`), `name` field wrong (should equal `id`, not display name), missing `$schema`, missing `maintainers[0].email`
+11. Repository URL in `manifest.json` also uses `Althertime` instead of `bitfocus`
+12. Outdated API version: using v1.8.0 (Companion 3.3+) instead of current v1.14.1 (Companion 4.2+) — 6 major versions behind
+
+**Build failure:** `yarn install` failed with Node version incompatibility — the old SDK v1.8.0 requires `^18.12`, but Node 22 is installed. This is expected because the module has no `.yarnrc.yml`, no `packageManager` field, and incorrect `engines.node`. The root cause is that the module was developed without using the official JS template.
+
+**What's solid (module code quality is excellent):**
+- ✅ Clean UDP protocol implementation with thorough comments
+- ✅ Proper resource cleanup (`closeSockets()` clears all timers and sockets)
+- ✅ Smart multicast interface auto-detection (`findInterfaceForDevice()` — excellent UX)
+- ✅ Connection monitoring with timeout (detects device offline within 3-5 seconds)
+- ✅ Comprehensive `HELP.md` with clear setup instructions and troubleshooting
+- ✅ Complete actions/feedbacks/variables (mute control, mixer channel volume, state feedback)
+- ✅ Excellent `README.md` with protocol documentation and multi-device guidance
+- ✅ Valid MIT License with real copyright holder (not placeholder)
+- ✅ Correct v1.8 API implementation (`runEntrypoint()`, `UpgradeScripts`, `init/destroy/configUpdated/getConfigFields`)
+- ✅ All source code correctly in `src/` directory
+
+**Key learning:** This is a **first-time module author** who developed the module from scratch without the official template. The code itself is solid, but the packaging is entirely non-compliant. The review provides a comprehensive checklist of all required changes to bring it into template compliance.
+
+**Post-fix recommendation:** Once template compliance is achieved, recommend upgrading from v1.8.0 to v1.14.1 for modern features (automated config layout, `secret-text` fields, value feedbacks, Node 22 support).
+
+**Personal account vs bitfocus:** The module uses `github.com/Althertime/companion-module-glensound-gtmmobile` in both `package.json` and `manifest.json` repository URLs. This is acceptable during development, but must be changed to `github.com/bitfocus/companion-module-glensound-gtmmobile` before official submission to the Bitfocus module library. This is a common pattern for first-time contributors developing in their personal account before transferring/forking to bitfocus.
