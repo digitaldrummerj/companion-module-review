@@ -199,3 +199,29 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 **Build Status:** ❌ FAILED (`@companion-module/base@1.10.0` incompatible with Node 22)
 
 **Review file:** `reviews/eventsync-server/review-eventsync-server-v0.9.8-20260406-040342.md`
+
+### 2026-04-06: cosmomedia-slidelizer v1.0.0 review — APPROVED
+
+**Module:** companion-module-cosmomedia-slidelizer v1.0.0
+**API:** `@companion-module/base ~1.14.1` (v1.x rules)
+**Release type:** First release — all code is new
+
+**Verdict:** APPROVED — clean first-release module with no blocking issues.
+
+**Minor Finding:**
+- `.gitignore` should include `dist/` — currently has `package-lock.json` but not `dist/`. Not blocking since no dist exists yet.
+
+**Architecture Notes (positive):**
+- v1.14 compliance correct — `runEntrypoint(SlidelizerInstance, [])` at line 330 of `src/main.js`
+- All lifecycle methods implemented: `init()`, `destroy()`, `configUpdated()`, `getConfigFields()`
+- Clean socket cleanup in `destroy()` — closes TCP socket AND clears reconnect timer
+- Good reconnection logic with exponential backoff (1s to 10s max)
+- 9 variables covering timer, clock, and video modes with multiple format variants
+- 5 advanced feedbacks returning formatted text
+- Uses `node22` runtime in manifest (correct for v1.14)
+- JavaScript CJS module, source in `src/` directory
+- Empty UpgradeScripts correct for first release
+- No deprecated v1.12+ patterns (`isVisible`, redundant `parseVariablesInString`)
+- No `package-lock.json` committed, uses yarn-only
+
+**Review file:** `.squad/decisions/inbox/mal-review-findings.md`

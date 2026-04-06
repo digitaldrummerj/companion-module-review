@@ -1359,3 +1359,87 @@ This is a solid first release with excellent protocol implementation and code st
 - Verdict: `reviews/eventsync-server/review-eventsync-server-v0.9.8-*.md`
 - Specialist findings: `.squad/decisions/inbox/` (mal, wash, kaylee, zoe, simon review findings)
 
+
+---
+
+## 2026-04-06: Review session — companion-module-cosmomedia-slidelizer v1.0.0
+
+**Date:** 2026-04-06T04:10:41Z  
+**Module:** companion-module-cosmomedia-slidelizer  
+**Version:** v1.0.0 (first release)  
+**Status:** CONDITIONAL APPROVAL  
+**Agents:** Mal (Architecture), Wash (Protocol), Kaylee (Dev/Build), Zoe (QA), Simon (Tests) — all parallel  
+
+**Overall Verdict:** Module is functional and well-implemented with 3 Critical blocking issues in package.json metadata.
+
+### Mal's Verdict: ✅ APPROVED
+- Clean v1.14 module with solid fundamentals
+- All required lifecycle methods present and correct
+- Proper entrypoint at line 330
+- Socket cleanup prevents resource leaks
+- No blocking issues
+- **Finding:** 1 nice-to-have — .gitignore should include `dist/`
+
+### Wash's Verdict: ✅ PASS WITH NOTES
+- Protocol: TCP socket streaming (not HTTP/polling as initially briefed)
+- TCP implementation is fundamentally sound with proper connection lifecycle
+- 0 blocking issues
+- **Findings:** 4 non-blocking
+  1. Swallowed error in reconnect scheduler (Low) — empty catch block
+  2. Swallowed error in disconnect cleanup (Low) — silent error suppression
+  3. TCP socket never times out (Info) — could hang on unreachable host
+  4. Buffer size not bounded (Info) — unbounded memory growth risk on malformed data
+- **Solid:** Proper cleanup, reconnect logic, error handling, data protocol
+
+### Kaylee's Verdict: ⚠️ BUILD PASS, 3 CRITICAL FINDINGS
+- Build: ✅ `yarn install && yarn package` succeeded → `cosmomedia-slidelizer-1.0.0.tgz`
+- Template compliance: 97% — only missing optional package.json fields
+- **Critical Findings (blocks approval):**
+  1. Outdated `@companion-module/tools` version — found ^2.6.1, need ^2.7.1
+  2. Missing `keywords` field in package.json — required for npm discoverability
+  3. Missing `author` field in package.json — required for npm metadata
+- **Medium Findings:** None
+- **Nice to Have:** Preset opportunities (Timer/NDI controls)
+- **Solid:** All required files present, config files match template, manifest valid, API v1.14 compliant
+
+### Zoe's Verdict: ✅ PASS WITH NOTES
+- Status: Functional and safe for production with robustness improvements recommended
+- **Critical Issues:** None identified
+- **Major Issues (3):** Should address for reliability
+  1. Race condition in configUpdated() (lines 38-42) — multiple parallel connections possible
+     - Guard missing to prevent concurrent connection attempts
+     - Could create race conditions: multiple `_connect()` calls, `this.client` overwritten
+  2. Event listener accumulation / Memory leak risk (lines 69-134)
+     - New socket created on reconnection but old listeners may not clean up properly
+     - Accumulated listeners not garbage collected
+  3. Unhandled promise rejection in configUpdated() (lines 38-42)
+     - Both `_disconnect()` and `_maybeConnect()` can throw
+     - No try-catch in async function — could crash module
+- **Minor Issues (7):** Low-severity defensive improvements
+  1. Silent error swallowing in _disconnect() — log at debug level
+  2. Silent error swallowing in _scheduleReconnect() — log at debug level
+  3. Missing null check in _send() — validate text parameter
+  4. Potential unbounded buffer growth — add max buffer size check
+  5. No validation of port configuration — explicit range check (1-65535)
+  6. Mixed variable initialization (timerRunning unused) — remove or implement
+  7. No cleanup of reconnect timer on rapid cycles — clear at configUpdated() start
+- **Solid:** Proper cleanup on destroy, defensive config handling, TCP framing, exponential backoff, status updates, error logging, variable formatting, input sanitization
+
+### Simon's Verdict: No tests found
+- No Jest test files (*.test.js, *.spec.js)
+- No test/ directory
+- Per review policy: Absence of tests noted but does not block approval
+- Optional: Consider tests in future releases
+
+### Blocking Issues to Resolve
+1. Update package.json: `@companion-module/tools` to ^2.7.1
+2. Add package.json: `"keywords": ["timer", "ndi", "presenter", "slides", "control"]`
+3. Add package.json: `"author": { "name": "cosmomedia", "email": "info@cosmomedia.de" }`
+
+### Recommendation
+**CONDITIONAL APPROVAL** — Fix the 3 Critical package.json issues and module is ready for v1.0.0 release. Address Zoe's major issues (race condition, listener cleanup, promise handling) in v1.0.1 for production robustness, especially in long-running scenarios. Wash's advisory items (timeout, buffer limit) are optional enhancements.
+
+### Review Files
+- Orchestration logs: `.squad/orchestration-log/2026-04-06T04:10:41Z-{mal,wash,kaylee,zoe,simon}.md`
+- Session log: `.squad/log/2026-04-06T04:10:41Z-cosmomedia-slidelizer-review.md`
+- Decision inbox (merged): `.squad/decisions/inbox/{kaylee,mal,wash,zoe}-review-findings.md` [ARCHIVED]
