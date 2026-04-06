@@ -33,14 +33,13 @@
 |----------|--------|-------------|-------|
 | 🔴 Critical | 1 | 2 | 3 |
 | 🟠 High | 2 | 1 | 3 |
-| 🟡 Medium | 1 | 0 | 1 |
 | 🟢 Low | 1 | 2 | 3 |
 | 💡 Nice to Have | 1 | 0 | 1 |
-| **Total** | **6** | **5** | **11** |
+| **Total** | **5** | **5** | **10** |
 
 **Blocking:** 6 issues (3 Critical + 3 High)  
 **Fix complexity:** Quick — file creates, two code fixes, and one upgrade script  
-**Health delta:** 5 introduced · 6 pre-existing surfaced
+**Health delta:** 4 introduced · 6 pre-existing surfaced
 
 ---
 
@@ -61,7 +60,6 @@
 - [ ] [H3: Deprecated `isVisible: () => false` usage](#h3-deprecated-isvisible---false-usage)
 
 **Non-blocking**
-- [ ] [M1: `engines.node` set to `^22.14` instead of template value](#m1-enginesnode-set-to-2214-instead-of-template-value)
 - [ ] [L1: Duplicate action name "Next Cue on Playlist"](#l1-duplicate-action-name-next-cue-on-playlist)
 - [ ] [L2: French comments in source files](#l2-french-comments-in-source-files)
 - [ ] [L3: No explicit `close()` in `WSConnection.destroy()` before nulling](#l3-no-explicit-close-in-wsconnectiondestroy-before-nulling)
@@ -195,21 +193,6 @@ isVisibleExpression: "false",   // API v1.12+
 **Affected files:** `src/actions.ts` lines 34, 74, 81, 124, 131, 166, 192, 218, 244, 277, 318, 357, 397, 438, 477 (and others); `src/feedbacks.ts` lines 15, 36, 43, 50, 75, 82, 143.
 
 Since all usages are constant `false` (not conditional), migration is a straight find-and-replace.
-
----
-
-## 🟡 Medium
-
-### M1: `engines.node` set to `^22.14` instead of template value
-
-**Classification:** 🔙 REGRESSION (changed this release)  
-**File:** `package.json`, line ~22  
-**Issue:** `engines.node` is `"^22.14"` but the template standard is `"^22.x"` (or `"^22.20"`). While `^22.14` is valid Node semver, it deviates from the template baseline and may cause unnecessary failures on Node 22.1–22.13 environments that are otherwise supported by `@companion-module/base` v1.12.
-
-**Found:** `"node": "^22.14"`  
-**Template expects:** `"node": "^22.x"` (or `"^22.20"`)
-
-**Fix:** Change to `"^22.x"` for consistency with the module template.
 
 ---
 
