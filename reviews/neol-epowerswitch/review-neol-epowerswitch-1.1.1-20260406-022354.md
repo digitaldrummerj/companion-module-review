@@ -32,13 +32,13 @@ The module code is genuinely solid — good HTTP implementation, clean architect
 | 🔴 Critical | 10 | 0 | 10 |
 | 🟠 High | 3 | 0 | 3 |
 | 🟡 Medium | 3 | 0 | 3 |
-| 🟢 Low | 4 | 0 | 4 |
+| 🟢 Low | 3 | 0 | 3 |
 | 💡 Nice to Have | 5 | 0 | 5 |
-| **Total** | **25** | **0** | **25** |
+| **Total** | **24** | **0** | **24** |
 
 **Blocking:** 16 issues (10 new critical, 3 new high, 3 new medium)  
 **Fix complexity:** Medium — multiple one-line config fixes plus a source file rename and entry point restructure  
-**Health delta:** 25 introduced · 0 pre-existing
+**Health delta:** 24 introduced · 0 pre-existing
 
 ---
 
@@ -70,7 +70,6 @@ The module code is genuinely solid — good HTTP implementation, clean architect
 - [ ] [M3: Race condition in `configUpdated()` — missing explicit `stopPolling()` call](#m3-race-condition-in-configupdated--missing-explicit-stoppolling-call)
 
 **Non-blocking**
-- [ ] [L1: `statusPollInterval` — silent NaN disables polling without warning](#l1-statuspollinterval--silent-nan-disables-polling-without-warning)
 - [ ] [L2: Swallowed errors in poll intervals — no persistent-failure signal](#l2-swallowed-errors-in-poll-intervals--no-persistent-failure-signal)
 - [ ] [L3: Action timeout failures not visible to operator](#l3-action-timeout-failures-not-visible-to-operator)
 - [ ] [L4: Toggle state inconsistency during delayed poll](#l4-toggle-state-inconsistency-during-delayed-poll)
@@ -326,24 +325,6 @@ configUpdated(config) {
 ---
 
 ## 🟢 Low
-
-### L1: `statusPollInterval` — silent NaN disables polling without warning
-
-**File:** `src/polling.js` lines 15–16  
-**Classification:** 🆕 NEW  
-
-If `statusPollInterval` is set to a non-numeric string, `Number()` returns `NaN`, which is falsy — polling is silently disabled with no log message. The user would see the module appear connected but never update.
-
-**Suggested fix:**
-```javascript
-const interval = Number(self.config?.statusPollInterval ?? 1000)
-if (isNaN(interval) || interval < 250) {
-    self.log('warn', `Invalid poll interval: ${self.config?.statusPollInterval} — polling disabled`)
-    return
-}
-```
-
----
 
 ### L2: Swallowed errors in poll intervals — no persistent-failure signal
 
