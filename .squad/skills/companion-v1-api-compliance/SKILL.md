@@ -153,7 +153,7 @@ Example manifest:
 
 **`isVisible` function deprecation:**
 - Option fields using `isVisible: (options) => boolean` are deprecated in favor of `isVisibleExpression`
-- ⚠️ Any use of the `isVisible` function form: flag as 🟡 Medium
+- Still works in v1.x — flag as 🟢 Low / **non-blocking** (deprecated, not removed)
 
 **Bonjour port-based filtering:**
 - Bonjour queries in the manifest can now filter by port number — useful when multiple device types share the same mDNS service type

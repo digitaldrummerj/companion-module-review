@@ -16,3 +16,6 @@ companion-module-*/
 
 .DS_Store
 squad-export.json
+
+diff*
+release*
