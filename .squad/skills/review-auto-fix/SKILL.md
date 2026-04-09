@@ -252,6 +252,34 @@ fixes: findings from the v{version} module review
 
 ---
 
+## ⚠️ Never Stage Scratch / Temp Files
+
+Before ANY `git add`, verify the staging area contains ONLY the intended files. Never commit:
+
+- `diff_output.txt`, `diff-output.txt`, `diff-v*.txt`, `release-diff.txt`, or any `*.txt` diff artifact
+- Any file that was untracked at the time `.gitignore` was being fixed (e.g., the M3 `.gitignore` commit can accidentally sweep up temp files that weren't ignored yet)
+
+**Rule:** Always use explicit file paths in `git add` — never `git add .` or `git add -A`. Verify with `git status` and `git diff --cached` before committing.
+
+```bash
+# WRONG — may capture untracked scratch files
+git add .
+
+# RIGHT — stage only what this commit is about
+git add main.js
+git status          # confirm nothing unexpected
+git diff --cached   # review exactly what will be committed
+git commit -m "fix(C1): ..."
+```
+
+If `diff_output.txt` or any scratch file gets staged accidentally, unstage it before committing:
+
+```bash
+git restore --staged diff_output.txt
+```
+
+---
+
 ## Post-Fix Summary
 
 After all commits are made (and the review file updated), report:
