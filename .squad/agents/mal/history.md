@@ -11,6 +11,51 @@
 
 <!-- Append new learnings below. Each entry is something lasting about the project. -->
 
+### 2025-04-05: highcriteria-lhs v1.0.0 review - CHANGES REQUIRED
+
+**Module:** companion-module-highcriteria-lhs v1.0.0
+**API:** `@companion-module/base ~2.0.3` (v2.0)
+**Release Type:** FIRST RELEASE
+
+**Final Verdict:** ❌ CHANGES REQUIRED — Missing `type: "connection"` manifest field (critical blocker), 3 template violations, action error handling deficiencies
+
+**Blocking Issues:**
+1. **C1:** Missing `"type": "connection"` field in manifest.json — module will not load in Companion 4.3+
+2. **C2:** `.gitignore` contains extra `*.pcap` entry not in template — violates file structure compliance
+3. **C3:** `eslint.config.mjs` has unnecessary test file configuration block (module has no tests) — simplify to match template
+4. **C4:** `tsconfig.build.json` uses `nodenext` instead of `Node16` without justification — requires either reverting or documenting reason
+
+**Secondary Issues:**
+1. **H1:** Unhandled promise rejections in 6 action callbacks — lacks try-catch blocks, no error logging; silent failures risk process crash
+2. **H2:** Potential race condition on config update — old client events may fire after new client created
+3. **H3:** No reconnection backoff strategy — tight 2s retry loop hammers server during outages
+4. **H4:** Silent handshake failures — promise catch swallows errors without user notification
+5. **M1:** Missing maintainer email in manifest.json
+6. **M2:** Typos in manifest.json: `shortname` "Serivce" → "Service", `description` "intergration" → "integration"
+
+**What's Solid:**
+- ✅ Excellent binary protocol implementation — comprehensive LHS protocol documentation with proper framing (magic markers), byte order consistency, state parsing
+- ✅ Clean TypeScript structure — proper module layout, source in `src/`, correct build configuration (ESM, dist-based)
+- ✅ Proper connection lifecycle — TCP client with handshake, heartbeat, queue management, proper cleanup
+- ✅ Good use of patterns — EventEmitter for async communication, PQueue for write serialization (prevents device flooding)
+- ✅ Build succeeds — `yarn install`, `yarn build`, `yarn package` all pass, generates 10KB tarball
+- ✅ Comprehensive manifest — correct ID, name, runtime type, entrypoint configuration
+- ✅ Strong helper documentation — HELP.md contains real documentation of actions and feedbacks
+
+**Agents Contributing:** Mal (Lead), Kaylee (Dev), Wash (Protocol), Zoe (QA), Simon (Tests)
+
+**Review files:**
+- `.squad/decisions/inbox/mal-review-findings.md`
+- `.squad/decisions/inbox/kaylee-review-findings.md`
+- `.squad/decisions/inbox/wash-review-findings.md`
+- `.squad/decisions/inbox/zoe-review-findings.md`
+- `.squad/decisions/inbox/simon-review-findings.md`
+
+**Session Closed:** 2025-04-05T22:15:00Z
+Decisions log: `.squad/decisions/decisions.md`
+
+---
+
 ### 2026-04-01: rtw-touchmonitor review - REJECTED
 
 **Module:** companion-module-rtw-touchmonitor v1.0.1
@@ -319,3 +364,181 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 - `@companion-module/tools ^2.6.1` — devDependency, acceptable for build tooling
 
 **Review file:** `.squad/decisions/inbox/mal-review-findings.md`
+
+### 2026-04-06: allenheath-sq v3.1.0 — FINAL ASSEMBLY — CHANGES REQUIRED
+
+**Module:** companion-module-allenheath-sq v3.1.0
+**API:** `@companion-module/base ~1.11.3` (v1.x rules)
+**Session:** 2026-04-06 Final Assembly
+
+**Final Verdict:** 🔴 CHANGES REQUIRED — 2 Critical template violations, 1 High pre-existing issue
+
+**Scorecard:**
+- Critical: 2 (new)
+- High: 1 (pre-existing)
+- Medium: 2 (new)
+- Low: 2 (1 new, 1 pre-existing)
+- Nice to Have: 3 (new)
+
+**Blocking Issues:**
+1. **C1:** Missing `.gitattributes` file (template compliance)
+2. **C2:** Missing `engines.yarn` field in package.json (template compliance)
+3. **H1:** EventEmitter listener leak on reconnect (PRE-EXISTING, mixer.ts:348-427)
+
+**Severity Adjudications (from Kaylee's 4 "Critical" items):**
+1. Missing `.gitattributes` → **Critical** KEPT (required file per template)
+2. Missing `engines.yarn` → **Critical** KEPT (template requires both packageManager AND engines.yarn)
+3. `engines.node: ^22.11` vs `^22.20` → **Medium** DOWNGRADED (functionally compatible, cosmetic)
+4. Extra `.gitignore` entries → **Medium** DOWNGRADED (low-risk deviation, cosmetic)
+
+**Agents Contributing:** Mal, Wash, Kaylee, Zoe, Simon
+
+**Test Results:** 527/527 passing (100%)
+
+**Review file:** `reviews/allenheath-sq/review-allenheath-sq-v3.1.0-20260406-042531.md`
+
+### 2025-07-22: logos-proclaim v1.2.0 review — CHANGES REQUIRED
+
+**Module:** companion-module-logos-proclaim v1.2.0
+**API:** `@companion-module/base ~1.14.1` (v1.x rules)
+**Previous:** v1.1.1
+
+**Final Verdict:** ⚠️ CHANGES REQUIRED — 1 High severity deprecated API pattern
+
+**High Finding (Blocking):**
+- `isVisible` function pattern on password config field (`src/main.js:76`) — deprecated in v1.12, must use `isVisibleExpression` string form. Module is on v1.14 so this is a compliance violation.
+
+**Medium Finding:**
+- Password config field uses `textinput` instead of `secret-text` type (available since v1.13) — credential exposure risk in exports
+
+**v1.x Compliance Verified:**
+- `runEntrypoint(ProclaimInstance, UpgradeScripts)` at `src/main.js:99` ✅
+- `UpgradeScripts` exported from `src/upgrades.js` ✅
+- All lifecycle methods implemented (`init`, `destroy`, `configUpdated`, `getConfigFields`) ✅
+- No `package-lock.json`, no committed `dist/` ✅
+- Clean timer cleanup in `ProclaimAPI.destroy()` ✅
+
+**Release Improvements:**
+- Source files reorganized from root to `src/` directory
+- API upgraded from `~1.11.3` → `~1.14.1`
+- Runtime upgraded to `node22`
+- Modern tooling: Yarn 4.13.0, ESLint 9, Prettier 3
+- Dependencies updated: `got` v12 → v14.6.6
+
+**Review file:** `.squad/decisions/inbox/mal-review-findings.md`
+
+### 2026-04-05: leolabs-ableset v1.8.0 review — CHANGES REQUIRED
+
+**Module:** companion-module-leolabs-ableset v1.8.0
+**API:** `@companion-module/base ~1.12.1` (v1.x)
+**Previous:** v1.7.3
+
+**Final Verdict:** ❌ CHANGES REQUIRED — 2 Critical breaking changes, 1 Medium template violation
+
+**Blocking Issues:**
+1. **CR-1:** Missing UpgradeScript for removed `SetAutoLoopCurrentSection` action — existing user buttons will silently break
+2. **CR-2:** Removed `autoLoopCurrentSection` variable without migration — user expressions will break
+3. **C1:** Missing `.gitattributes` file (template compliance violation)
+
+**Secondary Issues:**
+- **M1:** Potential division by zero in progress calculations (`src/main.ts:1331`, `src/main.ts:1456`)
+- **Info:** No test suite configured
+
+**Agents Contributing:** Mal (Lead), Kaylee (Dev), Wash (Protocol), Zoe (QA), Simon (Tests)
+
+**Review file:** `reviews/leolabs-ableset/review-leolabs-ableset-v1.8.0-20260405-*.md`
+
+---
+
+### 2026-04-05: generic-websocket v2.3.0 review — CHANGES REQUIRED
+
+**Module:** companion-module-generic-websocket v2.3.0
+**API:** `@companion-module/base ~1.12.0` (v1.x)
+**Previous:** v2.2.0
+
+**Final Verdict:** ❌ CHANGES REQUIRED — 1 Critical deprecated API, 1 Critical WebSocket memory leak, 8 Critical template violations
+
+**Blocking Issues:**
+1. **CR-1:** WebSocket listener leak on reconnection — old listeners not removed before reconnecting; causes memory leak and potential duplicate message processing
+2. **CR-2:** Three config fields use deprecated `isVisible` function form instead of `isVisibleExpression` (v1.12 compliance)
+3. **CR-3:** Source code at module root instead of `src/` directory (template structural violation)
+4. **CR-4:** Missing `.gitattributes`, invalid `.gitignore`/`.prettierignore` content (template violations)
+5. **CR-5:** Missing `engines` field (`node: ^22.20`, `yarn: ^4`) in package.json (template violation)
+6. **CR-6:** Missing `prettier` dev dependency (template violation)
+7. **CR-7:** Banned keywords in manifest.json (`"Generic"`, `"WebSocket"` — product/manufacturer names)
+
+**Secondary Issues:**
+- **C1:** `send_command` action lacks WebSocket connection state check; regression vs. `send_hex` pattern
+- **H1:** Unhandled WebSocket send errors in ping timer callbacks
+- **H2:** Origin header always uses `http://` for WSS connections (should match protocol)
+- **H3:** Race condition in `configUpdated()` when User-Agent changes without reconnecting
+- **M1:** No validation for `ping_hex` config field (accepts invalid hex)
+- **Info:** No test suite configured
+
+**Agents Contributing:** Mal (Lead), Kaylee (Dev), Wash (Protocol), Zoe (QA), Simon (Tests)
+
+**Review files:** 
+- `.squad/decisions/inbox/mal-review-findings.md`
+- `.squad/decisions/inbox/kaylee-review-findings.md`
+- `.squad/decisions/inbox/wash-review-findings.md`
+- `.squad/decisions/inbox/zoe-review-findings.md`
+- `.squad/decisions/inbox/simon-review-findings.md`
+
+---
+
+## prodlink-draw-on-slides v1.0.0
+
+**Module:** companion-module-prodlink-draw-on-slides  
+**API:** `@companion-module/base ~1.11.0` (v1.x)  
+**Release Type:** FIRST RELEASE
+
+**Final Verdict:** ❌ CHANGES REQUIRED — 24 Critical template violations, Critical network timeout vulnerability, Critical polling race condition, Complete lack of test coverage
+
+**Blocking Issues:**
+1. **CR-1:** Missing fetch timeout leads to indefinite hangs on network partition; requests lack abort controller (5+ min default timeout)
+2. **CR-2:** Critical polling race condition — unprotected immediate poll allows concurrent API calls; initial rejection unhandled
+3. **CR-3:** 24 critical template violations preventing approval:
+   - Missing files: `.gitattributes`, `.prettierignore`, `.yarnrc.yml`, `yarn.lock`
+   - Missing package.json fields: `engines.node`, `engines.yarn`, `prettier`, `packageManager`, `type`
+   - Missing 6 scripts: `postinstall`, `build:main`, `lint:raw`, `lint`, `package`, `format`
+   - Missing 7 devDependencies: `@companion-module/tools`, `@types/node`, `eslint`, `husky`, `lint-staged`, `prettier`, `rimraf`, `typescript-eslint`
+   - Invalid repository URL uses `prodcontroller` org instead of `bitfocus`
+   - Runtime type `node18` should be `node22`
+   - Missing manifest `$schema` field
+   - Banned keywords: `"slides"`, `"prodlink"` (core feature and manufacturer name)
+   - Single `tsconfig.json` instead of two-file structure
+4. **CR-4:** Unhandled promise rejection in initial poll prevents polling from starting on first failure
+5. **CR-5:** Deprecated `isVisible` function pattern in host/port config fields — must use `isVisibleExpression` string form
+
+**Secondary Issues:**
+- **HIGH-1:** Port scanner creates unmanaged API instances without cleanup
+- **HIGH-2:** No timeout on testConnection during port scan — scan blocks on unresponsive ports
+- **HIGH-3:** No JSON parsing error handling in fetch response
+- **HIGH-4:** Race condition in toggleSetting action (read-modify-write without atomic operation)
+- **MEDIUM-1:** No HTTP response content-type validation
+- **MEDIUM-2:** Silent error suppression in action callbacks — no user feedback
+- **MEDIUM-3:** No distinction between recoverable and non-recoverable errors in polling
+- **MEDIUM-4:** No validation of user hex color input format
+- **MEDIUM-5:** Hardcoded port range (8080-8090) undocumented
+- **M1:** Missing null checks in feedback callbacks
+- **M2:** Port scanning race condition with config updates
+- **Info:** No test suite, no test framework configured
+
+**What's Solid:**
+- ✅ Correct v1.x architecture with `runEntrypoint()` entry point
+- ✅ Proper lifecycle methods (init, destroy, configUpdated)
+- ✅ Smart consolidated `/api/state` endpoint reduces HTTP overhead
+- ✅ Sequential polling prevents overlap (despite race with initial poll)
+- ✅ Comprehensive presets (70+ button presets for user value)
+- ✅ Good `.gitignore` entries
+- ✅ Bonjour device discovery integration
+- ✅ Well-designed polling architecture with failure recovery
+
+**Agents Contributing:** Mal (Lead), Kaylee (Dev), Wash (Protocol), Zoe (QA), Simon (Tests)
+
+**Review files:**
+- `.squad/decisions/inbox/mal-review-findings.md`
+- `.squad/decisions/inbox/kaylee-review-findings.md`
+- `.squad/decisions/inbox/wash-review-findings.md`
+- `.squad/decisions/inbox/zoe-review-findings.md`
+- `.squad/decisions/inbox/simon-review-findings.md`

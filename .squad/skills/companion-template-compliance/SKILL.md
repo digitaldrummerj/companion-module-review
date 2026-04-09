@@ -43,14 +43,15 @@ If the file is missing **or** the content doesn't match the template: **🔴 Cri
 
 If **any** of these fields are missing or wrong: **🔴 Critical — blocks approval.**
 
-### `LICENSE` File — Content Must Be Valid MIT License
+### `LICENSE` File — Content Must Match the Template Repo
 
 - The `LICENSE` file must exist (see Required Files checklist)
-- The content must be a valid MIT License — not a placeholder, not empty, not a different license
+- The content **must match the template repo** (`companion-module-template-js/LICENSE`) — do a line-by-line comparison
+- The only acceptable difference is the copyright line (`Copyright (c) {year} {Author}`) — year and author name may differ
+- Any other deviation (different license type, extra text, missing text, wrong structure) is **🔴 Critical**
 - The copyright line must reference a real author/organization — not `"Your name"` or similar placeholder
-- Compare against the template: `companion-module-template-js/LICENSE`
 
-If `LICENSE` is missing, is a placeholder, or is not MIT: **🔴 Critical — blocks approval.**
+If `LICENSE` is missing, doesn't match the template, is a placeholder, or is not MIT: **🔴 Critical — blocks approval.**
 
 ---
 
@@ -338,7 +339,7 @@ A good HELP.md covers: what the module does, how to configure it (host/port/auth
 | `version` in `package.json` doesn't match git tag | **🔴 Critical** (blocks) |
 | Missing `repository` field in `package.json` (entirely absent) | **🔴 Critical** (blocks) |
 | Wrong `repository` URL (package.json or manifest.json) | **🔴 Critical** (blocks) |
-| `LICENSE` file is missing, is a placeholder, or is not MIT | **🔴 Critical** (blocks) |
+| `LICENSE` file is missing, doesn't match template repo, is a placeholder, or is not MIT | **🔴 Critical** (blocks) |
 | Placeholder maintainer `name` or `email` in manifest | **🔴 Critical** (blocks) |
 | Empty `maintainers` array | **🔴 Critical** (blocks) |
 | Stub `companion/HELP.md` | **🔴 Critical** (blocks) |

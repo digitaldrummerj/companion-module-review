@@ -69,6 +69,7 @@ In your inbox output, put all PRE-EXISTING findings in a separate `## ⚠️ Pre
 
 **`LICENSE` file (🔴 Critical):**
 - Missing
+- Does not match the template repo (`companion-module-template-js/LICENSE`) — do a line-by-line comparison; the only allowed difference is the copyright year and author name
 - Not MIT license
 - Contains placeholder copyright (e.g. "Your name")
 
