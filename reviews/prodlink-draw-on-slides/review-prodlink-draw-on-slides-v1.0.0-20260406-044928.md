@@ -19,7 +19,7 @@ To unblock this release, fix these issues:
 5. **C5:** Add missing `.yarnrc.yml` file (required: `nodeLinker: node-modules`)
 6. **C6:** Commit `yarn.lock` file (required for reproducible builds)
 7. **C7:** Add `tsconfig.build.json` (required for TS module builds)
-8. **H3-H5:** Handle JSON parse errors, fix toggle race, add type validation in actions
+8. **H1-H1:** Handle JSON parse errors, fix toggle race, add type validation in actions
 
 ---
 
@@ -58,26 +58,26 @@ Module has correct v1.x architecture but is blocked by 10 issues: missing fetch 
 - [ ] [C5: Missing .yarnrc.yml](#c5-missing-yarnrcyml)
 - [ ] [C6: Missing yarn.lock](#c6-missing-yarnlock)
 - [ ] [C7: Missing tsconfig.build.json](#c7-missing-tsconfigbuildjson)
-- [ ] [H3: JSON parsing failure not caught](#h3-json-parsing-failure-not-caught)
-- [ ] [H4: Toggle action race condition](#h4-toggle-action-race-condition)
-- [ ] [H5: Type coercion safety in action callbacks](#h5-type-coercion-safety-in-action-callbacks)
+- [ ] [H1: JSON parsing failure not caught](#h1-json-parsing-failure-not-caught)
+- [ ] [H2: Toggle action race condition](#h2-toggle-action-race-condition)
+- [ ] [H3: Type coercion safety in action callbacks](#h3-type-coercion-safety-in-action-callbacks)
 
 **Non-blocking**
-- [ ] [M2: Missing .prettierignore](#m2-missing-prettierignore)
-- [ ] [M3: Incomplete .gitignore](#m3-incomplete-gitignore)
-- [ ] [M4: Missing eslint config](#m4-missing-eslint-config)
-- [ ] [M5: Missing null checks in feedback callbacks](#m5-missing-null-checks-in-feedback-callbacks)
-- [ ] [M8: Silent error suppression in action callbacks](#m8-silent-error-suppression-in-action-callbacks)
-- [ ] [M9: No validation of user-provided color values](#m9-no-validation-of-user-provided-color-values)
+- [ ] [M1: Missing .prettierignore](#m1-missing-prettierignore)
+- [ ] [M2: Incomplete .gitignore](#m2-incomplete-gitignore)
+- [ ] [M3: Missing eslint config](#m3-missing-eslint-config)
+- [ ] [M4: Missing null checks in feedback callbacks](#m4-missing-null-checks-in-feedback-callbacks)
+- [ ] [M5: Silent error suppression in action callbacks](#m5-silent-error-suppression-in-action-callbacks)
+- [ ] [M6: No validation of user-provided color values](#m6-no-validation-of-user-provided-color-values)
 - [ ] [L1: Missing yarn.lock (arch)](#l1-missing-yarnlock-arch)
 - [ ] [L2: Missing engines field](#l2-missing-engines-field)
 - [ ] [L3: Missing packageManager field](#l3-missing-packagemanager-field)
 - [ ] [L4: Missing @companion-module/tools devDependency](#l4-missing-companion-moduletools-devdependency)
 - [ ] [L5: Using any type for instance parameter](#l5-using-any-type-for-instance-parameter)
-- [ ] [L8: No cleanup of pollTimer on consecutive failures](#l8-no-cleanup-of-polltimer-on-consecutive-failures)
-- [ ] [L9: Boolean settings type-checked at runtime](#l9-boolean-settings-type-checked-at-runtime)
-- [ ] [L10: No validation of Bonjour device format](#l10-no-validation-of-bonjour-device-format)
-- [ ] [L11: Color comparison edge cases](#l11-color-comparison-edge-cases)
+- [ ] [L6: No cleanup of pollTimer on consecutive failures](#l6-no-cleanup-of-polltimer-on-consecutive-failures)
+- [ ] [L7: Boolean settings type-checked at runtime](#l7-boolean-settings-type-checked-at-runtime)
+- [ ] [L8: No validation of Bonjour device format](#l8-no-validation-of-bonjour-device-format)
+- [ ] [L9: Color comparison edge cases](#l9-color-comparison-edge-cases)
 - [ ] [N1: Consider upgrading manifest runtime to node22](#n1-consider-upgrading-manifest-runtime-to-node22)
 - [ ] [N2: Type safety in actions/feedbacks](#n2-type-safety-in-actionsfeedbacks)
 
@@ -196,7 +196,7 @@ TypeScript modules require a separate build configuration. Template expects two-
 
 ## 🟠 High
 
-### H3: JSON parsing failure not caught
+### H1: JSON parsing failure not caught
 **Classification:** 🆕 NEW  
 **File:** `src/api.ts`, line 95  
 **Owner:** Wash
@@ -218,7 +218,7 @@ try {
 
 ---
 
-### H4: Toggle action race condition
+### H2: Toggle action race condition
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts`, lines 290-305  
 **Owner:** Wash
@@ -229,7 +229,7 @@ Toggle action reads current state, flips it, then writes. If user presses button
 
 ---
 
-### H5: Type coercion safety in action callbacks
+### H3: Type coercion safety in action callbacks
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts`, lines 67, 118, 235  
 **Owner:** Zoe
@@ -249,7 +249,7 @@ if (isNaN(presetId) || presetId < 1 || presetId > 3) {
 
 ## 🟡 Medium
 
-### M2: Missing .prettierignore
+### M1: Missing .prettierignore
 **Classification:** 🆕 NEW  
 **File:** `.prettierignore`  
 **Owner:** Kaylee
@@ -262,7 +262,7 @@ package.json
 
 ---
 
-### M3: Incomplete .gitignore
+### M2: Incomplete .gitignore
 **Classification:** 🆕 NEW  
 **File:** `.gitignore`  
 **Owner:** Kaylee
@@ -271,7 +271,7 @@ Missing required entries: `package-lock.json`, `/pkg`, `/*.tgz`, `DEBUG-*`, `/.y
 
 ---
 
-### M4: Missing eslint config
+### M3: Missing eslint config
 **Classification:** 🆕 NEW  
 **File:** `eslint.config.mjs`  
 **Owner:** Kaylee
@@ -280,7 +280,7 @@ TypeScript modules should include ESLint configuration. Not strictly blocking bu
 
 ---
 
-### M5: Missing null checks in feedback callbacks
+### M4: Missing null checks in feedback callbacks
 **Classification:** 🆕 NEW  
 **File:** `src/feedbacks.ts`, lines 31, 45, 59, 82, 126, 164  
 **Owner:** Zoe
@@ -291,7 +291,7 @@ Feedback callbacks access `instance.presetState` without null checks. On module 
 
 ---
 
-### M8: Silent error suppression in action callbacks
+### M5: Silent error suppression in action callbacks
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts` (all actions)  
 **Owner:** Wash
@@ -300,7 +300,7 @@ All action callbacks catch errors and log as 'warn' with no visual feedback to u
 
 ---
 
-### M9: No validation of user-provided color values
+### M6: No validation of user-provided color values
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts`, lines 116-124  
 **Owner:** Wash
@@ -361,7 +361,7 @@ export function getActions(instance: any): CompanionActionDefinitions
 
 ---
 
-### L8: No cleanup of pollTimer on consecutive failures
+### L6: No cleanup of pollTimer on consecutive failures
 **Classification:** 🆕 NEW  
 **File:** `src/main.ts`, lines 79-83  
 **Owner:** Wash
@@ -370,7 +370,7 @@ If module hangs during long failure sequence, pollTimer continues running.
 
 ---
 
-### L9: Boolean settings type-checked at runtime
+### L7: Boolean settings type-checked at runtime
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts`, line 296  
 **Owner:** Wash
@@ -379,7 +379,7 @@ Runtime type check needed because state is cast to `any`. Should be caught at co
 
 ---
 
-### L10: No validation of Bonjour device format
+### L8: No validation of Bonjour device format
 **Classification:** 🆕 NEW  
 **File:** `src/main.ts`, lines 91-100  
 **Owner:** Zoe
@@ -388,7 +388,7 @@ Runtime type check needed because state is cast to `any`. Should be caught at co
 
 ---
 
-### L11: Color comparison edge cases
+### L9: Color comparison edge cases
 **Classification:** 🆕 NEW  
 **File:** `src/feedbacks.ts`, lines 80-83  
 **Owner:** Zoe
