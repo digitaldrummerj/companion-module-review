@@ -235,8 +235,7 @@ The `prettier` config field correctly references `@companion-module/tools/.prett
 **Found by:** Kaylee
 
 Content doesn't match template:
-- Missing: `/LICENSE.md`
-- Wrong entry: `pkg` instead of `/LICENSE.md`
+- Missing: `/LICENSE.md` (existing entries `package.json` and `pkg` are correct)
 
 ---
 

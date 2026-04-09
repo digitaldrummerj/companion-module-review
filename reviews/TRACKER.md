@@ -22,6 +22,6 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | allenheath-sq | v3.1.0 | 2026-04-06 | [review](allenheath-sq/review-allenheath-sq-v3.1.0-20260406-042531.md) |
 | ✅ | logos-proclaim | v1.2.0 | 2026-04-06 | [review](logos-proclaim/review-logos-proclaim-v1.2.0-20260406-043151.md) |
 | ✅ | leolabs-ableset | v1.8.0 | 2026-04-06 | [review](leolabs-ableset/review-leolabs-ableset-v1.8.0-20260406-043810.md) |
-| ⬜ | generic-websocket | v2.3.0 | 2026-04-06 | [review](generic-websocket/review-generic-websocket-v2.3.0-20260406-044352.md) |
+| ✅ | generic-websocket | v2.3.0 | 2026-04-06 | [review](generic-websocket/review-generic-websocket-v2.3.0-20260406-044352.md) |
 | ⬜ | prodlink-draw-on-slides | v1.0.0 | 2026-04-06 | [review](prodlink-draw-on-slides/review-prodlink-draw-on-slides-v1.0.0-20260406-044928.md) |
 | ⬜ | highcriteria-lhs | v1.0.0 | 2026-04-06 | [review](highcriteria-lhs/review-highcriteria-lhs-v1.0.0-20260406-045509.md) |
