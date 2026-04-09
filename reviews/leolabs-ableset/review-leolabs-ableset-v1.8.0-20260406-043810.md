@@ -5,14 +5,14 @@
 **API:** @companion-module/base ~1.12.1 (v1.x)  
 **Review Date:** 2026-04-06  
 **Reviewers:** Mal (Lead), Kaylee (Template), Wash (Protocol), Zoe (QA), Simon (Tests)  
-**Auto-fixes applied:** 2026-04-09 — C2, C3, C4, C5, C6, C7, C9, M5, M6, M7, L5, L6
+**Auto-fixes applied:** 2026-04-09 — C3, C4, C5, C6, C7, C9, M5, M6, M7, L5, L6
 
 ---
 
 ## Fix Summary for Maintainer
 
 1. **C1** — Add UpgradeScript for removed `SetAutoLoopCurrentSection` action (`src/main.ts`)
-2. ~~**C2** — Handle removed `autoLoopCurrentSection` variable with migration path (`src/variables.ts`)~~ ✅ Fixed
+2. **C2** — Handle removed `autoLoopCurrentSection` variable with migration path (`src/variables.ts`)
 3. ~~**C3** — Add `.gitattributes` file with `* text=auto eol=lf`~~ ✅ Fixed
 4. ~~**C4** — Add `.yarnrc.yml` file with `nodeLinker: node-modules`~~ ✅ Fixed
 5. ~~**C5** — Update `package.json` `engines.node` from `>=17` to `^22.20`~~ ✅ Fixed
@@ -50,7 +50,7 @@
 
 **Blocking**
 - [ ] [C1: Missing UpgradeScript for removed SetAutoLoopCurrentSection action](#c1-missing-upgradescript-for-removed-setautoloopcurrentsection-action)
-- [x] [C2: Removed variable without migration](#c2-removed-variable-without-migration)
+- [ ] [C2: Removed variable without migration](#c2-removed-variable-without-migration)
 - [x] [C3: Missing .gitattributes file](#c3-missing-gitattributes-file)
 - [x] [C4: Missing .yarnrc.yml file](#c4-missing-yarnrcyml-file)
 - [x] [C5: Incorrect engines.node version](#c5-incorrect-enginesnode-version)
@@ -88,12 +88,10 @@ The `SetAutoLoopCurrentSection` action was removed in v1.8.0 but no UpgradeScrip
 ### C2: Removed variable without migration
 
 **Classification:** 🆕 NEW  
-**Status:** ✅ Fixed  
+**Status:** ⏳ Not Fixed  
 **File:** `src/variables.ts`, line 113 (removed)
 
 The variable `autoLoopCurrentSection` was removed. Any user expressions referencing `$(AbleSet:autoLoopCurrentSection)` will now show as undefined.
-
-**Fix Applied:** Variable re-added to `src/variables.ts` with label indicating removal in v1.8.0; initialized to `false` in `src/main.ts` for backward compatibility.
 
 ---
 
