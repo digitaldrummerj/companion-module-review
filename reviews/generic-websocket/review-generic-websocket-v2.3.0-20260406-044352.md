@@ -49,7 +49,7 @@
 - [x] [C4: Missing required file .gitattributes](#c4-missing-required-file-gitattributes)
 - [x] [C5: Missing engines.node and engines.yarn in package.json](#c5-missing-enginesnode-and-enginesyarn-in-packagejson)
 - [ ] [H1: Unhandled WebSocket send rejections in ping logic](#h1-unhandled-websocket-send-rejections-in-ping-logic)
-- [x] [H2: Origin header always uses HTTP for WSS connections](#h2-origin-header-always-uses-http-for-wss-connections)
+- [ ] [H2: Origin header always uses HTTP for WSS connections](#h2-origin-header-always-uses-http-for-wss-connections)
 
 **Non-blocking**
 - [x] [M3: Invalid .gitignore content](#m3-invalid-gitignore-content)
@@ -173,7 +173,7 @@ this.ws.send(payload, (err) => {
 ### H2: Origin header always uses HTTP for WSS connections
 
 **Classification:** 🆕 NEW  
-**Status:** ✅ Fixed  
+**Status:** ⏳ Not Fixed  
 **File:** `main.js`, line 149  
 **Found by:** Zoe
 
@@ -290,4 +290,4 @@ File ends without a trailing newline, violating POSIX standards.
 ---
 
 **Review assembled by:** Mal, Lead Reviewer  
-**Auto-fixes applied:** 2026-04-09 — C1, C2, C4, C5, H2, M3, M4, L3, L4
+**Auto-fixes applied:** 2026-04-09 — C1, C2, C4, C5, M3, M4, L3, L4
