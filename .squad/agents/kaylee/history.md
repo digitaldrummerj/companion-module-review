@@ -325,3 +325,65 @@ After fixes are applied, re-run:
 3. Test in Companion — verify functionality with real EventSync server
 
 **Review Findings Written To:** `.squad/decisions/inbox/kaylee-review-findings.md`
+
+### Adder CCS-PRO Review (2026-04-09) — v0.1.2 FIRST RELEASE
+
+- **Module:** companion-module-adder-ccs-pro v0.1.2 (first release, all code NEW)
+- **API Version:** v1.14 (@companion-module/base ~1.14.1)
+- **Language:** JavaScript
+- **Build:** `yarn install && yarn package` succeeded cleanly — `adder-ccs-pro-0.1.2.tgz`
+- **No package-lock.json:** Confirmed clean.
+- **Verdict:** CHANGES REQUIRED — 4 Critical blocking issues in config/metadata files only; code is excellent.
+
+**Blocking Issues (config/metadata only — no code changes needed):**
+- C1: `.prettierignore` content wrong — has `node_modules/` instead of the required `package.json` + `/LICENSE.md`
+- C2: `.gitignore` has extra entries beyond template — `.claude/` directory and a markdown block (`*.md`, `!README.md`, `!companion/HELP.md`); also `*.tgz` should be `/*.tgz` and `pkg/` should be `/pkg`
+- C3: `manifest.json` `name` "Adder CCS-PRO" does not match `id` "adder-ccs-pro" — template requires `name == id`
+- C4: `manifest.json` `keywords` contain banned terms — "adder" (manufacturer), "ccs-pro" (product), "ccs-pro8" (product variant)
+
+**Non-blocking (for next release):**
+- L1: `isVisible` function (main.js lines 89, 96) deprecated since v1.12 — replace with `isVisibleExpression`
+- N1: `password` config field should use `secret-text` type (v1.13 feature) for credential hygiene
+
+**What was excellent:** package.json perfectly aligned, clean v1.x API compliance, good polling architecture (startPolling/stopPolling/clearInterval in destroy), feedbacks+presets+variables all wired together, thorough HELP.md.
+
+**Key Learning — .prettierignore pattern:**
+A common mistake: putting `node_modules/` in `.prettierignore` (Prettier skips it by default). Correct content is only `package.json` and `/LICENSE.md`.
+
+**Key Learning — .gitignore .claude/ entry:**
+Maintainers using Claude locally may add `.claude/` to the repo `.gitignore`. This is an extra entry not in the template and is a Critical violation. Should go in global `~/.gitignore_global` instead.
+
+
+---
+
+## Review: companion-module-noctavoxfilms-tallycomm v1.0.0 (2026-04-09)
+
+**Verdict:** REJECTED — 18 critical blocking findings
+
+**Module type:** JavaScript (CommonJS), @companion-module/base v1.x
+
+**Key Findings:**
+- All 8 required JS template files missing: .gitattributes, .gitignore, .prettierignore, .yarnrc.yml, LICENSE, yarn.lock, companion/HELP.md, src/main.js
+- Source code at module root (main.js) instead of src/main.js — Critical by template rules
+- package.json missing: engines, prettier, packageManager, scripts, devDependencies blocks entirely
+- manifest.json repository and package.json repository.url both in wrong format (missing git+ prefix and .git suffix)
+- manifest.json entrypoint is ../main.js instead of ../src/main.js
+- yarn package fails — scripts block missing means no package command
+- yarn install succeeded but generated a fresh lockfile (not previously committed)
+
+**What was solid:**
+- The actual module logic (actions, feedbacks, variables) is well-written
+- 6 clean actions including smart set_pgm_auto/set_pvw_auto pattern
+- Correct variableId format for v1.x
+- HTTP timeout with AbortSignal.timeout(5000)
+- Real maintainer info, correct module ID/name
+
+**Learnings:**
+- A module can have completely working logic but still be REJECTED purely on template compliance
+- Missing the scripts block in package.json is uniquely damaging — it causes yarn package to fail, which is itself a standalone blocker
+- For JS modules, yarn.lock must be committed — yarn install generating a fresh lockfile is a red flag
+- sendTally() catch blocks should reset _isConnected = false to keep feedback state consistent with error state
+- Config UI in Spanish is a non-blocking but worth flagging for internationalization
+- @companion-module/base v1.12.1 vs template v1.14.1 — minor version gap, not blocking but maintainers should stay closer to current
+
+**Review Findings Written To:** .squad/decisions/inbox/kaylee-review-findings.md

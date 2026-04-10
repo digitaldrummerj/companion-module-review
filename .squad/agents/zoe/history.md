@@ -243,3 +243,61 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 **Ping interval safety:** `startPing()` doesn't check if `this.pingInterval` already exists before creating new interval. Currently safe (only called once per connection), but brittle. Add `if (this.pingInterval) return` or clear before setting new interval.
 
 **Server status override:** Client always overwrites `newState.serverStatus` with local connection state (line 71 main.ts), making server's reported status field useless. If server wants to report "degraded" or "maintenance", it's ignored. Either trust server's status OR use separate variable names for connection vs application state.
+
+---
+
+### 2026-04-09: adder-ccs-pro v0.1.2 review — HTTP polling module, first release
+
+**Module:** companion-module-adder-ccs-pro v0.1.2 (first release)
+**Protocol:** HTTP GET for status polling + HTTP GET for channel-switch commands (Adder CCS-PRO KVM switch)
+**Key files:** main.js, api.js, actions.js, feedbacks.js, presets.js, variables.js, upgrades.js, channel-range.js
+
+**Verdict:** APPROVED WITH NOTES — 0 blocking issues, 5 notes
+
+**No blocking issues found.** Module is small, clean, and consistently handles errors. All action callbacks have try/catch with InstanceStatus updates on failure. Polling has guarded start/stop, 4s timeout, and timer nulling.
+
+**N-01: No initial InstanceStatus.Connecting in init()** — Module sits with blank status until first HTTP poll completes (up to 4 seconds). Should call `this.updateStatus(InstanceStatus.Connecting)` at the top of `init()`.
+
+**N-02: In-flight poll request outlives configUpdated()/destroy()** — `stopPolling()` clears the timer but cannot cancel an in-flight HTTP request. Old callback can write stale channelState or flicker InstanceStatus after config change. Generation counter or `isDestroyed` flag in the response callback would close this gap.
+
+**N-03: Unbounded response body in pollDevice()** — `body += chunk` has no size cap. Misbehaving device could cause memory growth over successive polls. Cap at ~64 KB and abort with log if exceeded.
+
+**N-04: parseInt() without radix 10** — Used in main.js, actions.js, feedbacks.js without explicit `parseInt(value, 10)`. Low risk (inputs are controlled dropdown strings) but lint anti-pattern.
+
+**N-05: parseStatusPage() silently ignores complete parse failures** — If firmware changes the HTML, all four regexes miss, nothing logs. Module returns InstanceStatus.Ok but all channel variables are frozen. A debug log on total miss aids firmware-change diagnosis.
+
+**Strong pattern — optimistic state only on success:** Channel state updated INSIDE try block AFTER await sendCommand() resolves. Prevents stale UI on failure. Good pattern to note for other reviews.
+
+**HTTP request-response (no persistent sockets):** No event listener accumulation risk. Module uses Node.js http.request() with per-request callbacks — listeners are GC'd when request completes.
+
+**Session Closed:** 2026-04-09
+**Review file:** `.squad/decisions/inbox/zoe-review-findings.md`
+
+### 2026-04-09: noctavoxfilms-tallycomm v1.0.0 review — HTTP tally module, first release
+
+**Module:** companion-module-noctavoxfilms-tallycomm v1.0.0 (first release)
+**Protocol:** HTTP POST to TallyComm server — sends camera/bus/room tally state
+**Key files:** main.js (single file, all logic inline)
+
+**Verdict:** REJECTED — 2 critical issues, 4 high issues
+
+**Critical pattern — sendTally() never signals failure to callers:** sendTally() returns undefined in all cases (success, HTTP error, empty room). All six action callbacks update this.currentPgm / this.currentPvw unconditionally AFTER the await. State permanently desyncs from server on any failure. Fix: return a boolean or throw on failure; callers must gate state updates behind a success check.
+
+**Critical pattern — BadConfig early return with state update:** When this.room is empty, sendTally() sets BadConfig status and returns early. Callers continue to update currentPgm/currentPvw as if the command succeeded, creating ghost tally state that persists until module restart.
+
+**Race condition in configUpdated():** fire-and-forget checkConnection() calls from old config cannot be cancelled. Old .then()/.catch() handlers run after new config is active, overwriting _isConnected and status with stale results. Classic last-write-wins race. Pattern matches eventsync-server configUpdated race documented above.
+
+**_isConnected vs status desync:** sendTally() catch block calls updateStatus(ConnectionFailure) but does NOT set _isConnected = false. The is_connected feedback shows green while status shows connection failure. Two sources of truth diverge silently.
+
+**checkConnection() does not validate response.ok:** Any HTTP response (400, 500) resolves the promise and sets _isConnected = true. sendTally() correctly checks response.ok — checkConnection() must do the same.
+
+**set_pgm_auto ghost PVW:** When new PGM cam === currentPvw, the callback sets currentPvw = 0 locally but never sends sendTally(cam, clear) for the PVW bus. Server retains camera in preview state indefinitely. Camera operator phone stays green.
+
+**destroy() does not cancel in-flight requests:** No AbortController stored to cancel pending fetches. Callbacks fire on destroyed instance. SDK may or may not handle this gracefully.
+
+**configUpdated() preserves stale currentPgm/currentPvw across room change:** Switching rooms does not reset camera tracking state. First set_pgm_auto in new room attempts to clear a camera that was never set there.
+
+**init() sets Ok before ping:** updateStatus(Ok) fires synchronously before checkConnection() runs. Brief false-positive Ok window exists on startup.
+
+**Session Closed:** 2026-04-09
+**Review file:** .squad/decisions/inbox/zoe-review-findings.md

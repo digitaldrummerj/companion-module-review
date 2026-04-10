@@ -432,3 +432,137 @@ Findings: `.squad/decisions/inbox/wash-snmp-review-findings.md`
 **Release Tag:** v0.9.8 (first release)
 **Comparison Baseline:** None (new module)
 **Requested by:** Justin James
+
+---
+
+### 2026-04-09: Adder CCS-PRO v0.1.2 Review
+
+**Module:** `companion-module-adder-ccs-pro` v0.1.2
+**Protocol:** HTTP polling — Node.js built-in `http` module
+**Review Type:** First release — all code is new
+**Verdict:** ✅ Approved with Notes
+
+**Key Findings:**
+- No blocking issues — clean HTTP lifecycle, proper error handling, no socket leaks
+- `init()` missing `InstanceStatus.Connecting` before first poll (Medium)
+- `destroy()` missing `updateStatus(InstanceStatus.Disconnected)` (Medium)
+- `isVisible` callback on config fields deprecated in v1.12 (Low)
+- `password` field should use `secret-text` (Nice to Have, v1.13)
+- `.gitignore` and `.prettierignore` deviate from JS template (Nice to Have — flagged for Kaylee)
+
+**HTTP Patterns Observed:**
+- Short-lived `http.request()` calls (no persistent connection) — poll timer is the lifecycle unit
+- `req.on('timeout', () => req.destroy(new Error(...)))` pattern correctly routes timeout to error handler
+- `res.resume()` after non-200 status in `sendCommand` — proper socket drain
+- Single request for `switch_all` passes all four peripheral params in one query string
+
+**Learnings:**
+- **HTTP polling module lifecycle:** The "connection" is the poll timer, not a socket. `destroy()` only needs `clearInterval`. No socket cleanup required because `http.request` creates short-lived connections.
+- **Status gap on init:** Modules that poll on a timer should set `InstanceStatus.Connecting` at the top of `init()` to avoid a status gap before the first poll response.
+- **`destroy()` status convention:** Always call `updateStatus(InstanceStatus.Disconnected)` in `destroy()` — even for polling modules with no persistent socket.
+
+
+### 2026-04-13: noctavoxfilms-tallycomm Review (v1.0.0)
+
+**Module:** `companion-module-noctavoxfilms-tallycomm` v1.0.0
+**Protocol:** HTTP — fetch-based POST to `/api/tally`
+**Review Type:** First release — no prior tag, all findings eligible to block
+**Key File:** `main.js` (single-file module at root)
+**Requested by:** Justin James
+
+**Architecture Pattern:**
+- Single-file module, no src/ directory
+- Fire-and-forget `checkConnection()` on init (intentional, documented in comment)
+- `sendTally()` is async with AbortSignal.timeout(5000) and try/catch
+- No timers, intervals, or persistent connections — purely request/response fetch
+- `_isConnected` drives both connected variable and is_connected feedback
+
+**Key Findings:**
+- M1: `init()` sets InstanceStatus.Ok BEFORE checkConnection resolves — flash of false Ok
+- M2: `checkConnection()` .then() ignores response.ok — HTTP 4xx/5xx treated as connected
+- M3: No AbortController stored on instance — configUpdated() cannot cancel prior in-flight checkConnection; stale response race possible
+- L1: `destroy()` cannot cancel in-flight fetches (no AbortController)
+- L2: `configUpdated()` doesn't set Connecting before re-checking
+- L3: Ping uses real POST to /api/tally with camera:0, bus:ping — no dedicated health endpoint
+- N1: sendTally() uses InstanceStatus.UnknownError for HTTP errors — ConnectionFailure is more accurate
+
+**Protocol Learnings:**
+- **fetch() floating promise pattern:** A sync function that starts a fetch and chains .then()/.catch() does NOT create a floating Promise at the call site — the function returns undefined. Fire-and-forget is valid here, not a bug.
+- **response.ok in checkConnection:** fetch() only rejects on network failure — HTTP error codes resolve normally. Always check response.ok in .then() handlers, not just in try/catch. Missing this check in checkConnection while having it in sendTally is an inconsistency that masks server-side errors.
+- **AbortController for config transitions:** When configUpdated() fires, any in-flight request from the prior config can still complete and call state-mutation methods. Store an AbortController and abort() it in configUpdated()/destroy() to prevent stale callbacks.
+- **destroy() and in-flight fetch:** With no timers, the only residual risk is in-flight fetch callbacks completing after destroy(). Bounded by the request timeout. Low severity but worth noting for modules using fetch without stored AbortControllers.
+- **Fake ping vs health endpoint:** Sending a real tally command with out-of-range values (camera:0, bus:ping) as a connectivity check is pragmatic but fragile. If the server has a /health or /status endpoint, prefer that. Also note: a fake ping that ignores response.ok (M2) provides no real health signal.
+
+**Solid Patterns Observed:**
+- sendTally() has complete error handling: try/catch + response.ok + correct status on both success and failure
+- AbortSignal.timeout(5000) on all fetch calls prevents stuck requests
+- clear_all uses Promise.all() correctly for parallel tally clears
+- BadConfig set immediately when room is empty
+- _isConnected drives both variables and feedbacks consistently
+- set_pgm_auto/set_pvw_auto guard against self-clear (prev !== cam check)
+
+**Findings Written To:** `.squad/decisions/inbox/wash-review-findings.md`
+**Session Closed:** 2026-04-13
+**Verdict:** APPROVED WITH NOTES — 0 critical, 0 high, 3 medium, 3 low, 2 nice-to-have
+
+### 2026-04-02: FalconPlay Review (v1.0.0)
+
+**Module:** companion-module-wearefalcon-falconplay v1.0.0 (first release)
+**Protocol:** HTTP REST (Node.js http module)
+**Key Files:**
+- main.js — Main module class, HTTP helpers (httpGet/httpPost), polling lifecycle
+- actions.js — Action definitions with HTTP POST command callbacks
+- feedbacks.js — Boolean feedbacks for connection status, device status, on-air input
+- variables.js — Variable definitions for server version, rundown, devices
+- src/upgrades.js — Empty upgrade script array (first release)
+
+**Architecture Pattern:**
+- Stateless HTTP client — no persistent connections
+- Polling model: 2s status poll, 10s list refresh
+- Node.js http module with callback-based API wrapped in Promises
+- No external HTTP client library (no got, axios, node-fetch)
+
+**Protocol Implementation:**
+- httpGet(path) — wraps http.get() in Promise, 5s timeout
+- httpPost(path, body) — wraps http.request() in Promise, 5s timeout, JSON payload
+- Both methods parse JSON response, reject on network error or invalid JSON
+- No HTTP status code validation — relies on JSON parse success
+- No explicit timeout event handler — relies on default abort behavior
+
+**Polling Lifecycle:**
+- startPolling() always calls stopPolling() first — prevents double-timers
+- Two timers: pollStatusTimer (2s), pollListsTimer (10s)
+- stopPolling() uses clearInterval() and deletes timer references
+- destroy() calls stopPolling() — clean shutdown
+- configUpdated() stops/restarts polling — no orphaned intervals
+
+**Status Transitions:**
+- Ok when /api/status returns { ok: true }
+- ConnectionFailure when HTTP request fails (network error, timeout)
+- UnknownError when /api/status returns { ok: false, error: ... }
+- No BadConfig status (config validation via Regex in getConfigFields)
+
+**Findings:**
+1. Blocking: Source files not in src/ directory — violates team decision 2026-04-02T02:54:42Z
+2. High: No explicit req.destroy() on error/timeout — potential resource leak
+3. High: No timeout event handler — socket may linger on timeout
+4. High: UnknownError status message could be clearer (server reachable but error)
+5. Medium: No backoff on poll failures — 300 failed requests in 10 minutes if offline
+6. Medium: JSON parse errors lose response data — hard to debug API issues
+7. Medium: No HTTP status code checking — 404/500 treated as JSON parse errors
+8. Low: No HTTPS support — module always uses http://
+9. Low: No connection test on init — status shows Ok until first poll completes
+
+**What's Solid:**
+- All action callbacks use try/catch — no unhandled promise rejections
+- Polling lifecycle is clean — no double-timers, proper cleanup in destroy()
+- Promise.allSettled() in refreshLists() — one failed API call doesn't crash others
+- Status transitions correct for all code paths
+- No persistent socket — no connection lifecycle to manage
+- Feedbacks checked after every status update
+
+**Session Closed:** 2026-04-02
+**Verdict:** APPROVED WITH NOTES (after fixing B1 — source files structure)
+Findings: .squad/decisions/inbox/wash-review-findings.md
+1 blocking issue (source files not in src/), 3 high-priority notes, 3 medium-priority notes, 2 low-priority notes
+

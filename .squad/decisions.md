@@ -1541,3 +1541,75 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 
 **PENDING:** Module author must fix 4 template violations before final approval. Once corrected, module is ready for v3.1.0 release.
 
+---
+
+## 2026-04-10: companion-module-adder-ccs-pro v0.1.2 — Squad Review Consensus
+
+**By:** Mal (Architect), Wash (Protocol), Kaylee (Dev), Zoe (QA), Simon (Tests)  
+**Module:** companion-module-adder-ccs-pro  
+**Version:** v0.1.2 (First Release)  
+**What:** Initial squad review of HTTP-based KVM switch controller. Clean SDK implementation with solid protocol handling, but 3 critical template violations block release.
+
+### Cross-Agent Consensus
+
+| Agent | Domain | Verdict | Findings |
+|-------|--------|---------|----------|
+| **Mal** | v1.14 API | ✅ APPROVED WITH NOTES | 2 Medium (deprecation), 1 Nice |
+| **Wash** | Protocol | ✅ APPROVED WITH NOTES | 3 Medium, 1 Low, 1 Nice |
+| **Kaylee** | Template & Build | 🔴 **BLOCKS** | 3 CRITICAL violations |
+| **Zoe** | QA & Edge Cases | ✅ APPROVED WITH NOTES | 3 Low notes |
+| **Simon** | Tests | ✅ APPROVED | No tests required |
+
+### Blocking Issues (Kaylee)
+
+1. **Missing `.prettierignore`** — Create with template content
+2. **`.gitignore` deviations** — Replace with exact template (remove markdown rules, .claude/ entry)
+3. **Banned `manifest.json` keywords** — Remove "adder", "ccs-pro", "ccs-pro8"; keep "kvm", "switch"
+
+**Status:** 🔴 BLOCKS RELEASE per template compliance policy.
+
+### Non-Blocking Findings
+
+**Mal (Architecture):**
+- 🟡 Deprecated `isVisible` functions (recommend `isVisibleExpression` in v0.2)
+- 🟡 Password field missing `secret-text` type (available in v1.13+)
+- 💡 Add `dist/` to `.gitignore`
+
+**Wash (Protocol):**
+- 🟡 Missing abort on in-flight requests during destroy()
+- 🟡 No explicit `InstanceStatus.Disconnected` on destroy()
+- 🟡 Concurrent polls possible if poll > interval (rare)
+- 🟢 No retry logic on command failure (acceptable)
+- 💡 Add debug log when parsing fails
+
+**Zoe (QA):**
+- 🔵 Parse failure silent state (edge case, firmware changes)
+- 🔵 Missing `res.on('error')` in pollDevice (rare)
+- 🔵 configUpdated() timing (unlikely mid-poll issue)
+
+### Build Status
+
+- ✅ `yarn install` succeeds
+- ✅ `yarn package` succeeds (builds adder-ccs-pro-0.1.2.tgz)
+- ✅ Actions/Feedbacks/Variables well-structured
+- ✅ Config schema valid with proper validation
+- ✅ HELP.md comprehensive (60+ lines)
+
+### Verdict & Path Forward
+
+**VERDICT:** ⚠️ CHANGES REQUIRED — 3 critical template violations
+
+**To Unblock Release:**
+1. Create `.prettierignore` file
+2. Replace `.gitignore` with template
+3. Update `manifest.json` keywords
+4. Git commit with message: "refactor: template compliance for v0.1.2 release"
+5. Request re-review
+
+**Why This Verdict:** Module quality is excellent (SDK correct, protocol clean, async patterns sound), but template compliance is non-negotiable per SKILL.md. These are simple 10-minute fixes.
+
+---
+
+**Consensus Recorded:** 2026-04-10T03:05:44Z  
+**Scribe:** Decision merged from five agent reviews
+

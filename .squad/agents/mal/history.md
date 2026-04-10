@@ -542,3 +542,99 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 - `.squad/decisions/inbox/wash-review-findings.md`
 - `.squad/decisions/inbox/zoe-review-findings.md`
 - `.squad/decisions/inbox/simon-review-findings.md`
+
+
+---
+
+### 2026-04-10: adder-ccs-pro v0.1.2 review - CHANGES REQUIRED
+
+**Module:** companion-module-adder-ccs-pro v0.1.2
+**API:** companion-module/base ~1.14.1 (v1.14)
+**Language:** JavaScript
+**Release Type:** FIRST RELEASE (single tag v0.1.2, all code is NEW)
+
+**Final Verdict:** CHANGES REQUIRED - 4 critical template compliance violations
+
+**Blocking Issues:**
+1. C1: .gitignore deviates from JS template - extra entries, wrong glob patterns
+2. C2: .prettierignore has node_modules/ instead of template package.json + /LICENSE.md
+3. C3: Banned keywords in manifest.json - adder, ccs-pro, ccs-pro8 are manufacturer/product names
+4. C4: manifest.json name does not match id
+
+**Non-blocking:** L1 (deprecated isVisible), N1 (password should use secret-text)
+
+**What is Solid:** Clean architecture, proper lifecycle, good error handling, excellent HELP.md, yarn package succeeds
+
+**Review file:** .squad/decisions/inbox/mal-review-findings.md
+
+---
+
+### 2026-04-09: noctavoxfilms-tallycomm v1.0.0 review — CHANGES REQUIRED
+
+**Module:** companion-module-noctavoxfilms-tallycomm v1.0.0
+**API:** `@companion-module/base ^1.12.1` (v1.x rules)
+**Language:** JavaScript (CommonJS)
+**Release Type:** FIRST RELEASE — all findings 🆕 NEW, all eligible to block
+
+**Final Verdict:** ❌ CHANGES REQUIRED — 5 critical issues
+
+**Blocking Issues:**
+1. C1: Source code at module root (`main.js`) — must be moved to `src/main.js`
+2. C2: `package.json` `"main": "main.js"` — must become `"src/main.js"`
+3. C3: `companion/manifest.json` entrypoint `"../main.js"` — must become `"../src/main.js"`
+4. C4: No `scripts` field in `package.json` — `yarn package` cannot run without it
+5. C5: `UpgradeScripts` not exported — charter requires named export even for empty array
+
+**High findings:**
+- H1: No `packageManager` field
+- H2: No `engines` field (module uses Node 18+ globals: `fetch`, `AbortSignal.timeout`)
+- H3: No lockfile (neither yarn.lock nor package-lock.json)
+- H4: No `devDependencies` (missing `@companion-module/tools` for packaging)
+- H5: `init()` sets `InstanceStatus.Ok` before connection check (should be `Connecting`)
+
+**What's Solid:**
+- `runEntrypoint(TallyCommInstance, [])` present and correct
+- All four lifecycle methods implemented
+- `set_pgm_auto` / `set_pvw_auto` with auto-clear-previous is excellent UX for switcher triggers
+- `AbortSignal.timeout(5000)` on all fetch calls — correct
+- `Promise.all()` in `clear_all` — correct
+- Excellent README with ATEM trigger example
+- Version parity: package.json and manifest.json both 1.0.0
+
+**Architecture Notes:**
+- Single-file JavaScript CJS module — simple and appropriate for this scope
+- HTTP-only (no WebSocket/TCP), sends tally via POST to `/api/tally`
+- `checkConnection()` pings the live API endpoint with sentinel values — mild concern (server side effects)
+- Config UI labels are in Spanish — should be English for Companion store
+- `camChoices` duplicated across `initActions()` and `initFeedbacks()`
+- Module logic is sound; structural and packaging issues are all mechanical fixes
+
+**Review file:** `.squad/decisions/inbox/mal-review-findings.md`
+
+### 2026-04-09: wearefalcon-falconplay v1.0.0 review - CHANGES REQUIRED
+
+**Module:** companion-module-wearefalcon-falconplay v1.0.0  
+**API:** @companion-module/base ~1.12.1 (v1.12)  
+**Language:** JavaScript (CJS)  
+**Release Type:** FIRST RELEASE  
+
+**Final Verdict:** CHANGES REQUIRED — Module has solid architecture and SDK compliance, but critical naming/repository mismatches and duplicate source files block merge.
+
+**Blocking Issues:**
+1. C1: package.json name is companion-module-falcon-play but should be companion-module-wearefalcon-falconplay
+2. C2: Repository URL points to personal repo instead of bitfocus org
+3. H1: Duplicate source files at root level - outdated code using http module while src/ uses fetch
+4. H2: @companion-module/tools version ^2.4.2 is outdated
+
+**What's Solid:**
+- Excellent SDK compliance: runEntrypoint called, all lifecycle methods implemented
+- Modern HTTP using fetch API with AbortSignal.timeout(5000)
+- Smart polling with Promise.allSettled() for parallel fetching
+- 13 actions, 3 feedbacks, 9 variables - all well-structured
+- No package-lock.json, no dist/ committed, proper .gitignore
+
+**Architecture Pattern Learned:**
+Outdated dual-file structure anti-pattern — root-level JS files indicate incomplete refactoring. Always verify only src/ contains source code.
+
+**Review file:** .squad/decisions/inbox/mal-review-findings-wearefalcon-falconplay.md
+

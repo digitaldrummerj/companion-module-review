@@ -58,3 +58,27 @@
 
 **Orchestration Log:** `.squad/orchestration-log/2026-04-02T041821Z-simon.md`
 **Session Log:** `.squad/log/2026-04-02T041821Z-easyworship-review.md`
+
+### 2026-04-02: companion-module-adder-ccs-pro v0.1.2
+- **Test detection:** No jest config, no test files found
+- **Package.json:** No "test" script defined
+- **Structure:** No tests/ directory, no test files, no jest/vitest config
+- **Module structure:** 8 JavaScript source files (first release)
+- **Verdict:** No tests present — not required per team policy
+- **Findings written to:** `.squad/decisions/inbox/simon-review-findings.md`
+
+### 2026-04-02: companion-module-noctavoxfilms-tallycomm v1.0.0
+- **Test detection:** No jest config, no test files found
+- **Package.json:** No "test" script defined
+- **Structure:** CommonJS module, no tests/ directory, no test files, no jest/vitest config
+- **Module structure:** main.js entry point, companion/ subfolder, minimal dependencies (@companion-module/base)
+- **Verdict:** No tests present — not required per team policy (first release)
+- **Findings written to:** `.squad/decisions/inbox/simon-review-findings.md`
+
+### Current: companion-module-wearefalcon-falconplay v1.0.0
+- **Test detection:** No jest config, no test files found
+- **Package.json:** No "test" script defined (only "format" and "package" scripts)
+- **Structure:** JavaScript module, no tests/ directory, no test files, no jest/vitest config
+- **Module structure:** main.js entry point, companion/ subfolder, minimal dependencies (@companion-module/base ~1.12.1)
+- **Verdict:** No tests present — not required per team policy (first release)
+- **Findings written to:** `.squad/decisions/inbox/simon-review-findings.md`
