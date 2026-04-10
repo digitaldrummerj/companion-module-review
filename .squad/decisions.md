@@ -1682,3 +1682,33 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 - No unit tests — non-blocking (substantive smoke test present)
 
 **Review file:** reviews/talktome-intercom/review-talktome-intercom-v0.1.7-20260409-210416.md
+
+## Session: rode-rcv v1.8.0 — 2026-04-09
+
+**Module:** companion-module-rode-rcv v1.8.0 (update from v1.7.2)
+**Review file:** reviews/rode-rcv/review-rode-rcv-v1.8.0-20260409-211811.md
+
+### Team Consensus: CHANGES REQUIRED — 7 blocking issues
+
+**Blocking (must fix):**
+- C1 🆕 CRITICAL: manifest version regressed to "0.0.0" (was "1.7.2") — restore to "1.8.0"
+- C2 🆕 CRITICAL: manifest apiVersion regressed to "0.0.0" (was "1.13.6") — restore to "1.13.6"
+- C3 ⚠️ PRE-EXISTING CRITICAL: OSC parse-error buffer stall — catch doesn't advance buffer, permanently freezes inbound message processing
+- H1 🆕 HIGH: `jimp` + `@resvg/resvg-wasm` in `dependencies` (build-only; move to devDependencies)
+- H2 🆕 HIGH: `SetPresets(instance)` called without `await` or `void` — silently discards async errors
+- H3 🆕 HIGH: `imgs/` SVG source directory not committed — generator is unauditable and unreproducible
+- H4 🆕 HIGH: `yarn package` fails — `src/generated/imagePng64Map.ts` not in `.prettierignore`
+
+**Non-blocking highlights:**
+- M1: `rxjs` added for dead `cacheUpdated$` observable (never subscribed); destroy() never completes it
+- M2: 451 KB auto-generated file committed to src/generated/ (pollutes git history)
+- M3: Status set Ok before async init commands complete
+- M4: parseError catch silently breaks loop with no log output
+- M5: Dead imports DEFAULT_BLACK_PNG64 and buttonPressInputsType in feedbacks/presets
+
+**Tests:** ✅ 69/69 passing (Mocha + Chai + Sinon); yarn build ✅; yarn package ❌
+
+**Key decisions:**
+- parseOSCBlob null return classified as PRE-EXISTING (Mal + Wash both pre-existing; Zoe said new; majority rules) → PE1 notable
+- Pre-existing Critical (buffer stall) kept blocking per policy
+- isPrerelease field removal noted as C2 addendum (needs schema check)
