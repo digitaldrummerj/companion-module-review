@@ -1665,3 +1665,20 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 - manifest name "falcon-play" treated as NTH (not Critical) — cosmetic after id is fixed
 
 **Review file:** reviews/wearefalcon-falconplay/review-wearefalcon-falconplay-v1.0.0-20260409-205111.md
+
+## Session: talktome-intercom v0.1.7 — 2026-04-09
+
+**Team consensus:** CHANGES REQUIRED — 5 blocking (1 Critical + 4 High)
+
+**Key decisions:**
+- C-1: "companion" is a banned keyword in manifest.json — Critical template violation; remove it
+- H-1: refreshDefinitions() called on every user-state WebSocket event — should only fire on roster changes (new/removed users/conferences/feeds), not on talk/mute/lock state changes; High blocking
+- H-2: Socket TLS — rejectUnauthorized placed at root socket.io options, not in https.Agent — polling transport fallback silently rejects self-signed certs despite allowSelfSigned: true; High blocking
+- H-3: resolveChoiceId returns 0 but all callers use !id falsy check — entity ID 0 silently rejected across all actions and feedbacks; fix with === null comparison; High blocking
+- H-4: 'io server disconnect' reason not handled in disconnect handler — socket.io does NOT auto-reconnect on server-initiated close, causing permanent silent disconnection; High blocking
+- manifest id "talktome" with legacyIds ["talktome-intercom"] is intentional migration — NOT a violation
+- name "talktome" (not human-readable) treated as Medium M-4, not Critical
+- password in both ModuleConfig and ModuleSecrets treated as Medium (migration pattern)
+- No unit tests — non-blocking (substantive smoke test present)
+
+**Review file:** reviews/talktome-intercom/review-talktome-intercom-v0.1.7-20260409-210416.md
