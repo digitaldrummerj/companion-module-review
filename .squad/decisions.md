@@ -1649,3 +1649,19 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 - 7 Medium: no reconnect logic, no room validation on init, Spanish UI strings, duplicate camChoices, clear_all depends on tracked state, legacyIds on first release, outdated base version
 - First release — all findings NEW
 - Solid: action design (auto-clear variants), correct boolean feedbacks, AbortSignal.timeout usage, clear_all PGM===PVW deduplication, configUpdated triggers re-check, good README
+
+## Session: wearefalcon-falconplay v1.0.0 — 2026-04-09
+
+**Team consensus:** CHANGES REQUIRED — 9 blocking (7 Critical + 2 High)
+
+**Key decisions:**
+- C-1/C-2/C-3: manifest id, repository URLs, and bugs URL all point to personal repo (MoodyJerup/companion-falconplay) — must all be updated to Bitfocus canonical repo
+- C-4: Missing $schema in manifest.json — Critical template violation
+- C-5: manifest runtime.apiVersion = "0.0.0" (placeholder never updated) — Critical
+- H-1: onAirInput feedback permanently empty — updateFeedbacks() never called after refreshLists() populates self.inputs — High blocking
+- H-2: httpGet/httpPost skip response.ok check — SyntaxError on HTML error pages — High blocking
+- M-8: keywords "falcon" (partial manufacturer name) and "casparcg" (third-party system not directly controlled) — Medium, recommend removal
+- .gitignore/.prettierignore minor deviations treated as Low (not Critical) — harmless in practice
+- manifest name "falcon-play" treated as NTH (not Critical) — cosmetic after id is fixed
+
+**Review file:** reviews/wearefalcon-falconplay/review-wearefalcon-falconplay-v1.0.0-20260409-205111.md
