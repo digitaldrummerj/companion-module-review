@@ -12,14 +12,22 @@
 
 To unblock this release, fix these issues:
 
-1. **C1:** Add fetch timeout in `src/api.ts:81-96` — wrap fetch with AbortController (5-10s timeout)
+1. **C1:** Add fetch timeout in `src/api.ts:81-96`
 2. **C2:** Add `.catch()` handler to initial poll in `src/main.ts:163`
-3. **C3:** Protect immediate poll with `isPolling` guard in `src/main.ts:163` to fix race condition
+3. **C3:** Protect immediate poll with `isPolling` guard in `src/main.ts:163`
 4. **C4:** Add missing `.gitattributes` file (required: `* text=auto eol=lf`)
 5. **C5:** Add missing `.yarnrc.yml` file (required: `nodeLinker: node-modules`)
 6. **C6:** Commit `yarn.lock` file (required for reproducible builds)
 7. **C7:** Add `tsconfig.build.json` (required for TS module builds)
-8. **H1-H1:** Handle JSON parse errors, fix toggle race, add type validation in actions
+8. **C8:** Add `yarn.lock` for reproducible builds
+9. **C9:** Replace all `any` type usages with proper TypeScript types throughout `src/actions.ts` and `src/feedbacks.ts`
+10. **H1:** Fix toggle action race condition in `src/actions.ts:290-305`
+11. **H2:** Add `@companion-module/tools` as devDependency in `package.json`
+12. **H3:** Replace `any` type for instance parameter in `src/actions.ts:5` and `src/feedbacks.ts:5`
+13. **M6:** Add `engines` field to `package.json`
+14. **M7:** Add `packageManager` field to `package.json`
+15. **M8:** Add logging for each failure when boolean settings type checks fail in `src/actions.ts:296`
+16. **M9:** Upgrade manifest runtime from `node18` to `node22` in `companion/manifest.json:21`
 
 ---
 
@@ -27,16 +35,16 @@ To unblock this release, fix these issues:
 
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
-| 🔴 Critical | 7 | 0 | 7 |
+| 🔴 Critical | 9 | 0 | 9 |
 | 🟠 High | 3 | 0 | 3 |
-| 🟡 Medium | 6 | 0 | 6 |
-| 🟢 Low | 9 | 0 | 9 |
-| 💡 Nice to Have | 2 | 0 | 2 |
-| **Total** | **27** | **0** | **27** |
+| 🟡 Medium | 9 | 0 | 9 |
+| 🟢 Low | 0 | 0 | 0 |
+| 💡 Nice to Have | 0 | 0 | 0 |
+| **Total** | **21** | **0** | **21** |
 
-**Blocking:** 10 issues (7 critical, 3 high)  
+**Blocking:** 16 issues (9 critical, 3 high, 4 medium)  
 **Fix complexity:** Medium — requires timeout implementation, file additions, and validation logic  
-**Health delta:** 27 introduced · 0 pre-existing (first release)
+**Health delta:** 21 introduced · 0 pre-existing (first release)
 
 ---
 
@@ -44,7 +52,7 @@ To unblock this release, fix these issues:
 
 **🔴 CHANGES REQUIRED**
 
-Module has correct v1.x architecture but is blocked by 10 issues: missing fetch timeout, unhandled promise rejection, polling race condition, missing template infrastructure files (.gitattributes, .yarnrc.yml, yarn.lock, tsconfig.build.json), and protocol robustness issues.
+Module has correct v1.x architecture but is blocked by 16 issues: missing fetch timeout, unhandled promise rejection, polling race condition, missing template infrastructure files (.gitattributes, .yarnrc.yml, yarn.lock, tsconfig.build.json), pervasive `any` type usage, missing devDependency, missing package.json fields, inadequate runtime type-check logging, and outdated manifest runtime.
 
 ---
 
@@ -58,28 +66,22 @@ Module has correct v1.x architecture but is blocked by 10 issues: missing fetch 
 - [ ] [C5: Missing .yarnrc.yml](#c5-missing-yarnrcyml)
 - [ ] [C6: Missing yarn.lock](#c6-missing-yarnlock)
 - [ ] [C7: Missing tsconfig.build.json](#c7-missing-tsconfigbuildjson)
-- [ ] [H1: JSON parsing failure not caught](#h1-json-parsing-failure-not-caught)
-- [ ] [H2: Toggle action race condition](#h2-toggle-action-race-condition)
-- [ ] [H3: Type coercion safety in action callbacks](#h3-type-coercion-safety-in-action-callbacks)
+- [ ] [C8: Missing yarn.lock](#c8-missing-yarnlock)
+- [ ] [C9: Use of `any` type is not allowed](#c9-use-of-any-type-is-not-allowed)
+- [ ] [H1: Toggle action race condition](#h1-toggle-action-race-condition)
+- [ ] [H2: Missing @companion-module/tools devDependency](#h2-missing-companion-moduletools-devdependency)
+- [ ] [H3: Using any type for instance parameter](#h3-using-any-type-for-instance-parameter)
+- [ ] [M6: Missing engines field](#m6-missing-engines-field)
+- [ ] [M7: Missing packageManager field](#m7-missing-packagemanager-field)
+- [ ] [M8: Boolean settings type-checked at runtime](#m8-boolean-settings-type-checked-at-runtime)
+- [ ] [M9: Consider upgrading manifest runtime to node22](#m9-consider-upgrading-manifest-runtime-to-node22)
 
 **Non-blocking**
-- [ ] [M1: Missing .prettierignore](#m1-missing-prettierignore)
-- [ ] [M2: Incomplete .gitignore](#m2-incomplete-gitignore)
-- [ ] [M3: Missing eslint config](#m3-missing-eslint-config)
-- [ ] [M4: Missing null checks in feedback callbacks](#m4-missing-null-checks-in-feedback-callbacks)
-- [ ] [M5: Silent error suppression in action callbacks](#m5-silent-error-suppression-in-action-callbacks)
-- [ ] [M6: No validation of user-provided color values](#m6-no-validation-of-user-provided-color-values)
-- [ ] [L1: Missing yarn.lock (arch)](#l1-missing-yarnlock-arch)
-- [ ] [L2: Missing engines field](#l2-missing-engines-field)
-- [ ] [L3: Missing packageManager field](#l3-missing-packagemanager-field)
-- [ ] [L4: Missing @companion-module/tools devDependency](#l4-missing-companion-moduletools-devdependency)
-- [ ] [L5: Using any type for instance parameter](#l5-using-any-type-for-instance-parameter)
-- [ ] [L6: No cleanup of pollTimer on consecutive failures](#l6-no-cleanup-of-polltimer-on-consecutive-failures)
-- [ ] [L7: Boolean settings type-checked at runtime](#l7-boolean-settings-type-checked-at-runtime)
-- [ ] [L8: No validation of Bonjour device format](#l8-no-validation-of-bonjour-device-format)
-- [ ] [L9: Color comparison edge cases](#l9-color-comparison-edge-cases)
-- [ ] [N1: Consider upgrading manifest runtime to node22](#n1-consider-upgrading-manifest-runtime-to-node22)
-- [ ] [N2: Type safety in actions/feedbacks](#n2-type-safety-in-actionsfeedbacks)
+- [ ] [M1: Incomplete .gitignore](#m1-incomplete-gitignore)
+- [ ] [M2: Missing eslint config](#m2-missing-eslint-config)
+- [ ] [M3: Missing null checks in feedback callbacks](#m3-missing-null-checks-in-feedback-callbacks)
+- [ ] [M4: Silent error suppression in action callbacks](#m4-silent-error-suppression-in-action-callbacks)
+- [ ] [M5: No validation of user-provided color values](#m5-no-validation-of-user-provided-color-values)
 
 ---
 
@@ -194,31 +196,29 @@ TypeScript modules require a separate build configuration. Template expects two-
 
 ---
 
-## 🟠 High
-
-### H1: JSON parsing failure not caught
+### C8: Missing yarn.lock
 **Classification:** 🆕 NEW  
-**File:** `src/api.ts`, line 95  
-**Owner:** Wash
+**File:** (project root)  
+**Owner:** Mal
 
-`response.json()` can throw if response body is not valid JSON or empty:
-
-```typescript
-return response.json() as Promise<T>;
-```
-
-**Fix:**
-```typescript
-try {
-  return await response.json() as T;
-} catch (e) {
-  throw new Error(`Invalid JSON response from ${url}: ${e}`);
-}
-```
+No lock file present — Companion module repos should have `yarn.lock` for reproducible builds.
 
 ---
 
-### H2: Toggle action race condition
+### C9: Use of `any` type is not allowed
+**Classification:** 🆕 NEW  
+**File:** `src/actions.ts`, `src/feedbacks.ts`  
+**Owner:** Zoe
+
+Using the `any` type is not recommended in TypeScript and should not be used. Code should be updated to use the real/proper type throughout the module. This bypasses TypeScript's type safety guarantees and can hide runtime errors.
+
+**Fix:** Replace all `any` type usages with proper TypeScript types. Define a shared interface or import the correct type to avoid circular dependencies.
+
+---
+
+## 🟠 High
+
+### H1: Toggle action race condition
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts`, lines 290-305  
 **Owner:** Wash
@@ -229,118 +229,7 @@ Toggle action reads current state, flips it, then writes. If user presses button
 
 ---
 
-### H3: Type coercion safety in action callbacks
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, lines 67, 118, 235  
-**Owner:** Zoe
-
-Action callbacks use `String()` and `parseInt()` without validating results. If Companion passes `undefined`, this produces `NaN` for preset IDs or `"undefined"` strings for colors.
-
-**Fix:**
-```typescript
-const presetId = parseInt(String(action.options.preset))
-if (isNaN(presetId) || presetId < 1 || presetId > 3) {
-  instance.log('error', `Invalid preset ID: ${action.options.preset}`)
-  return
-}
-```
-
----
-
-## 🟡 Medium
-
-### M1: Missing .prettierignore
-**Classification:** 🆕 NEW  
-**File:** `.prettierignore`  
-**Owner:** Kaylee
-
-Formatting config file missing. Template expects:
-```
-package.json
-/LICENSE.md
-```
-
----
-
-### M2: Incomplete .gitignore
-**Classification:** 🆕 NEW  
-**File:** `.gitignore`  
-**Owner:** Kaylee
-
-Missing required entries: `package-lock.json`, `/pkg`, `/*.tgz`, `DEBUG-*`, `/.yarn`, `/.vscode`
-
----
-
-### M3: Missing eslint config
-**Classification:** 🆕 NEW  
-**File:** `eslint.config.mjs`  
-**Owner:** Kaylee
-
-TypeScript modules should include ESLint configuration. Not strictly blocking but important for code quality.
-
----
-
-### M4: Missing null checks in feedback callbacks
-**Classification:** 🆕 NEW  
-**File:** `src/feedbacks.ts`, lines 31, 45, 59, 82, 126, 164  
-**Owner:** Zoe
-
-Feedback callbacks access `instance.presetState` without null checks. On module init, these are `null` until first poll. Returns `undefined` instead of `false` during connection.
-
-**Fix:** Add explicit null checks: `if (!instance.presetState) return false`
-
----
-
-### M5: Silent error suppression in action callbacks
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts` (all actions)  
-**Owner:** Wash
-
-All action callbacks catch errors and log as 'warn' with no visual feedback to user.
-
----
-
-### M6: No validation of user-provided color values
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, lines 116-124  
-**Owner:** Wash
-
-User can input any string as color. No hex format validation before sending to API.
-
-**Fix:** Validate hex format: `/^#[0-9A-Fa-f]{6}$/`
-
----
-
-## 🟢 Low
-
-### L1: Missing yarn.lock (arch)
-**Classification:** 🆕 NEW  
-**File:** (project root)  
-**Owner:** Mal
-
-No lock file present — Companion module repos should have `yarn.lock` for reproducible builds. (Note: Elevated to Critical in C6 per template requirements.)
-
----
-
-### L2: Missing engines field
-**Classification:** 🆕 NEW  
-**File:** `package.json`  
-**Owner:** Mal
-
-No `engines` field specifying Node version. Recommended: `"engines": { "node": ">=18" }`
-
----
-
-### L3: Missing packageManager field
-**Classification:** 🆕 NEW  
-**File:** `package.json`  
-**Owner:** Mal
-
-No `packageManager` field. Recommended: `"packageManager": "yarn@4.x.x"`
-
----
-
-### L4: Missing @companion-module/tools devDependency
+### H2: Missing @companion-module/tools devDependency
 **Classification:** 🆕 NEW  
 **File:** `package.json`  
 **Owner:** Mal
@@ -349,7 +238,7 @@ The module doesn't include `@companion-module/tools` as a devDependency. Recomme
 
 ---
 
-### L5: Using any type for instance parameter
+### H3: Using any type for instance parameter
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts`, line 5; `src/feedbacks.ts`, line 5  
 **Owner:** Wash
@@ -361,59 +250,90 @@ export function getActions(instance: any): CompanionActionDefinitions
 
 ---
 
-### L6: No cleanup of pollTimer on consecutive failures
-**Classification:** 🆕 NEW  
-**File:** `src/main.ts`, lines 79-83  
-**Owner:** Wash
+## 🟡 Medium
 
-If module hangs during long failure sequence, pollTimer continues running.
+### M1: Incomplete .gitignore
+**Classification:** 🆕 NEW  
+**File:** `.gitignore`  
+**Owner:** Kaylee
+
+Missing required entries: `package-lock.json`, `/pkg`, `/*.tgz`, `DEBUG-*`, `/.yarn`, `/.vscode`
 
 ---
 
-### L7: Boolean settings type-checked at runtime
+### M2: Missing eslint config
+**Classification:** 🆕 NEW  
+**File:** `eslint.config.mjs`  
+**Owner:** Kaylee
+
+TypeScript modules should include ESLint configuration. Not strictly blocking but important for code quality.
+
+---
+
+### M3: Missing null checks in feedback callbacks
+**Classification:** 🆕 NEW  
+**File:** `src/feedbacks.ts`, lines 31, 45, 59, 82, 126, 164  
+**Owner:** Zoe
+
+Feedback callbacks access `instance.presetState` without null checks. On module init, these are `null` until first poll. Returns `undefined` instead of `false` during connection.
+
+**Fix:** Add explicit null checks: `if (!instance.presetState) return false`
+
+---
+
+### M4: Silent error suppression in action callbacks
+**Classification:** 🆕 NEW  
+**File:** `src/actions.ts` (all actions)  
+**Owner:** Wash
+
+All action callbacks catch errors and log as 'warn' with no visual feedback to user.
+
+---
+
+### M5: No validation of user-provided color values
+**Classification:** 🆕 NEW  
+**File:** `src/actions.ts`, lines 116-124  
+**Owner:** Wash
+
+User can input any string as color. No hex format validation before sending to API.
+
+**Fix:** Validate hex format: `/^#[0-9A-Fa-f]{6}$/`
+
+---
+
+### M6: Missing engines field
+**Classification:** 🆕 NEW  
+**File:** `package.json`  
+**Owner:** Mal
+
+No `engines` field specifying Node version. Recommended: `"engines": { "node": ">=18" }`
+
+---
+
+### M7: Missing packageManager field
+**Classification:** 🆕 NEW  
+**File:** `package.json`  
+**Owner:** Mal
+
+No `packageManager` field. Recommended: `"packageManager": "yarn@4.x.x"`
+
+---
+
+### M8: Boolean settings type-checked at runtime
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts`, line 296  
 **Owner:** Wash
 
-Runtime type check needed because state is cast to `any`. Should be caught at compile time.
+The module should log for each failure when boolean settings type checks fail at runtime, rather than silently passing through incorrect types.
 
 ---
 
-### L8: No validation of Bonjour device format
-**Classification:** 🆕 NEW  
-**File:** `src/main.ts`, lines 91-100  
-**Owner:** Zoe
-
-`resolveHostPort()` doesn't validate IP format or port range from Bonjour device string.
-
----
-
-### L9: Color comparison edge cases
-**Classification:** 🆕 NEW  
-**File:** `src/feedbacks.ts`, lines 80-83  
-**Owner:** Zoe
-
-Color comparison doesn't handle `#` prefix inconsistency between API and user input.
-
----
-
-## 💡 Nice to Have
-
-### N1: Consider upgrading manifest runtime to node22
+### M9: Consider upgrading manifest runtime to node22
 **Classification:** 🆕 NEW  
 **File:** `companion/manifest.json`, line 21  
 **Owner:** Mal
 
 Manifest specifies `"type": "node18"`. Node 22 is available in API v1.11+ and recommended for security patches.
-
----
-
-### N2: Type safety in actions/feedbacks
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, line 5; `src/feedbacks.ts`, line 6  
-**Owner:** Mal
-
-Instance parameter typed as `any` to avoid circular dependency. Consider defining a shared interface.
 
 ---
 
