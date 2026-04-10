@@ -572,3 +572,9 @@ Findings: .squad/decisions/inbox/wash-review-findings.md
 - `OscForwarder.setup()` parameter logger overwriting constructor logger is a recurring antipattern — check all handler `setup()` methods
 - `JSON.stringify(err)` → `{}` is a known JS gotcha; always use `err.message` for Error logging
 
+
+## noctavoxfilms-tallycomm v1.0.0 (2026-04-09)
+- POST-based health checks can cause phantom server-side tally entries — always flag as High when bus value is undocumented
+- checkConnection() must check response.ok — .then() fires on any HTTP response including 4xx/5xx
+- _isConnected must be reset to false in sendTally() on both HTTP errors AND network errors
+- Fallback phantom room names (e.g. 'companion-check') in health checks are server-polluting — always flag

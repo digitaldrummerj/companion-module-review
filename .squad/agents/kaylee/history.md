@@ -393,3 +393,9 @@ Maintainers using Claude locally may add `.claude/` to the repo `.gitignore`. Th
 - `tsconfig.build.json` extends path and `manifest.json` runtime.type must match (both node18 or both node22)
 - Empty `engines: {}` block fails the same as a missing engines block — both are Critical
 - `repository.url` slug in package.json can drift from actual repo name; always verify it matches the GitHub URL
+
+## noctavoxfilms-tallycomm v1.0.0 (2026-04-09)
+- First release with zero template files — count as 7 separate Critical findings (each file is its own Critical)
+- Missing packageManager causes yarn install to fall back to Yarn Classic v1 — always check for this
+- manifest.json legacyIds set on first release is suspicious — flag as Medium, request confirmation
+- Build failure (no scripts block) is Critical — document exact error: "Command 'package' not found"

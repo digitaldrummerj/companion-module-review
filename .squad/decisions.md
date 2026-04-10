@@ -1640,3 +1640,12 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 **Consensus Recorded:** 2026-04-10T03:18:41Z  
 **Scribe:** Decision merged from five agent reviews
 
+
+---
+## Consensus: noctavoxfilms-tallycomm v1.0.0 (2026-04-09)
+- Verdict: CHANGES REQUIRED (22 blocking)
+- 16 Critical template violations (instant rejection): missing src/ layout, 7 missing required files, missing package.json scripts/engines/prettier/packageManager/devDependencies, wrong repository.url scheme ×2, missing manifest $schema, wrong manifest entrypoint
+- 6 High protocol/logic issues: premature Ok status on init, phantom tally POST in health check, checkConnection ignores response.ok, sendTally swallows errors (state updates unconditionally on failure), _isConnected not reset on HTTP errors, destroy() is no-op
+- 7 Medium: no reconnect logic, no room validation on init, Spanish UI strings, duplicate camChoices, clear_all depends on tracked state, legacyIds on first release, outdated base version
+- First release — all findings NEW
+- Solid: action design (auto-clear variants), correct boolean feedbacks, AbortSignal.timeout usage, clear_all PGM===PVW deduplication, configUpdated triggers re-check, good README

@@ -92,3 +92,7 @@
 - Large TypeScript modules (80 files) with no tests — common pattern, not blocking
 - OSC-based modules with complex state management are good candidates for unit tests on the state handler
 - New logic (floor guards) added without tests is a recurring pattern — note in coverage assessment
+
+## noctavoxfilms-tallycomm v1.0.0 (2026-04-09)
+- No tests, no test framework, no devDependencies — expected for minimal first release CommonJS module
+- Non-blocking per policy

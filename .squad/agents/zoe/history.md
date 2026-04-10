@@ -307,3 +307,9 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 - Strict `<` vs `<=` matters for boundary conditions on fader floors — always use `Math.max(floor, value)` for clarity
 - When a guard is added to forward-delta actions, check undo-delta actions for consistency
 - `stateHandler 'update'` firing `updateActions()` + explicit `setActionDefinitions()` in same handler = double registration — check for this in other modules
+
+## noctavoxfilms-tallycomm v1.0.0 (2026-04-09)
+- sendTally() swallowing errors = root-cause bug that cascades to ALL action callbacks — identify and flag as High
+- _isConnected desync pattern: only reset in one code path (checkConnection.catch) but not in sendTally — always check both paths
+- clear_all that depends on tracked state is Medium when there's a root-cause state-divergence bug upstream
+- Mixed-language UI strings (Spanish descriptions, English names) = Medium — flag in any module

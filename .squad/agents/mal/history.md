@@ -644,3 +644,9 @@ Outdated dual-file structure anti-pattern — root-level JS files indicate incom
 - Floor/ceiling guards on delta actions must be applied AFTER the delta is added, not before
 - When a guard is added to some delta actions but not their siblings, note the inconsistency explicitly
 
+
+## noctavoxfilms-tallycomm v1.0.0 (2026-04-09)
+- First release module missing all template scaffolding — instant rejection pattern
+- checkConnection() ignoring response.ok is a recurring High finding (also seen in behringer-wing)
+- sendTally() swallowing errors causing silent state divergence — architectural finding
+- destroy() no-op is a High when combined with in-flight requests on a destroyed instance
