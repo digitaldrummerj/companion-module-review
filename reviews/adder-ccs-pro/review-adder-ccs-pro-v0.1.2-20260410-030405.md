@@ -28,14 +28,14 @@ All three are small file edits. No code changes required.
 |----------|--------|-------------|-------|
 | 🔴 Critical | 3 | 0 | 3 |
 | 🟠 High | 0 | 0 | 0 |
-| 🟡 Medium | 5 | 0 | 5 |
-| 🟢 Low | 3 | 0 | 3 |
-| 💡 Nice to Have | 3 | 0 | 3 |
-| **Total** | **14** | **0** | **14** |
+| 🟡 Medium | 4 | 0 | 4 |
+| 🟢 Low | 0 | 0 | 0 |
+| 💡 Nice to Have | 1 | 0 | 1 |
+| **Total** | **8** | **0** | **8** |
 
 **Blocking:** 3 issues (3 new critical — all template compliance)  
 **Fix complexity:** Quick — three small file edits, no code changes  
-**Health delta:** 14 introduced · 0 pre-existing (first release)
+**Health delta:** 8 introduced · 0 pre-existing (first release)
 
 ---
 
@@ -57,17 +57,11 @@ Once the three Critical items are resolved, this module is ready for release.
 - [ ] [C3: Banned keywords in `manifest.json`](#c3-banned-keywords-in-manifestjson)
 
 **Non-blocking**
-- [ ] [M1: Deprecated `isVisible` function — use `isVisibleExpression`](#m1-deprecated-isvisible-function--use-isvisibleexpression)
-- [ ] [M2: Password field should use `secret-text` type](#m2-password-field-should-use-secret-text-type)
-- [ ] [M3: In-flight HTTP requests not aborted on `destroy()`](#m3-in-flight-http-requests-not-aborted-on-destroy)
-- [ ] [M4: No `InstanceStatus.Disconnected` set in `destroy()`](#m4-no-instancestatusdisconnected-set-in-destroy)
-- [ ] [M5: Concurrent polls possible when poll duration exceeds interval](#m5-concurrent-polls-possible-when-poll-duration-exceeds-interval)
-- [ ] [L1: No retry logic on command failure](#l1-no-retry-logic-on-command-failure)
-- [ ] [L2: Parse failure leaves stale state silently](#l2-parse-failure-leaves-stale-state-silently)
-- [ ] [L3: `res.on('error')` not handled in `pollDevice()`](#l3-resonerror-not-handled-in-polldevice)
-- [ ] [N1: `dist/` not explicitly ignored in `.gitignore`](#n1-dist-not-explicitly-ignored-in-gitignore)
-- [ ] [N2: No debug log when HTML parsing fails to extract a channel](#n2-no-debug-log-when-html-parsing-fails-to-extract-a-channel)
-- [ ] [N3: `configUpdated()` does not cancel in-flight poll before restarting](#n3-configupdated-does-not-cancel-in-flight-poll-before-restarting)
+- [ ] [M1: manifest.json version should be 0.0.0](#m1-manifestjson-version-should-be-000)
+- [ ] [M2: Module name does not match id in manifest.json](#m2-module-name-does-not-match-id-in-manifestjson)
+- [ ] [M3: LICENSE file does not match template](#m3-license-file-does-not-match-template)
+- [ ] [M4: Concurrent polls possible when poll duration exceeds interval](#m4-concurrent-polls-possible-when-poll-duration-exceeds-interval)
+- [ ] [N1: No debug log when HTML parsing fails to extract a channel](#n1-no-debug-log-when-html-parsing-fails-to-extract-a-channel)
 
 ---
 
@@ -152,78 +146,46 @@ The `keywords` array contains manufacturer and product names, which are banned p
 
 ## 🟡 Medium
 
-### M1: Deprecated `isVisible` function — use `isVisibleExpression`
+### M1: manifest.json version should be 0.0.0
 
-**File:** `src/main.js`, lines 89 and 96  
+**File:** `companion/manifest.json`  
 **Classification:** 🆕 New  
-**Reviewer:** Mal
+**Reviewer:** Kaylee
 
 **Issue:**  
-Config fields for `username` and `password` use the deprecated function-based `isVisible` pattern, which was deprecated in v1.12 in favour of `isVisibleExpression`.
+The `version` field in `companion/manifest.json` should be set to `"0.0.0"` per the module template. The version in this file is not used for packaging — `package.json` controls the published version — but having a non-`0.0.0` value is a template deviation.
 
-```javascript
-isVisible: (config) => !!config.useAuth,  // lines 89 and 96
-```
-
-While this works in v1.14, it is a known breaking removal in v2.0+.
-
-**Recommended fix:**
-```javascript
-isVisibleExpression: 'this.useAuth == true'
-```
+**Fix:** Set `"version": "0.0.0"` in `companion/manifest.json`.
 
 ---
 
-### M2: Password field should use `secret-text` type
+### M2: Module name does not match id in manifest.json
 
-**File:** `src/main.js`, line 91  
+**File:** `companion/manifest.json`  
 **Classification:** 🆕 New  
-**Reviewer:** Mal
+**Reviewer:** Kaylee
 
 **Issue:**  
-The `password` config field uses `type: 'textinput'`, exposing the password in plain text in Companion exports. The `secret-text` type (available since v1.13) masks the input and protects credentials from export.
+The `name` field in `companion/manifest.json` should match the `id` field. Mismatched values can cause confusion in the Companion module registry.
 
-**Current:**
-```javascript
-{ type: 'textinput', id: 'password', label: 'Password', ... }
-```
-
-**Recommended fix:**
-```javascript
-{ type: 'secret-text', id: 'password', label: 'Password', ... }
-```
+**Fix:** Set `"name"` to match the `"id"` value in `companion/manifest.json`.
 
 ---
 
-### M3: In-flight HTTP requests not aborted on `destroy()`
+### M3: LICENSE file does not match template
 
-**File:** `src/main.js`, lines 31–34  
+**File:** `LICENSE`  
 **Classification:** 🆕 New  
-**Reviewer:** Wash
+**Reviewer:** Kaylee
 
 **Issue:**  
-`destroy()` clears the poll timer but does not cancel any in-flight HTTP requests. Orphaned polls can still fire callbacks (log entries, status updates) after the module has been destroyed.
+The `LICENSE` file contents do not match the standard LICENSE file from the companion-module-template repository. The template LICENSE file should be used as-is.
 
-**Impact:** Minimal for stateless HTTP — no resource leak — but can produce misleading log output.
-
-**Recommended fix:** Track the active request (`this._activeReq = req`) in `pollDevice()` and call `this._activeReq?.destroy()` in `destroy()` before `stopPolling()`.
+**Fix:** Replace `LICENSE` with the content from the companion-module-template repo's LICENSE file.
 
 ---
 
-### M4: No `InstanceStatus.Disconnected` set in `destroy()`
-
-**File:** `src/main.js`, lines 31–34  
-**Classification:** 🆕 New  
-**Reviewer:** Wash
-
-**Issue:**  
-`destroy()` does not call `this.updateStatus(InstanceStatus.Disconnected)`. Companion's UI may not immediately reflect that the connection has been torn down.
-
-**Recommended fix:** Add `this.updateStatus(InstanceStatus.Disconnected)` as the first line of `destroy()`.
-
----
-
-### M5: Concurrent polls possible when poll duration exceeds interval
+### M4: Concurrent polls possible when poll duration exceeds interval
 
 **File:** `src/main.js` (polling setup)  
 **Classification:** 🆕 New  
@@ -238,104 +200,15 @@ The `password` config field uses `type: 'textinput'`, exposing the password in p
 
 ---
 
-## 🟢 Low
-
-### L1: No retry logic on command failure
-
-**File:** `src/api.js`  
-**Classification:** 🆕 New  
-**Reviewer:** Wash
-
-**Issue:**  
-If `sendCommand()` fails (network error, timeout, non-200 response), no retry is attempted. The operator must press the button again.
-
-**Impact:** Acceptable for user-initiated commands; the Companion operator is present to retry. Document this behaviour in `companion/HELP.md` so users know what to expect.
-
----
-
-### L2: Parse failure leaves stale state silently
-
-**File:** `src/main.js`, lines 169–201  
-**Classification:** 🆕 New  
-**Reviewer:** Zoe
-
-**Issue:**  
-If `parseStatusPage()` fails to match any regex patterns (e.g., after a firmware update changes the HTML structure), the module silently retains the last-known channel state. Variables and feedbacks will show stale values with no warning to the operator.
-
-**Recommended fix:** Log a `debug` message when a regex fails to match so that support or the maintainer can diagnose state-sync issues after firmware changes.
-
----
-
-### L3: `res.on('error')` not handled in `pollDevice()`
-
-**File:** `src/main.js`, lines 136–161  
-**Classification:** 🆕 New  
-**Reviewer:** Zoe
-
-**Issue:**  
-The response object in `pollDevice()` has no `error` event handler. If the device sends a malformed HTTP response or closes the connection mid-body, Node.js emits an error on the response stream. Without a handler, this becomes an unhandled rejection that could crash the Companion module process.
-
-**Recommended fix:**
-```javascript
-res.on('error', (err) => {
-    this.log('warn', `Response stream error: ${err.message}`)
-    this.updateStatus(InstanceStatus.ConnectionFailure, err.message)
-})
-```
-
----
-
 ## 💡 Nice to Have
 
-### N1: `dist/` not explicitly ignored in `.gitignore`
-
-**File:** `.gitignore`  
-**Classification:** 🆕 New  
-**Reviewer:** Mal
-
-`dist/` is not currently committed, but explicitly listing it in `.gitignore` prevents accidental commits after a local `yarn package` run.
-
-**Recommended addition:**
-```
-dist/
-```
-
-*(Note: after resolving C2, add this to the corrected `.gitignore` as well.)*
-
----
-
-### N2: No debug log when HTML parsing fails to extract a channel
+### N1: No debug log when HTML parsing fails to extract a channel
 
 **File:** `src/main.js` (parseStatusPage)  
 **Classification:** 🆕 New  
 **Reviewer:** Wash
 
 A low-cost debug log when a channel regex fails to match would help diagnose future firmware-related state-sync failures. No code change needed until a user reports issues.
-
----
-
-### N3: `configUpdated()` does not cancel in-flight poll before restarting
-
-**File:** `src/main.js`, lines 36–43  
-**Classification:** 🆕 New  
-**Reviewer:** Zoe
-
-If a poll is in flight when the operator saves a config change, the old poll completes against the old host and briefly updates state/feedbacks before the new host's poll takes over. The window is short (<4 s), not a bug, and unlikely to affect normal use. Related to M3 — fixing M3 resolves this too.
-
----
-
-## 🔮 Next Release
-
-1. **Migrate to `isVisibleExpression`** — Replace `isVisible` function callbacks on `username` and `password` config fields (resolves M1)
-2. **Use `secret-text` for the password field** (resolves M2)
-3. **Abort in-flight HTTP requests on `destroy()`** — Track active request and destroy it before stopping polling (resolves M3 and N3)
-4. **Set `InstanceStatus.Disconnected` in `destroy()`** (resolves M4)
-5. **Self-scheduling poll pattern** — Eliminate setInterval overlap (resolves M5)
-6. **Add `res.on('error')` handler in `pollDevice()`** (resolves L3)
-7. **Log debug message on parse failure** in `parseStatusPage()` (resolves L2 and N2)
-8. **Document command retry behaviour** in `companion/HELP.md` (resolves L1)
-9. **Add `dist/` to `.gitignore`** (resolves N1)
-10. **Consider v2.0 migration** when ready — module already runs on Node 22 which satisfies the v2.0 runtime requirement
 
 ---
 
