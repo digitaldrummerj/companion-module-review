@@ -13,7 +13,7 @@
 
 **Blocking fixes required before approval:**
 
-1. **[H4]** Use strict equality (`===`/`!==`) in `src/main.ts:69-76`
+1. **[H1]** Use strict equality (`===`/`!==`) in `src/main.ts:69-76`
 2. **[M1]** Fix typo in `companion/manifest.json`: `"shortname"` — "Serivce" → "Service"
 3. **[M2]** Fix typo in `companion/manifest.json`: `"description"` — "intergration" → "integration"
 
@@ -44,20 +44,20 @@ Loose equality in feedback comparisons and manifest typos — 3 blocking issues 
 ## 📋 Issues
 
 **Blocking**
-- [ ] [H4: Loose equality in feedback comparisons](#h4-loose-equality-in-feedback-comparisons)
+- [ ] [H1: Loose equality in feedback comparisons](#h1-loose-equality-in-feedback-comparisons)
 - [ ] [M1: Typo in shortname field](#m1-typo-in-shortname-field)
 - [ ] [M2: Typo in description field](#m2-typo-in-description-field)
 
 **Non-blocking**
-- [ ] [M6: Missing error handling in heartbeat](#m6-missing-error-handling-in-heartbeat)
-- [ ] [L6: Redundant checkFeedbacks call pattern](#l6-redundant-checkfeedbacks-call-pattern)
-- [ ] [L7: Missing maintainer email in manifest](#l7-missing-maintainer-email-in-manifest)
+- [ ] [M3: Missing error handling in heartbeat](#m3-missing-error-handling-in-heartbeat)
+- [ ] [L1: Redundant checkFeedbacks call pattern](#l1-redundant-checkfeedbacks-call-pattern)
+- [ ] [L2: Missing maintainer email in manifest](#l2-missing-maintainer-email-in-manifest)
 
 ---
 
 ## 🟠 High
 
-### H4: Loose equality in feedback comparisons
+### H1: Loose equality in feedback comparisons
 
 **Classification:** 🆕 NEW  
 **File:** `src/main.ts`, lines 69-76  
@@ -107,7 +107,7 @@ if (state.roomId == this.config.room || state.roomId == '') {
 
 ---
 
-### M6: Missing error handling in heartbeat
+### M3: Missing error handling in heartbeat
 
 **Classification:** 🆕 NEW  
 **File:** `src/lhs.ts`, lines 444-448  
@@ -128,7 +128,7 @@ this._sendCmd(Cmd.HeartbeatB, 0).catch(() => {})  // ← silent
 
 ## 🟢 Low
 
-### L6: Redundant checkFeedbacks call pattern
+### L1: Redundant checkFeedbacks call pattern
 
 **Classification:** 🆕 NEW  
 **File:** `src/main.ts`, line 75  
@@ -145,7 +145,7 @@ this.checkFeedbacks(feedbacksToCheck[0], ...feedbacksToCheck)
 
 ---
 
-### L7: Missing maintainer email in manifest
+### L2: Missing maintainer email in manifest
 
 **Classification:** 🆕 NEW  
 **File:** `companion/manifest.json`, line 13  
