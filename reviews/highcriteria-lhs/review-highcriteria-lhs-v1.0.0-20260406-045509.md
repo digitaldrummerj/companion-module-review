@@ -13,11 +13,10 @@
 
 **Blocking fixes required before approval:**
 
-1. **[C2]** Add null check in `src/main.ts:36`: `this.client?.destroy()`
-2. **[H2]** Emit error on handshake failure: `src/lhs.ts:303` — `.catch((err) => this.emit('error', err))`
-3. **[H4]** Use strict equality (`===`/`!==`) in `src/main.ts:69-76`
-4. **[M1]** Fix typo in `companion/manifest.json`: `"shortname"` — "Serivce" → "Service"
-5. **[M2]** Fix typo in `companion/manifest.json`: `"description"` — "intergration" → "integration"
+1. **[H2]** Emit error on handshake failure: `src/lhs.ts:303` — `.catch((err) => this.emit('error', err))`
+2. **[H4]** Use strict equality (`===`/`!==`) in `src/main.ts:69-76`
+3. **[M1]** Fix typo in `companion/manifest.json`: `"shortname"` — "Serivce" → "Service"
+4. **[M2]** Fix typo in `companion/manifest.json`: `"description"` — "intergration" → "integration"
 
 ---
 
@@ -25,28 +24,27 @@
 
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
-| 🔴 Critical | 1 | 0 | 1 |
+| 🔴 Critical | 0 | 0 | 0 |
 | 🟠 High | 2 | 0 | 2 |
 | 🟡 Medium | 3 | 0 | 3 |
 | 🟢 Low | 2 | 0 | 2 |
-| **Total** | **8** | **0** | **8** |
+| **Total** | **7** | **0** | **7** |
 
-**Blocking:** 5 issues (1 critical, 2 high, 2 medium)  
-**Fix complexity:** Medium — requires logic changes in error handling and null guards  
+**Blocking:** 4 issues (2 high, 2 medium)  
+**Fix complexity:** Medium — requires logic changes in error handling  
 **Health delta:** 8 introduced · 0 pre-existing (first release)
 
 ---
 
 ## Verdict: **Changes Required**
 
-Null dereference in destroy(), silent handshake rejection, and manifest typos — 5 blocking issues total.
+Silent handshake rejection and manifest typos — 4 blocking issues total.
 
 ---
 
 ## 📋 Issues
 
 **Blocking**
-- [ ] [C2: Null dereference in destroy method](#c2-null-dereference-in-destroy-method)
 - [ ] [H2: Silent promise rejection in handshake](#h2-silent-promise-rejection-in-handshake)
 - [ ] [H4: Loose equality in feedback comparisons](#h4-loose-equality-in-feedback-comparisons)
 - [ ] [M1: Typo in shortname field](#m1-typo-in-shortname-field)
@@ -56,29 +54,6 @@ Null dereference in destroy(), silent handshake rejection, and manifest typos �
 - [ ] [M6: Missing error handling in heartbeat](#m6-missing-error-handling-in-heartbeat)
 - [ ] [L6: Redundant checkFeedbacks call pattern](#l6-redundant-checkfeedbacks-call-pattern)
 - [ ] [L7: Missing maintainer email in manifest](#l7-missing-maintainer-email-in-manifest)
-
----
-
-## 🔴 Critical
-
-### C2: Null dereference in destroy method
-
-**Classification:** 🆕 NEW  
-**File:** `src/main.ts`, line 36  
-**Source:** Zoe, Mal
-
-**Issue:** In `destroy()`, `this.client.destroy()` is called without checking if `this.client` exists. If `destroy()` is called before `init()` completes or if `setupClient()` fails, this will throw.
-
-```typescript
-public async destroy(): Promise<void> {
-    this.log('debug', `destroy ${this.id}: ${this.label}\n Process: ${process.pid}`)
-    this.client.destroy() // ← client may not exist yet
-}
-```
-
-**Impact:** Module crash on deletion if client not initialized.
-
-**Fix:** Add null check: `this.client?.destroy()`
 
 ---
 
