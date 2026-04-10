@@ -1751,3 +1751,10 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 - 329/329 tests PASS — excellent coverage
 - isVisible completely absent — v2.x compliant ✅
 - pollGeneration counter correctly guards concurrent poll chains ✅
+
+## fiverecords-tallyccupro v3.1.0 — 2026-04-09
+
+- Verdict: APPROVED WITH NOTES (0 blocking)
+- Agents: Mal (haiku), Wash, Kaylee, Zoe, Simon
+- Adjudication: Wash flagged TCP buffer (Critical) and no backoff (High); Kaylee, Zoe, Mal all approved. Adjudicated to Medium (local-network trusted device). HTTP slow-mode backoff backwards (M2) and parseInt NaN validation (M3) accepted as Medium. 5 Medium + 7 Low + 3 NTH.
+- Review file: reviews/fiverecords-tallyccupro/review-fiverecords-tallyccupro-v3.1.0-20260409-220735.md
