@@ -21,13 +21,13 @@ To unblock this release, fix these issues:
 7. **C7:** Add `tsconfig.build.json` (required for TS module builds)
 8. **C8:** Add `yarn.lock` for reproducible builds
 9. **C9:** Replace all `any` type usages with proper TypeScript types throughout `src/actions.ts` and `src/feedbacks.ts`
-10. **H1:** Fix toggle action race condition in `src/actions.ts:290-305`
-11. **H2:** Add `@companion-module/tools` as devDependency in `package.json`
-12. **H3:** Replace `any` type for instance parameter in `src/actions.ts:5` and `src/feedbacks.ts:5`
-13. **M1:** Add `engines` field to `package.json`
-14. **M2:** Add `packageManager` field to `package.json`
-15. **M3:** Add logging for each failure when boolean settings type checks fail in `src/actions.ts:296`
-16. **M4:** Upgrade manifest runtime from `node18` to `node22` in `companion/manifest.json:21`
+10. **H1:** Add `@companion-module/tools` as devDependency in `package.json`
+11. **M1:** Add `engines` field to `package.json`
+12. **M2:** Add `packageManager` field to `package.json`
+13. **M3:** Upgrade manifest runtime from `node18` to `node22` in `companion/manifest.json:21`
+14. **M4:** Add missing entries to `.gitignore`: `package-lock.json`, `/pkg`, `/*.tgz`, `DEBUG-*`, `/.yarn`, `/.vscode`
+15. **M5:** Add ESLint configuration (`eslint.config.mjs`)
+16. **M6:** Replace `warn`-only error handling in action callbacks with proper error feedback to user in `src/actions.ts`
 
 ---
 
@@ -36,15 +36,15 @@ To unblock this release, fix these issues:
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
 | 🔴 Critical | 9 | 0 | 9 |
-| 🟠 High | 3 | 0 | 3 |
-| 🟡 Medium | 9 | 0 | 9 |
+| 🟠 High | 1 | 0 | 1 |
+| 🟡 Medium | 6 | 0 | 6 |
 | 🟢 Low | 0 | 0 | 0 |
 | 💡 Nice to Have | 0 | 0 | 0 |
-| **Total** | **21** | **0** | **21** |
+| **Total** | **16** | **0** | **16** |
 
-**Blocking:** 16 issues (9 critical, 3 high, 4 medium)  
+**Blocking:** 16 issues (9 critical, 1 high, 6 medium)  
 **Fix complexity:** Medium — requires timeout implementation, file additions, and validation logic  
-**Health delta:** 21 introduced · 0 pre-existing (first release)
+**Health delta:** 16 introduced · 0 pre-existing (first release)
 
 ---
 
@@ -52,7 +52,7 @@ To unblock this release, fix these issues:
 
 **🔴 CHANGES REQUIRED**
 
-Module has correct v1.x architecture but is blocked by 16 issues: missing fetch timeout, unhandled promise rejection, polling race condition, missing template infrastructure files (.gitattributes, .yarnrc.yml, yarn.lock, tsconfig.build.json), pervasive `any` type usage, missing devDependency, missing package.json fields, inadequate runtime type-check logging, and outdated manifest runtime.
+Module has correct v1.x architecture but is blocked by 16 issues: missing fetch timeout, unhandled promise rejection, polling race condition, missing template infrastructure files (.gitattributes, .yarnrc.yml, yarn.lock, tsconfig.build.json), pervasive `any` type usage, missing devDependency, missing package.json fields, outdated manifest runtime, incomplete .gitignore, missing eslint config, and silent error suppression.
 
 ---
 
@@ -68,20 +68,13 @@ Module has correct v1.x architecture but is blocked by 16 issues: missing fetch 
 - [ ] [C7: Missing tsconfig.build.json](#c7-missing-tsconfigbuildjson)
 - [ ] [C8: Missing yarn.lock](#c8-missing-yarnlock)
 - [ ] [C9: Use of `any` type is not allowed](#c9-use-of-any-type-is-not-allowed)
-- [ ] [H1: Toggle action race condition](#h1-toggle-action-race-condition)
-- [ ] [H2: Missing @companion-module/tools devDependency](#h2-missing-companion-moduletools-devdependency)
-- [ ] [H3: Using any type for instance parameter](#h3-using-any-type-for-instance-parameter)
+- [ ] [H1: Missing @companion-module/tools devDependency](#h1-missing-companion-moduletools-devdependency)
 - [ ] [M1: Missing engines field](#m1-missing-engines-field)
 - [ ] [M2: Missing packageManager field](#m2-missing-packagemanager-field)
-- [ ] [M3: Boolean settings type-checked at runtime](#m3-boolean-settings-type-checked-at-runtime)
-- [ ] [M4: Consider upgrading manifest runtime to node22](#m4-consider-upgrading-manifest-runtime-to-node22)
-
-**Non-blocking**
-- [ ] [M5: Incomplete .gitignore](#m5-incomplete-gitignore)
-- [ ] [M6: Missing eslint config](#m6-missing-eslint-config)
-- [ ] [M7: Missing null checks in feedback callbacks](#m7-missing-null-checks-in-feedback-callbacks)
-- [ ] [M8: Silent error suppression in action callbacks](#m8-silent-error-suppression-in-action-callbacks)
-- [ ] [M9: No validation of user-provided color values](#m9-no-validation-of-user-provided-color-values)
+- [ ] [M3: Consider upgrading manifest runtime to node22](#m3-consider-upgrading-manifest-runtime-to-node22)
+- [ ] [M4: Incomplete .gitignore](#m4-incomplete-gitignore)
+- [ ] [M5: Missing eslint config](#m5-missing-eslint-config)
+- [ ] [M6: Silent error suppression in action callbacks](#m6-silent-error-suppression-in-action-callbacks)
 
 ---
 
@@ -218,35 +211,12 @@ Using the `any` type is not recommended in TypeScript and should not be used. Co
 
 ## 🟠 High
 
-### H1: Toggle action race condition
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, lines 290-305  
-**Owner:** Wash
-
-Toggle action reads current state, flips it, then writes. If user presses button twice rapidly, both reads see same value → toggle appears to fail.
-
-**Fix:** Consider server-side toggle endpoint, or add debouncing/locking to action callback.
-
----
-
-### H2: Missing @companion-module/tools devDependency
+### H1: Missing @companion-module/tools devDependency
 **Classification:** 🆕 NEW  
 **File:** `package.json`  
 **Owner:** Mal
 
 The module doesn't include `@companion-module/tools` as a devDependency. Recommended for build tooling and type definitions.
-
----
-
-### H3: Using any type for instance parameter
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, line 5; `src/feedbacks.ts`, line 5  
-**Owner:** Wash
-
-Type safety bypassed with `any`:
-```typescript
-export function getActions(instance: any): CompanionActionDefinitions
-```
 
 ---
 
@@ -269,16 +239,7 @@ No `packageManager` field. Recommended: `"packageManager": "yarn@4.x.x"`
 
 ---
 
-### M3: Boolean settings type-checked at runtime
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, line 296  
-**Owner:** Wash
-
-The module should log for each failure when boolean settings type checks fail at runtime, rather than silently passing through incorrect types.
-
----
-
-### M4: Consider upgrading manifest runtime to node22
+### M3: Consider upgrading manifest runtime to node22
 **Classification:** 🆕 NEW  
 **File:** `companion/manifest.json`, line 21  
 **Owner:** Mal
@@ -288,7 +249,7 @@ Manifest specifies `"type": "node18"`. Node 22 is available in API v1.11+ and re
 ---
 
 
-### M5: Incomplete .gitignore
+### M4: Incomplete .gitignore
 **Classification:** 🆕 NEW  
 **File:** `.gitignore`  
 **Owner:** Kaylee
@@ -297,27 +258,16 @@ Missing required entries: `package-lock.json`, `/pkg`, `/*.tgz`, `DEBUG-*`, `/.y
 
 ---
 
-### M6: Missing eslint config
+### M5: Missing eslint config
 **Classification:** 🆕 NEW  
 **File:** `eslint.config.mjs`  
 **Owner:** Kaylee
 
-TypeScript modules should include ESLint configuration. Not strictly blocking but important for code quality.
+TypeScript modules should include ESLint configuration.
 
 ---
 
-### M7: Missing null checks in feedback callbacks
-**Classification:** 🆕 NEW  
-**File:** `src/feedbacks.ts`, lines 31, 45, 59, 82, 126, 164  
-**Owner:** Zoe
-
-Feedback callbacks access `instance.presetState` without null checks. On module init, these are `null` until first poll. Returns `undefined` instead of `false` during connection.
-
-**Fix:** Add explicit null checks: `if (!instance.presetState) return false`
-
----
-
-### M8: Silent error suppression in action callbacks
+### M6: Silent error suppression in action callbacks
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts` (all actions)  
 **Owner:** Wash
@@ -326,16 +276,6 @@ All action callbacks catch errors and log as 'warn' with no visual feedback to u
 
 ---
 
-### M9: No validation of user-provided color values
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, lines 116-124  
-**Owner:** Wash
-
-User can input any string as color. No hex format validation before sending to API.
-
-**Fix:** Validate hex format: `/^#[0-9A-Fa-f]{6}$/`
-
----
 ## 🧪 Tests
 
 **No tests found** for prodlink-draw-on-slides v1.0.0.
