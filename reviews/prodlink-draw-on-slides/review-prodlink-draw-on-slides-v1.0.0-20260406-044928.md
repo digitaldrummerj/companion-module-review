@@ -24,10 +24,10 @@ To unblock this release, fix these issues:
 10. **H1:** Fix toggle action race condition in `src/actions.ts:290-305`
 11. **H2:** Add `@companion-module/tools` as devDependency in `package.json`
 12. **H3:** Replace `any` type for instance parameter in `src/actions.ts:5` and `src/feedbacks.ts:5`
-13. **M6:** Add `engines` field to `package.json`
-14. **M7:** Add `packageManager` field to `package.json`
-15. **M8:** Add logging for each failure when boolean settings type checks fail in `src/actions.ts:296`
-16. **M9:** Upgrade manifest runtime from `node18` to `node22` in `companion/manifest.json:21`
+13. **M1:** Add `engines` field to `package.json`
+14. **M2:** Add `packageManager` field to `package.json`
+15. **M3:** Add logging for each failure when boolean settings type checks fail in `src/actions.ts:296`
+16. **M4:** Upgrade manifest runtime from `node18` to `node22` in `companion/manifest.json:21`
 
 ---
 
@@ -71,17 +71,17 @@ Module has correct v1.x architecture but is blocked by 16 issues: missing fetch 
 - [ ] [H1: Toggle action race condition](#h1-toggle-action-race-condition)
 - [ ] [H2: Missing @companion-module/tools devDependency](#h2-missing-companion-moduletools-devdependency)
 - [ ] [H3: Using any type for instance parameter](#h3-using-any-type-for-instance-parameter)
-- [ ] [M6: Missing engines field](#m6-missing-engines-field)
-- [ ] [M7: Missing packageManager field](#m7-missing-packagemanager-field)
-- [ ] [M8: Boolean settings type-checked at runtime](#m8-boolean-settings-type-checked-at-runtime)
-- [ ] [M9: Consider upgrading manifest runtime to node22](#m9-consider-upgrading-manifest-runtime-to-node22)
+- [ ] [M1: Missing engines field](#m1-missing-engines-field)
+- [ ] [M2: Missing packageManager field](#m2-missing-packagemanager-field)
+- [ ] [M3: Boolean settings type-checked at runtime](#m3-boolean-settings-type-checked-at-runtime)
+- [ ] [M4: Consider upgrading manifest runtime to node22](#m4-consider-upgrading-manifest-runtime-to-node22)
 
 **Non-blocking**
-- [ ] [M1: Incomplete .gitignore](#m1-incomplete-gitignore)
-- [ ] [M2: Missing eslint config](#m2-missing-eslint-config)
-- [ ] [M3: Missing null checks in feedback callbacks](#m3-missing-null-checks-in-feedback-callbacks)
-- [ ] [M4: Silent error suppression in action callbacks](#m4-silent-error-suppression-in-action-callbacks)
-- [ ] [M5: No validation of user-provided color values](#m5-no-validation-of-user-provided-color-values)
+- [ ] [M5: Incomplete .gitignore](#m5-incomplete-gitignore)
+- [ ] [M6: Missing eslint config](#m6-missing-eslint-config)
+- [ ] [M7: Missing null checks in feedback callbacks](#m7-missing-null-checks-in-feedback-callbacks)
+- [ ] [M8: Silent error suppression in action callbacks](#m8-silent-error-suppression-in-action-callbacks)
+- [ ] [M9: No validation of user-provided color values](#m9-no-validation-of-user-provided-color-values)
 
 ---
 
@@ -251,8 +251,44 @@ export function getActions(instance: any): CompanionActionDefinitions
 ---
 
 ## 🟡 Medium
+### M1: Missing engines field
+**Classification:** 🆕 NEW  
+**File:** `package.json`  
+**Owner:** Mal
 
-### M1: Incomplete .gitignore
+No `engines` field specifying Node version. Recommended: `"engines": { "node": ">=18" }`
+
+---
+
+### M2: Missing packageManager field
+**Classification:** 🆕 NEW  
+**File:** `package.json`  
+**Owner:** Mal
+
+No `packageManager` field. Recommended: `"packageManager": "yarn@4.x.x"`
+
+---
+
+### M3: Boolean settings type-checked at runtime
+**Classification:** 🆕 NEW  
+**File:** `src/actions.ts`, line 296  
+**Owner:** Wash
+
+The module should log for each failure when boolean settings type checks fail at runtime, rather than silently passing through incorrect types.
+
+---
+
+### M4: Consider upgrading manifest runtime to node22
+**Classification:** 🆕 NEW  
+**File:** `companion/manifest.json`, line 21  
+**Owner:** Mal
+
+Manifest specifies `"type": "node18"`. Node 22 is available in API v1.11+ and recommended for security patches.
+
+---
+
+
+### M5: Incomplete .gitignore
 **Classification:** 🆕 NEW  
 **File:** `.gitignore`  
 **Owner:** Kaylee
@@ -261,7 +297,7 @@ Missing required entries: `package-lock.json`, `/pkg`, `/*.tgz`, `DEBUG-*`, `/.y
 
 ---
 
-### M2: Missing eslint config
+### M6: Missing eslint config
 **Classification:** 🆕 NEW  
 **File:** `eslint.config.mjs`  
 **Owner:** Kaylee
@@ -270,7 +306,7 @@ TypeScript modules should include ESLint configuration. Not strictly blocking bu
 
 ---
 
-### M3: Missing null checks in feedback callbacks
+### M7: Missing null checks in feedback callbacks
 **Classification:** 🆕 NEW  
 **File:** `src/feedbacks.ts`, lines 31, 45, 59, 82, 126, 164  
 **Owner:** Zoe
@@ -281,7 +317,7 @@ Feedback callbacks access `instance.presetState` without null checks. On module 
 
 ---
 
-### M4: Silent error suppression in action callbacks
+### M8: Silent error suppression in action callbacks
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts` (all actions)  
 **Owner:** Wash
@@ -290,7 +326,7 @@ All action callbacks catch errors and log as 'warn' with no visual feedback to u
 
 ---
 
-### M5: No validation of user-provided color values
+### M9: No validation of user-provided color values
 **Classification:** 🆕 NEW  
 **File:** `src/actions.ts`, lines 116-124  
 **Owner:** Wash
@@ -300,43 +336,6 @@ User can input any string as color. No hex format validation before sending to A
 **Fix:** Validate hex format: `/^#[0-9A-Fa-f]{6}$/`
 
 ---
-
-### M6: Missing engines field
-**Classification:** 🆕 NEW  
-**File:** `package.json`  
-**Owner:** Mal
-
-No `engines` field specifying Node version. Recommended: `"engines": { "node": ">=18" }`
-
----
-
-### M7: Missing packageManager field
-**Classification:** 🆕 NEW  
-**File:** `package.json`  
-**Owner:** Mal
-
-No `packageManager` field. Recommended: `"packageManager": "yarn@4.x.x"`
-
----
-
-### M8: Boolean settings type-checked at runtime
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, line 296  
-**Owner:** Wash
-
-The module should log for each failure when boolean settings type checks fail at runtime, rather than silently passing through incorrect types.
-
----
-
-### M9: Consider upgrading manifest runtime to node22
-**Classification:** 🆕 NEW  
-**File:** `companion/manifest.json`, line 21  
-**Owner:** Mal
-
-Manifest specifies `"type": "node18"`. Node 22 is available in API v1.11+ and recommended for security patches.
-
----
-
 ## 🧪 Tests
 
 **No tests found** for prodlink-draw-on-slides v1.0.0.
