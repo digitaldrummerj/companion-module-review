@@ -1613,3 +1613,30 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 **Consensus Recorded:** 2026-04-10T03:05:44Z  
 **Scribe:** Decision merged from five agent reviews
 
+---
+
+## behringer-wing v2.3.0 — Consensus (2026-04-10)
+
+**Verdict:** CHANGES REQUIRED — 13 blocking issues (1 new critical, 2 new high, 9 pre-existing critical, 1 pre-existing high)
+
+**Key decisions:**
+- **Connection error status regression (C1):** `updateStatus(InstanceStatus.ConnectionFailure)` removed in v2.3.0 and replaced with a useless `JSON.stringify(err)` log → 🔴 Critical, 🆕 NEW
+- **Floor guard misplacement (H1):** Guard placed before `targetValue += delta`, so normal negative delta operations still undershoot → 🟠 High, 🆕 NEW
+- **`JSON.stringify(err)` → `{}` (H3):** Native Error objects have no enumerable properties; `JSON.stringify` always returns `{}` → 🟠 High, 🆕 NEW (tied to same line as C1)
+- **Template violations (C2–C10):** All 9 are ⚠️ PRE-EXISTING but blocking: missing .gitattributes, .gitignore deviations, empty engines, wrong repository.url slug, missing $schema, runtime.type=node18, wrong entrypoint, src/index.ts not src/main.ts, tsconfig extends node18
+- **destroy() leak (H2):** Pre-existing High — `stop()` exists and does the right cleanup but `destroy()` never calls it → 🟠 High, ⚠️ PRE-EXISTING
+- **Build passes** despite template violations — tgz produced successfully
+- **No tests** — not blocking per policy
+
+**Learnings to apply to future reviews:**
+- Always verify floor/clamp guard placement is post-delta, not pre-delta
+- `destroy()` must call `stop()` if `stop()` handles cleanup
+- `JSON.stringify(err)` → `{}` gotcha: flag any usage in error handlers
+- src/index.ts vs src/main.ts: check entry point naming for TS modules
+- tsconfig extends path and manifest runtime.type must match
+
+---
+
+**Consensus Recorded:** 2026-04-10T03:18:41Z  
+**Scribe:** Decision merged from five agent reviews
+

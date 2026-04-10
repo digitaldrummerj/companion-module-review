@@ -638,3 +638,9 @@ Outdated dual-file structure anti-pattern — root-level JS files indicate incom
 
 **Review file:** .squad/decisions/inbox/mal-review-findings-wearefalcon-falconplay.md
 
+## behringer-wing v2.3.0 (2026-04-10)
+- A `destroy()` that calls `stop()` is the correct pattern — if `stop()` exists and handles cleanup, `destroy()` must invoke it
+- `JSON.stringify(err)` always produces `{}` for native Error objects; use `err.message` or `err.stack`
+- Floor/ceiling guards on delta actions must be applied AFTER the delta is added, not before
+- When a guard is added to some delta actions but not their siblings, note the inconsistency explicitly
+

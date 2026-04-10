@@ -82,3 +82,13 @@
 - **Module structure:** main.js entry point, companion/ subfolder, minimal dependencies (@companion-module/base ~1.12.1)
 - **Verdict:** No tests present — not required per team policy (first release)
 - **Findings written to:** `.squad/decisions/inbox/simon-review-findings.md`
+
+## behringer-wing v2.3.0 (2026-04-10)
+- Large TypeScript modules (80 files) with no tests — common pattern, not blocking
+- OSC-based modules with complex state management are good candidates for unit tests on the state handler
+- New logic (floor guards) added without tests is a recurring pattern — note in coverage assessment
+
+## behringer-wing v2.3.0 (2026-04-10)
+- Large TypeScript modules (80 files) with no tests — common pattern, not blocking
+- OSC-based modules with complex state management are good candidates for unit tests on the state handler
+- New logic (floor guards) added without tests is a recurring pattern — note in coverage assessment

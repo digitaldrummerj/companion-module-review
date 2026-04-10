@@ -566,3 +566,9 @@ Findings: `.squad/decisions/inbox/wash-snmp-review-findings.md`
 Findings: .squad/decisions/inbox/wash-review-findings.md
 1 blocking issue (source files not in src/), 3 high-priority notes, 3 medium-priority notes, 2 low-priority notes
 
+## behringer-wing v2.3.0 (2026-04-10)
+- OSC over UDP: subscription renewal interval doubles as reconnect for mixer reboots, but not for local socket failures
+- When `destroy()` doesn't call `stop()`, expect socket leaks and EADDRINUSE on next module load
+- `OscForwarder.setup()` parameter logger overwriting constructor logger is a recurring antipattern — check all handler `setup()` methods
+- `JSON.stringify(err)` → `{}` is a known JS gotcha; always use `err.message` for Error logging
+

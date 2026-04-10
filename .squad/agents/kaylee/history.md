@@ -387,3 +387,9 @@ Maintainers using Claude locally may add `.claude/` to the repo `.gitignore`. Th
 - @companion-module/base v1.12.1 vs template v1.14.1 — minor version gap, not blocking but maintainers should stay closer to current
 
 **Review Findings Written To:** .squad/decisions/inbox/kaylee-review-findings.md
+
+## behringer-wing v2.3.0 (2026-04-10)
+- Modules using `src/index.ts` as entry point (instead of `src/main.ts`) need a rename + manifest + package.json update — three files change together
+- `tsconfig.build.json` extends path and `manifest.json` runtime.type must match (both node18 or both node22)
+- Empty `engines: {}` block fails the same as a missing engines block — both are Critical
+- `repository.url` slug in package.json can drift from actual repo name; always verify it matches the GitHub URL

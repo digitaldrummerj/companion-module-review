@@ -301,3 +301,9 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 
 **Session Closed:** 2026-04-09
 **Review file:** .squad/decisions/inbox/zoe-review-findings.md
+
+## behringer-wing v2.3.0 (2026-04-10)
+- Floor/clamp guards must be placed AFTER the delta is applied, not before the current value — a pre-delta clamp only catches stale state, not normal operation
+- Strict `<` vs `<=` matters for boundary conditions on fader floors — always use `Math.max(floor, value)` for clarity
+- When a guard is added to forward-delta actions, check undo-delta actions for consistency
+- `stateHandler 'update'` firing `updateActions()` + explicit `setActionDefinitions()` in same handler = double registration — check for this in other modules
