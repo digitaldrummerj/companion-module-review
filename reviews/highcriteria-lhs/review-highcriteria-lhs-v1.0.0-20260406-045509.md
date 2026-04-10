@@ -13,10 +13,9 @@
 
 **Blocking fixes required before approval:**
 
-1. **[H2]** Emit error on handshake failure: `src/lhs.ts:303` — `.catch((err) => this.emit('error', err))`
-2. **[H4]** Use strict equality (`===`/`!==`) in `src/main.ts:69-76`
-3. **[M1]** Fix typo in `companion/manifest.json`: `"shortname"` — "Serivce" → "Service"
-4. **[M2]** Fix typo in `companion/manifest.json`: `"description"` — "intergration" → "integration"
+1. **[H4]** Use strict equality (`===`/`!==`) in `src/main.ts:69-76`
+2. **[M1]** Fix typo in `companion/manifest.json`: `"shortname"` — "Serivce" → "Service"
+3. **[M2]** Fix typo in `companion/manifest.json`: `"description"` — "intergration" → "integration"
 
 ---
 
@@ -25,27 +24,26 @@
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
 | 🔴 Critical | 0 | 0 | 0 |
-| 🟠 High | 2 | 0 | 2 |
+| 🟠 High | 1 | 0 | 1 |
 | 🟡 Medium | 3 | 0 | 3 |
 | 🟢 Low | 2 | 0 | 2 |
-| **Total** | **7** | **0** | **7** |
+| **Total** | **6** | **0** | **6** |
 
-**Blocking:** 4 issues (2 high, 2 medium)  
-**Fix complexity:** Medium — requires logic changes in error handling  
-**Health delta:** 8 introduced · 0 pre-existing (first release)
+**Blocking:** 3 issues (1 high, 2 medium)  
+**Fix complexity:** Low-Medium — requires type safety fixes and manifest typo corrections  
+**Health delta:** 6 introduced · 0 pre-existing (first release)
 
 ---
 
 ## Verdict: **Changes Required**
 
-Silent handshake rejection and manifest typos — 4 blocking issues total.
+Loose equality in feedback comparisons and manifest typos — 3 blocking issues total.
 
 ---
 
 ## 📋 Issues
 
 **Blocking**
-- [ ] [H2: Silent promise rejection in handshake](#h2-silent-promise-rejection-in-handshake)
 - [ ] [H4: Loose equality in feedback comparisons](#h4-loose-equality-in-feedback-comparisons)
 - [ ] [M1: Typo in shortname field](#m1-typo-in-shortname-field)
 - [ ] [M2: Typo in description field](#m2-typo-in-description-field)
@@ -58,30 +56,6 @@ Silent handshake rejection and manifest typos — 4 blocking issues total.
 ---
 
 ## 🟠 High
-
-### H2: Silent promise rejection in handshake
-
-**Classification:** 🆕 NEW  
-**File:** `src/lhs.ts`, line 303  
-**Source:** Zoe
-
-**Issue:** `_sendHandshake()` returns a promise that's caught and silently swallowed (`.catch(() => {})`). If handshake fails, the connection will appear established but be non-functional.
-
-```typescript
-this.tcp.on('connect', () => {
-    this.receiveBuffer = Buffer.alloc(0)
-    this.handshakeAcknowledged = false
-    this.queue.clear()
-    this._sendHandshake().catch(() => {}) // ← silent failure
-    this._startHeartbeat()
-})
-```
-
-**Impact:** Silent connection failures, module appears connected but doesn't work.
-
-**Fix:** Emit error event in catch handler: `.catch((err) => this.emit('error', err))`
-
----
 
 ### H4: Loose equality in feedback comparisons
 
