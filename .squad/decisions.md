@@ -1758,3 +1758,10 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 - Agents: Mal (haiku), Wash, Kaylee, Zoe, Simon
 - Adjudication: Wash flagged TCP buffer (Critical) and no backoff (High); Kaylee, Zoe, Mal all approved. Adjudicated to Medium (local-network trusted device). HTTP slow-mode backoff backwards (M2) and parseInt NaN validation (M3) accepted as Medium. 5 Medium + 7 Low + 3 NTH.
 - Review file: reviews/fiverecords-tallyccupro/review-fiverecords-tallyccupro-v3.1.0-20260409-220735.md
+
+## creativeland-capacitimer v1.1.1 — 2026-04-09
+
+- Verdict: CHANGES REQUIRED (4 blocking — 4 High NEW)
+- Agents: Mal, Wash, Kaylee, Zoe, Simon — unanimous CHANGES REQUIRED
+- Adjudication: H1: missing upgrade scripts for 3 removed feedbacks (timer_color_*); H2: set_timer_font moved to Pro-only without migration; H3: post-destroy zombie reconnect (async close event); H4: double-reconnect on configUpdated (same root cause as H3). 4 Medium + 7 Low + 5 Pre-existing Low + 1 NTH.
+- Review file: reviews/creativeland-capacitimer/review-creativeland-capacitimer-v1.1.1-20260409-222116.md
