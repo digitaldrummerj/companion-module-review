@@ -25,3 +25,13 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | generic-websocket | v2.3.0 | 2026-04-06 | [review](generic-websocket/review-generic-websocket-v2.3.0-20260406-044352.md) |
 | ✅ | prodlink-draw-on-slides | v1.0.0 | 2026-04-06 | [review](prodlink-draw-on-slides/review-prodlink-draw-on-slides-v1.0.0-20260406-044928.md) |
 | ⬜ | highcriteria-lhs | v1.0.0 | 2026-04-06 | [review](highcriteria-lhs/review-highcriteria-lhs-v1.0.0-20260406-045509.md) |
+| ⬜ | adder-ccs-pro | v0.1.2 | 2026-04-10 | [review](adder-ccs-pro/review-adder-ccs-pro-v0.1.2-20260410-030405.md) |
+| ⬜ | behringer-wing | v2.3.0 | 2026-04-10 | [review](behringer-wing/review-behringer-wing-v2.3.0-20260410-031841.md) |
+| ⬜ | noctavoxfilms-tallycomm | v1.0.0 | 2026-04-09 | [review](noctavoxfilms-tallycomm/review-noctavoxfilms-tallycomm-v1.0.0-20260409-203312.md) |
+| ⬜ | wearefalcon-falconplay | v1.0.0 | 2026-04-09 | [review](wearefalcon-falconplay/review-wearefalcon-falconplay-v1.0.0-20260409-205111.md) |
+| ⬜ | talktome-intercom | v0.1.7 | 2026-04-09 | [review](talktome-intercom/review-talktome-intercom-v0.1.7-20260409-210416.md) |
+| ⬜ | rode-rcv | v1.8.0 | 2026-04-09 | [review](rode-rcv/review-rode-rcv-v1.8.0-20260409-211811.md) |
+| ⬜ | soundcraft-ui | v4.0.0 | 2026-04-09 | [review](soundcraft-ui/review-soundcraft-ui-v4.0.0-20260409-213611.md) |
+| ⬜ | generic-snmp | v3.0.1 | 2026-04-09 | [review](generic-snmp/review-generic-snmp-v3.0.1-20260409-214750.md) |
+| ⬜ | fiverecords-tallyccupro | v3.1.0 | 2026-04-09 | [review](fiverecords-tallyccupro/review-fiverecords-tallyccupro-v3.1.0-20260409-220735.md) |
+| ⬜ | creativeland-capacitimer | v1.1.1 | 2026-04-09 | [review](creativeland-capacitimer/review-creativeland-capacitimer-v1.1.1-20260409-222116.md) |
