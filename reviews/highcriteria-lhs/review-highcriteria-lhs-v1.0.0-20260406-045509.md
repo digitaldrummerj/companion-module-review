@@ -16,6 +16,8 @@
 1. **[C2]** Add null check in `src/main.ts:36`: `this.client?.destroy()`
 2. **[H2]** Emit error on handshake failure: `src/lhs.ts:303` — `.catch((err) => this.emit('error', err))`
 3. **[H4]** Use strict equality (`===`/`!==`) in `src/main.ts:69-76`
+4. **[M1]** Fix typo in `companion/manifest.json`: `"shortname"` — "Serivce" → "Service"
+5. **[M2]** Fix typo in `companion/manifest.json`: `"description"` — "intergration" → "integration"
 
 ---
 
@@ -29,7 +31,7 @@
 | 🟢 Low | 2 | 0 | 2 |
 | **Total** | **8** | **0** | **8** |
 
-**Blocking:** 3 issues (1 critical, 2 high)  
+**Blocking:** 5 issues (1 critical, 2 high, 2 medium)  
 **Fix complexity:** Medium — requires logic changes in error handling and null guards  
 **Health delta:** 8 introduced · 0 pre-existing (first release)
 
@@ -37,7 +39,7 @@
 
 ## Verdict: **Changes Required**
 
-Null dereference in destroy(), and silent handshake rejection — 3 blocking issues total.
+Null dereference in destroy(), silent handshake rejection, and manifest typos — 5 blocking issues total.
 
 ---
 
@@ -47,10 +49,10 @@ Null dereference in destroy(), and silent handshake rejection — 3 blocking iss
 - [ ] [C2: Null dereference in destroy method](#c2-null-dereference-in-destroy-method)
 - [ ] [H2: Silent promise rejection in handshake](#h2-silent-promise-rejection-in-handshake)
 - [ ] [H4: Loose equality in feedback comparisons](#h4-loose-equality-in-feedback-comparisons)
-
-**Non-blocking**
 - [ ] [M1: Typo in shortname field](#m1-typo-in-shortname-field)
 - [ ] [M2: Typo in description field](#m2-typo-in-description-field)
+
+**Non-blocking**
 - [ ] [M6: Missing error handling in heartbeat](#m6-missing-error-handling-in-heartbeat)
 - [ ] [L6: Redundant checkFeedbacks call pattern](#l6-redundant-checkfeedbacks-call-pattern)
 - [ ] [L7: Missing maintainer email in manifest](#l7-missing-maintainer-email-in-manifest)
