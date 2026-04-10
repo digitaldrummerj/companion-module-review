@@ -15,7 +15,7 @@
 
 ## 🛠️ Fix Summary for Maintainer
 
-This release ships a **critical regression** and multiple **template compliance violations** that block approval. The functional scope of v2.3.0 is small (fader floor guards + version bump), but the `src/index.ts` change accidentally removed the connection error status update, making all OSC socket failures invisible in the Companion UI. This regression plus six pre-existing template compliance gaps must all be addressed before this release can be approved.
+This release ships a **critical regression** and multiple **template compliance violations** that block approval. The functional scope of v2.3.0 is small (fader floor guards + version bump), but the `src/index.ts` change accidentally removed the connection error status update, making all OSC socket failures invisible in the Companion UI. This regression plus six pre-existing template compliance gaps and one identity mismatch must all be addressed before this release can be approved.
 
 **Fixes required for approval:**
 
@@ -26,6 +26,7 @@ This release ships a **critical regression** and multiple **template compliance 
 5. **C5 — Fix `repository.url`** in `package.json` to `git+https://github.com/bitfocus/companion-module-behringer-wing.git`
 6. **C7 — Update `manifest.json` `runtime.type`** from `"node18"` to `"node22"`
 7. **C10 — Update `tsconfig.build.json`** extends from `node18` to `node22`
+8. **M7 — Align `package.json` `name`** with manifest `id`: change `"wing-companion"` to `"behringer-wing"`
 
 ---
 
@@ -40,7 +41,7 @@ This release ships a **critical regression** and multiple **template compliance 
 | 💡 Nice to Have | 0 | 0 | 0 |
 | **Total** | **1** | **7** | **8** |
 
-**Blocking:** 7 issues (1 new critical, 6 pre-existing critical)
+**Blocking:** 8 issues (1 new critical, 6 pre-existing critical, 1 pre-existing medium)
 **Fix complexity:** Multiple config file changes
 **Health delta:** 1 introduced · 6 pre-existing surfaced
 
@@ -48,7 +49,7 @@ This release ships a **critical regression** and multiple **template compliance 
 
 ## ✋ Verdict: CHANGES REQUIRED
 
-Seven Critical issues block approval. One Critical is a newly introduced regression (connection error status silently dropped); the remaining six Criticals are template compliance gaps carried forward from prior releases that must now be resolved.
+Seven Critical issues and one Medium issue block approval. One Critical is a newly introduced regression (connection error status silently dropped); the remaining six Criticals are template compliance gaps carried forward from prior releases that must now be resolved. The Medium (`package.json` name mismatch) is also required for approval.
 
 ---
 
@@ -62,8 +63,6 @@ Seven Critical issues block approval. One Critical is a newly introduced regress
 - [ ] [C5: `repository.url` incorrect in `package.json`](#c5-repositoryurl-incorrect-in-packagejson)
 - [ ] [C7: `manifest.json` `runtime.type` is `"node18"` — must be `"node22"`](#c7-manifestjson-runtimetype-is-node18--must-be-node22)
 - [ ] [C10: `tsconfig.build.json` extends `node18` instead of `node22`](#c10-tsconfigbuildjson-extends-node18-instead-of-node22)
-
-**Non-blocking**
 - [ ] [M7: `package.json` `name` field does not match module ID](#m7-packagejson-name-field-does-not-match-module-id)
 
 ---
@@ -200,6 +199,7 @@ Seven Critical issues block approval. One Critical is a newly introduced regress
 ### M7: `package.json` `name` field does not match module ID
 
 - **Severity:** 🟡 Medium
+- **Blocking:** ✅ Yes
 - **Classification:** ⚠️ PRE-EXISTING
 - **File:** `package.json`
 - **Description:** `"name": "wing-companion"` does not match the module's canonical ID in `manifest.json` (`"behringer-wing"`). The build tooling derives the tgz name from the manifest ID so the build output is correct, but the mismatch creates confusion in the npm ecosystem and is inconsistent with the repository name.
