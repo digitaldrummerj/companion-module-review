@@ -1730,3 +1730,24 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 - Subscription leak classified HIGH NEW (RxJS status$ subscription is v4.0.0-new)
 - Mal classified as Medium PRE-EXISTING; Wash+Zoe+Coordinator ruled HIGH NEW (majority)
 - isVisible completely absent — v2.x API compliant ✅
+
+## generic-snmp v3.0.1 — 2026-04-09
+**Verdict:** CHANGES REQUIRED — 3 blocking (3 High NEW)
+**Blocking:**
+- H1 🆕: `pollOids()` silent death on SNMP error — no try/catch around getOid(), exception swallowed by outer .catch(() => {}), pollTimer never rescheduled, poll stops permanently, status stays Ok
+- H2 🆕: `createListener` promise never settles — rapid configUpdated causes second closeListener() to strip event handlers from still-binding socket; first promise can never resolve/reject
+- H3 🆕: No try/catch in `connectAgent` — snmp.createSession/createV3Session can throw synchronously; unhandled exception leaves status at Ok with undefined session
+**Non-blocking highlights:**
+- M1: SharedUdpSocket.bind() called with remote device IP as local bind address (should be 0.0.0.0)
+- M2: SNMPv3 trap receiver always passes all auth/priv keys regardless of security level
+- M3: getOID feedback missing subscribe callback — OID tracking deferred to first evaluation
+- M4: configUpdated does not clear oidValues cache on device change
+- M5: isVisibleExpression bakes config.version as literal boolean at definition time
+- M6: SNMPv3 authKey/privKey no minimum-length validation (RFC 3414 requires ≥8 chars)
+- M7: configUpdated doesn't cancel throttled/debounced callbacks
+- M8: FeedbackOidTracker.clear() missing oidsToPoll.clear()
+**Key decisions:**
+- package.json name "generic-snmp" missing prefix → PRE-EXISTING (Mal called blocking; Kaylee called Low; adjudicated PRE-EXISTING)
+- 329/329 tests PASS — excellent coverage
+- isVisible completely absent — v2.x compliant ✅
+- pollGeneration counter correctly guards concurrent poll chains ✅
