@@ -1712,3 +1712,21 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 - parseOSCBlob null return classified as PRE-EXISTING (Mal + Wash both pre-existing; Zoe said new; majority rules) → PE1 notable
 - Pre-existing Critical (buffer stall) kept blocking per policy
 - isPrerelease field removal noted as C2 addendum (needs schema check)
+
+## soundcraft-ui v4.0.0 — 2026-04-09
+**Verdict:** CHANGES REQUIRED — 2 blocking (2 High NEW)
+**Blocking:**
+- H1 🆕: `firstValueFrom(capabilities$)` hangs on connection failure — `updateCompanionBits` called unconditionally after catch; new code path in v4.0.0; fix: add `return` after `updateStatus(ConnectionFailure)`
+- H2 🆕: `status$` subscription discarded — accumulates on every reconnect, spurious Disconnected status after config change; new RxJS pattern in v4.0.0; fix: store Subscription, unsubscribe before reconnect and in destroy()
+**Non-blocking highlights:**
+- M1 🆕: `learn` callbacks return -Infinity for silenced faders (9 actions, src/actions.ts) — mapInfinityToNumber missing
+- M2 ⚠️: `void createConnection()` swallows errors silently — PRE-EXISTING
+- M3 ⚠️: `configUpdated` disconnect not awaited — PRE-EXISTING (acknowledged TODO)
+- L1: `mtkplayerstate` wrong enum default (PlayerState → MtkState, coincidentally correct today)
+- L2: Dev deps lag behind @companion-module/tools@3.0.0 peer requirements (3 YN0060 warnings)
+**Key decisions:**
+- `apiVersion: "0.0.0"` is STANDARD for v2.x — auto-patched by companion-module-build; NOT a regression
+- Connection hang classified HIGH NEW (firstValueFrom code path is v4.0.0-new despite similar pre-existing void pattern)
+- Subscription leak classified HIGH NEW (RxJS status$ subscription is v4.0.0-new)
+- Mal classified as Medium PRE-EXISTING; Wash+Zoe+Coordinator ruled HIGH NEW (majority)
+- isVisible completely absent — v2.x API compliant ✅
