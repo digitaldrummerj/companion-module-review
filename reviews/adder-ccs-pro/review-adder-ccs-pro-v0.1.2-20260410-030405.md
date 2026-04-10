@@ -12,13 +12,17 @@
 
 ## Fix Summary for Maintainer
 
-Three quick fixes are required before this module can be approved:
+Seven fixes are required before this module can be approved:
 
 1. **Create `.prettierignore`** — Add this file to the repo root with exactly two lines: `package.json` and `/LICENSE.md`
 2. **Replace `.gitignore`** — Remove the extra markdown-blocking rules (`.claude/`, `*.md` block) and align to the standard template content
 3. **Remove banned keywords from `companion/manifest.json`** — Remove `"adder"`, `"ccs-pro"`, and `"ccs-pro8"` from the `keywords` array; keep `"kvm"` and `"switch"`
+4. **Set `manifest.json` version to `0.0.0`** — The `version` field in `companion/manifest.json` must be `"0.0.0"` per the module template
+5. **Align `name` to `id` in `manifest.json`** — The `name` field must match the `id` field in `companion/manifest.json`
+6. **Replace `LICENSE` file** — Replace with the standard LICENSE file from the companion-module-template repository
+7. **Fix concurrent poll risk** — Use a self-scheduling `setTimeout` pattern instead of `setInterval` in `pollDevice()`
 
-All three are small file edits. No code changes required.
+Items 1–6 are small file edits. Item 7 is a minor code change.
 
 ---
 
@@ -30,12 +34,12 @@ All three are small file edits. No code changes required.
 | 🟠 High | 0 | 0 | 0 |
 | 🟡 Medium | 4 | 0 | 4 |
 | 🟢 Low | 0 | 0 | 0 |
-| 💡 Nice to Have | 1 | 0 | 1 |
-| **Total** | **8** | **0** | **8** |
+| 💡 Nice to Have | 0 | 0 | 0 |
+| **Total** | **7** | **0** | **7** |
 
-**Blocking:** 3 issues (3 new critical — all template compliance)  
-**Fix complexity:** Quick — three small file edits, no code changes  
-**Health delta:** 8 introduced · 0 pre-existing (first release)
+**Blocking:** 7 issues (3 critical + 4 medium — all template compliance)  
+**Fix complexity:** Mostly file edits; one minor code change  
+**Health delta:** 7 introduced · 0 pre-existing (first release)
 
 ---
 
@@ -43,9 +47,9 @@ All three are small file edits. No code changes required.
 
 **❌ CHANGES REQUIRED**
 
-The module is well-built — clean HTTP polling implementation, correct v1.x SDK usage, excellent documentation, and a thorough `companion/HELP.md`. However, three template compliance violations block approval. All three are small file fixes with no code impact.
+The module is well-built — clean HTTP polling implementation, correct v1.x SDK usage, excellent documentation, and a thorough `companion/HELP.md`. However, seven issues block approval: three Critical template compliance violations and four Medium findings that must be resolved before release.
 
-Once the three Critical items are resolved, this module is ready for release.
+Once all seven blocking items are resolved, this module is ready for release.
 
 ---
 
@@ -55,13 +59,10 @@ Once the three Critical items are resolved, this module is ready for release.
 - [ ] [C1: Missing `.prettierignore` file](#c1-missing-prettierignore-file)
 - [ ] [C2: `.gitignore` contains non-template content](#c2-gitignore-contains-non-template-content)
 - [ ] [C3: Banned keywords in `manifest.json`](#c3-banned-keywords-in-manifestjson)
-
-**Non-blocking**
 - [ ] [M1: manifest.json version should be 0.0.0](#m1-manifestjson-version-should-be-000)
 - [ ] [M2: Module name does not match id in manifest.json](#m2-module-name-does-not-match-id-in-manifestjson)
 - [ ] [M3: LICENSE file does not match template](#m3-license-file-does-not-match-template)
 - [ ] [M4: Concurrent polls possible when poll duration exceeds interval](#m4-concurrent-polls-possible-when-poll-duration-exceeds-interval)
-- [ ] [N1: No debug log when HTML parsing fails to extract a channel](#n1-no-debug-log-when-html-parsing-fails-to-extract-a-channel)
 
 ---
 
@@ -197,18 +198,6 @@ The `LICENSE` file contents do not match the standard LICENSE file from the comp
 **Impact:** Low in practice — the 4 s request timeout is above the 5 s default interval, so overlap requires both a slow device and a user-configured minimum (2 s) interval.
 
 **Recommended fix:** Use a self-scheduling pattern (call `setTimeout` at the end of each poll) rather than `setInterval`, or skip a poll if one is already in flight.
-
----
-
-## 💡 Nice to Have
-
-### N1: No debug log when HTML parsing fails to extract a channel
-
-**File:** `src/main.js` (parseStatusPage)  
-**Classification:** 🆕 New  
-**Reviewer:** Wash
-
-A low-cost debug log when a channel regex fails to match would help diagnose future firmware-related state-sync failures. No code change needed until a user reports issues.
 
 ---
 
