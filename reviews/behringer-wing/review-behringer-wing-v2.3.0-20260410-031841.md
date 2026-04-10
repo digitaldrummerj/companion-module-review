@@ -24,9 +24,9 @@ This release ships a **critical regression** and multiple **template compliance 
 3. **C3 — Fix `.gitignore`** — replace `/pkg.tgz` with `/*.tgz`, remove `.DS_Store`, add `/.vscode`
 4. **C4 — Add `engines` block** to `package.json` (`node: "^22.20"`, `yarn: "^4"`)
 5. **C5 — Fix `repository.url`** in `package.json` to `git+https://github.com/bitfocus/companion-module-behringer-wing.git`
-6. **C7 — Update `manifest.json` `runtime.type`** from `"node18"` to `"node22"`
-7. **C10 — Update `tsconfig.build.json`** extends from `node18` to `node22`
-8. **M7 — Align `package.json` `name`** with manifest `id`: change `"wing-companion"` to `"behringer-wing"`
+6. **C6 — Update `manifest.json` `runtime.type`** from `"node18"` to `"node22"`
+7. **C7 — Update `tsconfig.build.json`** extends from `node18` to `node22`
+8. **M1 — Align `package.json` `name`** with manifest `id`: change `"wing-companion"` to `"behringer-wing"`
 
 ---
 
@@ -61,9 +61,9 @@ Seven Critical issues and one Medium issue block approval. One Critical is a new
 - [ ] [C3: `.gitignore` content deviates from template](#c3-gitignore-content-deviates-from-template)
 - [ ] [C4: `engines` field absent from `package.json`](#c4-engines-field-absent-from-packagejson)
 - [ ] [C5: `repository.url` incorrect in `package.json`](#c5-repositoryurl-incorrect-in-packagejson)
-- [ ] [C7: `manifest.json` `runtime.type` is `"node18"` — must be `"node22"`](#c7-manifestjson-runtimetype-is-node18--must-be-node22)
-- [ ] [C10: `tsconfig.build.json` extends `node18` instead of `node22`](#c10-tsconfigbuildjson-extends-node18-instead-of-node22)
-- [ ] [M7: `package.json` `name` field does not match module ID](#m7-packagejson-name-field-does-not-match-module-id)
+- [ ] [C6: `manifest.json` `runtime.type` is `"node18"` — must be `"node22"`](#c6-manifestjson-runtimetype-is-node18--must-be-node22)
+- [ ] [C7: `tsconfig.build.json` extends `node18` instead of `node22`](#c7-tsconfigbuildjson-extends-node18-instead-of-node22)
+- [ ] [M1: `package.json` `name` field does not match module ID](#m1-packagejson-name-field-does-not-match-module-id)
 
 ---
 
@@ -170,7 +170,7 @@ Seven Critical issues and one Medium issue block approval. One Critical is a new
 
 ---
 
-### C7: `manifest.json` `runtime.type` is `"node18"` — must be `"node22"`
+### C6: `manifest.json` `runtime.type` is `"node18"` — must be `"node22"`
 
 - **Severity:** 🔴 Critical
 - **Classification:** ⚠️ PRE-EXISTING
@@ -182,7 +182,7 @@ Seven Critical issues and one Medium issue block approval. One Critical is a new
 
 ---
 
-### C10: `tsconfig.build.json` extends `node18` instead of `node22`
+### C7: `tsconfig.build.json` extends `node18` instead of `node22`
 
 - **Severity:** 🔴 Critical
 - **Classification:** ⚠️ PRE-EXISTING
@@ -196,7 +196,7 @@ Seven Critical issues and one Medium issue block approval. One Critical is a new
 
 ## 🟡 Medium
 
-### M7: `package.json` `name` field does not match module ID
+### M1: `package.json` `name` field does not match module ID
 
 - **Severity:** 🟡 Medium
 - **Blocking:** ✅ Yes
