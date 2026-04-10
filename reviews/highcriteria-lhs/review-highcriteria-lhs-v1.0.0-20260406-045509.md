@@ -13,13 +13,9 @@
 
 **Blocking fixes required before approval:**
 
-1. **[C1]** Add `"type": "connection"` to `companion/manifest.json` immediately after `$schema`
-2. **[C2]** Add null check in `src/main.ts:36`: `this.client?.destroy()`
-3. **[C3]** Fix race condition in `src/main.ts:51-52`: Call `removeAllListeners()` before `destroy()`
-4. **[H1]** Wrap all action awaits in try-catch: `src/actions.ts:44, 52, 60, 68, 93-99`
-5. **[H2]** Emit error on handshake failure: `src/lhs.ts:303` — `.catch((err) => this.emit('error', err))`
-6. **[H3]** Add null guard for undefined action method: `src/actions.ts:90-102`
-7. **[H4]** Use strict equality (`===`/`!==`) in `src/main.ts:69-76`
+1. **[C2]** Add null check in `src/main.ts:36`: `this.client?.destroy()`
+2. **[H2]** Emit error on handshake failure: `src/lhs.ts:303` — `.catch((err) => this.emit('error', err))`
+3. **[H4]** Use strict equality (`===`/`!==`) in `src/main.ts:69-76`
 
 ---
 
@@ -27,75 +23,41 @@
 
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
-| 🔴 Critical | 3 | 0 | 3 |
-| 🟠 High | 4 | 0 | 4 |
-| 🟡 Medium | 6 | 0 | 6 |
-| 🟢 Low | 7 | 0 | 7 |
-| **Total** | **20** | **0** | **20** |
+| 🔴 Critical | 1 | 0 | 1 |
+| 🟠 High | 2 | 0 | 2 |
+| 🟡 Medium | 3 | 0 | 3 |
+| 🟢 Low | 2 | 0 | 2 |
+| **Total** | **8** | **0** | **8** |
 
-**Blocking:** 7 issues (3 critical, 4 high)  
+**Blocking:** 3 issues (1 critical, 2 high)  
 **Fix complexity:** Medium — requires logic changes in error handling and null guards  
-**Health delta:** 20 introduced · 0 pre-existing (first release)
+**Health delta:** 8 introduced · 0 pre-existing (first release)
 
 ---
 
 ## Verdict: **Changes Required**
 
-Missing required `"type": "connection"` in manifest.json (module won't load in Companion 4.3+), null dereference in destroy(), and race condition in setupClient() — 7 blocking issues total.
+Null dereference in destroy(), and silent handshake rejection — 3 blocking issues total.
 
 ---
 
 ## 📋 Issues
 
 **Blocking**
-- [ ] [C1: Missing type connection in manifest.json](#c1-missing-type-connection-in-manifestjson)
 - [ ] [C2: Null dereference in destroy method](#c2-null-dereference-in-destroy-method)
-- [ ] [C3: Race condition in setupClient event listeners](#c3-race-condition-in-setupclient-event-listeners)
-- [ ] [H1: Unhandled promise rejections in action callbacks](#h1-unhandled-promise-rejections-in-action-callbacks)
 - [ ] [H2: Silent promise rejection in handshake](#h2-silent-promise-rejection-in-handshake)
-- [ ] [H3: Missing null check in action handler](#h3-missing-null-check-in-action-handler)
 - [ ] [H4: Loose equality in feedback comparisons](#h4-loose-equality-in-feedback-comparisons)
 
 **Non-blocking**
 - [ ] [M1: Typo in shortname field](#m1-typo-in-shortname-field)
 - [ ] [M2: Typo in description field](#m2-typo-in-description-field)
-- [ ] [M3: Missing default value for host config field](#m3-missing-default-value-for-host-config-field)
-- [ ] [M4: Missing default value for room config field](#m4-missing-default-value-for-room-config-field)
-- [ ] [M5: Unbounded receiveBuffer growth potential](#m5-unbounded-receivebuffer-growth-potential)
 - [ ] [M6: Missing error handling in heartbeat](#m6-missing-error-handling-in-heartbeat)
-- [ ] [L1: Listener leak potential on reconnect](#l1-listener-leak-potential-on-reconnect)
-- [ ] [L2: No reconnect backoff strategy](#l2-no-reconnect-backoff-strategy)
-- [ ] [L3: Heartbeat timing edge case](#l3-heartbeat-timing-edge-case)
-- [ ] [L4: console.log in library code](#l4-consolelog-in-library-code)
-- [ ] [L5: Aggressive buffer clearing on errors](#l5-aggressive-buffer-clearing-on-errors)
 - [ ] [L6: Redundant checkFeedbacks call pattern](#l6-redundant-checkfeedbacks-call-pattern)
 - [ ] [L7: Missing maintainer email in manifest](#l7-missing-maintainer-email-in-manifest)
 
 ---
 
 ## 🔴 Critical
-
-### C1: Missing type connection in manifest.json
-
-**Classification:** 🆕 NEW  
-**File:** `companion/manifest.json`  
-**Source:** Mal
-
-**Issue:** The v2.0 API requires a top-level `"type": "connection"` field in manifest.json. Without it, the module will fail to load in Companion 4.3+.
-
-**Expected:**
-```json
-{
-  "$schema": "...",
-  "type": "connection",
-  "id": "highcriteria-lhs",
-  ...
-}
-```
-
-**Fix:** Add `"type": "connection"` immediately after the `$schema` field.
-
----
 
 ### C2: Null dereference in destroy method
 
@@ -118,53 +80,7 @@ public async destroy(): Promise<void> {
 
 ---
 
-### C3: Race condition in setupClient event listeners
-
-**Classification:** 🆕 NEW  
-**File:** `src/main.ts`, lines 49-85  
-**Source:** Zoe
-
-**Issue:** In `setupClient()`, when reconnecting, the old client is destroyed and listeners are removed (line 51-52), but there's no guarantee that pending events won't fire during the brief window between `destroy()` and `removeAllListeners()`.
-
-```typescript
-private setupClient(config: ModuleConfig): void {
-    if (this.client) {
-        this.client.destroy()
-        this.client.removeAllListeners() // ← events may still fire
-    }
-    this.client = new LHSClient({ ... })
-```
-
-**Impact:** Events from old client could be processed after new client is created, leading to state corruption.
-
-**Fix:** Call `removeAllListeners()` before `destroy()`, or use `.once()` pattern with cleanup.
-
----
-
 ## 🟠 High
-
-### H1: Unhandled promise rejections in action callbacks
-
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, lines 44, 52, 60, 68, 93-99  
-**Source:** Wash
-
-**Issue:** Action callbacks use `await` on client methods but do not handle promise rejections. If `client.newFile()`, `client.startRecording()`, etc. reject (e.g., connection lost mid-command), the error will bubble up as an unhandled promise rejection.
-
-```typescript
-callback: async (event) => {
-    self.log('info', `${event.actionId}:${event.id}`)
-    await self.client.newFile()  // ← No try-catch
-},
-```
-
-**Impact:** 
-- Unhandled promise rejections can crash the Node.js process
-- User gets no feedback when commands silently fail
-
-**Fix:** Wrap all `await` calls in try-catch blocks and log errors.
-
----
 
 ### H2: Silent promise rejection in handshake
 
@@ -187,32 +103,6 @@ this.tcp.on('connect', () => {
 **Impact:** Silent connection failures, module appears connected but doesn't work.
 
 **Fix:** Emit error event in catch handler: `.catch((err) => this.emit('error', err))`
-
----
-
-### H3: Missing null check in action handler
-
-**Classification:** 🆕 NEW  
-**File:** `src/actions.ts`, lines 90-102  
-**Source:** Zoe
-
-**Issue:** In `PauseRecording` action callback, `event.options.method` is accessed with optional chaining but the switch statement doesn't handle `undefined` before the `default` case.
-
-```typescript
-const method = event.options.method?.toString()
-switch (method) {
-    case 'pause':
-    case 'resume':
-    case 'toggle':
-        // ...
-    default:
-        throw new Error(`Invalid selection: ${method} aborting action...`)
-}
-```
-
-**Impact:** If `method` is `undefined`, throws error with message "Invalid selection: undefined".
-
-**Fix:** Handle `undefined` explicitly or assert it's defined given the option schema.
 
 ---
 
@@ -266,44 +156,6 @@ if (state.roomId == this.config.room || state.roomId == '') {
 
 ---
 
-### M3: Missing default value for host config field
-
-**Classification:** 🆕 NEW  
-**File:** `src/config.ts`, lines 11-18  
-**Source:** Mal
-
-**Issue:** The `host` config field has no `default` value. If a user creates a new connection and doesn't fill in the host, `config.host` will be `undefined`, causing a runtime error.
-
-**Fix:** Add `default: ''` or `default: '127.0.0.1'` to the `host` field.
-
----
-
-### M4: Missing default value for room config field
-
-**Classification:** 🆕 NEW  
-**File:** `src/config.ts`, lines 38-43  
-**Source:** Mal
-
-**Issue:** The `room` config field has no `default` value. While the module handles empty room gracefully, a `default: ''` is best practice.
-
-**Fix:** Add `default: ''` to the room field.
-
----
-
-### M5: Unbounded receiveBuffer growth potential
-
-**Classification:** 🆕 NEW  
-**File:** `src/lhs.ts`, lines 549-590  
-**Source:** Zoe
-
-**Issue:** In `_onData()`, if malformed data arrives that never contains `MAGIC_START`, the receive buffer grows by concatenation before being cleared.
-
-**Impact:** Temporary memory spike on garbage data. Not a leak but could cause issues with large garbage streams.
-
-**Fix:** Add max buffer size check before concatenation (e.g., 1MB limit).
-
----
-
 ### M6: Missing error handling in heartbeat
 
 **Classification:** 🆕 NEW  
@@ -324,76 +176,6 @@ this._sendCmd(Cmd.HeartbeatB, 0).catch(() => {})  // ← silent
 ---
 
 ## 🟢 Low
-
-### L1: Listener leak potential on reconnect
-
-**Classification:** 🆕 NEW  
-**File:** `src/main.ts`, lines 49-53, 61-84  
-**Source:** Wash
-
-**Issue:** `removeAllListeners()` only removes listeners from the `LHSClient` EventEmitter, not from the internal `TCPHelper`. The old `TCPHelper` instance inside the destroyed client may still emit events briefly before it's fully torn down.
-
-**Impact:** Low probability but possible duplicate event handling during config transitions.
-
-**Fix:** Add a check in event handlers to ignore events from stale clients (e.g., use a generation counter).
-
----
-
-### L2: No reconnect backoff strategy
-
-**Classification:** 🆕 NEW  
-**File:** `src/lhs.ts`, lines 272-273, 286-289  
-**Source:** Wash
-
-**Issue:** The module uses `TCPHelper` with a fixed `reconnect_interval: 2000` ms. No backoff strategy means tight reconnection loop if server is down.
-
-**Impact:** High network traffic during extended outages.
-
-**Fix:** Implement exponential backoff (2s → 5s → 10s → 30s → 60s max).
-
----
-
-### L3: Heartbeat timing edge case
-
-**Classification:** 🆕 NEW  
-**File:** `src/lhs.ts`, lines 319-328, 451-456  
-**Source:** Wash
-
-**Issue:** The `destroy()` method stops heartbeat after clearing queue. If a heartbeat callback is currently executing, `_sendCmd()` may be called on a destroyed connection.
-
-**Impact:** Edge case — the `if (!this.tcp?.isConnected)` guard prevents most issues.
-
-**Fix:** Clear the PQueue **after** stopping heartbeat and tcp cleanup.
-
----
-
-### L4: console.log in library code
-
-**Classification:** 🆕 NEW  
-**File:** `src/lhs.ts`, lines 644-647  
-**Source:** Wash, Mal
-
-**Issue:** `_handleSrvInitInfo()` uses `console.log()` directly instead of emitting an event or using the instance logger.
-
-**Impact:** Pollutes console output with debug info, no control over log level.
-
-**Fix:** Emit a `'server_info'` event or remove if not needed.
-
----
-
-### L5: Aggressive buffer clearing on errors
-
-**Classification:** 🆕 NEW  
-**File:** `src/lhs.ts`, lines 575-578  
-**Source:** Wash
-
-**Issue:** When an invalid end signature is detected, the entire receive buffer is discarded, including any subsequent valid frames.
-
-**Impact:** Rare — only occurs if protocol framing is corrupted.
-
-**Fix:** Consider skipping to the next potential start marker instead of clearing entire buffer.
-
----
 
 ### L6: Redundant checkFeedbacks call pattern
 
