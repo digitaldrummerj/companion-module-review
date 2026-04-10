@@ -25,13 +25,13 @@
 |----------|--------|-------------|-------|
 | 🔴 Critical | 0 | 0 | 0 |
 | 🟠 High | 1 | 0 | 1 |
-| 🟡 Medium | 3 | 0 | 3 |
+| 🟡 Medium | 2 | 0 | 2 |
 | 🟢 Low | 2 | 0 | 2 |
-| **Total** | **6** | **0** | **6** |
+| **Total** | **5** | **0** | **5** |
 
 **Blocking:** 3 issues (1 high, 2 medium)  
 **Fix complexity:** Low-Medium — requires type safety fixes and manifest typo corrections  
-**Health delta:** 6 introduced · 0 pre-existing (first release)
+**Health delta:** 5 introduced · 0 pre-existing (first release)
 
 ---
 
@@ -49,7 +49,6 @@ Loose equality in feedback comparisons and manifest typos — 3 blocking issues 
 - [ ] [M2: Typo in description field](#m2-typo-in-description-field)
 
 **Non-blocking**
-- [ ] [M3: Missing error handling in heartbeat](#m3-missing-error-handling-in-heartbeat)
 - [ ] [L1: Redundant checkFeedbacks call pattern](#l1-redundant-checkfeedbacks-call-pattern)
 - [ ] [L2: Missing maintainer email in manifest](#l2-missing-maintainer-email-in-manifest)
 
@@ -104,25 +103,6 @@ if (state.roomId == this.config.room || state.roomId == '') {
 **Impact:** User-facing text with spelling error.
 
 **Fix:** Correct to `"integration"`
-
----
-
-### M3: Missing error handling in heartbeat
-
-**Classification:** 🆕 NEW  
-**File:** `src/lhs.ts`, lines 444-448  
-**Source:** Zoe
-
-**Issue:** The heartbeat timer calls `_sendCmd()` but catches and swallows all errors silently.
-
-```typescript
-this._sendCmd(Cmd.HeartbeatA, 0).catch(() => {})  // ← silent
-this._sendCmd(Cmd.HeartbeatB, 0).catch(() => {})  // ← silent
-```
-
-**Impact:** Heartbeat failures go unnoticed, may mask connection issues.
-
-**Fix:** Log errors or emit them (with rate limiting to avoid spam).
 
 ---
 
