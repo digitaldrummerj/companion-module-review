@@ -1808,3 +1808,27 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 **By:** Kaylee (Module Dev Reviewer)  
 **What:** Updated C-1 recommendation in noctavoxfilms-tallycomm review to include explicit file-splitting guidance using Companion module template as reference. Maintainers now know to split `main.js` into modular structure: `src/actions.js`, `src/feedbacks.js`, `src/presets.js`, `src/config.js`, `src/variables.js`, `src/main.js`.  
 **Why:** Prevents future rework and aligns with ecosystem standards. Reference to established template reduces ambiguity and improves maintainability. Captured for team decision memory.
+## 2026-04-15T19:20:58Z: noctavoxfilms-tallycomm Review Renumbering (H2 H3 H4 M5 Removal)
+
+**By:** Kaylee (Module Dev Reviewer)  
+**What:** Removed H-2, H-3, H-4 (protocol-level findings) and M-5 (reliability) from noctavoxfilms-tallycomm v1.0.0 review. Renumbered remaining findings sequentially across all severity levels.  
+**Removed Findings:**
+- H-2: `checkConnection()` sends a real tally POST — phantom tally risk
+- H-3: `checkConnection()` ignores `response.ok` — any HTTP response marks as connected
+- H-4: `sendTally()` swallows errors — action callbacks update local state unconditionally
+- M-5: `clear_all` reliability depends on tracked state accuracy
+
+**Renumbering Applied:**
+- High: H-1 remains (only finding)
+- Medium: M-3→M-1, M-4→M-2, M-6→M-3, M-7→M-4
+- Low: L-3→L-1
+
+**Updated Counts:**
+- High findings: 4 → 1
+- Medium findings: 5 → 4
+- Total findings: 26 → 22
+- Blocking issues: 20 → 17
+
+**Verification:** All 4 findings completely removed (no orphaned references); all cross-references updated (TOC, anchor links); scorecard and verdict reconciled; file structure maintained.
+
+**Why:** Focuses review on immediate delivery blockers; maintains reference stability for remaining findings; improves clarity on actual blocking issues vs. deferred work.

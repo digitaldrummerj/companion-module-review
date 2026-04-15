@@ -254,3 +254,20 @@ Version reviewed: v2.1.0 (via fixes branch)
 - `reviews/noctavoxfilms-tallycomm/review-noctavoxfilms-tallycomm-v1.0.0-20260409-203312.md` — C-1 section enhanced
 - `.squad/decisions.md` — Decision merged and indexed by timestamp
 
+## 2026-04-15 Session: Review Renumbering — H2 H3 H4 M5 Removal
+
+**Task:** Remove H-2, H-3, H-4, and M-5 findings from noctavoxfilms-tallycomm review; renumber remaining findings.
+
+**Changes Made:**
+- Removed 4 findings: H-2 (phantom tally), H-3 (response.ok), H-4 (error swallow), M-5 (reliability)
+- Renumbered remaining findings sequentially: M-3→M-1, M-4→M-2, M-6→M-3, M-7→M-4; L-3→L-1
+- Updated scorecard: High 4→1, Medium 5→4, Total 26→22, Blocking 20→17
+- Updated verdict narrative: Removed protocol issues, focused on H-1 premature init issue
+- Updated Fix Summary: Removed bullets for protocol issues, kept critical blockers
+- Updated TOC: All cross-references refreshed
+
+**File:** `reviews/noctavoxfilms-tallycomm/review-noctavoxfilms-tallycomm-v1.0.0-20260409-203312.md`
+
+**Verification:** All 4 findings completely removed (no orphaned references); all internal cross-references updated; scorecard and verdict reconciled; file structure maintained.
+
+**Rationale:** Focuses review on immediate delivery blockers; improves clarity on actual blocking issues vs. deferred work.
