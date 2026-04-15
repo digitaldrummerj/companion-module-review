@@ -239,3 +239,18 @@ Version reviewed: v2.1.0 (via fixes branch)
 - N1: `password` config field should use `secret-text` type (v1.13 feature) for credential hygiene
 
 **What was excellent:** package.json perfectly aligned, clean v1.x API compliance, good polling architecture, feedbacks+presets+variables all wired together, thorough HELP.md.
+
+---
+
+## 2026-04-15 Session: Noctavoxfilms-TallyComm C1 Enhancement
+
+**Decision Merged:** C-1 Finding Enhanced with Template Guidance (from decision inbox)
+
+**Action Taken:** Updated C-1 recommendation in noctavoxfilms-tallycomm review to provide explicit file-splitting guidance. Originally C-1 found that `main.js` needed to be moved into `src/`, but didn't prescribe internal structure. Now provides concrete guidance: split into `src/actions.js`, `src/feedbacks.js`, `src/presets.js`, `src/config.js`, `src/variables.js`, `src/main.js` using Companion module template as reference.
+
+**Rationale:** Prevents rework, aligns with ecosystem standards, reduces follow-up reviews, improves maintainability.
+
+**Files Updated:**
+- `reviews/noctavoxfilms-tallycomm/review-noctavoxfilms-tallycomm-v1.0.0-20260409-203312.md` — C-1 section enhanced
+- `.squad/decisions.md` — Decision merged and indexed by timestamp
+

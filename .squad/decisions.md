@@ -1802,3 +1802,9 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 **File Modified:** reviews/noctavoxfilms-tallycomm/review-noctavoxfilms-tallycomm-v1.0.0-20260409-203312.md (31.1 KB to 24 KB; 30% reduction)
 
 **Verification:** All 8 items removed from TOC, all 8 detailed sections removed, Next Release section removed, scorecard counts updated, remaining structure and content preserved.
+
+## 2026-04-15T19:04:21Z: C-1 Finding Enhanced with Template Guidance
+
+**By:** Kaylee (Module Dev Reviewer)  
+**What:** Updated C-1 recommendation in noctavoxfilms-tallycomm review to include explicit file-splitting guidance using Companion module template as reference. Maintainers now know to split `main.js` into modular structure: `src/actions.js`, `src/feedbacks.js`, `src/presets.js`, `src/config.js`, `src/variables.js`, `src/main.js`.  
+**Why:** Prevents future rework and aligns with ecosystem standards. Reference to established template reduces ambiguity and improves maintainability. Captured for team decision memory.
