@@ -1765,3 +1765,40 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 - Agents: Mal, Wash, Kaylee, Zoe, Simon — unanimous CHANGES REQUIRED
 - Adjudication: H1: missing upgrade scripts for 3 removed feedbacks (timer_color_*); H2: set_timer_font moved to Pro-only without migration; H3: post-destroy zombie reconnect (async close event); H4: double-reconnect on configUpdated (same root cause as H3). 4 Medium + 7 Low + 5 Pre-existing Low + 1 NTH.
 - Review file: reviews/creativeland-capacitimer/review-creativeland-capacitimer-v1.1.1-20260409-222116.md
+
+
+## noctavoxfilms-tallycomm v1.0.0 Review Trim — 2026-04-15
+
+**Requester:** Justin James  
+**Agent:** Kaylee  
+**Action:** Review scope reduction  
+
+**Context:** Review of noctavoxfilms-tallycomm v1.0.0 (2026-04-09) initially contained 34 findings. Per stakeholder request, low-impact items and future-release notes were trimmed to focus the review on immediate delivery blockers.
+
+**Items Removed (8 total):**
+- H-5: _isConnected not reset on sendTally() HTTP error
+- H-6: destroy() is a no-op
+- M-1: No reconnect logic
+- M-2: Room not validated in init()
+- L-1: set_pgm_auto / set_pvw_auto proceed if clear fails
+- L-2: MAX_CAMS = 6 hardcoded
+- L-4: Room validation inconsistency
+- N-1: manifest.json name field is a slug
+
+**Removed Section:** Entire "Next Release" section (future-release enhancements)
+
+**Scorecard After Trim:**
+- Critical: 16 → 16
+- High: 6 → 4
+- Medium: 7 → 5
+- Low: 4 → 1
+- Nice to Have: 1 → 0
+- Total: 34 → 26
+- Blocking: 22 → 20
+- Non-blocking: 12 → 6
+
+**Structural Decisions:** No renumbering of remaining issues (maintain external reference stability); scorecard counts updated to reflect removals; clean full-section deletion for all 8 items.
+
+**File Modified:** reviews/noctavoxfilms-tallycomm/review-noctavoxfilms-tallycomm-v1.0.0-20260409-203312.md (31.1 KB to 24 KB; 30% reduction)
+
+**Verification:** All 8 items removed from TOC, all 8 detailed sections removed, Next Release section removed, scorecard counts updated, remaining structure and content preserved.

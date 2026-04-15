@@ -399,3 +399,10 @@ Maintainers using Claude locally may add `.claude/` to the repo `.gitignore`. Th
 - Missing packageManager causes yarn install to fall back to Yarn Classic v1 — always check for this
 - manifest.json legacyIds set on first release is suspicious — flag as Medium, request confirmation
 - Build failure (no scripts block) is Critical — document exact error: "Command 'package' not found"
+
+## noctavoxfilms-tallycomm v1.0.0 Review Trim (2026-04-15)
+- Justin James requested scope reduction on the published review; 8 low-priority findings + Next Release section were removed
+- Trimmed items: H-5, H-6, M-1, M-2, L-1, L-2, L-4, N-1 (no renumbering of remaining issues to preserve external reference stability)
+- Scorecard adjusted: 34 findings → 26 findings (16 C, 4 H, 5 M, 1 L, 0 N); blocking: 22 → 20
+- Result: File size reduced from 31.1 KB to ~24 KB (~30% reduction). Structure, tests, verdict sections preserved.
+- Decision archived to .squad/decisions.md
