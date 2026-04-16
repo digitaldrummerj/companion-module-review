@@ -44,4 +44,5 @@ Seeing `yarn.lock` in the tree is not enough. A follow-up patch can add the file
   - immutable install
   - build
   - lint
+- If the repository has a lockfile-fix commit **after** the submitted release tag, keep the review anchored to the tag. A later `main` fix does not rescue the published release; the tagged artifact is still broken until that corrected lockfile is retagged and resubmitted.
 - If the lockfile finding was duplicated in the earlier review, you can carry both IDs forward as one technical blocker in the follow-up writeup.

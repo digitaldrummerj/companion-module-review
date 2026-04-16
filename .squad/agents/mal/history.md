@@ -156,3 +156,22 @@ The spacecommz-intercom v1.1.1 follow-up decision has been merged into `.squad/d
 ### Session Recap: 2026-04-16T06:37:06Z
 
 **Session entry recorded and decision merged to team decisions.md.**
+
+## 2026-04-16T06:40:38Z: neol-epowerswitch v1.1.2 Follow-up Review
+
+**Status:** ✅ Completed  
+**Module:** companion-module-neol-epowerswitch v1.1.2  
+**Release Type:** Follow-up patch review (`1.1.1` → `v1.1.2`)  
+**Verdict:** ❌ CHANGES REQUIRED — all prior blockers fixed, but the tagged release introduced a stale Yarn 4 lockfile and a broken lint script
+
+**Key Result:**
+- Fixed: C1-C10, H1-H3, M1-M3 (all 16 prior blocking findings)
+- Carried forward advisory only: L1, N1, N2, N3, N4
+- New issues: C11 (`corepack yarn install --immutable` fails with `YN0028`), M4 (`corepack yarn lint` fails with `command not found: companion-module-lint`)
+
+**Pattern Learned:** Review the exact submitted tag, not `main`, when a follow-up release has post-tag fix commits. For neol-epowerswitch, `main` already had a later lockfile-correction commit, but the actual `v1.1.2` tag still shipped the broken lockfile and had to be judged on that tagged state.
+
+**Deliverables:**
+- Review file: `reviews/neol-epowerswitch/review-neol-epowerswitch-v1.1.2-20260416-064038.md`
+- Tracker update: `reviews/TRACKER.md`
+- Decision recorded to `.squad/decisions/inbox/mal-neol-epowerswitch-rereview.md`

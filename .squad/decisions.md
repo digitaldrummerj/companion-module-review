@@ -1974,3 +1974,17 @@ All cross-references verified:
 
 ---
 *Merged from inbox at 2026-04-16T06:37:06Z*
+
+# neol-epowerswitch v1.1.2 follow-up decision
+
+- Review scope constrained to the delta from the prior `reviews/neol-epowerswitch/review-neol-epowerswitch-v1.1.1-20260415-172200.md` review.
+- All 16 prior blocking findings fixed in the tagged release (v1.1.1 → v1.1.2).
+- Prior advisory items L1 and N1-N4 remain unchanged and non-blocking.
+- New blocker introduced: `corepack yarn install --immutable` fails with `YN0028`, so tagged `yarn.lock` is stale and release not reproducible.
+- New medium issue: `corepack yarn lint` fails with `command not found: companion-module-lint`.
+- Team note: `main` contains post-tag "corrected lockfile" commit. Review anchored to submitted tag.
+- Verdict: **CHANGES REQUIRED**.
+- Review file: `reviews/neol-epowerswitch/review-neol-epowerswitch-v1.1.2-20260416-064038.md`
+
+---
+*Merged from inbox at 2026-04-16T06:42:56Z*
