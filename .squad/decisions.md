@@ -1900,3 +1900,13 @@ All cross-references verified:
 - H3: `connectAgent()` still lacks `try/catch` around `net-snmp` session creation
 **Verdict:** Carry forward prior verdict unchanged — **CHANGES REQUIRED**  
 **Note:** Current checkout matches release tag v3.0.1; only newer delta is yarn.lock (outside release scope).
+
+## 2026-04-16T06:02:12Z: generic-snmp v3.0.2 re-review verdict
+
+**By:** Mal (Lead)  
+**What:** Re-review of generic-snmp v3.0.2 release delta. Found 12 issues fixed from v3.0.1, 11 issues carried forward, no new issues introduced.  
+**Verdict:** ❌ Changes Required  
+**Blocking issue:** H2 remains unresolved. The new post-`await createListener()` generation guard is insufficient because `closeListener()` can still remove in-flight socket listeners before the promise settles.  
+**Fixed in v3.0.2:** H1, H3, M1, M4, M6, M8, L1, L2, L4, L5, L6, L7  
+**Carried forward:** M2, M3, M5, M7, L3, L8, NTH1, NTH2, PE1-PE3  
+**Why:** Blocking race condition in promise-settling logic prevents safe production deployment.

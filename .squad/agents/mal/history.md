@@ -104,3 +104,38 @@ When a same-tag resubmission has no module-code delta, carry forward every prior
 
 **Validation Note:**
 `yarn build`, `yarn lint`, and `yarn test` still pass, but `yarn test` continues to emit the known Vitest warning about nested `vi.mock()` calls in `src/config.test.ts`.
+
+## generic-snmp v3.0.2 (2026-04-16) — Follow-up release
+
+**Module:** companion-module-generic-snmp v3.0.2  
+**API:** @companion-module/base ~2.0.3  
+**Release Type:** Follow-up patch to v3.0.1
+
+**Final Verdict:** ❌ CHANGES REQUIRED — 12 prior findings fixed, but the trap-listener lifecycle still has 1 blocking high issue.
+
+**Key Result:**
+- Fixed: H1, H3, M1, M4, M6, M8, L1, L2, L4, L5, L6, L7
+- Still blocking: H2 (`createListener()` can still orphan an in-flight promise during rapid trap-enabled config changes)
+- No new v3.0.2 delta issues introduced
+
+**Pattern Learned:**
+A generation guard placed after `await` does not fix an async lifecycle bug when the awaited promise itself can be orphaned. If teardown removes the only listeners that can resolve or reject an in-flight bind, the fix has to settle that promise directly or avoid stripping its handlers.
+
+**Review file:** reviews/generic-snmp/review-generic-snmp-v3.0.2-20260416-055914.md
+
+## generic-snmp v3.0.2 (2026-04-16) — Re-Review Complete
+
+**Module:** companion-module-generic-snmp v3.0.2  
+**Release:** Follow-up patch to v3.0.1  
+**Re-Review Date:** 2026-04-16T06:02:12Z
+
+**Final Verdict:** ❌ CHANGES REQUIRED — Same verdict as first review (H2 blocking).
+
+**Session Outcome:**
+- Orchestration log written: `.squad/orchestration-log/2026-04-16T06:02:12Z-mal.md`
+- Session log written: `.squad/log/2026-04-16T06:02:12Z-generic-snmp-v3-0-2-rereview.md`
+- Decision merged to `.squad/decisions.md`
+- Tracker and review files confirmed in place
+
+**Decision Record:**
+See `.squad/decisions.md` → "2026-04-16T06:02:12Z: generic-snmp v3.0.2 re-review verdict"
