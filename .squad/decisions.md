@@ -1921,3 +1921,14 @@ All cross-references verified:
 - Closed M3 on re-check: `LICENSE` already matches the JS template except for the allowed copyright line (verification passed)
 - No new delta issues introduced in this release
 **Why:** Prior findings persist in the shipped tag; no new delta to address them yet.
+# logos-proclaim v1.2.0 follow-up decision
+
+- Review scope constrained to the delta from the prior `reviews/logos-proclaim/review-logos-proclaim-v1.2.0-20260406-043151.md` review.
+- `git diff v1.2.0 HEAD -- .` only changes `yarn.lock` (picomatch 4.0.3 → 4.0.4).
+- None of the prior findings were fixed: C1, C2, H2, L1, L2 plus the four advisory notes all remain.
+- No new release-delta issues were introduced.
+- Verdict remains **CHANGES REQUIRED**.
+- Review file: `reviews/logos-proclaim/review-logos-proclaim-v1.2.0-20260416-060658.md`
+
+---
+*Merged from inbox at 2026-04-16T06:09:25Z*

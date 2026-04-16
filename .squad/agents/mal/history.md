@@ -169,3 +169,30 @@ On same-tag follow-ups, re-check template findings against the authoritative tem
 **Outcome:** No shipped module delta found; only `.github/ISSUE_TEMPLATE/*` added post-tag. Re-verified LICENSE against template (confirmed compliant with expected copyright exception). Carried forward 6 findings (C1, C2, C3, M1, M2, M4) from prior review. Closed M3. Verdict unchanged: **CHANGES REQUIRED**.
 
 **Session Log:** `.squad/log/2026-04-16T06:05:40Z-adder-ccs-pro-rereview.md`
+
+
+## logos-proclaim v1.2.0 (2026-04-16) — Same-tag follow-up
+
+**Module:** companion-module-logos-proclaim v1.2.0  
+**API:** @companion-module/base ~1.14.1  
+**Release Type:** Same-tag follow-up review
+
+**Final Verdict:** ❌ CHANGES REQUIRED — only `yarn.lock` changed after `v1.2.0`; none of the prior findings were fixed.
+
+**Key Result:**
+- Fixed: none
+- Still open: C1, C2, H2, L1, L2, plus all 4 advisory notes
+- No new release-delta issues introduced
+
+**Pattern Learned:**
+When a same-version follow-up only changes a lockfile, keep the review pinned to the previously reported source findings and explicitly say the dependency bump did not alter the module verdict.
+
+**Review file:** reviews/logos-proclaim/review-logos-proclaim-v1.2.0-20260416-060658.md
+
+## 2026-04-16T06:09:25Z: logos-proclaim v1.2.0 Follow-up Re-Review
+
+**Status:** ✅ Complete  
+**Finding:** Follow-up review of logos-proclaim v1.2.0 release delta. Only yarn.lock changed (picomatch 4.0.3 → 4.0.4). Prior findings persist: C1, C2, H2, L1, L2 + 4 advisories remain unresolved. No new delta issues introduced.  
+**Verdict:** ❌ CHANGES REQUIRED (unchanged from prior review)  
+**Review:** `reviews/logos-proclaim/review-logos-proclaim-v1.2.0-20260416-060658.md`  
+**Tracker:** Updated `reviews/TRACKER.md` with follow-up completion
