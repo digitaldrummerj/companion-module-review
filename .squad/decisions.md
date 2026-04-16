@@ -1960,3 +1960,17 @@ All cross-references verified:
 
 ---
 *Merged from inbox at 2026-04-16T06:32:45Z*
+
+# eventsync-server v0.9.8 follow-up decision
+
+- Review scope constrained to the delta from the prior initial review.
+- Same-tag follow-up review: release tag bumped but only `.github/*` files and `yarn.lock` changed.
+- No module-source blockers were fixed.
+- Prior package.json keywords finding closed on re-check: current `manifest.json` keywords are acceptable and package keywords are not a Companion template blocker per team guidelines.
+- Still blocking: template scaffolding gaps (C1-C13 except the closed keywords complaint) and WebSocket lifecycle/dependency issues (H1-H5).
+- No new issues introduced in this release.
+- Verdict: **CHANGES REQUIRED** (unchanged).
+- Review file: `reviews/eventsync-server/review-eventsync-server-v0.9.8-20260416-063509.md`
+
+---
+*Merged from inbox at 2026-04-16T06:37:06Z*

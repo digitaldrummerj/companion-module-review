@@ -140,3 +140,19 @@ In Companion follow-up reviews, `companion/manifest.json` carrying `"version": "
 ### Session closed: Inbox decision merged to decisions.md (2026-04-16T06:32:45Z)
 
 The spacecommz-intercom v1.1.1 follow-up decision has been merged into `.squad/decisions.md`. Inbox file removed.
+
+## eventsync-server v0.9.8 (2026-04-16) — Same-tag follow-up
+
+**Module:** companion-module-eventsync-server  
+**API:** @companion-module/base ~1.10.0  
+**Release Type:** Same-tag follow-up review
+
+**Final Verdict:** ❌ CHANGES REQUIRED — no still-valid blocker from the first review was fixed; one prior package-keywords finding closed on re-check.
+
+**Pattern Learned:** When a same-tag follow-up only adds repository maintenance files and a lockfile bump, keep the review anchored to the original module findings. Re-check prior template diagnoses against the current team rules, though: for eventsync-server, the package.json keywords complaint was too strict and should be closed instead of carried forward.
+
+**Review file:** reviews/eventsync-server/review-eventsync-server-v0.9.8-20260416-063509.md
+
+### Session Recap: 2026-04-16T06:37:06Z
+
+**Session entry recorded and decision merged to team decisions.md.**
