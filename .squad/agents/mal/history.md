@@ -260,3 +260,27 @@ In Companion follow-up reviews, `companion/manifest.json` carrying `"version": "
 - Review file: `reviews/generic-websocket/review-generic-websocket-v2.3.1-20260416-062107.md`
 - Tracker update: `reviews/TRACKER.md`
 - Decision merged to `.squad/decisions.md`
+
+
+## 2026-04-16T06:26:31Z: spacecommz-intercom v1.1.1 Follow-up Review
+
+**Status:** ✅ Completed  
+**Module:** companion-module-spacecommz-intercom v1.1.1  
+**Release Type:** Follow-up patch review (v1.1.0 → v1.1.1)  
+**Verdict:** ❌ CHANGES REQUIRED — 11 prior findings fixed, but 1 critical blocker remains and a new lint failure was introduced
+
+**Key Result:**
+- Fixed: C1, C2, C4, H1, H2, H3, H4, M1, M2, M4, M6
+- Still blocking: C3 (`package.json` still missing the template-required `"type": "module"` field)
+- New issue: M8 (`corepack yarn lint` now exists but fails with 11 ESLint errors)
+
+**Pattern Learned:** When a follow-up release adds missing template lint tooling, re-run the new lint path instead of assuming the template work is done. A release can close most structural findings and still introduce a new medium issue if the newly added `lint` script fails on the submitted source.
+
+**Deliverables:**
+- Review file: `reviews/spacecommz-intercom/review-spacecommz-intercom-v1.1.1-20260416-062631.md`
+- Tracker update: `reviews/TRACKER.md`
+- Decision recorded to `.squad/decisions/inbox/mal-spacecommz-intercom-rereview.md`
+
+### Session closed: Inbox decision merged to decisions.md (2026-04-16T06:32:45Z)
+
+The spacecommz-intercom v1.1.1 follow-up decision has been merged into `.squad/decisions.md`. Inbox file removed.

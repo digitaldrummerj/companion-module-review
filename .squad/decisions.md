@@ -1947,3 +1947,16 @@ All cross-references verified:
 
 ---
 *Merged from inbox at 2026-04-16T06:09:25Z*
+
+# spacecommz-intercom v1.1.1 follow-up decision
+
+- Review scope constrained to the delta from the prior `reviews/spacecommz-intercom/review-spacecommz-intercom-v1.1.0-20260415-230401.md` review.
+- Prior v1.1.0 review had 15 findings (1 critical, 3 medium, 7 low, 3 advisory).
+- Fixed findings in v1.1.1: 11 issues closed, including server teardown (`destroy()` closing `io` + `http`), upgrade scripts added, disconnect status handling, and Socket.IO error validation.
+- New issue: `corepack yarn lint` path added but fails with 11 ESLint errors in clean checkout (medium severity).
+- Critical blocker remains: `package.json` still missing template-required `"type": "module"` field.
+- Verdict remains **CHANGES REQUIRED**.
+- Review file: `reviews/spacecommz-intercom/review-spacecommz-intercom-v1.1.1-20260416-062631.md`
+
+---
+*Merged from inbox at 2026-04-16T06:32:45Z*
