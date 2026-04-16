@@ -85,3 +85,22 @@ Reviewed 25+ modules across multiple releases. Key learnings:
 When a follow-up patch fixes all prior findings with no new issues, module is ready for release. The v2.3.0 → v2.3.1 cleanup was thorough and professional.
 
 **Review file:** reviews/behringer-wing/review-behringer-wing-v2.3.1-20260416-054930.md
+
+## generic-snmp v3.0.1 (2026-04-16) — Same-tag follow-up
+
+**Module:** companion-module-generic-snmp v3.0.1
+**API:** @companion-module/base ~2.0.3
+**Release Type:** Follow-up review against the same submitted tag
+
+**Final Verdict:** ❌ CHANGES REQUIRED — no prior findings fixed; no new release-delta issues introduced.
+
+**Key Paths:**
+- Review baseline: `reviews/generic-snmp/review-generic-snmp-v3.0.1-20260409-214750.md`
+- Follow-up review: `reviews/generic-snmp/review-generic-snmp-v3.0.1-20260416-055357.md`
+- Module checkout: `/Users/lynbh/Development/companion-module-reviews/companion-modules-reviewing/companion-module-generic-snmp`
+
+**Pattern Learned:**
+When a same-tag resubmission has no module-code delta, carry forward every prior finding unchanged and only check for regressions inside the tiny delta that actually moved. For generic-snmp, the unresolved blockers all still live in `src/index.ts`: `pollOids()`, `initializeConnection()`/`createListener()`, and `connectAgent()`.
+
+**Validation Note:**
+`yarn build`, `yarn lint`, and `yarn test` still pass, but `yarn test` continues to emit the known Vitest warning about nested `vi.mock()` calls in `src/config.test.ts`.

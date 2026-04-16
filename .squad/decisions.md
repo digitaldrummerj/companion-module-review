@@ -1889,3 +1889,14 @@ All cross-references verified:
 - Finding numbers are sequential within each severity
 - Verdict summary reflects accurate count
 - Rest of review remains intact (Tests section, What's Solid, etc.)
+
+## 2026-04-16T05:56:06Z: generic-snmp v3.0.1 Follow-up Review Completed
+
+**By:** Mal (Lead)  
+**What:** Same-tag follow-up review of generic-snmp v3.0.1 confirmed prior blocking findings remain unresolved with no new delta issues.  
+**Finding:** 
+- H1: `pollOids()` still dies silently on SNMP errors
+- H2: `createListener()` race / never-settling promise still present
+- H3: `connectAgent()` still lacks `try/catch` around `net-snmp` session creation
+**Verdict:** Carry forward prior verdict unchanged — **CHANGES REQUIRED**  
+**Note:** Current checkout matches release tag v3.0.1; only newer delta is yarn.lock (outside release scope).
