@@ -1832,3 +1832,60 @@ Technical implementation is strong (build passes, excellent tests, proper API co
 **Verification:** All 4 findings completely removed (no orphaned references); all cross-references updated (TOC, anchor links); scorecard and verdict reconciled; file structure maintained.
 
 **Why:** Focuses review on immediate delivery blockers; maintains reference stability for remaining findings; improves clarity on actual blocking issues vs. deferred work.
+# Review Trim Decision: noctavoxfilms-tallycomm
+
+**Date:** 2026-04-09  
+**Trimmed by:** Kaylee ⚛️  
+**Requested by:** Justin James
+
+## Removed Findings
+
+The following findings have been removed from the review:
+
+- **C-9:** `manifest.json` — Missing `$schema` field
+- **C-10:** `manifest.json` — `runtime.entrypoint` wrong path
+- **M-1:** Spanish UI strings throughout — inconsistent with English-first Companion ecosystem
+- **M-2:** `camChoices` array duplicated in `initActions()` and `initFeedbacks()`
+- **L-1:** `README.md` issues link points to wrong GitHub org
+
+Also removed:
+- The entire "Next Release" section (was empty/not present in original)
+
+## Renumbering Applied
+
+**Critical findings:** C1-C8 remain, C11 → C9 (repository URL scheme)
+**High findings:** H1 remains unchanged
+**Medium findings:** M3 → M1, M4 → M2 (legacyIds, base version)
+**Low findings:** All removed (was L1 only)
+
+## Updated Scorecard
+
+| Category | Count |
+|----------|-------|
+| Critical | 9 (was 11) |
+| High | 1 (unchanged) |
+| Medium | 2 (was 4) |
+| Low | 0 (was 1) |
+| **Total** | **12** (was 16) |
+
+## Updated Summary
+
+- **Blocking findings:** 10 (was 17): 9 Critical + 1 High
+- **Non-blocking findings:** 2 (was 5): 2 Medium
+
+## Sections Updated
+
+1. ✅ Scorecard counts and total findings updated
+2. ✅ Blocking/non-blocking summary updated
+3. ✅ TOC (Issues TOC) relinked to new heading levels
+4. ✅ Finding sections removed and remaining findings renumbered
+5. ✅ Verdict text updated to reflect 10 blocking (9 Critical + 1 High)
+6. ✅ All anchor links remain valid to the reordered findings
+
+## Validation
+
+All cross-references verified:
+- TOC links point to correctly numbered sections
+- Finding numbers are sequential within each severity
+- Verdict summary reflects accurate count
+- Rest of review remains intact (Tests section, What's Solid, etc.)

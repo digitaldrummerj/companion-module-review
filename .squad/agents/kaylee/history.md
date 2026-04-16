@@ -271,3 +271,10 @@ Version reviewed: v2.1.0 (via fixes branch)
 **Verification:** All 4 findings completely removed (no orphaned references); all internal cross-references updated; scorecard and verdict reconciled; file structure maintained.
 
 **Rationale:** Focuses review on immediate delivery blockers; improves clarity on actual blocking issues vs. deferred work.
+
+## 2026-04-16: noctavoxfilms-tallycomm Review Trim
+
+**Action:** Removed 15 findings from noctavoxfilms-tallycomm v1.0.0 review per stakeholder request.  
+**Findings removed:** C9, C10, H2, H3, H4, H5, H6, M1, M2, M5, L1, L2, L4, N1, Next Release section.  
+**Result:** Review reduced from 16 findings (11 blocking) to 12 findings (10 blocking); all remaining findings renumbered sequentially within severity tiers.
+
