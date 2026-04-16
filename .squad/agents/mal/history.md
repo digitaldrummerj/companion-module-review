@@ -175,3 +175,28 @@ The spacecommz-intercom v1.1.1 follow-up decision has been merged into `.squad/d
 - Review file: `reviews/neol-epowerswitch/review-neol-epowerswitch-v1.1.2-20260416-064038.md`
 - Tracker update: `reviews/TRACKER.md`
 - Decision recorded to `.squad/decisions/inbox/mal-neol-epowerswitch-rereview.md`
+
+## 2026-04-16T06:50:00Z: videopathe-qtimer v1.0.1 Follow-up Review
+
+**Status:** ✅ Completed  
+**Module:** companion-module-videopathe-qtimer v1.0.1  
+**Release Type:** Follow-up patch review (`v1.0.0` → `v1.0.1`)  
+**Verdict:** ❌ CHANGES REQUIRED — 14 prior findings fixed, but 5 critical template blockers remain and the new tag still reports `package.json` version `1.0.0`
+
+**Key Result:**
+- Fixed: C6, H1-H3, M1-M9, M11
+- Still blocking: C1-C5
+- Carried forward: M10 (`YN0086` peer warning still emitted on immutable install)
+- New issue: C7 (`package.json` version still `1.0.0` in the `v1.0.1` tag)
+
+**Pattern Learned:** In Companion follow-up reviews, `companion/manifest.json` should usually stay at `0.0.0`, but `package.json` still must be bumped to the exact release tag version. A maintainer can correctly fix the manifest-side convention and still ship a broken release if the package version metadata is left behind.
+
+**Deliverables:**
+- Review file: `reviews/videopathe-qtimer/review-videopathe-qtimer-v1.0.1-20260416-065000.md`
+- Tracker update: `reviews/TRACKER.md`
+- Decision recorded to `.squad/decisions/inbox/mal-videopathe-qtimer-rereview.md`
+
+### Session closed: Inbox decision merged to decisions.md (2026-04-16T06:53:24Z)
+
+The videopathe-qtimer v1.0.1 follow-up decision has been merged into `.squad/decisions.md`. Inbox file removed.
+

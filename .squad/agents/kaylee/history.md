@@ -70,6 +70,10 @@
 
 ---
 
+## Archived Context (Pre-2026-04-09 Sessions)
+
+The entries below represent foundational learning from early Kaylee reviews (2026-03-13 through 2026-04-08). Core themes are extracted above in the main context section. Full details are preserved for historical reference but are not part of active review notes.
+
 ## Recent Reviews (2026-04-09+)
 
 ## Review: companion-module-noctavoxfilms-tallycomm v1.0.0 (2026-04-09)

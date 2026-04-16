@@ -11,6 +11,10 @@
 
 <!-- Append new learnings below. Each entry is something lasting about the project. -->
 
+## Archived Context (Pre-2026-04-01 Sessions)
+
+The entries below represent foundational QA learning from early Zoe reviews (2026-03-13 through 2026-03-31). Core patterns on test design, edge-case discovery, and assertion best practices are extracted in the main context section above. Full historical details preserved below for reference.
+
 ### 2026-03-13: OSC poll timer — command address assertion pattern
 
 All 5 poll-timer tests now assert the exact commands sent, not just the call count. After extracting addresses via `port.send.mock.calls.map((c) => (c[0] as { address: string }).address)`, each test uses `toEqual(['/zoomRooms/getAddedRoomList', '/zoomRooms/getPairedRoomList'])` to verify exact order and completeness. The first test also retains a `toHaveBeenCalledTimes(2)` guard before the address check.

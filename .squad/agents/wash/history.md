@@ -11,6 +11,10 @@
 
 <!-- Append new learnings below. Each entry is something lasting about the project. -->
 
+## Archived Context (Pre-2026-04-01 Sessions)
+
+The entries below represent foundational protocol learning from early Wash reviews (2026-03-13 through 2026-03-31). Core patterns on OSC, SNMP, TCP, and event-driven protocols are extracted in the main context section above. Full historical details preserved below for reference.
+
 ### 2026-04-01: RTW TouchMonitor Review
 
 **Module:** `companion-module-rtw-touchmonitor` v1.0.1

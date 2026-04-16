@@ -1988,3 +1988,16 @@ All cross-references verified:
 
 ---
 *Merged from inbox at 2026-04-16T06:42:56Z*
+
+# videopathe-qtimer v1.0.1 follow-up decision
+
+- Review scope constrained to the delta from `reviews/videopathe-qtimer/review-videopathe-qtimer-v1.0.0-20260405-232003.md`.
+- Fixed in v1.0.1: C6, H1-H3, M1-M9, M11 (14 prior findings closed).
+- Still blocking: C1-C5 remain unresolved; `.yarnrc.yml` is still missing, so `corepack yarn package` still fails under Yarn PnP.
+- Carried-forward advisory: M10 remains; immutable install still emits `YN0086`.
+- New blocker introduced: `package.json` still reports `"version": "1.0.0"` in the `v1.0.1` tag.
+- Verdict: **CHANGES REQUIRED**.
+- Review file: `reviews/videopathe-qtimer/review-videopathe-qtimer-v1.0.1-20260416-065000.md`
+
+---
+*Merged from inbox at 2026-04-16T06:53:24Z*

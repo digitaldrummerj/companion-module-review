@@ -290,6 +290,8 @@ All JS rules above, **plus**:
 | `keywords` | see below |
 | `$schema` | should reference `../node_modules/@companion-module/base/assets/manifest.schema.json` |
 
+> Follow-up review reminder: treat `package.json` and `companion/manifest.json` as **separate** version checks. It is correct to normalize the source manifest back to `0.0.0`, but the release still fails if `package.json` does not match the submitted git tag.
+
 ### Banned `keywords`
 
 The `keywords` array must NOT contain any of:
