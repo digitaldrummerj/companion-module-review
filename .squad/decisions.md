@@ -1882,6 +1882,21 @@ Also removed:
 5. ✅ Verdict text updated to reflect 10 blocking (9 Critical + 1 High)
 6. ✅ All anchor links remain valid to the reordered findings
 
+---
+
+## 2026-04-16T06:16:03Z: Decision: prodlink-draw-on-slides v1.0.2 follow-up verdict
+
+**Module:** `companion-module-prodlink-draw-on-slides`
+**Tag:** `v1.0.2`
+**Verdict:** ❌ Changes Required
+**Session date:** 2026-04-16
+
+The v1.0.0 → v1.0.2 delta fixes 14 of the 16 previously reported findings, including the timeout, first-poll error handling, `any` cleanup, and most missing template files. I am carrying forward the original duplicate lockfile blocker because the submitted Yarn 4 setup still fails `corepack yarn install --immutable` with `YN0028`, so reproducible installs are not actually fixed.
+
+**New delta issue introduced:** `v1.0.2` adds `lint: "eslint ."` and `eslint.config.mjs` to the package configuration, but the release does not install an `eslint` binary as a dependency, so `corepack yarn lint` fails immediately with `command not found: eslint`.
+
+**Status:** Carries forward blocker + introduces new lint-path blocking issue. This is a release-delta review, not a fresh first-pass review. The module source changes are otherwise solid, but the release is not ready while the lockfile remains mutable and the advertised lint command is broken.
+
 ## Validation
 
 All cross-references verified:

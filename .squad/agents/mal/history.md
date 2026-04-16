@@ -189,6 +189,22 @@ When a same-version follow-up only changes a lockfile, keep the review pinned to
 
 **Review file:** reviews/logos-proclaim/review-logos-proclaim-v1.2.0-20260416-060658.md
 
+## prodlink-draw-on-slides v1.0.2 (2026-04-16) — Follow-up release
+
+**Module:** companion-module-prodlink-draw-on-slides v1.0.2  
+**API:** @companion-module/base ~1.12.0  
+**Release Type:** Follow-up patch to v1.0.0
+
+**Final Verdict:** ❌ CHANGES REQUIRED — 14 prior findings fixed, but the duplicate reproducible-build blocker remains and the new lint script is broken.
+
+**Pattern Learned:**
+When a follow-up release adds `packageManager: "yarn@4.x"` and a committed `yarn.lock`, do not mark the lockfile finding fixed until `corepack yarn install --immutable` succeeds. A generated-but-mutable lockfile can leave the original reproducible-build blocker open even though the file now exists.
+
+**Validation Note:**
+`corepack yarn build` succeeds after a non-immutable install in a scratch checkout, but `corepack yarn install --immutable` still fails with `YN0028` and `corepack yarn lint` fails because `eslint` is not installed.
+
+**Review file:** reviews/prodlink-draw-on-slides/review-prodlink-draw-on-slides-v1.0.2-20260416-061603.md
+
 ## 2026-04-16T06:09:25Z: logos-proclaim v1.2.0 Follow-up Re-Review
 
 **Status:** ✅ Complete  
@@ -196,3 +212,14 @@ When a same-version follow-up only changes a lockfile, keep the review pinned to
 **Verdict:** ❌ CHANGES REQUIRED (unchanged from prior review)  
 **Review:** `reviews/logos-proclaim/review-logos-proclaim-v1.2.0-20260416-060658.md`  
 **Tracker:** Updated `reviews/TRACKER.md` with follow-up completion
+
+## 2026-04-16T06:18:27Z: prodlink-draw-on-slides v1.0.2 Follow-up Re-Review
+
+**Status:** ✅ Complete  
+**Module:** companion-module-prodlink-draw-on-slides v1.0.2  
+**Release Type:** Follow-up patch review (v1.0.0 → v1.0.2 delta)  
+**Finding:** v1.0.2 fixes 14 of 16 prior findings including timeout, first-poll error handling, `any` cleanup, and missing template files. The duplicate lockfile blocker persists: `corepack yarn install --immutable` still fails with `YN0028`, so reproducible installs are not fixed. New issue introduced: lint script added (`eslint .`) but eslint not installed as dependency — `corepack yarn lint` fails.  
+**Verdict:** ❌ CHANGES REQUIRED — carries forward blocker + introduces new lint-path blocking issue  
+**Review:** `reviews/prodlink-draw-on-slides/review-prodlink-draw-on-slides-v1.0.2-20260416-061603.md`  
+**Tracker:** Updated `reviews/TRACKER.md`  
+**Decision:** Merged to `.squad/decisions.md`
