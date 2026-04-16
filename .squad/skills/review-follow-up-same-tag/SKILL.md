@@ -17,7 +17,8 @@ description: Handle Companion module follow-up reviews where the maintainer resu
 2. Confirm whether the current checkout still matches the same release tag.
 3. Diff the tag against the current branch to see whether any post-tag changes are outside the release.
 4. Re-check only the prior findings plus any changed code in the release delta.
-5. If there is no module-code delta, carry forward all prior findings unchanged and explicitly say no new release-delta issues were introduced.
+5. Re-validate prior template/config findings against the authoritative template before carrying them forward; a same-tag follow-up can close a prior finding if the original diagnosis was too strict or factually wrong.
+6. If there is no module-code delta, carry forward the still-valid prior findings and explicitly say no new release-delta issues were introduced.
 
 ## Output Pattern
 

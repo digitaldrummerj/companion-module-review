@@ -1910,3 +1910,14 @@ All cross-references verified:
 **Fixed in v3.0.2:** H1, H3, M1, M4, M6, M8, L1, L2, L4, L5, L6, L7  
 **Carried forward:** M2, M3, M5, M7, L3, L8, NTH1, NTH2, PE1-PE3  
 **Why:** Blocking race condition in promise-settling logic prevents safe production deployment.
+
+## 2026-04-16T06:05:40Z: adder-ccs-pro v0.1.2 re-review verdict
+
+**By:** Mal (Lead)  
+**What:** Re-review of adder-ccs-pro v0.1.2 release. No shipped module-file delta landed after the prior review; only `.github/ISSUE_TEMPLATE/*` was added post-tag.  
+**Verdict:** ❌ CHANGES REQUIRED  
+**Findings:**
+- Carry forward C1, C2, C3, M1, M2, and M4 from the prior review (six findings, all unresolved in the shipped tag)
+- Closed M3 on re-check: `LICENSE` already matches the JS template except for the allowed copyright line (verification passed)
+- No new delta issues introduced in this release
+**Why:** Prior findings persist in the shipped tag; no new delta to address them yet.

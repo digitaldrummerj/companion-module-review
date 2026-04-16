@@ -139,3 +139,33 @@ A generation guard placed after `await` does not fix an async lifecycle bug when
 
 **Decision Record:**
 See `.squad/decisions.md` → "2026-04-16T06:02:12Z: generic-snmp v3.0.2 re-review verdict"
+
+## adder-ccs-pro v0.1.2 (2026-04-16) — Same-tag follow-up
+
+**Module:** companion-module-adder-ccs-pro v0.1.2  
+**API:** @companion-module/base ~1.14.1  
+**Release Type:** Same-tag re-review
+
+**Final Verdict:** ❌ CHANGES REQUIRED — no release-code delta, 3 critical template findings still open.
+
+**Key Result:**
+- Closed on re-check: M3 (`LICENSE` already matches the JS template aside from the allowed copyright line)
+- Still open: C1, C2, C3, M1, M2, M4
+- No new release-delta issues introduced
+
+**Pattern Learned:**
+On same-tag follow-ups, re-check template findings against the authoritative template instead of blindly carrying every prior diagnosis forward. For adder-ccs-pro, the unresolved `.prettierignore` problem was wrong content rather than a missing file, while the prior `LICENSE` finding closed once the template exception for the copyright line was applied.
+
+**Review file:** reviews/adder-ccs-pro/review-adder-ccs-pro-v0.1.2-20260416-060356.md
+
+---
+
+## Session: adder-ccs-pro v0.1.2 Follow-Up (2026-04-16T06:05:40Z)
+
+**Orchestration Log:** `.squad/orchestration-log/2026-04-16T06:05:40Z-mal.md`
+
+**Task:** Re-review of v0.1.2 release post-v0.1.1 discovery of template issues.
+
+**Outcome:** No shipped module delta found; only `.github/ISSUE_TEMPLATE/*` added post-tag. Re-verified LICENSE against template (confirmed compliant with expected copyright exception). Carried forward 6 findings (C1, C2, C3, M1, M2, M4) from prior review. Closed M3. Verdict unchanged: **CHANGES REQUIRED**.
+
+**Session Log:** `.squad/log/2026-04-16T06:05:40Z-adder-ccs-pro-rereview.md`
