@@ -200,3 +200,22 @@ The spacecommz-intercom v1.1.1 follow-up decision has been merged into `.squad/d
 
 The videopathe-qtimer v1.0.1 follow-up decision has been merged into `.squad/decisions.md`. Inbox file removed.
 
+## 2026-04-16T18:58:40Z: eventsync-server v0.9.9 — Corrected Follow-up
+
+**Status:** ✅ Completed  
+**Module:** companion-module-eventsync-server v0.9.9  
+**Release Type:** Corrected follow-up review (prior mis-targeted v0.8 review replaced)  
+**Verdict:** ✅ APPROVED
+
+**Key Result:**
+- No blocking issues remain
+- Prior non-blocking reconnect advisory carried forward
+- No new issues introduced by corrected tag
+
+**Pattern Reinforced:** When re-reviewing with the correct tag after a mis-targeted review, use the corrected tag's actual state for the verdict. The v0.9.9 review confirms release readiness with only carry-forward guidance.
+
+**Deliverables:**
+- Review file: `reviews/eventsync-server/review-eventsync-server-v0.9.9-20260416-115648.md`
+- Tracker update: `reviews/TRACKER.md`
+- Decision merged to `.squad/decisions.md`
+

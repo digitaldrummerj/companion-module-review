@@ -1,4 +1,4 @@
-📌 Imported from squad-export on 2026-04-01T20:41:10.786Z. Portable knowledge carried over; project learnings from previous project preserved below.
+1. 📌 Imported from squad-export on 2026-04-01T20:41:10.786Z. Portable knowledge carried over; project learnings from previous project preserved below.
 
 # Project Context
 
@@ -47,4 +47,22 @@ Initial setup complete.
 - `.squad/agents/mal/history.md` (appended session summary)
 - `.squad/orchestration-log/2026-04-16T06:24:44Z-mal.md` (new)
 - `.squad/log/2026-04-16T06:24:44Z-generic-websocket-rereview.md` (new)
+
+## 2026-04-16T18:58:40Z: eventsync-server v0.9.9 — Corrected Follow-up
+
+**Status:** ✅ Completed  
+**Module:** companion-module-eventsync-server v0.9.9  
+**Release Type:** Corrected follow-up review (prior mis-targeted v0.8 review replaced)  
+**Verdict:** ✅ APPROVED
+
+**Key Result:**
+- No blocking issues remain
+- Prior non-blocking reconnect advisory carried forward
+- No new issues introduced by corrected tag
+
+**Deliverables:**
+- Review file: `reviews/eventsync-server/review-eventsync-server-v0.9.9-20260416-115648.md`
+- Tracker update: `reviews/TRACKER.md`
+- Decision merged to `.squad/decisions.md`
+- Orchestration log: `.squad/orchestration-log/2026-04-16T18:58:40Z-mal.md`
 

@@ -135,3 +135,17 @@ Architecture is sound with proper v1.x entry point, clean lifecycle methods, goo
 - `.squad/decisions/inbox/wash-review-findings.md`
 - `.squad/decisions/inbox/zoe-review-findings.md`
 - `.squad/decisions/inbox/simon-review-findings.md`
+
+---
+
+## 2026-04-16T18:58:40Z: eventsync-server v0.9.9 — Corrected Follow-up, APPROVED
+
+**Module:** companion-module-eventsync-server  
+**Version:** v0.9.9  
+**Type:** Corrected follow-up review (prior mis-targeted v0.8 review replaced)  
+**Reviewed by:** Mal (Lead)  
+**Verdict:** ✅ APPROVED
+
+**Summary:** Corrected follow-up review of eventsync-server v0.9.9. No blocking issues remain. Prior non-blocking reconnect advisory carried forward as guidance. No new issues introduced by corrected tag.
+
+**Review file:** `reviews/eventsync-server/review-eventsync-server-v0.9.9-20260416-115648.md`
