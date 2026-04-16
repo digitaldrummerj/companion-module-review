@@ -32,14 +32,19 @@ Initial setup complete.
 - **All 5 agent charters updated** with Release Diff Classification step
 - **Verdict:** REJECTED (unchanged)
 
-## 2026-04-16T00:39:07Z: Session orchestration
+## 2026-04-16T06:24:44Z: Session orchestration
 
 **Items processed:**
-- Written orchestration log: `2026-04-16T00:39:07Z-Kaylee.md`
-- Written session log: `2026-04-16T00:39:07Z-review-trim-again.md`
+- Written orchestration log: `.squad/orchestration-log/2026-04-16T06:24:44Z-mal.md`
+- Written session log: `.squad/log/2026-04-16T06:24:44Z-generic-websocket-rereview.md`
 - Merged 1 decision from inbox → decisions.md
-- Updated Kaylee history with session work
-- Checked decisions.md size: 92.4 KB (below 20 KB archival threshold)
-- Verified no history.md files exceed 12 KB
+- Deleted inbox file: `.squad/decisions/inbox/mal-generic-websocket-rereview.md`
+- Updated Mal history with session work
 - Staged and committed .squad/ changes
+
+**Files modified:**
+- `.squad/decisions/decisions.md` (merged generic-websocket v2.3.1 decision)
+- `.squad/agents/mal/history.md` (appended session summary)
+- `.squad/orchestration-log/2026-04-16T06:24:44Z-mal.md` (new)
+- `.squad/log/2026-04-16T06:24:44Z-generic-websocket-rereview.md` (new)
 

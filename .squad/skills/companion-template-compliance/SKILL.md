@@ -286,6 +286,7 @@ All JS rules above, **plus**:
 | `runtime.type` | `"node22"` |
 | `runtime.api` | `"nodejs-ipc"` |
 | `runtime.entrypoint` | JS: `"../src/main.js"` — TS: `"../dist/main.js"` |
+| `version` | `"0.0.0"` is acceptable/preferred in source control; if a real version string is committed instead, it must exactly match `package.json` |
 | `keywords` | see below |
 | `$schema` | should reference `../node_modules/@companion-module/base/assets/manifest.schema.json` |
 

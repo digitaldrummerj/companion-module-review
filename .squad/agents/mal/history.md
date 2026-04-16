@@ -223,3 +223,40 @@ When a follow-up release adds `packageManager: "yarn@4.x"` and a committed `yarn
 **Review:** `reviews/prodlink-draw-on-slides/review-prodlink-draw-on-slides-v1.0.2-20260416-061603.md`  
 **Tracker:** Updated `reviews/TRACKER.md`  
 **Decision:** Merged to `.squad/decisions.md`
+
+## generic-websocket v2.3.1 (2026-04-16) — Follow-up release
+
+**Module:** companion-module-generic-websocket  
+**API:** @companion-module/base ~1.12.0  
+**Release Type:** Follow-up patch to v2.3.0
+
+**Final Verdict:** ❌ CHANGES REQUIRED — 8 prior findings fixed, but 2 blocking high issues remain.
+
+**Key Result:**
+- Fixed: C1, C2, C4, C5, M3, M4, L3, L4
+- Still blocking: H1 (`ws.send()` ping timers still lack error callbacks), H2 (Origin header still hardcodes `http://` for `wss://`)
+- No new v2.3.1 delta issues introduced
+
+**Pattern Learned:**
+In Companion follow-up reviews, `companion/manifest.json` carrying `"version": "0.0.0"` is not a regression by itself. Validate the built `pkg/companion/manifest.json` instead; if packaging stamps the real release version correctly, keep the follow-up review focused on the actual release-delta bugs.
+
+**Review file:** reviews/generic-websocket/review-generic-websocket-v2.3.1-20260416-062107.md
+
+## 2026-04-16T06:24:44Z: generic-websocket v2.3.1 Follow-up Re-Review
+
+**Status:** ✅ Completed  
+**Module:** companion-module-generic-websocket v2.3.1  
+**Release Type:** Follow-up patch review (v2.3.0 → v2.3.1)  
+**Verdict:** ❌ CHANGES REQUIRED — 2 blocking high issues persist
+
+**Key Result:**
+- Fixed: C1, C2, C4, C5, M3, M4, L3, L4 (8 findings)
+- Still blocking: H1 (ping timer error callbacks), H2 (Origin header protocol mismatch)
+- No new delta issues introduced
+
+**Pattern Reinforced:** When 8 of 10 prior findings are resolved but 2 high blockers remain, the module verdict stays CHANGES REQUIRED. Progress is notable but insufficient for release approval.
+
+**Deliverables:**
+- Review file: `reviews/generic-websocket/review-generic-websocket-v2.3.1-20260416-062107.md`
+- Tracker update: `reviews/TRACKER.md`
+- Decision merged to `.squad/decisions.md`

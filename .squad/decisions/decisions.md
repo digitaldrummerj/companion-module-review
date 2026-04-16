@@ -65,6 +65,20 @@ Module adds useful features (User-Agent support, ping/keepalive, hex sending) wi
 
 ---
 
+## 2026-04-16T06:24:44Z: generic-websocket v2.3.1 — Follow-up release, CHANGES REQUIRED
+
+**Module:** companion-module-generic-websocket  
+**Version:** v2.3.1  
+**Type:** Follow-up patch to v2.3.0  
+**Reviewed by:** Mal (Lead)  
+**Verdict:** ❌ CHANGES REQUIRED
+
+**Summary:** Generic-websocket v2.3.1 fixes 8 of 10 prior findings from v2.3.0 (C1, C2, C4, C5, M3, M4, L3, L4), but 2 blocking high issues remain open: H1 (ping timer error callbacks still missing) and H2 (Origin header still hardcodes `http://` for `wss://` URLs). No new delta issues introduced.
+
+**Review file:** `reviews/generic-websocket/review-generic-websocket-v2.3.1-20260416-062107.md`
+
+---
+
 ## 2026-04-06: logos-proclaim v1.2.0 — CHANGES REQUIRED
 
 **Module:** companion-module-logos-proclaim  
