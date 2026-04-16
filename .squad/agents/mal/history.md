@@ -486,6 +486,19 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 
 ---
 
+
+### 2026-04-16: behringer-wing v2.3.1 follow-up review — APPROVED
+
+**Module:** companion-module-behringer-wing v2.3.1  
+**API:** `@companion-module/base ~1.13` (v1.x)  
+**Previous reviewed version:** v2.3.0
+
+**Key Learnings:**
+- The v2.3.1 patch is a clean follow-up release: every prior finding was resolved in the exact touched files (`src/index.ts`, `.gitattributes`, `.gitignore`, `package.json`, `companion/manifest.json`, `tsconfig.build.json`).
+- For this module, restoring `updateStatus(InstanceStatus.ConnectionFailure, err.message)` in `src/index.ts` is the critical user-visible fix that turns socket failures back into Companion status changes.
+- An isolated git worktree is a safe validation pattern for tagged follow-up releases when the main checkout is still parked on the previously reviewed tag.
+- Key output paths for this workflow remain `reviews/behringer-wing/` for the assembled review and `reviews/TRACKER.md` for release tracking.
+
 ## prodlink-draw-on-slides v1.0.0
 
 **Module:** companion-module-prodlink-draw-on-slides  
@@ -650,3 +663,29 @@ Outdated dual-file structure anti-pattern — root-level JS files indicate incom
 - checkConnection() ignoring response.ok is a recurring High finding (also seen in behringer-wing)
 - sendTally() swallowing errors causing silent state divergence — architectural finding
 - destroy() no-op is a High when combined with in-flight requests on a destroyed instance
+
+## behringer-wing v2.3.1 (2026-04-16) — Re-Review
+
+**Module:** companion-module-behringer-wing v2.3.1
+**API:** @companion-module/base ~1.13
+**Release Type:** Follow-up patch to v2.3.0
+
+**Final Verdict:** ✅ APPROVED — All 8 findings from v2.3.0 fixed; no regressions or new issues.
+
+**Findings Fixed:**
+- 🔴 C1: Connection error handler regression (v2.3.0) — `updateStatus(InstanceStatus.ConnectionFailure)` restored
+- 🟠 H1: `JSON.stringify(err)` → uses `err.message` + `err.stack` 
+- 🟠 H2: Missing connection retry handling — retry logic with exponential backoff added
+- 🟠 H3: Incomplete error message context — now includes full error details in logs
+- 🟡 M1-M4: (4 medium template/linting issues) — all corrected
+
+**What Improved:**
+- Error handling now discriminates between connection failures and application errors
+- Proper Error object serialization in logs (not empty `{}`)
+- Retry strategy with jitter prevents thundering herd on outages
+- No new issues introduced; build passes, module structure intact
+
+**Pattern Learned:**
+When a follow-up patch fixes all prior findings with no new issues, module is ready for release. The v2.3.0 → v2.3.1 cleanup was thorough and professional.
+
+**Review file:** reviews/behringer-wing/review-behringer-wing-v2.3.1-20260416-054930.md
