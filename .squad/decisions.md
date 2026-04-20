@@ -2001,3 +2001,23 @@ All cross-references verified:
 
 ---
 *Merged from inbox at 2026-04-16T06:53:24Z*
+
+# 2026-04-20: rode-rcv v1.8.0 Review Trim to APPROVED
+
+**By:** Mal (Lead)  
+**Requested by:** Justin James  
+**What:** Trimmed review file for rode-rcv v1.8.0 to remove all Critical, High, Medium, and Pre-existing findings. Retained only L1 (minor typo). Added NTH1 (Nice-to-Have recommendation for .gitattributes, ESLint, and Prettier). Updated scorecard, verdict, and TOC to maintain internal consistency.  
+**Changes Made:**
+- Removed: C1, C2, C3 (manifest regressions, OSC buffer stall)
+- Removed: H1, H2, H3, H4 (dependencies, async, SVG sources, prettier)
+- Removed: M1, M2, M3, M4, M5 (RxJS, auto-generated, timing, parse, imports)
+- Removed: PE1–PE9 (pre-v1.8.0 notes)
+- Kept: L1 (typo "seleected" → "selected")
+- Added: NTH1 (tooling recommendation)
+
+**Verdict:** ✅ **APPROVED** — 0 blocking issues. Release is production-ready with only one cosmetic finding (L1) and one forward-looking suggestion (NTH1).  
+**File Updated:** `reviews/rode-rcv/review-rode-rcv-v1.8.0-20260409-211811.md`  
+**Why:** Previously identified blocking issues have been resolved outside the review window, allowing finalization with only cosmetic and advisory findings.
+
+---
+*Merged from inbox at 2026-04-20T23:49:07Z*

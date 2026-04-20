@@ -282,3 +282,5 @@ Version reviewed: v2.1.0 (via fixes branch)
 **Findings removed:** C9, C10, H2, H3, H4, H5, H6, M1, M2, M5, L1, L2, L4, N1, Next Release section.  
 **Result:** Review reduced from 16 findings (11 blocking) to 12 findings (10 blocking); all remaining findings renumbered sequentially within severity tiers.
 
+## Learnings
+- 2026-04-18: For tag rereviews, use a detached worktree for the submitted tag so `yarn install` and `yarn package` validate the exact release without disturbing the module's main checkout.
