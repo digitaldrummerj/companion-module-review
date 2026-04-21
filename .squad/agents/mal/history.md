@@ -328,3 +328,41 @@ The videopathe-qtimer v1.0.1 follow-up decision has been merged into `.squad/dec
 - Decision merged: `.squad/decisions.md`
 - Orchestration log: `.squad/orchestration-log/2026-04-20T23:49:07Z-mal-trim-rode-review.md`
 - Session log: `.squad/log/2026-04-20T23:49:07Z-session-trim-rode-review.md`
+
+## 2026-04-21: Trim Capacitimer v1.1.1 Review
+
+**Task:** Remove requested High/Medium/Low findings from Capacitimer review; add new High finding about `src/` directory structure; maintain document consistency.
+
+**Removed Findings (15 total):**
+- High: H3 (zombie reconnect), H4 (double-reconnect)
+- Medium: M1–M4 (all)
+- Low: L1–L4, L8–L12
+- Sections: Nice to Have (NTH1), Pre-existing Notes (PE1–PE5), Next Release Suggestions
+
+**Added Finding:**
+- High: H3 (NEW) — JavaScript files should be in `src/` directory instead of root
+
+**Updated Scorecard:**
+- High: 4→5 (added new H3)
+- Medium: 4→0 (removed all)
+- Low: 11→5 (after consolidation; kept L5, L6, L7 which became L1, L2, L3; added L4, L5)
+- Pre-existing: 5→— (removed entire column)
+- NTH: 1→— (removed)
+
+**Updated Verdict:**
+- From: "4 blocking issues (4 High NEW)"
+- To: "5 blocking issues (5 High NEW)"
+
+**Changes Made:**
+- Fix Summary: Updated count and category references
+- Scorecard: Reconciled all severity counts
+- Verdict: Reflects 5 blocking issues
+- TOC: Removed all M* and old L1–L4 rows; added new H3
+- Issue Sections: Deleted entire 🟡 Medium Issues section; condensed 🟢 Low Issues to 5 items
+- Internal cross-references: All updated to removed findings eliminated
+
+**File:** `reviews/creativeland-capacitimer/review-creativeland-capacitimer-v1.1.1-20260409-222116.md`
+
+**Verification:** ✅ Scorecard totals match TOC (H1, H2, H3, L1–L5); No orphaned references; All section headers match finding IDs.
+
+**Rationale:** Aligns review with user request to focus on release-critical blocking issues and new structural compliance finding. Reduces scope from 20 findings to 8 findings while maintaining document integrity.

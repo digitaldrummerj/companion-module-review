@@ -2021,3 +2021,65 @@ All cross-references verified:
 
 ---
 *Merged from inbox at 2026-04-20T23:49:07Z*
+
+# 2026-04-21: Capacitimer Review Refinement
+
+## Task 1: Trim Capacitimer v1.1.1 Review
+
+**By:** Mal (Lead)  
+**Requested by:** Justin James  
+**What:** Trimmed the Capacitimer v1.1.1 review by removing requested High/Medium/Low findings and sections, while adding a new High finding about moving JavaScript files into `src/`. Updated scorecard, verdict, and TOC to maintain internal consistency.  
+**Changes Made:**
+- Removed findings (15 total): H3, H4, M1–M4, L1–L4, L8–L12
+- Removed sections: Nice to Have, Pre-existing Notes
+- Added: H3 (NEW) — JavaScript files should be in `src/` directory
+- Scorecard updated: 5 High, 0 Medium, 5 Low (after renumbering)
+- Verdict: "5 blocking issues (5 High NEW)"
+- TOC updated: H1, H2, H3 (High) and L1–L5 (Low)
+- Low issue renumbering: L5→L1, L6→L2, L7→L3; added L4 (sanitization), L5 (eslint)
+
+**Rationale:** Aligns review scope with user request to focus only on actionable release-blocking issues and new H3 structural compliance finding.  
+**File Updated:** `reviews/creativeland-capacitimer/review-creativeland-capacitimer-v1.1.1-20260409-222116.md`
+
+---
+
+## Task 2: Restore Next Release & Fix Capacitimer Consistency
+
+**By:** Kaylee (QA/Polish)  
+**Requested by:** Justin James  
+**What:** Restored the unintended Next Release Suggestions section removal and fixed consistency issues in scorecard, verdict, and TOC alignment.  
+**Changes Made:**
+- Fix Summary: "five blocking issues" → "three blocking issues"
+- Scorecard High: 5 → 3 (H1, H2, H3 only)
+- Verdict: "3 blocking issues (3 High NEW)"
+- Restored Next Release Suggestions section with four recommendations:
+  - Exponential back-off on WebSocket reconnect
+  - Handle `license-update` WebSocket event
+  - Reset device state variables on host change
+  - Provide `eslint` config and lint script
+- TOC verified: H1–H3, L1–L5 match actual sections
+- Fixed L1 header consistency
+
+**Rationale:** Prior trim incorrectly removed Next Release section and left counting error (5 vs. 3 blocking issues). This pass restores the section per original structure and corrects the scorecard/verdict to accurately reflect the final 3 High blocking issues.  
+**File Updated:** `reviews/creativeland-capacitimer/review-creativeland-capacitimer-v1.1.1-20260409-222116.md`
+
+---
+
+## Task 3: Fix L4/L5 TOC Mismatch in Capacitimer
+
+**By:** Kaylee (QA/Polish)  
+**Requested by:** Justin James  
+**What:** Fixed the L4/L5 entry reversal in the Issues TOC that did not match the actual section headings in the document body.  
+**Issue:** TOC had L4 and L5 backwards:
+- TOC showed L4 as `eslint` missing and L5 as sanitization issue
+- Actual sections had L4 as sanitization and L5 as `eslint` missing
+
+**Changes Made:**
+- Swapped L4 and L5 entries in TOC table
+- L4 and L5 now match their respective section headings exactly
+
+**Verification:** ✅ TOC alignment confirmed; no other content modified.  
+**File Updated:** `reviews/creativeland-capacitimer/review-creativeland-capacitimer-v1.1.1-20260409-222116.md`
+
+---
+*Merged from inbox at 2026-04-21T00:31:46Z*

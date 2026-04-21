@@ -284,3 +284,48 @@ Version reviewed: v2.1.0 (via fixes branch)
 
 ## Learnings
 - 2026-04-18: For tag rereviews, use a detached worktree for the submitted tag so `yarn install` and `yarn package` validate the exact release without disturbing the module's main checkout.
+
+## 2026-04-21: Capacitimer Review Consistency Polish
+
+**Task (Part 1):** Restore the unintended Next Release section removal and fix scorecard/verdict consistency issues.
+
+**Issue Identified:** Prior trim left inconsistencies:
+- Fix Summary stated "five blocking issues"
+- Scorecard showed 5 High
+- But actual findings present were only H1, H2, H3 (3 High)
+- Next Release section was accidentally removed
+
+**Changes Made:**
+- Updated Fix Summary: "five blocking issues"→"three blocking issues"
+- Updated scorecard High: 5→3
+- Confirmed Medium: 0, Low: 5
+- Updated Verdict: "3 blocking issues (3 High NEW)"
+- **Restored Next Release Suggestions section** with four recommendations:
+  - Exponential back-off on WebSocket reconnect
+  - Handle `license-update` WebSocket event
+  - Reset device state variables on host change
+  - Provide `eslint` config and lint script
+- Fixed L1 header consistency ("explicitly set to"→"set to")
+- Verified all cross-references and section alignment
+
+**File:** `reviews/creativeland-capacitimer/review-creativeland-capacitimer-v1.1.1-20260409-222116.md`
+
+**Task (Part 2):** Fix L4/L5 TOC mismatch
+
+**Issue Identified:** Issues TOC had L4 and L5 entries reversed:
+- TOC showed L4 as `eslint` missing, L5 as sanitization
+- Actual sections: L4 is sanitization, L5 is `eslint` missing
+
+**Changes Made:**
+- Swapped L4 and L5 entries in TOC table
+- L4 and L5 now match actual section headings exactly
+
+**Verification:** ✅ Full document alignment: TOC→sections→scorecard→verdict all consistent.
+
+**Rationale:** The prior edit left counting errors (5 High vs. 3 actual) and dropped important Next Release context. This pass corrects the math, restores the forward-looking guidance, and aligns TOC entries with their actual section content.
+
+**Pattern:** After major edits involving finding removal, always verify:
+1. Scorecard counts match actual findings present
+2. Verdict narrative matches scorecard
+3. TOC row order matches section order in body
+4. All cross-references still point to existing content
