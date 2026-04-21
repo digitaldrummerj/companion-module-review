@@ -2083,3 +2083,86 @@ All cross-references verified:
 
 ---
 *Merged from inbox at 2026-04-21T00:31:46Z*
+
+## 2026-04-21T00:38:49Z: Capacitimer Review Final Update — Linkable TOC Conversion
+
+**Requested by:** Justin James  
+**Completed by:** Kaylee  
+**File:** `reviews/creativeland-capacitimer/review-creativeland-capacitimer-v1.1.1-20260409-222116.md`
+
+### Changes Made
+
+#### 1. Removed Low Findings L4 and L5
+- **L4** ("No input sanitization on `host` config field") — deleted
+- **L5** ("eslint missing from `devDependencies`") — deleted
+
+**Rationale:** Per request; no additional assessment made.
+
+#### 2. Removed Next Release Suggestions Section
+The entire `## 🔮 Next Release Suggestions` section was deleted, including:
+- Implement exponential back-off on WebSocket reconnect
+- Handle `license-update` WebSocket event for live Pro tier switching
+- Reset device state variables on host change
+- Consider providing `eslint` config and a `lint` script
+
+**Rationale:** Per request; this is out-of-scope feedback for v1.1.1 approval.
+
+#### 3. Converted Issues TOC to Linkable Markdown Style
+**Old format (table):**
+```
+| # | Sev | File | Title |
+|---|-----|------|-------|
+| H1 | 🟠 High | ... | ...
+| L1 | 🟢 Low | ... | ...
+```
+
+**New format (linkable):**
+```markdown
+## 📋 Issues
+
+**Blocking**
+- [ ] [H1: Missing upgrade scripts for 3 removed feedback IDs](#h1--missing-upgrade-scripts-for-3-removed-feedback-ids)
+- [ ] [H2: ...](#h2--...)
+
+**Non-blocking**
+- [ ] [L1: ...](#l1--...)
+```
+
+This matches the style used in other review files (highcriteria-lhs, audiostrom-liveprofessor, logos-proclaim) and provides:
+- Clickable checkboxes for tracking
+- Direct markdown anchor links to issue sections
+- Clear visual grouping of blocking vs. non-blocking issues
+
+#### 4. Updated Issue Heading Format
+Changed heading separators from ` — ` to `:` to match anchor link format:
+- **Before:** `### H1 🆕 — Missing upgrade scripts...`
+- **After:** `### H1 🆕 Missing upgrade scripts...`
+
+This ensures the auto-generated anchor `#h1--missing-upgrade-scripts...` matches the link in the TOC.
+
+#### 5. Reconciled Scorecard
+Updated Low severity count:
+- **Before:** 🟢 Low | 5
+- **After:** 🟢 Low | 3
+
+This reflects the removal of L4 and L5.
+
+### Summary of All Changes
+| Item | Before | After | Status |
+|------|--------|-------|--------|
+| Low findings count | 5 (L1–L5) | 3 (L1–L3) | ✅ Updated |
+| Scorecard Low count | 5 | 3 | ✅ Updated |
+| Issues TOC format | Table | Linkable markdown | ✅ Converted |
+| Next Release Suggestions | Present | Removed | ✅ Removed |
+| Heading format | ` — ` separator | `:` separator | ✅ Aligned |
+
+### Style Consistency
+The updated TOC now matches the linkable markdown style used in other reviews in this repository:
+- Blocking/non-blocking grouping (checkboxes)
+- Direct anchor links from TOC to issue sections
+- Title-based heading format without dashes before issue titles
+
+All 6 remaining issues (3 High, 3 Low) remain substantively unchanged — only formatting and presentation were modified.
+
+---
+*Merged from inbox at 2026-04-21T00:38:49Z*
