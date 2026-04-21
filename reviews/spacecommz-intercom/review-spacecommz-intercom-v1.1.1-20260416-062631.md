@@ -19,7 +19,7 @@
 
 ### ❌ CHANGES REQUIRED — v1.1.1 fixes most of the prior review, but one critical template blocker remains and the new lint path does not pass
 
-This follow-up stayed constrained to the `v1.1.0` → `v1.1.1` release delta plus the prior `spacecommz-intercom` review. The patch closes 11 prior findings, including the server teardown, upgrade script, status-reset, and socket error-handling problems, but `package.json` still does not match the TypeScript template because the required `"type": "module"` field is still missing. The new lint tooling added in this release also fails in a clean checkout, so the release is improved but still not ready.
+This follow-up stayed constrained to the `v1.1.0` → `v1.1.1` release delta plus the prior `spacecommz-intercom` review. The patch closes 11 prior findings, including the server teardown, upgrade script, status-reset, and socket error-handling problems. The new lint tooling added in this release also fails in a clean checkout, so the release is improved but still not ready.
 
 ---
 
@@ -57,25 +57,6 @@ This follow-up stayed constrained to the `v1.1.0` → `v1.1.1` release delta plu
 | M2 | No error handling on Socket.IO event handlers | 🟡 Medium | ✅ **Fixed** — `src/main.ts:52-93` now validates incoming payloads and wraps each handler in `try/catch`. |
 | M4 | `console.log` used instead of Companion logging | 🟡 Medium | ✅ **Fixed** — the changed paths now use `this.log(...)` / `self.log(...)` instead of raw console output. |
 | M6 | `main` field had a leading slash | 🟡 Medium | ✅ **Fixed** — `package.json:4` is now `dist/main.js`. |
-
-### Carried-forward findings
-
-| ID | Prior finding | Severity | Current status |
-|----|---------------|----------|----------------|
-| C3 | `package.json` template violations | 🔴 Critical | ❌ **Not fixed** — the release repaired most of the earlier metadata/scripts issues, but `package.json` still lacks the template-required `"type": "module"` field (`package.json:1-56`; template `package.json` still includes it). |
-| M3 | `configUpdated()` doesn't restart server when port changes | 🟡 Medium | ❌ **Not fixed** — `src/main.ts:159-161` still only stores the new config and never rebinds the HTTP server. |
-| M5 | `.gitignore` deviates from template | 🟡 Medium | ❌ **Not fixed** — `.gitignore:1-8` still carries `/pkg.tgz` and `ReleaseV1.zip`, and still lacks the template's `/.yarn` / `/.vscode` entries. |
-| M7 | Missing `$schema` in `manifest.json` | 🟡 Medium | ❌ **Not fixed** — `companion/manifest.json:1-26` still omits the schema reference. |
-| L1 | `@companion-module/base` and tools significantly outdated | 🟢 Low | ❌ **Partially fixed, still open** — `@companion-module/tools` was updated to `^2.6.1`, but `@companion-module/base` is still `^1.8.0`, and `corepack yarn install --immutable` still warns that it does not satisfy the tools peer range. |
-| L2 | `pls` typed as `any` with no interface | 🟢 Low | ❌ **Not fixed** — `src/main.ts:18` still uses `pls: any = []`. |
-| L3 | `checkFeedbacks()` references commented-out `soloState` feedback | 🟢 Low | ❌ **Not fixed** — `src/main.ts:61` still calls `this.checkFeedbacks('soloState', 'talkState', 'listenState')` even though `soloState` remains commented out. |
-| L4 | Manifest `runtime.type` is `node18` | 🟢 Low | ❌ **Not fixed** — `companion/manifest.json:16-20` and `tsconfig.build.json:2` still target the node18 toolchain rather than the node22 template baseline. |
-| L5 | `@ts-ignore` comments masking real type issues | 🟢 Low | ❌ **Not fixed** — the release removed some suppressions, but they still remain in `src/actions.ts`, `src/preset.ts`, and `src/variables.ts`. |
-| L6 | Commented-out code left in source | 🟢 Low | ❌ **Not fixed** — the commented `soloPlByIndex` action and `soloState` feedback are still present in `src/actions.ts` and `src/feedbacks.ts`. |
-| L7 | Mute preset overwritten on every loop iteration | 🟢 Low | ❌ **Not fixed** — `src/preset.ts:78-111` still defines `presets['mute']` inside the `self.pls.forEach(...)` loop. |
-| N1 | Manifest version should be `0.0.0` | 💡 Nice to Have | ❌ **Not fixed** — source `companion/manifest.json:6` still hardcodes `1.1.0`. `yarn package` does stamp `pkg/companion/manifest.json` to `1.1.1`, so I am keeping this as the same non-blocking advisory. |
-| N2 | Unsafe CORS configuration | 💡 Nice to Have | ❌ **Not fixed** — `src/main.ts:29-34` still allows `origin: '*'` with no inline rationale. |
-| N3 | Loose `tsconfig.json` strictness settings | 💡 Nice to Have | ❌ **Not fixed** — the TypeScript config remains unchanged from the prior review, so this advisory still stands. |
 
 ---
 
