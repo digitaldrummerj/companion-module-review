@@ -24,9 +24,10 @@ if (Test-Path $hookFile) {
     Write-Host "[OK] pre-commit hook is ready" -ForegroundColor Green
 }
 
-# 3. Create the companion-modules-reviewing sibling directory if it doesn't exist.
-#    This is where module git repos are cloned — outside the review repo so each
-#    has its own independent git context.
+# 3. Create the companion-modules-reviewing directory if it doesn't exist.
+#    This is where module git repos are cloned. It lives INSIDE the repo and is
+#    gitignored (see .gitignore + .githooks/pre-commit); each clone keeps its own
+#    independent git context.
 . "$PSScriptRoot/scripts/lib/ReviewState.ps1"
 $modulesDir = Resolve-ModulesDir $PSScriptRoot
 
@@ -39,9 +40,8 @@ if (Test-Path $modulesDir) {
 
 Write-Host ""
 Write-Host "Workspace structure:" -ForegroundColor Cyan
-Write-Host "  $(Split-Path -Parent $PSScriptRoot)/"
-Write-Host "  ├── companion-module-review/          <- this repo"
-Write-Host "  └── companion-modules-reviewing/      <- module checkouts go here"
+Write-Host "  companion-module-review/              <- this repo"
+Write-Host "  └── companion-modules-reviewing/      <- module checkouts go here (gitignored)"
 Write-Host ""
 Write-Host "Open companion-module-review.code-workspace in VS Code for full multi-repo support." -ForegroundColor Cyan
 Write-Host "Clone modules with: pwsh scripts/bitfocus-setup-module.ps1" -ForegroundColor Cyan

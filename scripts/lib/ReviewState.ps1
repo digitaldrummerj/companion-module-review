@@ -27,11 +27,12 @@ Set-StrictMode -Version Latest
 $script:SubmittedMark = [char]0x2705   # ✅
 
 function Resolve-ModulesDir {
-    <# Resolve the sibling workspace where modules are cloned. Honors COMPANION_MODULES_DIR. #>
+    <# Resolve the workspace where modules under review are cloned: companion-modules-reviewing/
+       INSIDE the repo (gitignored). Honors COMPANION_MODULES_DIR. #>
     param([Parameter(Mandatory)][string]$RepoRoot)
 
     if ($env:COMPANION_MODULES_DIR) { return $env:COMPANION_MODULES_DIR }
-    return Join-Path (Split-Path -Parent $RepoRoot) "companion-modules-reviewing"
+    return Join-Path $RepoRoot "companion-modules-reviewing"
 }
 
 function Resolve-ReviewsDir {

@@ -9,9 +9,11 @@
 # Squad archives
 .squad-archive*/
 
-# Companion module checkouts belong in the companion-modules-reviewing/ sibling directory,
-# NOT inside this repo. This entry is a safety net in case one is accidentally cloned here.
-# The pre-commit hook in .githooks/ provides a second layer of protection.
+# Module checkouts under review live in companion-modules-reviewing/ INSIDE this repo;
+# the whole directory is ignored. The companion-module-*/ pattern is an extra safety net
+# in case a module is cloned at the repo root by mistake. The pre-commit hook in .githooks/
+# provides a second layer of protection.
+/companion-modules-reviewing/
 companion-module-*/
 
 .DS_Store
