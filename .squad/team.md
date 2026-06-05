@@ -41,15 +41,18 @@ Returns `{versions: [{moduleName, moduleType, gitTag, createdAt}]}`. See `.squad
 
 ### Layer 2 — Local Workspace Queue (cloned modules)
 
-Modules that have been cloned but not yet reviewed appear as subdirectories here:
+Modules that have been cloned but not yet reviewed appear under `companion-modules-reviewing/`
+**inside this repo** (gitignored). From the repo root:
 
 ```bash
-ls /Users/lynbh/Development/companion-modules-reviewing/ | grep '^companion-module-' | grep -v 'template-js$' | grep -v 'template-ts$'
+ls companion-modules-reviewing/ | grep '^companion-module-'
 ```
 
-The two **permanent** reference directories (never reviewed as modules):
-- `companion-module-template-js/` — JavaScript template baseline (in `companion-modules-reviewing/`)
-- `companion-module-template-ts/` — TypeScript template baseline (in `companion-modules-reviewing/`)
+(Override the location with `$COMPANION_MODULES_DIR` if needed.)
+
+**Template baselines** are a separate concern: `validate-template.ps1` / `module-facts.ps1` resolve
+them from `~/Development/companion-module-dev` (override `COMPANION_TEMPLATES_DIR`) — `companion-module-template-{js,ts}`
+for v2 and the `-v1` variants for v1. They are NOT under `companion-modules-reviewing/`.
 
 ---
 

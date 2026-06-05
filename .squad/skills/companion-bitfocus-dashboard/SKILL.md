@@ -141,8 +141,8 @@ pwsh scripts/bitfocus-setup-module.ps1 -ModuleName allenheath-sq
 ```powershell
 $token      = gh auth token
 $headers    = @{ Authorization = "Bearer $token" }
-$reviewRoot = "/Users/lynbh/Development/companion-module-review"  # adjust to your path, or derive from script
-$modulesDir = if ($env:COMPANION_MODULES_DIR) { $env:COMPANION_MODULES_DIR } else { Join-Path (Split-Path -Parent $reviewRoot) "companion-modules-reviewing" }
+$reviewRoot = (git rev-parse --show-toplevel)  # the companion-module-review repo root
+$modulesDir = if ($env:COMPANION_MODULES_DIR) { $env:COMPANION_MODULES_DIR } else { Join-Path $reviewRoot "companion-modules-reviewing" }
 $data       = Invoke-RestMethod -Uri "https://developer.bitfocus.io/api/v1/modules-pending-review" -Headers $headers
 $now        = [DateTimeOffset]::UtcNow
 
@@ -200,10 +200,10 @@ https://developer.bitfocus.io/modules/companion-connection/{moduleName}
 ### Workflow 4: Clone a Module
 
 ```powershell
-# Modules live in the companion-modules-reviewing/ sibling directory.
-# $modulesDir is derived from the review repo root; override with $env:COMPANION_MODULES_DIR.
-$reviewRoot = "/Users/lynbh/Development/companion-module-review"  # or derive from script location
-$modulesDir = if ($env:COMPANION_MODULES_DIR) { $env:COMPANION_MODULES_DIR } else { Join-Path (Split-Path -Parent $reviewRoot) "companion-modules-reviewing" }
+# Modules live in companion-modules-reviewing/ inside the review repo (gitignored).
+# $modulesDir is derived from the repo root; override with $env:COMPANION_MODULES_DIR.
+$reviewRoot = (git rev-parse --show-toplevel)  # the companion-module-review repo root
+$modulesDir = if ($env:COMPANION_MODULES_DIR) { $env:COMPANION_MODULES_DIR } else { Join-Path $reviewRoot "companion-modules-reviewing" }
 $moduleName = "softouch-easyworship"  # substitute target module
 $cloneDir   = Join-Path $modulesDir "companion-module-$moduleName"
 
