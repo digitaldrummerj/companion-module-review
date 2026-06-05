@@ -27,11 +27,8 @@ if (Test-Path $hookFile) {
 # 3. Create the companion-modules-reviewing sibling directory if it doesn't exist.
 #    This is where module git repos are cloned — outside the review repo so each
 #    has its own independent git context.
-$modulesDir = if ($env:COMPANION_MODULES_DIR) {
-    $env:COMPANION_MODULES_DIR
-} else {
-    Join-Path (Split-Path -Parent $PSScriptRoot) "companion-modules-reviewing"
-}
+. "$PSScriptRoot/scripts/lib/ReviewState.ps1"
+$modulesDir = Resolve-ModulesDir $PSScriptRoot
 
 if (Test-Path $modulesDir) {
     Write-Host "[OK] Modules directory already exists: $modulesDir" -ForegroundColor Green

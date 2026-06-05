@@ -4,35 +4,51 @@
 .SYNOPSIS
     Prepares a BitFocus module for review: validates PENDING status, looks up tags, and clones if needed.
 .DESCRIPTION
-    If -ModuleName is not provided, automatically selects the oldest PENDING module from the queue.
+    If -ModuleName is not provided, automatically selects the oldest pending module from the queue
+    that still needs review — skipping any that are already reviewed locally but whose feedback
+    hasn't been submitted yet (those remain in the online queue but must not be reviewed twice).
 
     Steps performed:
       1. Fetch the pending queue from BitFocus API
-      2. Verify the target version has status PENDING (not WITHDRAWN or other)
-      3. Look up the previous approved tag for diff context
-      4. Clone the GitHub repo into the workspace if not already present
-      5. Print a summary for the Coordinator to hand off to the review team
+      2. Resolve the target (auto-select oldest reviewable, or the named module)
+      3. Guard against re-reviewing an already-reviewed module (see -Force)
+      4. Verify the target version has status PENDING (not WITHDRAWN or other)
+      5. Look up the previous approved tag for diff context
+      6. Clone the GitHub repo into the workspace if not already present
+      7. Print a summary for the Coordinator to hand off to the review team
 
     "createdAt" sorting uses the per-version submission date (epoch ms) from
     /modules-pending-review — not the module's original creation date.
 .PARAMETER ModuleName
     Optional. The module name without the "companion-module-" prefix (e.g. "allenheath-sq").
-    If omitted, the oldest pending module is selected automatically.
+    If omitted, the oldest reviewable pending module is selected automatically.
+.PARAMETER Force
+    Required to set up a module that is already reviewed locally with feedback still pending.
+    Without it, such a module is refused (auto-select skips it; explicit -ModuleName errors out).
+.PARAMETER Json
+    Emit the coordinator summary as JSON instead of the console banner.
 .EXAMPLE
     pwsh scripts/bitfocus-setup-module.ps1
     pwsh scripts/bitfocus-setup-module.ps1 -ModuleName allenheath-sq
+    pwsh scripts/bitfocus-setup-module.ps1 -ModuleName allenheath-sq -Force
 #>
 
 param(
-    [string]$ModuleName
+    [string]$ModuleName,
+    [switch]$Force,
+    [switch]$Json
 )
 
 $ErrorActionPreference = 'Stop'
 
+. "$PSScriptRoot/lib/ReviewState.ps1"
+
 $workspace   = Split-Path -Parent $PSScriptRoot
-$modulesDir  = if ($env:COMPANION_MODULES_DIR) { $env:COMPANION_MODULES_DIR } else { Join-Path (Split-Path -Parent $workspace) "companion-modules-reviewing" }
+$modulesDir  = Resolve-ModulesDir $workspace
+$reviewsDir  = Resolve-ReviewsDir $workspace
+$trackerPath = Join-Path $reviewsDir "TRACKER.md"
 $baseUrl     = "https://developer.bitfocus.io/api/v1"
-$token      = gh auth token
+$token       = gh auth token
 
 if (-not $token) {
     Write-Error "Could not get GitHub token. Run: gh auth login"
@@ -41,22 +57,32 @@ if (-not $token) {
 
 $headers = @{ Authorization = "Bearer $token" }
 
+function Write-Status {
+    param([string]$Message, [string]$Color = 'DarkGray')
+    if (-not $Json) { Write-Host $Message -ForegroundColor $Color }
+}
+
 # ── Step 1: Fetch the pending queue ──────────────────────────────────────────
 
-Write-Host "Fetching pending queue..." -ForegroundColor DarkGray
+Write-Status "Fetching pending queue..."
 
-$queueData = Invoke-RestMethod `
-    -Uri "$baseUrl/modules-pending-review" `
-    -Headers $headers
-
-$queue = $queueData.versions | Sort-Object createdAt
+$queueData = Invoke-RestMethod -Uri "$baseUrl/modules-pending-review" -Headers $headers
+$queue = @($queueData.versions | Sort-Object createdAt)
 
 if (-not $queue -or $queue.Count -eq 0) {
-    Write-Host "No pending reviews found." -ForegroundColor Green
+    Write-Status "No pending reviews found." 'Green'
     exit 0
 }
 
-# ── Step 2: Resolve the target module ────────────────────────────────────────
+$trackerRows = @(Get-TrackerRows -TrackerPath $trackerPath)
+
+function Get-EntryState {
+    param($Entry)
+    Get-ReviewState -ReviewsDir $reviewsDir -TrackerPath $trackerPath `
+        -ModuleName $Entry.moduleName -GitTag $Entry.gitTag -TrackerRows $trackerRows
+}
+
+# ── Step 2: Resolve the target module + Step 3: guard against re-review ───────
 
 if ($ModuleName) {
     $target = $queue | Where-Object { $_.moduleName -eq $ModuleName } | Select-Object -First 1
@@ -64,29 +90,66 @@ if ($ModuleName) {
         Write-Error "Module '$ModuleName' not found in the pending queue."
         exit 1
     }
+
+    $state = Get-EntryState $target
+    if ($state.State -eq 'feedback-pending' -and -not $Force) {
+        Write-Error ("Module '$ModuleName' @ $($target.gitTag) was already reviewed on $($state.LastReviewDate), " +
+            "feedback not yet submitted. Re-run with -Force to review it again.")
+        exit 1
+    }
+    if ($state.State -eq 'feedback-pending' -and $Force) {
+        Write-Status "Re-reviewing despite pending feedback (-Force)." 'Yellow'
+    }
+    if ($state.State -eq 're-review') {
+        Write-Status "Note: previously reviewed and submitted — this is a re-review of a re-pushed tag." 'Magenta'
+    }
 } else {
-    $target = $queue[0]
-    Write-Host "No module specified — auto-selecting oldest pending: $($target.moduleName)" -ForegroundColor DarkGray
+    # Auto-select: oldest needs-review, else oldest re-review; skip feedback-pending.
+    $skipped = 0
+    $target = $null
+    foreach ($entry in $queue) {
+        $s = Get-EntryState $entry
+        if ($s.State -eq 'feedback-pending') { $skipped++; continue }
+        if ($s.State -eq 'needs-review') { $target = $entry; break }
+    }
+    if (-not $target) {
+        # No fresh work — fall back to the oldest re-review.
+        foreach ($entry in $queue) {
+            $s = Get-EntryState $entry
+            if ($s.State -eq 're-review') {
+                $target = $entry
+                Write-Status "No un-reviewed modules — selecting oldest re-review." 'Magenta'
+                break
+            }
+        }
+    }
+    if (-not $target) {
+        Write-Status "Nothing to set up — every pending module is reviewed with feedback still to send." 'Green'
+        exit 0
+    }
+    if ($skipped -gt 0) {
+        Write-Status "Skipped $skipped already-reviewed (feedback pending) module(s) during auto-select." 'DarkYellow'
+    }
+    Write-Status "Auto-selected: $($target.moduleName)"
 }
 
 $pendingTag = $target.gitTag
 $name       = $target.moduleName
 
-Write-Host "Target: $name @ $pendingTag" -ForegroundColor Cyan
+Write-Status "Target: $name @ $pendingTag" 'Cyan'
 
-# ── Step 3: Verify status is PENDING ─────────────────────────────────────────
+# ── Step 4: Verify status is PENDING ─────────────────────────────────────────
 
-Write-Host "Verifying status..." -ForegroundColor DarkGray
+Write-Status "Verifying status..."
 
 $versionsData = Invoke-RestMethod `
     -Uri "$baseUrl/public/modules/companion-connection/$name/versions" `
     -Headers $headers
 
-# Normalize tags for comparison (strip leading "v" for matching)
-$normalizedPending = $pendingTag -replace '^v', ''
+$normalizedPending = ConvertTo-NormalizedTag $pendingTag
 
 $versionEntry = $versionsData.versions | Where-Object {
-    ($_.gitTag -replace '^v', '') -eq $normalizedPending
+    (ConvertTo-NormalizedTag $_.gitTag) -eq $normalizedPending
 } | Select-Object -First 1
 
 if (-not $versionEntry) {
@@ -99,9 +162,9 @@ if ($versionEntry.status -ne 'PENDING') {
     exit 1
 }
 
-Write-Host "Status confirmed: PENDING" -ForegroundColor Green
+Write-Status "Status confirmed: PENDING" 'Green'
 
-# ── Step 4: Find previous approved tag ───────────────────────────────────────
+# ── Step 5: Find previous approved tag ───────────────────────────────────────
 
 $previousTag = $versionsData.versions |
     Where-Object { $_.status -eq 'APPROVED' } |
@@ -110,25 +173,35 @@ $previousTag = $versionsData.versions |
 
 if (-not $previousTag) {
     $previousTag = '(none — first release)'
-    Write-Host "No previous approved tag found — treat as first release." -ForegroundColor Yellow
+    Write-Status "No previous approved tag found — treat as first release." 'Yellow'
 } else {
-    Write-Host "Previous approved tag: $previousTag" -ForegroundColor DarkGray
+    Write-Status "Previous approved tag: $previousTag"
 }
 
-# ── Step 5: Clone if not already present ─────────────────────────────────────
+# ── Step 6: Clone if not already present ─────────────────────────────────────
 
 $cloneDir = Join-Path $modulesDir "companion-module-$name"
 
 if (Test-Path $cloneDir) {
-    Write-Host "Already cloned at: $cloneDir" -ForegroundColor DarkGray
+    Write-Status "Already cloned at: $cloneDir"
 } else {
     $repoUrl = "https://github.com/bitfocus/companion-module-$name"
-    Write-Host "Cloning $repoUrl ..." -ForegroundColor DarkGray
+    Write-Status "Cloning $repoUrl ..."
     git clone $repoUrl $cloneDir
-    Write-Host "Cloned to: $cloneDir" -ForegroundColor Green
+    Write-Status "Cloned to: $cloneDir" 'Green'
 }
 
-# ── Step 6: Print coordinator summary ────────────────────────────────────────
+# ── Step 7: Print coordinator summary ────────────────────────────────────────
+
+if ($Json) {
+    [pscustomobject]@{
+        module      = $name
+        reviewTag   = $pendingTag
+        previousTag = $previousTag
+        directory   = $cloneDir
+    } | ConvertTo-Json
+    exit 0
+}
 
 Write-Host ""
 Write-Host ("─" * 60)
