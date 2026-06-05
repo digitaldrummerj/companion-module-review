@@ -13,12 +13,14 @@
     cheap. The reviewer is left only with judgment calls (is HELP.md meaningful, is a
     tsconfig deviation justified).
 
-    The official template repo is the authoritative reference. It is auto-detected in the
-    sibling modules workspace (companion-module-template-js|ts) or passed via -TemplateDir.
+    The official template repo is the authoritative reference, selected by API version ×
+    language: v2 modules use companion-module-template-{js|ts}, v1 modules use the
+    "-v1"-suffixed variant. Templates are auto-detected under COMPANION_TEMPLATES_DIR
+    (default ~/Development/companion-module-dev), or passed via -TemplateDir.
 .PARAMETER ModuleDir
     Path to the cloned module under review.
 .PARAMETER TemplateDir
-    Path to the matching template repo. Auto-detected from the modules workspace if omitted.
+    Path to the matching template repo. Auto-detected by API version × language if omitted.
 .PARAMETER ExpectedVersion
     The git tag under review (with or without leading 'v'). Enables the package.json
     version-match check. Skipped if omitted.
@@ -72,19 +74,45 @@ function Has-Prop { param($Obj, [string]$Name) $Obj -and ($Obj.PSObject.Properti
 
 $isTs = (Test-Path (Join-Path $ModuleDir 'tsconfig.json')) -or ((Has-Prop $pkg 'type') -and $pkg.type -eq 'module')
 $lang = if ($isTs) { 'TS' } else { 'JS' }
+$langLower = $lang.ToLower()
 
-# ── Resolve template dir ─────────────────────────────────────────────────────
+# Detect @companion-module/base major version (1.x vs 2.x) to pick the right template.
+$apiMajor = 2
+if ((Has-Prop $pkg 'dependencies') -and (Has-Prop $pkg.dependencies '@companion-module/base')) {
+    $range = [string]$pkg.dependencies.'@companion-module/base'
+    if ($range -match '(\d+)') { $apiMajor = [int]$Matches[1] }
+}
+$apiVer = "v$apiMajor"
+
+# ── Resolve template dir by version × language ───────────────────────────────
+# Templates live in ~/Development/companion-module-dev (override: COMPANION_TEMPLATES_DIR).
+# v1 templates use a "-v1" suffix; v2 templates have no suffix.
+$tplSuffix = if ($apiMajor -le 1) { '-v1' } else { '' }
+$tplName   = "companion-module-template-$langLower$tplSuffix"
 if (-not $TemplateDir) {
-    $workspace  = Split-Path -Parent $PSScriptRoot
-    $modulesDir = Resolve-ModulesDir $workspace
-    $candidate  = Join-Path $modulesDir ("companion-module-template-" + $lang.ToLower())
-    if (Test-Path $candidate) { $TemplateDir = $candidate }
+    $base = if ($env:COMPANION_TEMPLATES_DIR) { $env:COMPANION_TEMPLATES_DIR } else { Join-Path $HOME 'Development/companion-module-dev' }
+    $candidate = Join-Path $base $tplName
+    if (Test-Path $candidate) {
+        $TemplateDir = $candidate
+    } else {
+        # Legacy fallback: sibling modules workspace (v2 layout, no suffix).
+        $legacy = Join-Path (Resolve-ModulesDir (Split-Path -Parent $PSScriptRoot)) "companion-module-template-$langLower"
+        if (Test-Path $legacy) { $TemplateDir = $legacy }
+    }
 }
 if (-not $TemplateDir -or -not (Test-Path $TemplateDir)) {
-    Write-Error "Template repo for $lang not found. Clone companion-module-template-$($lang.ToLower()) into the modules workspace or pass -TemplateDir."
+    Write-Error "Template '$tplName' ($lang $apiVer) not found. Set COMPANION_TEMPLATES_DIR, place it under ~/Development/companion-module-dev, or pass -TemplateDir."
     exit 2
 }
 $TemplateDir = (Resolve-Path $TemplateDir).Path
+
+# Load the template's package.json + manifest so expectations are derived from the
+# actual matched template (version-correct) rather than hardcoded.
+$tplPkg = $null; $tplMan = $null
+$tplPkgPath = Join-Path $TemplateDir 'package.json'
+if (Test-Path $tplPkgPath) { try { $tplPkg = Get-Content -Raw -LiteralPath $tplPkgPath | ConvertFrom-Json } catch { } }
+$tplManPath = Join-Path $TemplateDir 'companion/manifest.json'
+if (Test-Path $tplManPath) { try { $tplMan = Get-Content -Raw -LiteralPath $tplManPath | ConvertFrom-Json } catch { } }
 
 # ── 1. Required files ────────────────────────────────────────────────────────
 $requiredCommon = @('.gitattributes','.gitignore','.prettierignore','.yarnrc.yml','LICENSE','package.json','yarn.lock','companion/manifest.json','companion/HELP.md')
@@ -179,20 +207,36 @@ if ($pkg) {
             Add-Finding 'PKG-VERSION' 'Critical' 'package.json' "version '$($pkg.version)' != git tag '$want'"
         }
     }
-    $expectedMain = if ($isTs) { 'dist/main.js' } else { 'src/main.js' }
+    # main: from template if available, else lang default.
+    $expectedMain = if ($tplPkg -and (Has-Prop $tplPkg 'main')) { $tplPkg.main } elseif ($isTs) { 'dist/main.js' } else { 'src/main.js' }
     if ((Has-Prop $pkg 'main') -and $pkg.main -ne $expectedMain) {
         Add-Finding 'PKG-MAIN' 'Critical' 'package.json' "main '$($pkg.main)' should be '$expectedMain'"
     }
     if ((Has-Prop $pkg 'repository') -and (Has-Prop $pkg.repository 'url') -and $pkg.repository.url -ne $expectedRepo) {
         Add-Finding 'PKG-REPO' 'Critical' 'package.json' "repository.url '$($pkg.repository.url)' should be '$expectedRepo'"
     }
-    foreach ($field in @('engines','prettier','packageManager','license')) {
-        if (-not (Has-Prop $pkg $field)) { Add-Finding 'PKG-FIELD' 'Critical' 'package.json' "Missing required field '$field'" }
+    # Required top-level fields = those present in the matched template (version-correct).
+    $candidateFields = @('engines','prettier','packageManager','license','main','scripts','dependencies')
+    foreach ($field in $candidateFields) {
+        if ($tplPkg -and (Has-Prop $tplPkg $field) -and -not (Has-Prop $pkg $field)) {
+            Add-Finding 'PKG-FIELD' 'Critical' 'package.json' "Missing required field '$field' (present in template)"
+        }
     }
-    if ((Has-Prop $pkg 'packageManager') -and $pkg.packageManager -notmatch '^yarn@4') {
-        Add-Finding 'PKG-YARN' 'Critical' 'package.json' "packageManager '$($pkg.packageManager)' must start with 'yarn@4'"
+    # packageManager: must match the template's package manager + major (e.g. yarn@4).
+    if ($tplPkg -and (Has-Prop $tplPkg 'packageManager') -and (Has-Prop $pkg 'packageManager')) {
+        $wantPrefix = if ("$($tplPkg.packageManager)" -match '^([^@]+@\d+)') { $Matches[1] } else { "$($tplPkg.packageManager)" }
+        if ($pkg.packageManager -notmatch ('^' + [regex]::Escape($wantPrefix))) {
+            Add-Finding 'PKG-YARN' 'Critical' 'package.json' "packageManager '$($pkg.packageManager)' should start with '$wantPrefix'"
+        }
     }
-    $reqScripts = if ($isTs) { @('format','package','build','build:main','dev','lint','lint:raw','postinstall') } else { @('format','package') }
+    # Required scripts = the template's script names.
+    $reqScripts = if ($tplPkg -and (Has-Prop $tplPkg 'scripts')) {
+        @($tplPkg.scripts.PSObject.Properties.Name)
+    } elseif ($isTs) {
+        @('format','package','build','build:main','dev','lint','lint:raw','postinstall')
+    } else {
+        @('format','package')
+    }
     foreach ($s in $reqScripts) {
         if (-not ((Has-Prop $pkg 'scripts') -and (Has-Prop $pkg.scripts $s))) {
             Add-Finding 'PKG-SCRIPT' 'Critical' 'package.json' "Missing required script '$s'"
@@ -231,6 +275,22 @@ if (Test-Path $manifestPath) {
                 $low = "$kw".ToLower()
                 if ($banned -contains $low -or $low -eq $moduleName -or ($moduleName -split '-') -contains $low) {
                     Add-Finding 'MAN-KEYWORD' 'Critical' 'companion/manifest.json' "Banned/low-value keyword '$kw'"
+                }
+            }
+        }
+        # manifest.type: required only if the matched template has it (v2 'connection'; absent in v1).
+        if ($tplMan -and (Has-Prop $tplMan 'type')) {
+            if (-not (Has-Prop $man 'type')) {
+                Add-Finding 'MAN-TYPE' 'Critical' 'companion/manifest.json' "Missing 'type' (template requires '$($tplMan.type)')"
+            } elseif ($man.type -ne $tplMan.type) {
+                Add-Finding 'MAN-TYPE' 'Critical' 'companion/manifest.json' "type '$($man.type)' should be '$($tplMan.type)'"
+            }
+        }
+        # runtime.type / runtime.api / runtime.entrypoint must match the template (lang+version specific).
+        if ($tplMan -and (Has-Prop $tplMan 'runtime') -and (Has-Prop $man 'runtime')) {
+            foreach ($rp in @('type','api','entrypoint')) {
+                if ((Has-Prop $tplMan.runtime $rp) -and (Has-Prop $man.runtime $rp) -and $man.runtime.$rp -ne $tplMan.runtime.$rp) {
+                    Add-Finding 'MAN-RUNTIME' 'Critical' 'companion/manifest.json' "runtime.$rp '$($man.runtime.$rp)' should be '$($tplMan.runtime.$rp)'"
                 }
             }
         }
@@ -277,6 +337,7 @@ $result = [pscustomobject]@{
     moduleDir   = $ModuleDir
     templateDir = $TemplateDir
     language    = $lang
+    apiVersion  = $apiVer
     findings    = $findings
     counts      = [pscustomobject]@{
         critical = @($findings | Where-Object severity -eq 'Critical').Count
@@ -289,7 +350,7 @@ if ($Json) {
     $result | ConvertTo-Json -Depth 6
 } else {
     Write-Host ""
-    Write-Host "validate-template — $lang module" -ForegroundColor Cyan
+    Write-Host "validate-template — $lang module ($apiVer)" -ForegroundColor Cyan
     Write-Host "  module:   $ModuleDir"
     Write-Host "  template: $TemplateDir"
     Write-Host ("─" * 70)
