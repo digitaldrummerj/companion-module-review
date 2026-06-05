@@ -10,8 +10,48 @@ When in doubt, compare directly against the authoritative templates in the works
 
 | Type | Directory |
 |------|-----------|
-| **JavaScript** | `companion-module-template-js/` (workspace root) |
-| **TypeScript** | `companion-module-template-ts/` (workspace root) |
+| **JavaScript** | `companion-module-template-js/` (in `companion-modules-reviewing/` workspace root) |
+| **TypeScript** | `companion-module-template-ts/` (in `companion-modules-reviewing/` workspace root) |
+
+---
+
+## ⛔ Instant Rejection Checklist — Check These First
+
+**Before doing anything else, verify every item below. Each one is an automatic 🔴 Critical blocking finding if it fails. Do not skip any of them.**
+
+### Config Files — Content Must Match Template Exactly
+
+| File | Expected content | Common failure |
+|------|-----------------|----------------|
+| `.gitattributes` | `* text=auto eol=lf` (single line) | Missing file, extra lines, wrong line endings |
+| `.gitignore` | See Section 4 for exact content per JS/TS | Extra entries, missing entries, wrong entries |
+| `.prettierignore` | `package.json` and `/LICENSE.md` (two lines) | Missing file, extra entries, different casing |
+| `.yarnrc.yml` | `nodeLinker: node-modules` (single line) | Missing file, different value, extra content |
+
+If the file is missing **or** the content doesn't match the template: **🔴 Critical — blocks approval.**
+
+### `package.json` — Required Fields
+
+| Field | Required | Common failure |
+|-------|----------|----------------|
+| `engines.node` | `"^22.20"` or `"^22.x"` | Field missing entirely, or still set to `^18` |
+| `engines.yarn` | `"^4"` | Field missing entirely, or `engines` block absent |
+| `prettier` | `"@companion-module/tools/.prettierrc.json"` | Field missing entirely |
+| `packageManager` | `"yarn@4.x.x"` (must start with `yarn@4`) | Field missing, or set to npm/older yarn |
+| `repository.type` | `"git"` | Field missing entirely |
+| `repository.url` | `"git+https://github.com/bitfocus/companion-module-{name}.git"` | Field missing, wrong org, wrong format |
+
+If **any** of these fields are missing or wrong: **🔴 Critical — blocks approval.**
+
+### `LICENSE` File — Content Must Match the Template Repo
+
+- The `LICENSE` file must exist (see Required Files checklist)
+- The content **must match the template repo** (`companion-module-template-js/LICENSE`) — do a line-by-line comparison
+- The only acceptable difference is the copyright line (`Copyright (c) {year} {Author}`) — year and author name may differ
+- Any other deviation (different license type, extra text, missing text, wrong structure) is **🔴 Critical**
+- The copyright line must reference a real author/organization — not `"Your name"` or similar placeholder
+
+If `LICENSE` is missing, doesn't match the template, is a placeholder, or is not MIT: **🔴 Critical — blocks approval.**
 
 ---
 
@@ -246,8 +286,11 @@ All JS rules above, **plus**:
 | `runtime.type` | `"node22"` |
 | `runtime.api` | `"nodejs-ipc"` |
 | `runtime.entrypoint` | JS: `"../src/main.js"` — TS: `"../dist/main.js"` |
+| `version` | `"0.0.0"` is acceptable/preferred in source control; if a real version string is committed instead, it must exactly match `package.json` |
 | `keywords` | see below |
 | `$schema` | should reference `../node_modules/@companion-module/base/assets/manifest.schema.json` |
+
+> Follow-up review reminder: treat `package.json` and `companion/manifest.json` as **separate** version checks. It is correct to normalize the source manifest back to `0.0.0`, but the release still fails if `package.json` does not match the submitted git tag.
 
 ### Banned `keywords`
 
@@ -297,7 +340,9 @@ A good HELP.md covers: what the module does, how to configure it (host/port/auth
 | `package-lock.json` present | **🔴 Critical** (blocks) |
 | Source code files not in `src/` directory | **🔴 Critical** (blocks) |
 | `version` in `package.json` doesn't match git tag | **🔴 Critical** (blocks) |
+| Missing `repository` field in `package.json` (entirely absent) | **🔴 Critical** (blocks) |
 | Wrong `repository` URL (package.json or manifest.json) | **🔴 Critical** (blocks) |
+| `LICENSE` file is missing, doesn't match template repo, is a placeholder, or is not MIT | **🔴 Critical** (blocks) |
 | Placeholder maintainer `name` or `email` in manifest | **🔴 Critical** (blocks) |
 | Empty `maintainers` array | **🔴 Critical** (blocks) |
 | Stub `companion/HELP.md` | **🔴 Critical** (blocks) |
@@ -307,7 +352,7 @@ A good HELP.md covers: what the module does, how to configure it (host/port/auth
 | Missing required `devDependencies` | **🔴 Critical** (blocks) |
 | `.husky` missing or not committed (TS) | **🔴 Critical** (blocks) |
 | `manifest.json` id or name doesn't match module name | **🔴 Critical** (blocks) |
-| Config file content differs from template | **🔴 Critical** (blocks) |
+| Config file content differs from template (`.gitattributes`, `.gitignore`, `.prettierignore`, `.yarnrc.yml`) | **🔴 Critical** (blocks) |
 | Extra `.gitignore` entries beyond template | **🔴 Critical** (blocks) |
 | `tsconfig` deviations without justification | **🔴 Critical** (blocks) |
 

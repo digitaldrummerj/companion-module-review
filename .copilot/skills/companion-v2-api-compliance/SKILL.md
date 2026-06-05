@@ -18,6 +18,7 @@ Reference checklist for reviewing BitFocus Companion modules against the v2.0 AP
 | Main file entry point | `export default class ModuleInstance extends InstanceBase<InstanceTypesShape> {}` |
 | UpgradeScripts | `export const UpgradeScripts = [...]` or `export { UpgradeScripts }` |
 | No `runEntrypoint()` | Must NOT be called — it is removed in v2.0 |
+| `isVisible` function on option fields | **Removed in v2.x** — `isVisible: (options) => boolean` no longer works; must migrate to `isVisibleExpression` — flag as 🔴 Critical / **blocking** |
 | `manifest.json` type | Must have `"type": "connection"` |
 | `manifest.json` runtime | Must be `"type": "node22"` — `"node18"` is dropped |
 | `@companion-module/tools` | Must be v2.7.1 or later (v3.0.0 is a drop-in replacement) |

@@ -139,14 +139,16 @@ pwsh scripts/bitfocus-setup-module.ps1 -ModuleName allenheath-sq
 ### Workflow 1: Show Pending Queue
 
 ```powershell
-$token   = gh auth token
-$headers = @{ Authorization = "Bearer $token" }
-$data    = Invoke-RestMethod -Uri "https://developer.bitfocus.io/api/v1/modules-pending-review" -Headers $headers
-$now     = [DateTimeOffset]::UtcNow
+$token      = gh auth token
+$headers    = @{ Authorization = "Bearer $token" }
+$reviewRoot = "/Users/lynbh/Development/companion-module-review"  # adjust to your path, or derive from script
+$modulesDir = if ($env:COMPANION_MODULES_DIR) { $env:COMPANION_MODULES_DIR } else { Join-Path (Split-Path -Parent $reviewRoot) "companion-modules-reviewing" }
+$data       = Invoke-RestMethod -Uri "https://developer.bitfocus.io/api/v1/modules-pending-review" -Headers $headers
+$now        = [DateTimeOffset]::UtcNow
 
 $data.versions | Sort-Object createdAt | ForEach-Object {
     $days  = [math]::Floor(($now - [DateTimeOffset]::FromUnixTimeMilliseconds($_.createdAt)).TotalDays)
-    $cloned = Test-Path (Join-Path $workspace "companion-module-$($_.moduleName)")
+    $cloned = Test-Path (Join-Path $modulesDir "companion-module-$($_.moduleName)")
     [PSCustomObject]@{
         Module  = $_.moduleName
         Tag     = $_.gitTag
@@ -198,14 +200,17 @@ https://developer.bitfocus.io/modules/companion-connection/{moduleName}
 ### Workflow 4: Clone a Module
 
 ```powershell
-$workspace  = "/Users/lynbh/Development/companion-module-review"
+# Modules live in the companion-modules-reviewing/ sibling directory.
+# $modulesDir is derived from the review repo root; override with $env:COMPANION_MODULES_DIR.
+$reviewRoot = "/Users/lynbh/Development/companion-module-review"  # or derive from script location
+$modulesDir = if ($env:COMPANION_MODULES_DIR) { $env:COMPANION_MODULES_DIR } else { Join-Path (Split-Path -Parent $reviewRoot) "companion-modules-reviewing" }
 $moduleName = "softouch-easyworship"  # substitute target module
-$cloneDir   = Join-Path $workspace "companion-module-$moduleName"
+$cloneDir   = Join-Path $modulesDir "companion-module-$moduleName"
 
 if (Test-Path $cloneDir) {
     Write-Host "Already cloned at $cloneDir"
 } else {
-    Push-Location $workspace
+    Push-Location $modulesDir
     git clone "https://github.com/bitfocus/companion-module-$moduleName"
     Pop-Location
 }

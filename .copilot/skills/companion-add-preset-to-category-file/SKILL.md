@@ -122,8 +122,8 @@ Add a matching entry in the `presets` object inside `GetPresets{Category}()`.
   style: {
     text: 'Button Label',         // label shown on Companion button
     size: '14',                   // font size as string
-    color: colorBlack,            // text color — import from '../utils.js'
-    bgcolor: colorLightGray,      // background color — import from '../utils.js'
+    color: colorBlack,            // text color — import from './preset-utils.js'
+    bgcolor: colorLightGray,      // background color — import from './preset-utils.js'
   },
   steps: [
     {
@@ -142,6 +142,22 @@ Add a matching entry in the `presets` object inside `GetPresets{Category}()`.
 
 ---
 
+## Color Constants
+
+All color constants live in `src/presets/preset-utils.ts` and are imported via `'./preset-utils.js'`.
+
+Currently defined:
+
+| Constant        | Hex value   | Typical use         |
+| --------------- | ----------- | ------------------- |
+| `colorBlack`    | `0x000000`  | Text color          |
+| `colorWhite`    | `0xffffff`  | Text color on dark  |
+| `colorLightGray`| `0xaaaaaa`  | Button background   |
+
+> **If the color you need does not exist, add it to `src/presets/preset-utils.ts`** as a new exported `const` before using it. Never use raw hex literals in preset files.
+
+---
+
 ## Common Mistakes
 
 | Mistake                                                             | Fix                                                                                                           |
@@ -150,6 +166,8 @@ Add a matching entry in the `presets` object inside `GetPresets{Category}()`.
 | Using string literal for key instead of enum member                 | Use `[PresetId{Category}.member]` as the key, never `'My_String_Key'`                                         |
 | Using string literal for `actionId` instead of an action enum value | Use `ActionIdFoo.bar`, never a bare string                                                                    |
 | Mismatched `category` string creating an unintended new UI group    | Copy the exact category string from an existing preset in this file                                           |
+| Using a raw hex literal for a color                                 | Add a named constant to `preset-utils.ts` and import it — never inline `0xffffff` or `16777215`              |
+| Importing color constants from the wrong module                     | Import from `'./preset-utils.js'`, not from `'../utils.js'`                                                   |
 
 ---
 

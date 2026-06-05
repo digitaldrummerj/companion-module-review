@@ -21,10 +21,7 @@
 3. **Decision inbox merge:** Merge `.squad/decisions/inbox/*.md` → `.squad/decisions.md`, delete inbox files, deduplicate
 4. **Cross-agent context:** Append relevant team updates to affected agents' `history.md`
 5. **Decisions archive:** If `decisions.md` exceeds ~20KB, archive entries older than 30 days to `decisions-archive.md`
-6. **Skills sync:** Keep `.copilot/skills/` in sync with `.squad/skills/` (source of truth). For each skill in `.squad/skills/`:
-   - If the matching `.copilot/skills/{name}/SKILL.md` does not exist → copy it
-   - If it exists but differs → overwrite with the `.squad/skills/` version
-   - Do NOT remove skills from `.copilot/skills/` that don't exist in `.squad/skills/` (those are system-level Squad skills)
+6. **Skills sync:** Run `pwsh scripts/sync-skills.ps1` to mirror `.squad/skills/` (source of truth) into `.copilot/skills/`. The script copies/overwrites each `.squad/skills/` skill into `.copilot/skills/` and never removes `.copilot/skills/` entries that don't exist in `.squad/skills/` (those are system-level Squad skills). Do NOT hand-copy — the script is deterministic; `-Check` reports drift without writing.
 7. **Git commit:** `git add .squad/ .copilot/skills/ && git commit -F {tempfile}` — skip if nothing staged
 8. **History summarization:** If any `history.md` exceeds 12KB, summarize old entries under `## Core Context`
 
