@@ -14,7 +14,7 @@ This module splits action definitions across many files (one per category), then
 - You are adding a **new logical category** of actions that does not fit into any existing `src/actions/action-*.ts` file
 - You need to create a brand new `src/actions/action-{category}.ts` file from scratch
 - You need to wire a new file into the `actions.ts` aggregator for the first time
-- The new actions are conceptually distinct from existing categories (e.g., adding breakout room actions when none exist, or adding a recording actions file)
+- The new actions are conceptually distinct from existing categories (e.g., adding a new group of target actions when none exist, or adding a recording actions file)
 
 ### ❌ Do NOT use this skill when:
 
@@ -50,41 +50,42 @@ this.setActionDefinitions(GetActions(this))
 
 ### When to create it
 
-Create `src/actions/action-utils.ts` when **two or more** category files share the same helper — for example: a shared option field definition, a shared OSC path builder, or a shared validation function. Do not put these in `actions.ts` (the aggregator); put them in a separate utils file that category files can import.
+Create `src/actions/action-utils.ts` when **two or more** category files share the same helper — for example: a shared option field definition, a shared command builder, or a shared validation function. Do not put these in `actions.ts` (the aggregator); put them in a separate utils file that category files can import.
 
 ### What to put in it
 
-- **Exported constants** — shared option field arrays, e.g. `ROOM_TARGET_OPTIONS`
-- **Exported helper functions** — path builders, option-value validators, factory wrappers
+- **Exported constants** — shared option field arrays, e.g. `TARGET_OPTIONS`
+- **Exported helper functions** — command builders, option-value validators, factory wrappers
 
 ```typescript
 // action-utils.ts
 
 // Shared option field reused across many category files
-export const ROOM_TARGET_OPTIONS: SomeCompanionActionInputField = {
-    id: 'roomIndex',
+export const TARGET_OPTIONS: SomeCompanionActionInputField = {
+    id: 'targetIndex',
     type: 'textinput',
-    label: 'Room Index',
+    label: 'Target Index',
     default: '1',
 }
 
-// Shared path builder
-export function buildRoomPath(roomIndex: number, command: string): string {
-    return `/zoom/room/${roomIndex}/${command}`
+// Shared command builder
+export function buildCommand(targetIndex: number, command: string): string {
+    return `target/${targetIndex}/${command}`
 }
 ```
 
 ### Instance-dependent helpers
 
-If a helper needs `instance` (e.g. to call `instance.OSC?.sendCommand` or `instance.log`), it **must accept `instance` as an explicit parameter** — it cannot close over it, because category files receive `instance` from their factory call, not at module load time.
+If a helper needs `instance` (e.g. to call `instance.sendCommand` or `instance.log`), it **must accept `instance` as an explicit parameter** — it cannot close over it, because category files receive `instance` from their factory call, not at module load time.
 
 ```typescript
 // action-utils.ts
 export function myCommandHelper(instance: YourInstanceType, command: string) {
-    return (action: { options: Record<string, unknown> }) => {
+    return async (action: { options: Record<string, unknown> }) => {
         try {
             // ... do work using instance and action.options ...
-            instance.OSC?.sendCommand(command)
+            // send to the device using your module's transport (TCP/UDP/OSC/HTTP/etc.)
+            await instance.sendCommand(command)
         } catch (e) {
             instance.log('error', e instanceof Error ? e.message : String(e))
         }
@@ -113,8 +114,9 @@ Wrap action callbacks in `try/catch` and log errors via `instance.log('error', .
 ```typescript
 callback: async (action): Promise<void> => {
     try {
-        const index = parseRangedInt(action.options.roomIndex, 1, 999, 'roomIndex')
-        instance.OSC?.sendCommand(buildRoomPath(index, 'mute'))
+        const index = parseRangedInt(action.options.targetIndex, 1, 999, 'targetIndex')
+        // send to the device using your module's transport (TCP/UDP/OSC/HTTP/etc.)
+        await instance.sendCommand(buildCommand(index, 'mute'))
     } catch (e) {
         instance.log('error', e instanceof Error ? e.message : String(e))
     }
@@ -137,7 +139,7 @@ import { InstanceBaseExt } from '../utils.js'
 
 > **Instance type note:** The instance type varies per module. `InstanceBaseExt<YourConfig>` above is a module-specific extension type — use whatever your module's instance type is. Common patterns:
 > - `InstanceBase<YourConfig>` — the plain SDK base class (imported from `@companion-module/base`)
-> - A custom class like `ZoomRoomsInstance` that extends `InstanceBase`
+> - A custom class like `MyDeviceInstance` that extends `InstanceBase`
 > - A generic extension wrapper like `InstanceBaseExt<YourConfig>` defined in `utils.ts`
 >
 > The key is **consistency** — use the same type your `index.ts` uses for `this`.
@@ -441,6 +443,6 @@ Zero TypeScript errors means your new file is properly typed and wired.
 
 - `src/actions.ts` — the aggregator (authoritative example of the full pattern in your module)
 - `src/actions/action-{category}.ts` — any existing category file in your module is a working example
-- `src/actions/action-room-utils.ts` — example of a shared action utilities file (if present)
+- `src/actions/action-utils.ts` — example of a shared action utilities file (if present)
 - `@companion-module/base` TypeScript types — `CompanionActionDefinition`, `CompanionActionDefinitions`, `SomeCompanionActionInputField`
 - Companion module development docs: https://companion-module.github.io/companion-module-tools/

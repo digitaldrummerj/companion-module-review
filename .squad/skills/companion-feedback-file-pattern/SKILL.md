@@ -50,7 +50,7 @@ this.setFeedbackDefinitions(GetFeedbacks(this))
 
 ### When to create / update it
 
-`src/feedbacks/feedback-utils.ts` holds helpers shared by **two or more** category files — for example: a shared room picker dropdown, a shared state accessor, or a shared option field factory. Do not put these in `feedback.ts` (the aggregator); put them in the utils file.
+`src/feedbacks/feedback-utils.ts` holds helpers shared by **two or more** category files — for example: a shared target picker dropdown, a shared state accessor, or a shared option field factory. Do not put these in `feedback.ts` (the aggregator); put them in the utils file.
 
 ### What to put in it
 
@@ -60,33 +60,33 @@ this.setFeedbackDefinitions(GetFeedbacks(this))
 // feedback-utils.ts
 
 import type { SomeCompanionFeedbackInputField } from '@companion-module/base'
-import type { ZoomRoomsInstance } from '../types.js'
+import type { ModuleInstance } from '../types.js'
 
-// Returns the list of rooms for dropdown choices, preferring paired rooms
-export function roomChoices(instance: ZoomRoomsInstance): { id: string; label: string }[] {
-	const choices = [{ id: '', label: '(Select room)' }]
-	const rooms = instance.state.pairedRooms.length ? instance.state.pairedRooms : instance.state.addedRooms
-	for (const r of rooms) {
-		if (r.roomID) choices.push({ id: r.roomID, label: r.roomName || r.roomID })
+// Returns the list of targets for dropdown choices
+export function targetChoices(instance: ModuleInstance): { id: string; label: string }[] {
+	const choices = [{ id: '', label: '(Select target)' }]
+	const targets = instance.state.targets
+	for (const t of targets) {
+		if (t.id) choices.push({ id: t.id, label: t.name || t.id })
 	}
 	return choices
 }
 
-// Factory for the standard room picker option field — call inside each GetFeedbacks{Category}
-export function getRoomOption(instance: ZoomRoomsInstance): SomeCompanionFeedbackInputField {
+// Factory for the standard target picker option field — call inside each GetFeedbacks{Category}
+export function getTargetOption(instance: ModuleInstance): SomeCompanionFeedbackInputField {
 	return {
 		type: 'dropdown',
-		label: 'Room',
-		id: 'roomId',
+		label: 'Target',
+		id: 'targetId',
 		default: '',
-		choices: roomChoices(instance),
+		choices: targetChoices(instance),
 	}
 }
 ```
 
-### Why getRoomOption is a factory function
+### Why getTargetOption is a factory function
 
-`roomChoices` reads live instance state at the time `GetFeedbacks` is called, so the dropdown is populated with the current room list. If it were a module-level constant, it would always be empty. Always call `getRoomOption(instance)` inside the `GetFeedbacks{Category}` factory, not at module load time.
+`targetChoices` reads live instance state at the time `GetFeedbacks` is called, so the dropdown is populated with the current target list. If it were a module-level constant, it would always be empty. Always call `getTargetOption(instance)` inside the `GetFeedbacks{Category}` factory, not at module load time.
 
 ---
 
@@ -96,8 +96,8 @@ export function getRoomOption(instance: ZoomRoomsInstance): SomeCompanionFeedbac
 
 ```typescript
 import type { CompanionFeedbackDefinition } from '@companion-module/base'
-import type { ZoomRoomsInstance } from '../types.js'
-import { getRoomOption } from './feedback-utils.js'
+import type { ModuleInstance } from '../types.js'
+import { getTargetOption } from './feedback-utils.js'
 ```
 
 ### Enum of Feedback IDs
@@ -116,10 +116,10 @@ export enum FeedbackIdMyCategory {
 ### The Factory Function
 
 ```typescript
-export function GetFeedbacksMyCategory(instance: ZoomRoomsInstance): {
+export function GetFeedbacksMyCategory(instance: ModuleInstance): {
 	[id in FeedbackIdMyCategory]: CompanionFeedbackDefinition | undefined
 } {
-	const roomOpt = getRoomOption(instance)
+	const targetOpt = getTargetOption(instance)
 
 	const feedbacks: { [id in FeedbackIdMyCategory]: CompanionFeedbackDefinition | undefined } = {
 		[FeedbackIdMyCategory.someFeedback]: {
@@ -127,11 +127,11 @@ export function GetFeedbacksMyCategory(instance: ZoomRoomsInstance): {
 			name: 'Some Feedback',
 			description: 'True when the condition is met',
 			defaultStyle: { bgcolor: 0x00ff00 },
-			options: [roomOpt],
+			options: [targetOpt],
 			callback: (feedback) => {
-				const roomId = feedback.options.roomId as string
-				if (!roomId) return false
-				return instance.state.rooms[roomId]?.someProperty === true
+				const targetId = feedback.options.targetId as string
+				if (!targetId) return false
+				return instance.state.targets[targetId]?.someProperty === true
 			},
 		},
 
@@ -140,11 +140,11 @@ export function GetFeedbacksMyCategory(instance: ZoomRoomsInstance): {
 			name: 'Another Feedback',
 			description: 'True when another condition is met',
 			defaultStyle: { bgcolor: 0xff0000 },
-			options: [roomOpt],
+			options: [targetOpt],
 			callback: (feedback) => {
-				const roomId = feedback.options.roomId as string
-				if (!roomId) return false
-				return instance.state.rooms[roomId]?.otherProperty === true
+				const targetId = feedback.options.targetId as string
+				if (!targetId) return false
+				return instance.state.targets[targetId]?.otherProperty === true
 			},
 		},
 	}
@@ -158,15 +158,15 @@ export function GetFeedbacksMyCategory(instance: ZoomRoomsInstance): {
 ```typescript
 callback: (feedback) => {
 	// Cast options — TypeScript types them as any
-	const roomId = feedback.options.roomId as string
+	const targetId = feedback.options.targetId as string
 
 	// Guard against empty selection or missing state
-	if (!roomId) return false
-	const room = instance.state.rooms[roomId]
-	if (!room) return false
+	if (!targetId) return false
+	const target = instance.state.targets[targetId]
+	if (!target) return false
 
 	// Read from state — never query the device synchronously
-	return room.someProperty === true
+	return target.someProperty === true
 }
 ```
 
@@ -180,10 +180,10 @@ callback: (feedback) => {
 [FeedbackIdMyCategory.levelDisplay]: {
 	type: 'advanced',
 	name: 'Level Display',
-	options: [roomOpt],
+	options: [targetOpt],
 	callback: (feedback) => {
-		const roomId = feedback.options.roomId as string
-		const level = instance.state.rooms[roomId]?.level ?? 0
+		const targetId = feedback.options.targetId as string
+		const level = instance.state.targets[targetId]?.level ?? 0
 		return {
 			text: `${level}%`,
 			bgcolor: level > 75 ? 0xff0000 : 0x00ff00,
@@ -218,7 +218,7 @@ const feedbacksMyCategory: { [id in FeedbackIdMyCategory]: CompanionFeedbackDefi
 ### Build the combined object
 
 ```typescript
-export function GetFeedbacks(instance: ZoomRoomsInstance): CompanionFeedbackDefinitions {
+export function GetFeedbacks(instance: ModuleInstance): CompanionFeedbackDefinitions {
 	const feedbacksMyCategory: { [id in FeedbackIdMyCategory]: CompanionFeedbackDefinition | undefined } =
 		GetFeedbacksMyCategory(instance)
 	const feedbacksOtherCategory: { [id in FeedbackIdOtherCategory]: CompanionFeedbackDefinition | undefined } =
@@ -257,18 +257,18 @@ src/feedbacks/feedback-{category}.ts
 
 ```typescript
 import type { CompanionFeedbackDefinition } from '@companion-module/base'
-import type { ZoomRoomsInstance } from '../types.js'
-import { getRoomOption } from './feedback-utils.js'
+import type { ModuleInstance } from '../types.js'
+import { getTargetOption } from './feedback-utils.js'
 
 export enum FeedbackId{Category} {
 	firstFeedback = '{category}_first_feedback',
 	secondFeedback = '{category}_second_feedback',
 }
 
-export function GetFeedbacks{Category}(instance: ZoomRoomsInstance): {
+export function GetFeedbacks{Category}(instance: ModuleInstance): {
 	[id in FeedbackId{Category}]: CompanionFeedbackDefinition | undefined
 } {
-	const roomOpt = getRoomOption(instance)
+	const targetOpt = getTargetOption(instance)
 
 	const feedbacks: { [id in FeedbackId{Category}]: CompanionFeedbackDefinition | undefined } = {
 
@@ -277,10 +277,10 @@ export function GetFeedbacks{Category}(instance: ZoomRoomsInstance): {
 			name: 'First Feedback',
 			description: 'True when the first condition is met',
 			defaultStyle: { bgcolor: 0x00ff00 },
-			options: [roomOpt],
+			options: [targetOpt],
 			callback: (feedback) => {
-				const roomId = feedback.options.roomId as string
-				if (!roomId) return false
+				const targetId = feedback.options.targetId as string
+				if (!targetId) return false
 				// TODO: check instance.state for the relevant condition
 				return false
 			},
@@ -291,10 +291,10 @@ export function GetFeedbacks{Category}(instance: ZoomRoomsInstance): {
 			name: 'Second Feedback',
 			description: 'True when the second condition is met',
 			defaultStyle: { bgcolor: 0x00ff00 },
-			options: [roomOpt],
+			options: [targetOpt],
 			callback: (feedback) => {
-				const roomId = feedback.options.roomId as string
-				if (!roomId) return false
+				const targetId = feedback.options.targetId as string
+				if (!targetId) return false
 				// TODO: check instance.state for the relevant condition
 				return false
 			},
@@ -359,15 +359,15 @@ Zero TypeScript errors means the new file is properly typed and wired.
 | Enum string value duplicates an existing feedback ID | Check all other enums — IDs must be globally unique |
 | Added spread but forgot to add enum to union type | TypeScript will error — add the enum to the `[id in ...]` union |
 | Forgot `.js` extension on import in `feedback.ts` | This is ESM — always use `.js` extension on relative imports |
-| Called `roomChoices()` at module level instead of inside factory | Always call `getRoomOption(instance)` inside `GetFeedbacks{Category}()` |
+| Called `targetChoices()` at module level instead of inside factory | Always call `getTargetOption(instance)` inside `GetFeedbacks{Category}()` |
 | `callback` accesses `feedback.options.x` without casting | Cast: `feedback.options.x as string` / `as number` / `as boolean` |
-| Forgot to guard against empty `roomId` | Always check `if (!roomId) return false` before reading state |
-| Forgot to guard against missing room state | Always check `if (!room) return false` before accessing room properties |
+| Forgot to guard against empty `targetId` | Always check `if (!targetId) return false` before reading state |
+| Forgot to guard against missing target state | Always check `if (!target) return false` before accessing target properties |
 
 ## References
 
 - `src/feedback.ts` — the aggregator (authoritative example of the full pattern in your module)
-- `src/feedbacks/feedback-utils.ts` — shared helpers (`roomChoices`, `getRoomOption`)
+- `src/feedbacks/feedback-utils.ts` — shared helpers (`targetChoices`, `getTargetOption`)
 - `src/feedbacks/feedback-{category}.ts` — any existing category file is a working example
 - `@companion-module/base` TypeScript types — `CompanionFeedbackDefinition`, `CompanionFeedbackDefinitions`, `SomeCompanionFeedbackInputField`
 - **companion-feedbacks** skill — reference for `CompanionFeedbackDefinition` API details, boolean vs advanced, subscribe/unsubscribe

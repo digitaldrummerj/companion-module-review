@@ -60,13 +60,9 @@ Add a matching entry in the `actions` object inside `GetActions{Category}()`.
 [ActionIdGlobalRecording.archiveLocalRecording]: {
   name: 'Archive Local Recording',
   options: [],
-  callback: (): void => {
-    const command = createCommand(instance, '/archiveLocalRecording')
-    const sendToCommand = {
-      id: ActionIdGlobalRecording.archiveLocalRecording,
-      options: { command: command.oscPath, args: command.args },
-    }
-    sendActionCommand(instance, sendToCommand)
+  callback: async (): Promise<void> => {
+    // send to the device using your module's transport (TCP/UDP/OSC/HTTP/etc.)
+    await instance.sendCommand('archiveLocalRecording')
   },
 },
 ```
@@ -74,19 +70,13 @@ Add a matching entry in the `actions` object inside `GetActions{Category}()`.
 **Async callback (options that need variable parsing):**
 
 ```typescript
-[ActionIdUserVideoMic.someUserAction]: {
-  name: 'Some User Action',
-  options: [options.userName],
+[ActionIdTarget.someTargetAction]: {
+  name: 'Some Target Action',
+  options: [options.targetName],
   callback: async (action): Promise<void> => {
-    const userName = await instance.parseVariablesInString(action.options.userName as string)
-    const command = createCommand(instance, '/someOscPath', userName, select.multi)
-    if (command.isValidCommand) {
-      const sendToCommand = {
-        id: ActionIdUserVideoMic.someUserAction,
-        options: { command: command.oscPath, args: command.args },
-      }
-      sendActionCommand(instance, sendToCommand)
-    }
+    const targetName = await instance.parseVariablesInString(action.options.targetName as string)
+    // send to the device using your module's transport (TCP/UDP/OSC/HTTP/etc.)
+    await instance.sendCommand('someCommand', targetName)
   },
 },
 ```
@@ -98,20 +88,18 @@ Add a matching entry in the `actions` object inside `GetActions{Category}()`.
 | Sync  | `callback: (): void => { … }`                      | No `await`, no option parsing                 |
 | Async | `callback: async (action): Promise<void> => { … }` | Uses `await` (e.g., `parseVariablesInString`) |
 
-#### Zoom OSC `createCommand` + `sendActionCommand` pattern
+#### Shared command-helper pattern
 
-This module uses helpers from `./action-utils.js`:
+Some modules centralize command building/dispatch in helpers imported from `./action-utils.js`:
 
 ```typescript
-import { createCommand, sendActionCommand } from './action-utils.js'
-// optionally: import { select } from './action-utils.js'  // for user-targeting
+import { buildCommand } from './action-utils.js'
 ```
 
-- `createCommand(instance, oscPath)` — builds the OSC path + args object for global commands
-- `createCommand(instance, oscPath, userName, select.multi)` — adds user targeting
-- `sendActionCommand(instance, sendToCommand)` — dispatches the command via OSC
+- `buildCommand(target, command)` — builds the command string for your device's protocol
+- The callback then dispatches it via the instance's transport, e.g. `await instance.sendCommand(...)`
 
-> This is module-specific. In a generic Companion module the callback body would simply call instance methods directly (e.g., `instance.sendToDevice(...)`).
+> This is module-specific. In a generic Companion module the callback body would simply call instance methods directly (e.g., `instance.sendCommand(...)` over whatever transport the module uses — TCP/UDP/OSC/HTTP/etc.).
 
 ---
 
@@ -127,8 +115,8 @@ import { createCommand, sendActionCommand } from './action-utils.js'
 **Examples:**
 
 ```typescript
-// textinput (supports variables like $(zoom:userName))
-{ id: 'userName', type: 'textinput', label: 'User Name', default: '' }
+// textinput (supports variables like $(internal:custom_target))
+{ id: 'targetName', type: 'textinput', label: 'Target Name', default: '' }
 
 // dropdown
 { id: 'mode', type: 'dropdown', label: 'Mode',
@@ -158,5 +146,5 @@ import { createCommand, sendActionCommand } from './action-utils.js'
 ## References
 
 - **`companion-action-file-pattern`** skill — use this when creating a brand-new action category file (includes aggregator wiring)
-- `src/actions/action-global-recording.ts` — clean example of sync callbacks with `createCommand` / `sendActionCommand`
-- `src/actions/action-user-video-mic.ts` — example with async callbacks and user-targeting options
+- `src/actions/action-global-recording.ts` — clean example of sync callbacks dispatching device commands
+- `src/actions/action-target.ts` — example with async callbacks and target-selection options

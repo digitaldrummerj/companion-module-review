@@ -37,14 +37,14 @@ src/feedbacks/feedback-{category}.ts
 // Before
 export enum FeedbackIdDeviceSettings {
 	MuteStatus = 'mute_status',
-	CameraStatus = 'camera_status',
+	PowerStatus = 'power_status',
 }
 
 // After — add the new member
 export enum FeedbackIdDeviceSettings {
 	MuteStatus = 'mute_status',
-	CameraStatus = 'camera_status',
-	SelectedMic = 'selected_mic',  // ← new
+	PowerStatus = 'power_status',
+	SelectedInput = 'selected_input',  // ← new
 }
 ```
 
@@ -57,21 +57,21 @@ Add a matching entry in the `feedbacks` object inside `GetFeedbacks{Category}()`
 **Boolean feedback (simple true/false style toggle):**
 
 ```typescript
-[FeedbackIdDeviceSettings.SelectedMic]: {
+[FeedbackIdDeviceSettings.SelectedInput]: {
 	type: 'boolean',
-	name: 'Selected Mic',
-	description: 'True when the room mic matches the given name',
+	name: 'Selected Input',
+	description: 'True when the target input matches the given name',
 	defaultStyle: { bgcolor: 0x00ff00 },
 	options: [
-		roomOpt,
-		{ type: 'textinput', label: 'Mic name', id: 'mic_name', default: '' },
+		targetOpt,
+		{ type: 'textinput', label: 'Input name', id: 'input_name', default: '' },
 	],
 	callback: (feedback) => {
-		const roomId = feedback.options.roomId as string
-		if (!roomId) return false
-		const room = instance.state.rooms[roomId]
-		if (!room) return false
-		return room.selectedMic === (feedback.options.mic_name as string)
+		const targetId = feedback.options.targetId as string
+		if (!targetId) return false
+		const target = instance.state.targets[targetId]
+		if (!target) return false
+		return target.selectedInput === (feedback.options.input_name as string)
 	},
 },
 ```
@@ -79,16 +79,16 @@ Add a matching entry in the `feedbacks` object inside `GetFeedbacks{Category}()`
 **Advanced feedback (dynamic text or color based on state value):**
 
 ```typescript
-[FeedbackIdDeviceSettings.MicNameDisplay]: {
+[FeedbackIdDeviceSettings.InputNameDisplay]: {
 	type: 'advanced',
-	name: 'Mic Name Display',
-	description: 'Shows the currently selected mic name on the button',
-	options: [roomOpt],
+	name: 'Input Name Display',
+	description: 'Shows the currently selected input name on the button',
+	options: [targetOpt],
 	callback: (feedback) => {
-		const roomId = feedback.options.roomId as string
-		const mic = instance.state.rooms[roomId]?.selectedMic ?? '—'
+		const targetId = feedback.options.targetId as string
+		const input = instance.state.targets[targetId]?.selectedInput ?? '—'
 		return {
-			text: mic,
+			text: input,
 			size: '14',
 			color: 0xffffff,
 			bgcolor: 0x000000,
@@ -108,13 +108,13 @@ Add a matching entry in the `feedbacks` object inside `GetFeedbacks{Category}()`
 
 ## Shared Options
 
-The `roomOpt` variable is already declared at the top of `GetFeedbacks{Category}()` via:
+The `targetOpt` variable is already declared at the top of `GetFeedbacks{Category}()` via:
 
 ```typescript
-const roomOpt = getRoomOption(instance)
+const targetOpt = getTargetOption(instance)
 ```
 
-Include it in your new feedback's `options` array if the feedback is room-scoped. You can also add additional option fields alongside it.
+Include it in your new feedback's `options` array if the feedback is target-scoped. You can also add additional option fields alongside it.
 
 ---
 
@@ -136,17 +136,17 @@ The `instance` parameter is in scope throughout `GetFeedbacks{Category}()`. Comm
 ```typescript
 callback: (feedback) => {
 	// Always cast options — typed as any
-	const roomId = feedback.options.roomId as string
+	const targetId = feedback.options.targetId as string
 
 	// Guard against empty selection
-	if (!roomId) return false
+	if (!targetId) return false
 
-	// Guard against missing room
-	const room = instance.state.rooms[roomId]
-	if (!room) return false
+	// Guard against missing target
+	const target = instance.state.targets[targetId]
+	if (!target) return false
 
 	// Read cached state — never query the device synchronously
-	return room.someProperty === true
+	return target.someProperty === true
 }
 ```
 
@@ -159,8 +159,8 @@ callback: (feedback) => {
 | Duplicate enum string value | String IDs must be unique across **all** category enums — check the others |
 | `feedback.options.x` used without a cast | Cast explicitly: `as string`, `as number`, `as boolean` |
 | Enum member name doesn't match the key in the `feedbacks` object | They must match: `FeedbackIdFoo.Bar` → `[FeedbackIdFoo.Bar]: { … }` |
-| Forgot to guard against empty `roomId` | Always check `if (!roomId) return false` before reading state |
-| Forgot to guard against missing room state | Check `if (!room) return false` before accessing room properties |
+| Forgot to guard against empty `targetId` | Always check `if (!targetId) return false` before reading state |
+| Forgot to guard against missing target state | Check `if (!target) return false` before accessing target properties |
 | Used `advanced` type but forgot to return an object | `advanced` callbacks must always return a `CompanionAdvancedFeedbackResult` object |
 
 ---
@@ -168,5 +168,5 @@ callback: (feedback) => {
 ## References
 
 - **`companion-feedback-file-pattern`** skill — use when creating a brand-new feedback category file (includes aggregator wiring)
-- `src/feedbacks/feedback-utils.ts` — `getRoomOption()` and `roomChoices()` shared helpers
-- `src/feedbacks/feedback-room-status.ts` — example of a boolean feedback category file with multiple feedbacks
+- `src/feedbacks/feedback-utils.ts` — `getTargetOption()` and `targetChoices()` shared helpers
+- `src/feedbacks/feedback-target-status.ts` — example of a boolean feedback category file with multiple feedbacks

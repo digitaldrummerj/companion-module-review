@@ -126,7 +126,7 @@ export function UpdateFeedbacks(self: ModuleInstance): void {
 			options: [],
 			callback: (feedback) => {
 				// Access module state
-				return self.deviceState.muted === true
+				return self.state.muted === true
 			},
 		},
 
@@ -166,7 +166,7 @@ export function UpdateFeedbacks(self: ModuleInstance): void {
 			],
 			callback: (feedback) => {
 				const channel = feedback.options.channel as number
-				const level = self.deviceState.levels[channel] || 0
+				const level = self.state.levels[channel] || 0
 
 				// Return custom rendering
 				return {
@@ -195,8 +195,8 @@ self.checkAllFeedbacks()
 
 // Common pattern: update state + check feedbacks
 async function handleDeviceUpdate(self: ModuleInstance, data: DeviceUpdate): Promise<void> {
-	self.deviceState.muted = data.muted
-	self.deviceState.levels = data.levels
+	self.state.muted = data.muted
+	self.state.levels = data.levels
 
 	// Trigger re-evaluation
 	self.checkFeedbacks('is_muted', 'level_display')
@@ -235,7 +235,7 @@ export function UpdateFeedbacks(self: ModuleInstance): void {
 			},
 			callback: (feedback) => {
 				const threshold = feedback.options.threshold as number
-				return self.deviceState.temperature >= threshold
+				return self.state.temperature >= threshold
 			},
 		},
 	})
@@ -254,7 +254,7 @@ export function UpdateFeedbacks(self: ModuleInstance): void {
    - Callbacks should be fast — compute from cached state, don't query devices synchronously
 
 4. **Not handling missing state**
-   - Always provide fallback values: `self.deviceState.level ?? 0`
+   - Always provide fallback values: `self.state.level ?? 0`
 
 5. **Confusing boolean vs. advanced**
    - Use boolean for simple on/off styling

@@ -166,13 +166,13 @@ export function UpdateActions(self: ModuleInstance): void {
 			options: [],
 			callback: async (event) => {
 				// Access module state via 'self'
-				const currentMute = self.deviceState.muted
+				const currentMute = self.state.muted
 				const newMute = !currentMute
 
 				await self.connection.setMute(newMute)
 
 				// Update internal state
-				self.deviceState.muted = newMute
+				self.state.muted = newMute
 
 				// Trigger feedback updates
 				self.checkFeedbacks('is_muted')
