@@ -23,15 +23,14 @@
 
 ## How I Work
 
-- **ALWAYS run `yarn install` in the module directory FIRST before any other command.** Never skip this step — missing dependencies cause false build/lint/test failures.
-- Read `.squad/skills/companion-template-compliance/SKILL.md` for the full template compliance checklist before starting any review
-- Compare `package.json` against the template first — deviations need justification
-- Check `scripts` section: must have `build`, `package`, `lint`, `format` (TS) or `package`, `format` (JS)
-- Run `yarn install` then `yarn package` in the module directory; report exact error output on failure
-- Check that `companion/` directory exists with correct manifest files
-- For TS modules: verify `tsconfig.build.json` and `tsconfig.json` match template patterns
-- For JS modules: verify `main` points to `src/main.js` (not `dist/`)
-- Review action/feedback option definitions for completeness — missing descriptions are a note, not a rejection
+- **Run the deterministic validator first — don't check template compliance by hand.** The fact sheet already ran it; to (re)run with the build:
+  ```powershell
+  pwsh scripts/validate-template.ps1 -ModuleDir <module> -ExpectedVersion <tag> -RunBuild
+  ```
+  This covers required files, config-file parity, `package.json`/`manifest.json` fields, LICENSE, `src/`-only source, devDependencies, husky, **and** runs `yarn install`/`yarn package` (+ `yarn lint` for TS). Every `Critical` finding blocks approval — copy them into your findings verbatim.
+- Read `.squad/skills/companion-template-compliance/SKILL.md` only for how to interpret the findings and the **judgment items** the script can't decide (HELP.md quality, justified `tsconfig` deviations, manifest version normalization, manufacturer/product keyword nuance).
+- Then spend your attention on what the script does NOT cover: review action/feedback/preset/variable **structure** and option definitions for completeness — missing descriptions are a note, not a rejection.
+- Do not re-derive `package.json`/`manifest.json`/language/API version — read them from the fact sheet (`.squad/decisions/inbox/module-facts.json`).
 
 ## Release Diff Classification
 

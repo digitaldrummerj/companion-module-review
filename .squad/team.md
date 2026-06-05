@@ -53,7 +53,28 @@ The two **permanent** reference directories (never reviewed as modules):
 
 ---
 
+## Review Bootstrap (run once, before spawning reviewers)
+
+Reviews get expensive when five agents each re-read `package.json`, `manifest.json`, the file
+tree, and re-derive the API version. Gather that **once** and share it.
+
+1. **Set up the module** (if not already cloned): `pwsh scripts/bitfocus-setup-module.ps1` — it auto-skips modules already reviewed locally with feedback pending (see `companion-bitfocus-dashboard`).
+2. **Generate the fact sheet:**
+   ```powershell
+   pwsh scripts/module-facts.ps1 -ModuleDir <module-path> -GitTag <tag> -Json > .squad/decisions/inbox/module-facts.json
+   ```
+   It reports language (JS/TS), API version (v1/v2), the **single** api-compliance skill that applies, `package.json` + `manifest.json` essentials, detected protocols, the source-tree list, and a template-compliance summary (it invokes `scripts/validate-template.ps1`).
+3. **Hand the fact sheet to every reviewer** in their spawn prompt. Reviewers READ it instead of re-deriving the basics.
+
+### Skill loading during review (keep context small)
+
+- Load **only** the api-compliance skill named in the fact sheet (`apiVersion` → `companion-v1-api-compliance` **or** `companion-v2-api-compliance`) — never both.
+- Kaylee loads `companion-template-compliance` (she runs `validate-template.ps1`; the skill is now a thin wrapper + judgment items).
+- Do **NOT** load the authoring skills (`companion-action*`, `companion-feedback*`, `companion-preset*`, `companion-config`, `companion-variable*`, `companion-upgrades`) during a review — they teach how to *build* a module, not how to *review* one. Pull one on demand only if a reviewer is inspecting that exact area and needs the API reference.
+
 ## Review Checklist (shared context)
+
+> Items 1–3 and 9 are produced **deterministically** by `scripts/validate-template.ps1` (run via the fact sheet, or with `-RunBuild` to execute build + lint). Reviewers confirm those findings and spend their attention on 5–8, which require judgment.
 
 A module is **approved** when all of the following pass:
 
