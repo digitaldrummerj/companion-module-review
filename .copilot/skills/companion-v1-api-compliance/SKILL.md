@@ -1,3 +1,8 @@
+---
+name: companion-v1-api-compliance
+description: Compliance checks for Companion modules on @companion-module/base v1.x (v1.5–v1.14, Companion 3.1–4.2). Use only when package.json resolves @companion-module/base to ^1.x or ~1.x. For 2.x modules use companion-v2-api-compliance instead.
+---
+
 # Skill: Companion Module API v1.x Compliance
 
 ## Purpose

@@ -1,3 +1,8 @@
+---
+name: companion-v2-api-compliance
+description: Compliance checks for Companion modules on @companion-module/base v2.x (Companion 4.3+) — class-based export, removed runEntrypoint/parseVariablesInString, setVariableDefinitions object form, checkAllFeedbacks, manifest type connection. Use only when package.json resolves @companion-module/base to ^2.x. For 1.x modules use companion-v1-api-compliance instead.
+---
+
 # Skill: Companion Module API v2.0 Compliance
 
 ## Purpose

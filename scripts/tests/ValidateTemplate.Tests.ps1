@@ -6,8 +6,8 @@
 .DESCRIPTION
     Builds a fixture v2-style JS template + a known-good module + a known-bad module,
     runs the validator as a child process (so its `exit` doesn't kill this runner), and
-    asserts on the -Json findings. Expectations are now derived from the template, so the
-    fixture template ships a package.json + manifest.json.
+    asserts on the -Json findings. Expectations are derived from the template, so the
+    fixture template ships a package.json, manifest.json, LICENSE, and devDependencies.
 
     Run:  pwsh scripts/tests/ValidateTemplate.Tests.ps1
 #>
@@ -30,6 +30,9 @@ function Invoke-Validator($ModuleDir, $TemplateDir) {
 }
 
 $gitignore = "node_modules/`npackage-lock.json`n/pkg`n/*.tgz`nDEBUG-*`n/.yarn"
+$licenseTpl  = "MIT License`n`nCopyright (c) 2025 Template Author`n`nPermission is hereby granted, free of charge, to any person obtaining a copy`nof this software."
+$licenseGood = "MIT License`n`nCopyright (c) 2026 Jane Dev`n`nPermission is hereby granted, free of charge, to any person obtaining a copy`nof this software."
+$licenseBad  = "MIT License`n`nCopyright (c) 2026 Your name`n`nPermission is hereby granted, free of charge, to any person obtaining a copy`nof this software."
 
 $root = Join-Path ([System.IO.Path]::GetTempPath()) "validatetpl-$([System.IO.Path]::GetRandomFileName())"
 try {
@@ -39,6 +42,7 @@ try {
     Set-File (Join-Path $tpl '.gitignore')       $gitignore
     Set-File (Join-Path $tpl '.prettierignore')  "package.json`n/LICENSE.md"
     Set-File (Join-Path $tpl '.yarnrc.yml')      "nodeLinker: node-modules"
+    Set-File (Join-Path $tpl 'LICENSE')          $licenseTpl
     Set-File (Join-Path $tpl 'package.json') (@'
 {
   "name": "your-module-name",
@@ -49,6 +53,7 @@ try {
   "repository": { "type": "git", "url": "git+https://github.com/bitfocus/companion-module-your-module-name.git" },
   "engines": { "node": "^22.20", "yarn": "^4" },
   "dependencies": { "@companion-module/base": "~2.0.4" },
+  "devDependencies": { "@companion-module/tools": "^3.0.1", "prettier": "^3.8.3" },
   "prettier": "@companion-module/tools/.prettierrc.json",
   "packageManager": "yarn@4.12.0"
 }
@@ -71,7 +76,7 @@ try {
     Set-File (Join-Path $good '.gitignore')       $gitignore
     Set-File (Join-Path $good '.prettierignore')  "package.json`n/LICENSE.md"
     Set-File (Join-Path $good '.yarnrc.yml')      "nodeLinker: node-modules"
-    Set-File (Join-Path $good 'LICENSE')          "MIT"
+    Set-File (Join-Path $good 'LICENSE')          $licenseGood
     Set-File (Join-Path $good 'yarn.lock')        "# yarn lockfile"
     Set-File (Join-Path $good 'src/main.js')      "// entry"
     Set-File (Join-Path $good 'companion/HELP.md') "# Foo`n`nThis module controls a Foo device.`nConfigure host and port.`nActions: play, stop.`nFeedbacks: playing state.`nTroubleshooting: check the network."
@@ -85,6 +90,7 @@ try {
   "repository": { "type": "git", "url": "git+https://github.com/bitfocus/companion-module-foo.git" },
   "engines": { "node": "^22.20", "yarn": "^4" },
   "dependencies": { "@companion-module/base": "~2.0.4" },
+  "devDependencies": { "@companion-module/tools": "^3.0.1", "prettier": "^3.8.3" },
   "prettier": "@companion-module/tools/.prettierrc.json",
   "packageManager": "yarn@4.12.0"
 }
@@ -111,9 +117,10 @@ try {
     Set-File (Join-Path $bad '.gitignore')       $gitignore
     # .prettierignore intentionally missing                              # FILE-MISSING
     Set-File (Join-Path $bad '.yarnrc.yml')      "nodeLinker: node-modules"
-    Set-File (Join-Path $bad 'LICENSE')          "MIT"
+    Set-File (Join-Path $bad 'LICENSE')          $licenseBad             # LICENSE-PLACEHOLDER
     Set-File (Join-Path $bad 'yarn.lock')        "# yarn lockfile"
     Set-File (Join-Path $bad 'src/main.js')      "// entry"
+    Set-File (Join-Path $bad 'main.js')          "// stray root source"  # SRC-AT-ROOT
     Set-File (Join-Path $bad 'package-lock.json') "{}"                   # NPM-LOCK
     Set-File (Join-Path $bad 'companion/HELP.md') "## Your module"       # HELP-STUB
     Set-File (Join-Path $bad 'node_modules/dep/index.js') "x"           # GITIGNORED-COMMITTED
@@ -125,9 +132,10 @@ try {
   "scripts": { "format": "prettier -w ." },
   "license": "MIT",
   "repository": { "type": "git", "url": "git+https://github.com/someone/companion-module-bar.git" },
+  "dependencies": { "@companion-module/base": "~2.0.4" },
+  "devDependencies": { "@companion-module/tools": "^3.0.1" },
   "prettier": "@companion-module/tools/.prettierrc.json",
-  "packageManager": "npm@9",
-  "dependencies": { "@companion-module/base": "~2.0.4" }
+  "packageManager": "npm@9"
 }
 '@)
     Set-File (Join-Path $bad 'companion/manifest.json') (@'
@@ -149,11 +157,14 @@ try {
     Ok ($ids -contains 'CONFIG-DIFF')          "flags .gitattributes config diff"
     Ok ($ids -contains 'FILE-MISSING')         "flags missing .prettierignore"
     Ok ($ids -contains 'NPM-LOCK')             "flags package-lock.json"
+    Ok ($ids -contains 'SRC-AT-ROOT')          "flags source file at module root"
+    Ok ($ids -contains 'LICENSE-PLACEHOLDER')  "flags placeholder LICENSE copyright"
     Ok ($ids -contains 'PKG-MAIN')             "flags wrong main"
     Ok ($ids -contains 'PKG-REPO')             "flags wrong repository.url"
     Ok ($ids -contains 'PKG-FIELD')            "flags missing engines (template-derived)"
     Ok ($ids -contains 'PKG-YARN')             "flags non-yarn4 packageManager"
     Ok ($ids -contains 'PKG-SCRIPT')           "flags missing package script (template-derived)"
+    Ok ($ids -contains 'PKG-DEVDEP')           "flags missing devDependency (template-derived)"
     Ok ($ids -contains 'MAN-IDNAME')           "flags manifest id != name"
     Ok ($ids -contains 'MAN-PLACEHOLDER')      "flags placeholder maintainer"
     Ok ($ids -contains 'MAN-KEYWORD')          "flags banned keyword 'companion'"

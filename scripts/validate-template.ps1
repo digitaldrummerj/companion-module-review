@@ -196,6 +196,38 @@ if ($tplGitignore -and (Test-Path (Join-Path $ModuleDir '.git'))) {
     }
 }
 
+# ── 3b. LICENSE content must match template (only the copyright line may differ) ─
+$modLicense = Join-Path $ModuleDir 'LICENSE'
+$tplLicense = Join-Path $TemplateDir 'LICENSE'
+if ((Test-Path $modLicense) -and (Test-Path $tplLicense)) {
+    $isCopyright = { param($line) $line -match '(?i)copyright' }
+    $modL = @(Read-NormalizedLines $modLicense)
+    $tplL = @(Read-NormalizedLines $tplLicense)
+    if ($modL.Count -ne $tplL.Count) {
+        Add-Finding 'LICENSE-DIFF' 'Critical' 'LICENSE' "Does not match template LICENSE (line count differs)"
+    } else {
+        for ($i = 0; $i -lt $tplL.Count; $i++) {
+            if ($modL[$i] -eq $tplL[$i]) { continue }
+            if ((& $isCopyright $modL[$i]) -and (& $isCopyright $tplL[$i])) {
+                # Copyright line may differ in year/author, but must not be a placeholder.
+                if ($modL[$i] -match '(?i)your name|your company') {
+                    Add-Finding 'LICENSE-PLACEHOLDER' 'Critical' 'LICENSE' "Copyright line is a placeholder: '$($modL[$i])'"
+                }
+                continue
+            }
+            Add-Finding 'LICENSE-DIFF' 'Critical' 'LICENSE' "Differs from template (line $($i+1): found '$($modL[$i])')"
+            break
+        }
+    }
+}
+
+# ── 3c. Source files must live in src/ (none at the module root) ──────────────
+$rootSrc = @(Get-ChildItem -LiteralPath $ModuleDir -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.Extension -in @('.js', '.ts') })
+foreach ($f in $rootSrc) {
+    Add-Finding 'SRC-AT-ROOT' 'Critical' $f.Name "Source file at module root — all source must be under src/"
+}
+
 # ── 4. package.json rules ────────────────────────────────────────────────────
 if ($pkg) {
     $moduleName = (Split-Path $ModuleDir -Leaf) -replace '^companion-module-',''
@@ -244,6 +276,18 @@ if ($pkg) {
     }
     if (-not ((Has-Prop $pkg 'dependencies') -and (Has-Prop $pkg.dependencies '@companion-module/base'))) {
         Add-Finding 'PKG-DEP' 'Critical' 'package.json' "Missing dependency '@companion-module/base'"
+    }
+    # devDependencies = every dev dep present in the matched template (version-correct).
+    if ($tplPkg -and (Has-Prop $tplPkg 'devDependencies')) {
+        foreach ($dd in @($tplPkg.devDependencies.PSObject.Properties.Name)) {
+            if (-not ((Has-Prop $pkg 'devDependencies') -and (Has-Prop $pkg.devDependencies $dd))) {
+                Add-Finding 'PKG-DEVDEP' 'Critical' 'package.json' "Missing devDependency '$dd' (present in template)"
+            }
+        }
+    }
+    # lint-staged section required if the template has it (TS).
+    if ($tplPkg -and (Has-Prop $tplPkg 'lint-staged') -and -not (Has-Prop $pkg 'lint-staged')) {
+        Add-Finding 'PKG-LINTSTAGED' 'Critical' 'package.json' "Missing 'lint-staged' section (present in template)"
     }
 }
 
