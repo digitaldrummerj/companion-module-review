@@ -25,15 +25,12 @@ cd companion-module-review
 pwsh setup.ps1
 ```
 
-`setup.ps1` configures the git hooks (which prevent cloned modules being committed) and creates the `companion-modules-reviewing/` directory **inside the repo** where modules are cloned during reviews. That directory is gitignored, so checkouts never show up as changes.
+`setup.ps1` does three things, all idempotent:
+- Configures the git hooks (which prevent cloned modules being committed).
+- Creates the gitignored `companion-modules-reviewing/` directory **inside the repo** where modules are cloned during reviews.
+- Clones the official module templates into the gitignored `companion-module-templates/` (v2 `companion-module-template-{js,ts}` from GitHub; v1 `-{js,ts}-v1` variants pinned to the last v1.x commit) — these are what `validate-template.ps1` diffs each module against. Override their location with `COMPANION_TEMPLATES_DIR`.
 
-### 3. Template repos (cloned automatically by setup.ps1)
-
-`validate-template.ps1` and `module-facts.ps1` compare each module against the **official template, selected by API version × language**. `setup.ps1` (step 2) clones the four templates into `companion-module-templates/` **inside the repo** (gitignored): the v2 `companion-module-template-{js,ts}` from GitHub, and the v1 `-{js,ts}-v1` variants pinned to the last v1.x commit. The validator detects a module's `@companion-module/base` major version and picks the right one automatically.
-
-To use templates from a different location, set `COMPANION_TEMPLATES_DIR` (it must contain the same four directories). Re-running `setup.ps1` is idempotent — it skips templates already present.
-
-### 4. Verify GitHub auth
+### 3. Verify GitHub auth
 
 ```powershell
 gh auth status      # run `gh auth login` if needed
@@ -41,11 +38,11 @@ gh auth status      # run `gh auth login` if needed
 
 The scripts use your existing `gh` auth for both GitHub and the BitFocus portal API — no extra credentials.
 
-### 5. Open the workspace (optional)
+### 4. Open the workspace (optional)
 
 Open `companion-module-review.code-workspace` in VS Code for multi-repo support across the review repo and any cloned modules.
 
-### 6. Verify the install
+### 5. Verify the install
 
 Run the script test suites — they need no network and should all pass:
 
@@ -79,7 +76,7 @@ All scripts are read-only against GitHub/BitFocus except `git clone` (setup) and
 | **`bitfocus-queue.ps1 [-Json]`** | Show the pending review queue, oldest first, **labeled by local review state** (`needs review` / `reviewed - feedback pending` / `re-review?`). "Next up" never points at a module already reviewed locally whose feedback hasn't been sent yet. |
 | **`bitfocus-setup-module.ps1 [-ModuleName <name>] [-Force] [-Json]`** | Validate `PENDING` status, find the previous approved tag, and clone the module into `companion-modules-reviewing/`. Auto-selects the oldest module **that still needs review** (skips feedback-pending). Naming a feedback-pending module requires `-Force`. |
 | **`module-facts.ps1 -ModuleDir <path> [-GitTag <tag>] [-SkipTemplateCheck] [-Json]`** | The shared **fact sheet**: language (JS/TS), API version → the single applicable api-compliance skill, package.json/manifest essentials, detected protocols, source-tree list, and a template-compliance summary. Run once at review start; hand it to every reviewer. |
-| **`validate-template.ps1 -ModuleDir <path> [-ExpectedVersion <tag>] [-RunBuild] [-TemplateDir <path>] [-Json]`** | The **deterministic** template review: required files, config-file parity, package.json/manifest fields, LICENSE, `src/`-only source, devDependencies, husky, gitignored-not-committed. `-RunBuild` also runs `yarn install`/`yarn package` (+ `yarn lint` for TS). Exits 1 on any Critical. |
+| **`validate-template.ps1 -ModuleDir <path> [-ExpectedVersion <tag>] [-RunBuild] [-TemplateDir <path>] [-Json]`** | The **deterministic** template review: required files, config-file parity, package.json/manifest fields, LICENSE, `src/`-only source, devDependencies, husky, gitignored-not-committed. Auto-selects the matching template by API version × language (the `-v1`/v2, js/ts variants in `companion-module-templates/`). `-RunBuild` also runs `yarn install`/`yarn package` (+ `yarn lint` for TS). Exits 1 on any Critical. |
 | **`sync-skills.ps1 [-Check]`** | Mirror `.squad/skills/` (source of truth) → `.copilot/skills/`. Run after editing any skill. `-Check` reports drift without writing (CI / pre-commit friendly). |
 | **`cleanup-modules.ps1`** | Remove cloned `companion-module-*` directories from `companion-modules-reviewing/` to reclaim disk. |
 
