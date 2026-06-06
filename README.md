@@ -27,26 +27,11 @@ pwsh setup.ps1
 
 `setup.ps1` configures the git hooks (which prevent cloned modules being committed) and creates the `companion-modules-reviewing/` directory **inside the repo** where modules are cloned during reviews. That directory is gitignored, so checkouts never show up as changes.
 
-### 3. Set up the template repos (required)
+### 3. Template repos (cloned automatically by setup.ps1)
 
-`validate-template.ps1` and `module-facts.ps1` compare each module against the **official template, selected by API version × language**. The four templates live in `~/Development/companion-module-dev` (override with the `COMPANION_TEMPLATES_DIR` environment variable):
+`validate-template.ps1` and `module-facts.ps1` compare each module against the **official template, selected by API version × language**. `setup.ps1` (step 2) clones the four templates into `companion-module-templates/` **inside the repo** (gitignored): the v2 `companion-module-template-{js,ts}` from GitHub, and the v1 `-{js,ts}-v1` variants pinned to the last v1.x commit. The validator detects a module's `@companion-module/base` major version and picks the right one automatically.
 
-```powershell
-cd ~/Development/companion-module-dev   # or your $COMPANION_TEMPLATES_DIR
-
-# v2 templates (current)
-git clone https://github.com/bitfocus/companion-module-template-js
-git clone https://github.com/bitfocus/companion-module-template-ts
-
-# v1 templates — same repos pinned to the last v1.x commit, with a -v1 suffix
-git clone companion-module-template-js companion-module-template-js-v1
-git -C companion-module-template-js-v1 checkout 9e222b4d0b1a68b2acda7d8adb52c9f90ee4c3d1
-
-git clone companion-module-template-ts companion-module-template-ts-v1
-git -C companion-module-template-ts-v1 checkout 42609d8dab515a25ec2f3b3c7adafe57aa41b7be
-```
-
-The validator detects a module's `@companion-module/base` major version and picks `companion-module-template-{js,ts}` (v2) or the `-v1` variant automatically.
+To use templates from a different location, set `COMPANION_TEMPLATES_DIR` (it must contain the same four directories). Re-running `setup.ps1` is idempotent — it skips templates already present.
 
 ### 4. Verify GitHub auth
 
@@ -141,13 +126,13 @@ companion-module-review/            ← this repo
 │   └── tests/                      ← self-contained test suites (no Pester)
 ├── companion-modules-reviewing/    ← cloned modules under review (gitignored)
 │   └── companion-module-{name}/    ← one per module, its own git repo
+├── companion-module-templates/     ← official templates, cloned by setup.ps1 (gitignored)
+│   ├── companion-module-template-js / -ts        ← v2 templates
+│   └── companion-module-template-js-v1 / -ts-v1  ← v1 templates (pinned commits)
 ├── .squad/                         ← squad team state (agents, decisions, skills = source of truth)
 └── .copilot/                       ← Copilot agent skills (mirror of .squad/skills + system skills)
-
-~/Development/companion-module-dev/ ← template repos (COMPANION_TEMPLATES_DIR)
-├── companion-module-template-js / -ts        ← v2 templates
-└── companion-module-template-js-v1 / -ts-v1  ← v1 templates (pinned commits)
 ```
+> Override the templates location with `COMPANION_TEMPLATES_DIR` if you keep them elsewhere.
 
 ---
 

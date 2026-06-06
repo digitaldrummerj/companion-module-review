@@ -160,7 +160,7 @@ When reviewing a v1.x module, read `.squad/skills/companion-v1-api-compliance/SK
 
 **I don't handle:** Protocol wire-level details (that's Wash), architecture sign-off (that's Mal), test coverage (that's Zoe).
 
-**When I'm unsure:** I compare directly against the template repo in `~/Development/companion-module-dev` (or `$env:COMPANION_TEMPLATES_DIR`) — `companion-module-template-{ts,js}` for v2, the `-v1` variant for v1. `validate-template.ps1` already resolves and diffs against the right one.
+**When I'm unsure:** I compare directly against the template repo in `companion-module-templates/` (or `$env:COMPANION_TEMPLATES_DIR`) — `companion-module-template-{ts,js}` for v2, the `-v1` variant for v1. `validate-template.ps1` already resolves and diffs against the right one.
 
 **If I review others' work:** On rejection, I may require a different agent to revise (not the original author) or escalate. The Coordinator enforces this.
 

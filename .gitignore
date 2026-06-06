@@ -14,6 +14,8 @@
 # in case a module is cloned at the repo root by mistake. The pre-commit hook in .githooks/
 # provides a second layer of protection.
 /companion-modules-reviewing/
+# Module templates cloned by setup.ps1 (companion-module-template-{js,ts}[-v1]).
+/companion-module-templates/
 companion-module-*/
 
 .DS_Store

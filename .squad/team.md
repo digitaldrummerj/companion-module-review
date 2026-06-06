@@ -51,8 +51,8 @@ ls companion-modules-reviewing/ | grep '^companion-module-'
 (Override the location with `$COMPANION_MODULES_DIR` if needed.)
 
 **Template baselines** are a separate concern: `validate-template.ps1` / `module-facts.ps1` resolve
-them from `~/Development/companion-module-dev` (override `COMPANION_TEMPLATES_DIR`) — `companion-module-template-{js,ts}`
-for v2 and the `-v1` variants for v1. They are NOT under `companion-modules-reviewing/`.
+them from `companion-module-templates/` inside the repo (cloned by `setup.ps1`; override `COMPANION_TEMPLATES_DIR`)
+— `companion-module-template-{js,ts}` for v2 and the `-v1` variants for v1. They are NOT under `companion-modules-reviewing/`.
 
 ---
 

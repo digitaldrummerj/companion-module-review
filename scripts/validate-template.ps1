@@ -16,7 +16,7 @@
     The official template repo is the authoritative reference, selected by API version ×
     language: v2 modules use companion-module-template-{js|ts}, v1 modules use the
     "-v1"-suffixed variant. Templates are auto-detected under COMPANION_TEMPLATES_DIR
-    (default ~/Development/companion-module-dev), or passed via -TemplateDir.
+    (default companion-module-templates/ inside the repo), or passed via -TemplateDir.
 .PARAMETER ModuleDir
     Path to the cloned module under review.
 .PARAMETER TemplateDir
@@ -85,23 +85,17 @@ if ((Has-Prop $pkg 'dependencies') -and (Has-Prop $pkg.dependencies '@companion-
 $apiVer = "v$apiMajor"
 
 # ── Resolve template dir by version × language ───────────────────────────────
-# Templates live in ~/Development/companion-module-dev (override: COMPANION_TEMPLATES_DIR).
-# v1 templates use a "-v1" suffix; v2 templates have no suffix.
+# Templates live in companion-module-templates/ inside the repo (override:
+# COMPANION_TEMPLATES_DIR). v1 templates use a "-v1" suffix; v2 templates have none.
 $tplSuffix = if ($apiMajor -le 1) { '-v1' } else { '' }
 $tplName   = "companion-module-template-$langLower$tplSuffix"
 if (-not $TemplateDir) {
-    $base = if ($env:COMPANION_TEMPLATES_DIR) { $env:COMPANION_TEMPLATES_DIR } else { Join-Path $HOME 'Development/companion-module-dev' }
+    $base = Resolve-TemplatesDir (Split-Path -Parent $PSScriptRoot)
     $candidate = Join-Path $base $tplName
-    if (Test-Path $candidate) {
-        $TemplateDir = $candidate
-    } else {
-        # Legacy fallback: sibling modules workspace (v2 layout, no suffix).
-        $legacy = Join-Path (Resolve-ModulesDir (Split-Path -Parent $PSScriptRoot)) "companion-module-template-$langLower"
-        if (Test-Path $legacy) { $TemplateDir = $legacy }
-    }
+    if (Test-Path $candidate) { $TemplateDir = $candidate }
 }
 if (-not $TemplateDir -or -not (Test-Path $TemplateDir)) {
-    Write-Error "Template '$tplName' ($lang $apiVer) not found. Set COMPANION_TEMPLATES_DIR, place it under ~/Development/companion-module-dev, or pass -TemplateDir."
+    Write-Error "Template '$tplName' ($lang $apiVer) not found. Run setup.ps1 to clone the templates into companion-module-templates/, set COMPANION_TEMPLATES_DIR, or pass -TemplateDir."
     exit 2
 }
 $TemplateDir = (Resolve-Path $TemplateDir).Path

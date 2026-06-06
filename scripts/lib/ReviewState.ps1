@@ -41,6 +41,15 @@ function Resolve-ReviewsDir {
     return Join-Path $RepoRoot "reviews"
 }
 
+function Resolve-TemplatesDir {
+    <# Resolve where the official module templates live: companion-module-templates/
+       INSIDE the repo (gitignored). Honors COMPANION_TEMPLATES_DIR. #>
+    param([Parameter(Mandatory)][string]$RepoRoot)
+
+    if ($env:COMPANION_TEMPLATES_DIR) { return $env:COMPANION_TEMPLATES_DIR }
+    return Join-Path $RepoRoot "companion-module-templates"
+}
+
 function ConvertTo-NormalizedTag {
     <# Strip a single leading 'v' so 'v2.1.0' and '2.1.0' compare equal. #>
     param([string]$Tag)

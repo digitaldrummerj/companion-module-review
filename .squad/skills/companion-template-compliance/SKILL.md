@@ -19,7 +19,7 @@ pwsh scripts/validate-template.ps1 -ModuleDir <module path> -ExpectedVersion <gi
 
 - `-ExpectedVersion` (the submitted git tag, e.g. `v2.1.0`) enables the `package.json` version-match check. Pass it whenever you know the tag.
 - `-RunBuild` additionally runs `yarn install --immutable`, `yarn package` (build) and, for TS, `yarn lint`, and gates on success. Use it to satisfy the "build runs / lint runs" review gates. It is slower and needs network.
-- Add `-Json` for machine-readable output. Templates are auto-selected from `~/Development/companion-module-dev` (override with `COMPANION_TEMPLATES_DIR`) or pass `-TemplateDir`.
+- Add `-Json` for machine-readable output. Templates are auto-selected from `companion-module-templates/` inside the repo (override with `COMPANION_TEMPLATES_DIR`) or pass `-TemplateDir`.
 
 **Every `Critical` finding blocks approval.** Each finding already states the file, expected value, and what was found — drop those straight into the review's side-by-side report.
 
@@ -62,5 +62,5 @@ manifest.json maintainers[0].name = "Your name"  ← placeholder, must be replac
 ```
 
 If the script cannot run (templates unavailable), fall back to comparing the module directly
-against the matching template repo in `~/Development/companion-module-dev` — but prefer fixing
-the environment so the deterministic path runs every time.
+against the matching template repo in `companion-module-templates/` (run `setup.ps1` to clone
+them) — but prefer fixing the environment so the deterministic path runs every time.
