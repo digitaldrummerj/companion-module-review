@@ -57,7 +57,11 @@ pwsh scripts/tests/ModuleFacts.Tests.ps1
 
 ## Usage
 
-### Run a review with the squad (primary path)
+### Run a review with Claude Code
+
+In Claude Code, say **"review the next module"** or **"review companion-module-X"**, or run **`/review-module [name]`**. This triggers the `review-companion-module` skill, which runs the same pipeline in order — `bitfocus-queue` → `bitfocus-setup-module` → `module-facts` → `validate-template -RunBuild` → three parallel review subagents (`companion-protocol-reviewer`, `companion-qa-reviewer`, `companion-compliance-reviewer`) → assemble one review under `reviews/{module-name}/` + a ⬜ `TRACKER.md` row. It is **report-only**: it never modifies the module or creates fix branches. (See [CLAUDE.md](CLAUDE.md).)
+
+### Run a review with the squad (GitHub Copilot)
 
 1. Open a terminal and run `copilot` to enter the Copilot CLI.
 2. Run `/agents` and select **Squad**.
@@ -66,6 +70,8 @@ pwsh scripts/tests/ModuleFacts.Tests.ps1
    - A specific module: `"hey team, let's review companion-module-allenheath-sq"`
 
 The squad runs the **bootstrap** first (generates a shared *module fact sheet* so the reviewers don't each re-derive the basics), then reviews across template/API compliance, protocol, actions/feedbacks/variables/presets, and tests, assembles a single review under `reviews/{module-name}/`, and adds a ⬜ row to `reviews/TRACKER.md`.
+
+Both paths use the same scripts and the same `.squad/skills/` knowledge, and both are report-only.
 
 ### Scripts reference
 

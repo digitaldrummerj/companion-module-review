@@ -21,5 +21,8 @@ companion-module-*/
 .DS_Store
 squad-export.json
 
+# Claude Code personal/local settings (committed settings live in .claude/settings.json)
+.claude/settings.local.json
+
 diff*
 release*
