@@ -366,3 +366,24 @@ The videopathe-qtimer v1.0.1 follow-up decision has been merged into `.squad/dec
 **Verification:** ✅ Scorecard totals match TOC (H1, H2, H3, L1–L5); No orphaned references; All section headers match finding IDs.
 
 **Rationale:** Aligns review with user request to focus on release-critical blocking issues and new structural compliance finding. Reduces scope from 20 findings to 8 findings while maintaining document integrity.
+
+## 2026-06-05T19:56Z: creativeland-capacitimer v1.1.3 Review
+
+**Status:** ✅ Completed
+**Module:** companion-module-creativeland-capacitimer v1.1.3
+**API:** @companion-module/base ~1.12.1 (v1.12)
+**Release Type:** Initial review of v1.1.3 (delta from v1.0.1)
+**Verdict:** ✅ Approved with Notes — no blocking issues
+
+**Key Result:**
+- Architecture clean: extends InstanceBase, all lifecycle methods present, runEntrypoint at bottom of src/main.js, destroy() tears down ws/timers/bonjour.
+- Breaking changes between v1.0.1 → v1.1.3 (feedback rename `timer_color_*` → `timer_color`, action removal `set_timer_font`) ARE covered by `upgradeV110` in src/upgrades.js. UpgradeScripts is non-empty — rule satisfied.
+- `corepack yarn install --immutable` succeeds; only the YN0086 peer-warning shows.
+- Notes only: `package.json` `main: "index.js"` (shim) deviates from template's `src/main.js`; `feedbacks.js` is gratuitously `async`; bonjour-service used at runtime instead of Companion's bonjour-device config field.
+
+**Pattern Reinforced:** When the v1.0.1 → v1.x layout refactors source from repo root into `src/`, the template-check tool will flag `SRC-AT-ROOT`/`PKG-MAIN` even though everything works — because Companion uses the manifest `entrypoint`, not `package.json` `main`. The fix is to delete the root shim and point `main` at `src/main.js`, but this is a template-cleanliness Low, not a blocker.
+
+**Pattern Reinforced:** `runtime.apiVersion: "0.0.0"` in `companion/manifest.json` is the correct convention for tagged releases — packaging stamps the real version. This was a regression-looking change (1.12.0 → 0.0.0) but is intentional and aligns with the team's prior learning.
+
+**Deliverables:**
+- Findings: `.squad/decisions/inbox/mal-review-findings.md`

@@ -399,3 +399,188 @@ Benefits:
 - Improved readability and navigation
 
 ---
+
+## Learnings
+
+### 2026-06-05: companion-module-creativeland-capacitimer v1.1.3
+
+**Regression Pattern: Incomplete src/ Migration**
+
+When a module migrates from root-level entry file (e.g., `main.js`) to `src/main.js`, the correct approach is:
+1. Move all source files to `src/`
+2. Update `package.json` `"main"` to point to `"src/main.js"` (not a shim)
+3. Update `manifest.json` `"entrypoint"` to `"../src/main.js"`
+4. Delete the old root-level entry file
+
+**Anti-pattern observed in v1.1.3:**
+- Module moved code to `src/main.js` ✅
+- Updated `manifest.json` entrypoint correctly ✅
+- BUT created `index.js` shim at root: `module.exports = require('./src/main')` ❌
+- AND pointed `package.json` `"main"` to the shim: `"main": "index.js"` ❌
+
+**Why this is wrong:**
+- Template requires ALL source files under `src/` — no exceptions for shims
+- `package.json` `"main"` should point directly to the entry file
+- The shim adds no value; Node module resolution works fine with `"main": "src/main.js"`
+
+**Classification:** REGRESSION (v1.0.1 was compliant with `main.js` at root + `"main": "main.js"`; v1.1.3 broke compliance trying to migrate)
+
+**Finding IDs:** SRC-AT-ROOT, PKG-MAIN
+
+---
+
+**Config File Drift: .gitignore Customization**
+
+Maintainers sometimes add project-specific entries to config files (`.gitignore`, `.gitattributes`, etc.) that deviate from the template. This is a **critical** template violation.
+
+**Example from v1.1.3:**
+- Added `API.md` to `.gitignore` line 7–8
+- Template expects `.gitignore` to match exactly (no extra entries)
+
+**Why this is critical:**
+- Config files are part of the deterministic template contract
+- Deviations cause validation failures and review delays
+- If a file needs to be ignored, handle it in the packaging/build step, not `.gitignore`
+
+**Finding ID:** CONFIG-DIFF
+
+**Correct approach:**
+- If `API.md` is a build artifact → handle in build script exclusions
+- If `API.md` is project documentation → commit it (don't ignore it)
+- Never modify template config files for project-specific needs
+
+---
+
+**API v1.13 Deprecation: parseVariablesInString() on textinput with useVariables**
+
+As of API v1.13, Companion **auto-parses** variables in `textinput` fields with `useVariables: true` before the action callback runs. Manual `self.parseVariablesInString()` calls are now **no-ops**.
+
+**Pattern to flag:**
+```javascript
+// Action with useVariables: true textinput
+options: [
+  {
+    id: 'hours',
+    type: 'textinput',
+    useVariables: true,
+  }
+],
+callback: async (event) => {
+  const hours = parseInt(await self.parseVariablesInString(event.options.hours)) || 0
+  // ^^^ NO-OP in v1.13+ — variables are already parsed
+}
+```
+
+**Correct for v1.13+:**
+```javascript
+callback: async (event) => {
+  const hours = parseInt(event.options.hours) || 0
+  // Variables already parsed; event.options.hours is the resolved value
+}
+```
+
+**When to flag:**
+- If module is on v1.13+: flag as 🟡 Medium (deprecated, should be removed)
+- If module is on v1.12: flag as 💡 Nice to Have for next release (note in "Next Release" section)
+
+**Does NOT apply to:**
+- `context.parseVariablesInString()` for `$(this:*)` / `$(local:*)` variables (still required in v1.13+)
+
+**Finding ID:** DEPRECATED-PARSE-VARIABLES
+
+**Observed in:** creativeland-capacitimer v1.1.3 (13 instances, pre-existing from v1.0.1)
+
+---
+
+**Build Success Despite Template Violations**
+
+A module's build can succeed even if it violates template structure. This does NOT excuse the violation.
+
+**Example:** creativeland-capacitimer v1.1.3
+- `yarn package` succeeds ✅
+- Module loads and runs correctly ✅
+- BUT violates template: `index.js` at root, `"main": "index.js"` ❌
+
+**Why builds succeed:**
+- Node.js module resolution works with both `"main": "index.js"` and `"main": "src/main.js"`
+- Companion's module loader is permissive
+- The shim (`index.js → src/main.js`) works at runtime
+
+**Why we still reject:**
+- Template compliance is a **deterministic contract**, not a suggestion
+- Build success is necessary but not sufficient for approval
+- Violations cause inconsistencies across the module ecosystem
+- Maintainers must follow the template, not "whatever works"
+
+**Review practice:**
+- Always run `validate-template.ps1` first
+- Report all Critical findings as blocking, even if the build succeeds
+- Note build success in the "Build Verification" section, then separately note template violations as blocking issues
+
+---
+
+**HELP.md Quality: Model Example**
+
+The creativeland-capacitimer v1.1.3 `companion/HELP.md` is a **model example** of operator-focused documentation:
+
+**What makes it excellent:**
+- Clear network discovery explanation (mDNS auto-discovery + manual fallback)
+- Connection behavior documented (WebSocket port detection + scan fallback)
+- Pro license feature visibility clearly explained (features appear/disappear based on license state)
+- **Upgrade notes from previous version** (removed variables, Pro-gated features, feedback ID changes)
+- Complete action/feedback/variable reference with descriptions
+- Variable support noted for dynamic fields
+
+**Review practice:**
+- Flag HELP.md as "excellent" when it meets this standard
+- Use it as a reference example for other reviews
+- Encourage maintainers to include upgrade notes when breaking changes occur
+
+---
+
+**Pro License Feature Gating Pattern**
+
+creativeland-capacitimer uses a clean pattern for Pro-license-gated features:
+
+**State tracking:**
+```javascript
+// In constructor
+this.licenseState = { activated: false }
+
+// In init / WebSocket open
+await this.fetchLicenseStatus()  // Updates this.licenseState
+
+// On license state change
+if (wasActivated !== data.activated) {
+  this.updateActions()
+  this.updateFeedbacks()
+  this.updateVariableDefinitions()
+}
+```
+
+**Conditional feature inclusion:**
+```javascript
+// actions.js
+const isPro = self.licenseState.activated
+
+if (isPro) {
+  actions.set_message_text = { ... }  // Pro-only action
+}
+
+// variables.js
+if (isPro) {
+  variables.push({ variableId: 'message_text', name: 'Message Text' })
+}
+```
+
+**Why this is clean:**
+- Features are completely hidden when license is inactive (not just disabled)
+- License check is centralized in one place (`self.licenseState.activated`)
+- UI updates automatically when license state changes
+- No exposed "Pro-only" grayed-out features confusing free users
+
+**Review practice:**
+- Note this pattern as "solid" when reviewing Pro-gated modules
+- Check that license state changes trigger `updateActions()` / `updateFeedbacks()` / `updateVariableDefinitions()`
+- Verify Pro features are completely excluded from definitions (not just callback-guarded)
+

@@ -317,3 +317,56 @@ Session log: `.squad/log/2026-04-01T21:43:37Z-rtw-touchmonitor-review.md`
 - _isConnected desync pattern: only reset in one code path (checkConnection.catch) but not in sendTally — always check both paths
 - clear_all that depends on tracked state is Medium when there's a root-cause state-divergence bug upstream
 - Mixed-language UI strings (Spanish descriptions, English names) = Medium — flag in any module
+
+## creativeland-capacitimer v1.1.3 (2026-06-05)
+**Protocol:** WebSocket + HTTP REST (port scanning, Bonjour discovery, license-gated features)
+**Verdict:** CHANGES REQUIRED — 3 blocking bugs
+
+### Port scan off-by-one pattern
+WebSocket port scanner (3001–3010) has nested conditionals in close handler:
+```javascript
+if (this.wsScanPort !== null && this.wsScanPort <= 3010) {
+    if (this.wsScanPort < 3010) {  // ❌ Should be <= 3010
+        this.connectWebSocket(host, this.wsScanPort)
+```
+Trace: port 3009 fails → increment to 3010 → close handler: `3010 <= 3010` true, but `3010 < 3010` false → scan terminates without trying 3010. **Always trace through boundary conditions manually when scan logic has nested checks.**
+
+### async event handler + unhandled rejections
+WebSocket `ws.on('open', async () => { ... })` pattern with await calls that can throw:
+```javascript
+this.ws.on('open', async () => {
+    // ... status updates ...
+    await this.fetchLicenseStatus()  // ❌ No try-catch
+    await this.fetchFonts()
+    await this.fetchDisplays()
+})
+```
+Node.js will log unhandled rejections but may crash on next tick. **Check ALL async event handlers for missing try-catch, especially in WebSocket/EventEmitter callbacks.**
+
+### Race condition: stateful scanning + configUpdated()
+Port scan uses instance variable `this.wsScanPort` that is mutated by old WebSocket close handlers even after `configUpdated()` starts a new scan. If config changes mid-scan, both the old close handler and new scan increment the same variable → corrupted state.
+
+**Fix pattern:** Reset scan state in `configUpdated()` after closing WebSocket:
+```javascript
+if (this.ws) {
+    this.ws.close()
+    this.ws = null
+}
+this.wsScanPort = null  // ✅ Cancel in-progress scan
+```
+
+**General rule:** Any instance variable used by async/event-driven code must be reset in `configUpdated()` to prevent stale callbacks from corrupting new state.
+
+### License-gated feature pattern (good)
+This module conditionally exposes actions/feedbacks/variables based on `licenseState.activated`. Key insight: `fetchLicenseStatus()` in WebSocket 'open' handler calls `updateActions()` / `updateFeedbacks()` / `updateVariableDefinitions()` to dynamically rebuild definitions when license changes. This is the correct pattern for runtime-gated features.
+
+### Hex color validation in feedbacks
+Feedback callback parses hex colors from `this.settings.colorNormal` (sourced from WebSocket updates):
+```javascript
+const hex = hexColor.replace('#', '')
+const r = parseInt(hex.substring(0, 2), 16)
+```
+If server sends malformed data (empty string, wrong format), this produces `NaN` → visual glitches. **Always validate external data before parsing, especially in feedback callbacks where exceptions may not be caught.**
+
+**Session Closed:** 2026-06-05  
+**Review file:** .squad/decisions/inbox/zoe-review-findings.md

@@ -582,3 +582,80 @@ Findings: .squad/decisions/inbox/wash-review-findings.md
 - checkConnection() must check response.ok — .then() fires on any HTTP response including 4xx/5xx
 - _isConnected must be reset to false in sendTally() on both HTTP errors AND network errors
 - Fallback phantom room names (e.g. 'companion-check') in health checks are server-polluting — always flag
+
+### 2026-06-05: Creativeland Capacitimer Review (v1.1.3)
+
+**Module:** `companion-module-creativeland-capacitimer` v1.1.3 (vs v1.0.1)
+**Protocols:** HTTP (fetch), WebSocket (ws), Bonjour/mDNS (bonjour-service)
+**Key Files:** `src/main.js` (585 lines)
+
+**Architecture Pattern:**
+- Bonjour discovery for mDNS service announcement (type: 'http')
+- WebSocket for real-time timer/settings/message updates
+- HTTP fetch for device capabilities (license, fonts, displays) and commands
+- Polling fallback via HTTP when WebSocket down
+- Port scanning (3001-3010) when WebSocket port unknown
+
+**Connection Lifecycle:**
+- `init()` → starts Bonjour, calls `initWebSocket()` + `pollTimer()`
+- `initWebSocket()` → HTTP fetch for port discovery → `connectWebSocket(host, port)` or port scan
+- `connectWebSocket()` → creates WebSocket, attaches event handlers
+- `destroy()` → closes WebSocket, clears timers, stops Bonjour
+- `configUpdated()` → closes WebSocket, clears timers, reconnects
+
+**Port Scanning Pattern (NEW in v1.1.3):**
+- Try HTTP `/api/server/status` to get WebSocket port
+- If that fails, scan ports 3001-3010 sequentially
+- `wsScanPort` state var tracks current scan position
+- On error: increment `wsScanPort`, let close handler retry
+- On close during scan: call `connectWebSocket(host, this.wsScanPort)` immediately
+- After exhausting 3010: log warning, set status to ConnectionFailure
+- On success: clear `wsScanPort`, set status to Ok
+
+**WebSocket Event Handlers:**
+- `open`: Sets Ok status, clears reconnect timer, fetches license/fonts/displays via HTTP
+- `message`: JSON parse with try/catch, updates state, triggers variables/feedbacks
+- `error`: Logs error, increments wsScanPort (if scanning), sets ConnectionFailure (if not)
+- `close`: Reconnects after 5s (normal) or continues port scan (if scanning)
+
+**HTTP fetch() Usage:**
+- No timeout on any fetch calls (Node.js fetch has no default timeout)
+- All wrapped in try/catch, errors logged at debug or error level
+- Endpoints: `/api/server/status`, `/api/license/status`, `/api/fonts`, `/api/displays`, `/api/timer`, `POST` commands
+- Graceful degradation when endpoints fail
+
+**Bonjour Discovery:**
+- Searches for services with `type: 'http'` and name starting with 'capacitimer'
+- Extracts IP from `service.addresses` array (prefers IPv4)
+- Fallback to `service.referer.address`, `service.host`, `service.fqdn`
+- Adds discovered instances to config dropdown
+- `stopBonjourDiscovery()`: stops browser, destroys Bonjour instance, clears array
+- Try/catch around Bonjour init — logs error if discovery fails
+
+**Cleanup Hygiene:**
+- ✅ WebSocket closed in `destroy()` and `configUpdated()`
+- ✅ reconnectTimer cleared in both paths
+- ✅ pollInterval cleared in both paths
+- ✅ Bonjour browser stopped and instance destroyed in `destroy()`
+- ✅ References nulled after cleanup
+
+**InstanceStatus Transitions:**
+- Connecting (on init if host configured)
+- Ok (WebSocket open)
+- Disconnected (no host, WebSocket closed)
+- ConnectionFailure (WebSocket error after exhausting port scan)
+
+**Findings:**
+- ✅ APPROVED WITH NOTES
+- 🆕 NOTE 1: Port scan may leak sockets — old WebSocket not explicitly closed before overwriting `this.ws` (low impact, happens only during scan)
+- 🆕 NOTE 2: No timeout on fetch() — could block indefinitely on slow/hung server (low impact, most are non-critical)
+- ⚠️ NOTE 3: Polling interval never stopped after WebSocket connect — wastes timer tick every second (pre-existing from v1.0.1)
+
+**Session Closed:** 2026-06-05T19:58:00Z
+**Verdict:** APPROVED WITH NOTES
+Review findings: `.squad/decisions/inbox/wash-review-findings.md`
+3 notes issued for future release (WebSocket cleanup during port scan, fetch timeout, polling interval efficiency)
+
+**Pattern Learned:**
+Port scanning for WebSocket connection is a clever fallback, but requires careful socket lifecycle management. When retrying connections in a loop, always explicitly close the old socket before creating a new one, even if the old socket has fired `close`. Use `ws.removeAllListeners()` + `ws.close()` to prevent event handler overlap.
+
