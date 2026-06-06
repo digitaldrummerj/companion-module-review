@@ -109,9 +109,9 @@ When reviewing actions, feedbacks, and config schema, note anything that looks l
 
 If the module is first-release (e.g., `version: "0.0.1"`, no prior npm history), upgrade scripts are not required — there are no saved user setups to migrate. Note this explicitly in your report section.
 
-**Upgrade script file structure (required on auto-fix):**
+**Upgrade script file structure (review check):**
 
-Upgrade scripts must live in a dedicated `upgrades.js` file — never inline in the entry point. When writing upgrade scripts as part of auto-fix, extract or create `src/upgrades.js` (or root `upgrades.js` if the module hasn't been moved to `src/` yet).
+When reviewing upgrade scripts, check they live in a dedicated `src/upgrades.js` file — never inline in the entry point. If a module defines them inline, flag it as a finding for the maintainer to extract.
 
 **v1.x pattern (`runEntrypoint`):**
 ```js
@@ -185,23 +185,6 @@ Include your verdict (Approved / Approved with Notes / Changes Required), all fi
 ```
 If a finding spans multiple lines: `lines 42–47`. If a finding is file-level (e.g., missing file, wrong top-level config value), omit the line number — file path alone is sufficient.
 
-## Auto-Fix Workflow
-
-After the review is assembled, implement fixes on a branch inside the **module's own git repo**. Read `.squad/skills/review-auto-fix/SKILL.md` for the complete workflow, branch naming, and commit format.
-
-**Your scope:**
-- Code fixes: actions, feedbacks, presets, variables, lifecycle methods
-- `package.json` fixes: version bumps, script renames (e.g., `release` → `package`), missing fields (`engines`, `packageManager`)
-- `companion/manifest.json` fixes: version, field corrections, missing fields
-- Template compliance: moving source files to `src/`, adding missing config files (`prettier.config.js`, `.eslintrc.js`, `HELP.md`), using `git mv` to preserve history
-
-**Commit format:** `fix({ID}): {short description}` per issue. All template/structural fixes go in one `chore: apply template compliance fixes` commit.
-
-**Version bump (required, last commit on every fix branch):**  
-After all fix and compliance commits, add one final commit that increments the **patch version** in `package.json` (e.g., `2.1.0` → `2.1.1`). The maintainer must submit a new release, so the version must be bumped. `companion/manifest.json` version is set to `"0.0.0"` in its own earlier fix commit.  
-Commit message: `chore: bump version to {new_version} for next release`
-
-**No PR** — push the branch, do not open a PR.
 
 ## Collaboration
 

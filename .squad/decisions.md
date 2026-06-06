@@ -2166,3 +2166,18 @@ All 6 remaining issues (3 High, 3 Low) remain substantively unchanged — only f
 
 ---
 *Merged from inbox at 2026-04-21T00:38:49Z*
+
+---
+
+### 2026-06-05: User directive — reviews are report-only (supersedes auto-fix)
+
+**What:** The squad reviews modules and **reports only**. It does NOT create fix branches, modify module code, run an auto-fix workflow, or push/commit anything to a module's repo. The sole output of a review is the review markdown file under `reviews/`, which Justin delivers to the maintainer and pushes only to *this* repo. The maintainer applies the fixes; a resubmission gets a re-review that verifies their changes.
+
+**Supersedes** these earlier directives, which no longer apply (auto-fix has been removed):
+- "Version bump required on auto-fix branches" (2026-04-04)
+- "Upgrade-script extraction on auto-fix" (2026-04-04) — retained only as a *review check* (flag inline upgrade scripts for the maintainer)
+- "Do not push auto-fix branches / fix branch no-push" (2026-04-04 / 2026-04-05)
+
+**Why:** The intended process is review-and-report; the maintainer owns their module's code. Removing auto-fix eliminates any risk of the squad writing to a maintainer's repository.
+
+**Scope:** All reviews going forward. The `review-auto-fix` skill and the Auto-Fix Workflow charter sections have been removed.

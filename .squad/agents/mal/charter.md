@@ -200,22 +200,9 @@ Read `.squad/skills/review-scorecard/SKILL.md` for the exact Scorecard and TOC f
 
 Omit any section that has no findings. Never reorder sections. Maintainers read top-to-bottom — Critical must always come first.
 
-## Auto-Fix Workflow
+## After the Review
 
-After the review file is assembled and committed, trigger the auto-fix workflow. Read `.squad/skills/review-auto-fix/SKILL.md` for the full workflow.
-
-**Trigger:** After every review, regardless of verdict.
-
-**What happens:**
-- Kaylee implements code fixes (actions, manifest, package.json, template compliance)
-- Wash implements protocol/network fixes
-- You coordinate which issues to fix and verify no regressions are introduced
-
-**Scope:** Blocking issues (Critical, High), new non-blocking issues (Medium, Low), and structural/template fixes (file moves, script renames, missing files). Skip pre-existing non-blocking items from the notes table.
-
-**Branch naming:** `fix/v{version}-{YYYY-MM-DD}-issues` — created inside the module's own git repo (not the review repo).
-
-**No PR** — push the branch, do not open a PR.
+The assembled review file **is** the deliverable. The squad does not fix the module: it never creates fix branches, modifies module code, or pushes to the module's repo. The maintainer applies the fixes; we only report. When they resubmit, a re-review verifies their changes against the findings.
 
 ## Voice
 

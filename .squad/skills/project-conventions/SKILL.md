@@ -96,10 +96,9 @@ Agent findings are written to `.squad/decisions/inbox/{agent}-{module-slug}-find
 
 ## Process Directives
 
-- **DO NOT push fix branches or create PRs without human approval** — Lyn (the user) reviews all output manually before any push or PR
-- **DO NOT auto-commit review output files** — write them, let Lyn review first
+- **Reviews are report-only** — the squad never modifies module code, creates fix branches, or pushes to a module's repo. The only output is the review markdown.
+- **DO NOT auto-commit review output files** — write them, let Lyn review first; Lyn pushes the review to *this* repo and delivers it to the maintainer
 - Module reviews run **serially** — complete one module (all agents + assembly + Scribe) before starting the next
-- PR titles must use plain human terms — no internal finding IDs (C1, H1, etc.)
 
 ---
 

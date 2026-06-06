@@ -1,6 +1,6 @@
 # companion-module-review
 
-An AI-powered review system for [Bitfocus Companion](https://bitfocus.io/companion) modules. The squad — a Firefly-universe cast — discovers pending module submissions on the BitFocus developer portal, performs structured code reviews, and produces fix branches ready for maintainers to inspect.
+An AI-powered review system for [Bitfocus Companion](https://bitfocus.io/companion) modules. The squad — a Firefly-universe cast — discovers pending module submissions on the BitFocus developer portal, performs structured code reviews, and produces a review report for the maintainer. It is **report-only**: it never modifies a module's code or creates fix branches — the maintainer applies the fixes.
 
 Deterministic checks (template compliance, build, lint, file/field rules) run in PowerShell scripts; the AI agents spend their attention on judgment — protocol correctness, logic, architecture.
 
@@ -121,7 +121,7 @@ All scripts are read-only against GitHub/BitFocus except `git clone` (setup) and
 3. **Bootstrap** — `module-facts.ps1` produces the shared fact sheet (language, API version, protocols, template-check summary); `validate-template.ps1 -RunBuild` runs the deterministic compliance + build/lint.
 4. **Review** — the squad (Mal, Wash, Kaylee, Zoe, Simon) reviews, loading only the applicable v1/v2 api-compliance skill — not the authoring skills.
 5. **Assemble** — Scribe assembles findings into `reviews/{module-name}/` and adds a ⬜ row to `reviews/TRACKER.md`.
-6. **Fix** — Kaylee and Wash create a `fix/v{version}-{date}-issues` branch in the module repo with one commit per issue.
+6. **Deliver** — send the maintainer the review via the developer portal; they apply the fixes. (The squad never edits the module — report only.) Mark the TRACKER row ✅ once delivered.
 
 ---
 
@@ -157,7 +157,7 @@ companion-module-review/            ← this repo
 | ------ | ------ | ------- |
 | **Mal** | Lead / Coordinator | Scope, final verdict, decisions |
 | **Wash** | Backend / Protocol | Network lifecycle, OSC, connection errors, status transitions |
-| **Kaylee** | Module Dev | Runs `validate-template.ps1`; actions/feedbacks/variables/presets structure; auto-fix |
+| **Kaylee** | Module Dev | Runs `validate-template.ps1`; reviews actions/feedbacks/variables/presets structure |
 | **Zoe** | Tester | Test coverage, edge cases, quality |
 | **Simon** | API Compliance | v1.x and v2.0 API checks |
 | **Scribe** | Silent logger | Assembles review file, logs decisions, runs `sync-skills.ps1` |
@@ -178,7 +178,7 @@ Skills are Copilot Agent Skills (`SKILL.md` files) that teach the squad domain k
 
 ### Companion module development skills
 
-Authoring references — used when implementing auto-fixes. Examples are protocol-neutral (no module-specific code).
+Reference for understanding and reviewing module code (the Companion module API). Examples are protocol-neutral (no module-specific code).
 
 | Skill | Description |
 | ------- | ------------- |
@@ -203,7 +203,6 @@ Authoring references — used when implementing auto-fixes. Examples are protoco
 | `companion-v2-api-compliance` | `@companion-module/base` v2.0+ checklist (loaded only for v2 modules) |
 | `companion-bitfocus-dashboard` | BitFocus portal API: pending reviews, previous-tag lookup, repo URLs, clone workflow |
 | `review-scorecard` | Standard scorecard / Table-of-Contents format |
-| `review-auto-fix` | Fix-branch workflow: branch naming, one commit per issue, no-PR rule |
 | `project-conventions` | Project-level conventions |
 | `make-skill-template` | Meta-skill for creating new skills |
 

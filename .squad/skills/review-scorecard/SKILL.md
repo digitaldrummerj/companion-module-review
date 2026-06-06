@@ -157,7 +157,7 @@ To generate the anchor for a heading:
 
 ### TOC Template
 
-Each item is a GitHub-flavored Markdown task list item (`- [ ]`). The auto-fix workflow marks fixed issues as `- [x]` directly in this section.
+Each item is a GitHub-flavored Markdown task list item (`- [ ]`). On a re-review, mark an item `- [x]` once the maintainer has addressed it in the resubmitted version.
 
 ```markdown
 ## 📋 Issues

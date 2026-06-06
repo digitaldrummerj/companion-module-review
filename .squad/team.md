@@ -125,3 +125,5 @@ The final review uses severity order: 🔴 Critical → 🟠 High → 🟡 Mediu
 **Module directories are temporary.** After a review is delivered to the maintainer, Justin manually removes the module directory from the workspace root. The `reviews/` folder is permanent and provides historical records across releases.
 
 ⚠️ **External write policy: READ ONLY.** The team must NEVER write to GitHub (no PR comments, issue comments, releases) or the BitFocus API (no POST/PUT/PATCH/DELETE). The only output from any review is the local markdown file above.
+
+⚠️ **Reviews are report-only.** The squad never modifies the module under review — no fix branches, no edits to module code, no commits or pushes to the module's repo. We review and report; the maintainer applies the fixes. (A resubmission gets a re-review that verifies their changes.) The review markdown is delivered to the maintainer and pushed only to *this* repo, by Justin.
