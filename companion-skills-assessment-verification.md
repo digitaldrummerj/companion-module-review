@@ -1,5 +1,7 @@
 # Companion Skills Assessment — Post-Refactor Verification
 
+> **Historical (pre-migration).** This report predates the move to 100% Claude Code. References to `.squad/` and `.copilot/` are historical — skills now live in `.claude/skills/`.
+
 **Date:** 2026-06-05
 **Scope:** Verify the refactor (branch `feature/review-queue-dedup`) against the original [`companion-skills-assessment.md`](companion-skills-assessment.md), and scan for issues the refactor itself introduced.
 **Method:** Audited the real tree — `scripts/`, `.squad/skills/`, `.squad/team.md`, agent charters — reading current files (not from memory). Severity legend: ✅ Resolved · 🔧 Needs to Fix · 💡 Nice to Have.

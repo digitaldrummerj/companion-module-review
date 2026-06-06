@@ -1,5 +1,7 @@
 # Companion Skills Assessment
 
+> **Historical (pre-migration).** This report predates the move to 100% Claude Code. References to `.squad/` and `.copilot/` are historical — skills now live in `.claude/skills/`.
+
 **Scope:** the 16 `companion-*` skills in `.copilot/skills/`
 **Date:** 2026-06-04
 **Type:** Report only — no skill files were edited. Apply changes yourself after reading.

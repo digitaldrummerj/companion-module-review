@@ -4,18 +4,20 @@ This repo reviews Bitfocus Companion modules for release approval and produces a
 
 ## Run a review
 
-Say **"review the next module"** or **"review companion-module-X"**, or use **`/review-module [name]`**. Both invoke the `review-companion-module` skill, which runs the pipeline in order:
+Say **"review the next module"** or **"review companion-module-X"**, or use **`/review-module [name] [tag|module|both]`**. Both invoke the `review-companion-module` skill, which runs the pipeline in order:
 
 `bitfocus-queue.ps1` → `bitfocus-setup-module.ps1` → `module-facts.ps1` → `validate-template.ps1 -RunBuild` → dispatch the `companion-protocol-reviewer`, `companion-qa-reviewer`, and `companion-compliance-reviewer` subagents → assemble one review under `reviews/{module}/` + a ⬜ `TRACKER.md` row.
 
+**Scope** (default `tag`): `tag` = only this release's changes (`previousTag..reviewTag` diff); `module` = the whole current module, flat by severity; `both` = whole module classified new vs pre-existing.
+
 ## Report-only — the hard rule
 
-The squad **reviews and reports only**. NEVER:
+Reviews **report only**. NEVER:
 - modify a module's code, run an auto-fix, or "apply" review findings;
 - create `fix/...` branches inside a module's repo; or
 - commit or push anything to a module's repo.
 
-The **only** output of a review is the markdown file under `reviews/`. The maintainer applies the fixes themselves; a resubmission gets a re-review that *verifies* their changes. (See `.squad/decisions.md` and `.squad/skills/project-conventions`.)
+The **only** output of a review is the markdown file under `reviews/`. The maintainer applies the fixes themselves; a resubmission gets a re-review that *verifies* their changes.
 
 ## Workspace layout
 
@@ -23,7 +25,7 @@ The **only** output of a review is the markdown file under `reviews/`. The maint
 - `companion-modules-reviewing/` — cloned modules under review (gitignored; each is its own git repo). **Never commit these.**
 - `companion-module-templates/` — official JS/TS, v1/v2 templates the validator diffs against (gitignored; cloned by `setup.ps1`). Override with `COMPANION_TEMPLATES_DIR`.
 - `reviews/` — completed reviews + `TRACKER.md` (the ✅/⬜ feedback-submitted ledger; ⬜ + a local review = "don't re-review yet").
-- `.squad/` — the GitHub Copilot squad (its own orchestration). **`.squad/skills/` is the source of truth for domain knowledge** (companion API, template compliance, scorecard format); Claude reads these by path. `.copilot/skills/` is a generated mirror (`scripts/sync-skills.ps1`). Don't add a third copy under `.claude/`.
+- `.claude/` — the review system: `skills/` (the `review-companion-module` orchestrator + the companion/review knowledge skills it reads by path), `agents/` (the three review subagents), `commands/` (`/review-module`), and `settings.json`.
 
 ## Conventions
 

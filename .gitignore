@@ -1,14 +1,3 @@
-# Squad: ignore runtime state (logs, inbox, sessions)
-.squad/orchestration-log/
-.squad/log/
-.squad/decisions/inbox/
-.squad/sessions/
-# Squad: SubSquad activation file (local to this machine)
-.squad-workstream
-
-# Squad archives
-.squad-archive*/
-
 # Module checkouts under review live in companion-modules-reviewing/ INSIDE this repo;
 # the whole directory is ignored. The companion-module-*/ pattern is an extra safety net
 # in case a module is cloned at the repo root by mistake. The pre-commit hook in .githooks/
@@ -19,7 +8,6 @@
 companion-module-*/
 
 .DS_Store
-squad-export.json
 
 # Claude Code personal/local settings (committed settings live in .claude/settings.json)
 .claude/settings.local.json
