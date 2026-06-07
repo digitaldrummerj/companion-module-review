@@ -1,0 +1,66 @@
+---
+name: companion-template-compliance
+description: Verify a Companion module matches the official JS/TS template — required files, config-file parity, package.json/manifest.json fields, LICENSE, HELP.md, husky. Run scripts/validate-template.ps1 for the deterministic checks, then use this skill to interpret findings and judge the non-deterministic items. Use at the start of every module review.
+---
+
+# Skill: companion-template-compliance
+
+Template compliance is almost entirely **deterministic** — file presence, exact config-file
+content, package.json/manifest.json fields, LICENSE text, banned keywords. Do **not** check
+these by hand (that is where reviews drift and miss things). Run the script; it compares the
+module against the correct template (selected by API version × language) and emits a findings
+list. Then apply judgment to the handful of items the script can't decide.
+
+## 1. Run the validator
+
+```powershell
+pwsh scripts/validate-template.ps1 -ModuleDir <module path> -ExpectedVersion <git tag> [-RunBuild]
+```
+
+- `-ExpectedVersion` (the submitted git tag, e.g. `v2.1.0`) enables the `package.json` version-match check. Pass it whenever you know the tag.
+- `-RunBuild` additionally runs `yarn install --immutable`, `yarn package` (build) and, for TS, `yarn lint`, and gates on success. Use it to satisfy the "build runs / lint runs" review gates. It is slower and needs network.
+- Add `-Json` for machine-readable output. Templates are auto-selected from `companion-module-templates/` inside the repo (override with `COMPANION_TEMPLATES_DIR`) or pass `-TemplateDir`.
+
+**Every `Critical` finding blocks approval.** Each finding already states the file, expected value, and what was found — drop those straight into the review's side-by-side report.
+
+## 2. What the script checks (all Critical / blocking)
+
+| Area | Finding ids |
+|------|-------------|
+| Required files present; no `package-lock.json` | `FILE-MISSING`, `NPM-LOCK` |
+| Config-file parity vs template — exact match for `.gitattributes`, `.prettierignore`, `.yarnrc.yml`, and TS `eslint.config.mjs`/`tsconfig*.json`. `.gitignore` is a **subset** check: every template entry must be present, but **extra** module entries are allowed and not flagged | `CONFIG-DIFF` |
+| Gitignored artifacts not committed (`node_modules`, `/pkg`, `*.tgz`, `/dist`, `/.yarn`, …) | `GITIGNORED-COMMITTED` |
+| `LICENSE` matches template (only the copyright line may differ; no placeholder) | `LICENSE-DIFF`, `LICENSE-PLACEHOLDER` |
+| All source under `src/` (none at module root) | `SRC-AT-ROOT` |
+| `package.json`: version-vs-tag, `main`, `repository.url`, required fields, `packageManager` (yarn@4), required scripts, devDependencies, lint-staged | `PKG-VERSION`, `PKG-MAIN`, `PKG-REPO`, `PKG-FIELD`, `PKG-YARN`, `PKG-SCRIPT`, `PKG-DEVDEP`, `PKG-LINTSTAGED`, `PKG-DEP` |
+| `manifest.json`: id==name, non-placeholder/non-empty maintainers, banned keywords, `type` (v2 `connection`), `runtime.type/api/entrypoint` | `MAN-IDNAME`, `MAN-PLACEHOLDER`, `MAN-MAINT`, `MAN-KEYWORD`, `MAN-TYPE`, `MAN-RUNTIME` |
+| `companion/HELP.md` not a stub | `HELP-STUB` |
+| TS husky `pre-commit` runs `lint-staged` | `HUSKY` |
+| Build / lint (with `-RunBuild`) | `BUILD-INSTALL`, `BUILD-PACKAGE`, `LINT` |
+
+Expectations are derived from the matched template, so v1 modules are checked against the
+v1 template and are not flagged for v2-only differences (e.g. v1 manifests correctly have
+no `type` field).
+
+## 3. Judgment items the script can't fully decide
+
+- **HELP.md quality.** The script only catches stubs (placeholder string, `## Your module`, <5 meaningful lines). You still judge whether the content is *useful*: what the module does, how to configure it (host/port/auth), available actions/feedbacks/variables, troubleshooting. Thin-but-real docs are acceptable; empty scaffolding is not.
+- **`tsconfig` deviations.** A `CONFIG-DIFF` on `tsconfig*.json` is reported as Critical, but a deliberate, justified deviation (e.g. `nodenext` resolution) may be acceptable — confirm the maintainer's rationale before insisting.
+- **Manifest version normalization.** `companion/manifest.json` `version` of `"0.0.0"` is acceptable/preferred in source control. If a real version string is committed instead, it must exactly match `package.json`. Treat `package.json` (vs the git tag) and the manifest as **separate** checks.
+- **Banned keywords nuance.** The script flags the static-banned terms (`companion`, `module`, `stream deck`, `bitfocus`) and keywords matching the module id. Also flag the **manufacturer or product name** (e.g. `easyworship`, `tallyccupro`) — these add no search value.
+
+## 4. Reporting
+
+Use the script's expected-vs-found for side-by-side guidance the maintainer can act on:
+
+```
+Template expects:  "repository.url": "git+https://github.com/bitfocus/companion-module-{name}.git"
+Found:             "repository.url": "git+https://github.com/personal-user/companion-module-name.git"
+```
+```
+manifest.json maintainers[0].name = "Your name"  ← placeholder, must be replaced
+```
+
+If the script cannot run (templates unavailable), fall back to comparing the module directly
+against the matching template repo in `companion-module-templates/` (run `setup.ps1` to clone
+them) — but prefer fixing the environment so the deterministic path runs every time.

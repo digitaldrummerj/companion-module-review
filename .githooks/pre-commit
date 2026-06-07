@@ -1,8 +1,9 @@
 #!/bin/sh
-# Prevent accidental commits of cloned companion-module-* directories.
-# These are local review checkouts and should never be committed to this repo.
+# Prevent accidental commits of cloned module checkouts. These live under
+# companion-modules-reviewing/ inside the repo (or at the root by mistake) and
+# are local review checkouts that should never be committed.
 
-BLOCKED=$(git diff --cached --name-only | grep -E '^companion-module-[^/]+/')
+BLOCKED=$(git diff --cached --name-only | grep -E '^(companion-modules-reviewing/|companion-module-[^/]+/)')
 
 if [ -n "$BLOCKED" ]; then
     echo ""

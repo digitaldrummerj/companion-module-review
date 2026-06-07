@@ -1,8 +1,20 @@
-# Removes all companion-module-* folders from companion-modules-reviewing,
-# preserving the two template folders.
+#!/usr/bin/env pwsh
+#Requires -Version 7
+# Removes all companion-module-* folders from the modules workspace,
+# preserving the two template folders. Honors COMPANION_MODULES_DIR.
 
-$reviewingDir = Resolve-Path "$PSScriptRoot\..\..\companion-modules-reviewing"
+$ErrorActionPreference = 'Stop'
+
+. "$PSScriptRoot/lib/ReviewState.ps1"
+
+$workspace    = Split-Path -Parent $PSScriptRoot
+$reviewingDir = Resolve-ModulesDir $workspace
 $keep = @("companion-module-template-ts", "companion-module-template-js")
+
+if (-not (Test-Path $reviewingDir)) {
+    Write-Host "Modules directory does not exist: $reviewingDir"
+    return
+}
 
 Write-Host "Scanning: $reviewingDir`n"
 

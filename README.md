@@ -1,39 +1,22 @@
 # companion-module-review
 
-An AI-powered review system for [Bitfocus Companion](https://bitfocus.io/companion) modules. The squad — a Firefly-universe cast — discovers pending module submissions on the BitFocus developer portal, performs structured code reviews, and produces fix branches ready for maintainers to inspect.
+A Claude Code review system for [Bitfocus Companion](https://bitfocus.io/companion) modules. It discovers pending module submissions on the BitFocus developer portal, performs structured code reviews, and produces a ranked review report for the maintainer. It is **report-only**: it never modifies a module's code or creates fix branches — the maintainer applies the fixes.
+
+Deterministic checks (template compliance, build, lint, file/field rules) run in PowerShell scripts; the review subagents spend their attention on judgment — protocol correctness, logic, architecture.
 
 ---
 
-## Prerequisites & Installation
+## Setup
 
-### 1. Install PowerShell 7.6
+### 1. Prerequisites
 
-The scripts in this repo are written in PowerShell and require **PowerShell 7.6+**.
+| Tool | Why | Install |
+|------|-----|---------|
+| **Claude Code** | Runs the review | [claude.com/claude-code](https://claude.com/claude-code) |
+| **PowerShell 7.6+** | The automation scripts are PowerShell | [macOS](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-macos) · [Windows](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-windows) — verify `pwsh --version` |
+| **GitHub CLI** (`gh`) | GitHub auth, repo ops, the BitFocus portal API token | [cli.github.com](https://cli.github.com/) — verify `gh --version` |
 
-- **macOS:** [Install PowerShell on macOS](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-macos?view=powershell-7.6)
-- **Windows:** [Install PowerShell on Windows](https://learn.microsoft.com/en-us/powershell/scripting/install/install-powershell-on-windows?view=powershell-7.6)
-
-Verify: `pwsh --version`
-
-### 2. Install GitHub CLI
-
-The `gh` CLI is required for GitHub authentication, repo operations, and PR creation.
-
-- [Install GitHub CLI](https://cli.github.com/)
-
-Verify: `gh --version`
-
-### 3. Install GitHub Copilot CLI
-
-The Copilot CLI is a standalone command-line tool, separate from the GitHub CLI. Follow the install instructions for your platform at [docs.github.com/en/copilot/copilot-in-the-cli](https://docs.github.com/en/copilot/copilot-in-the-cli/about-github-copilot-in-the-cli).
-
-Verify: `copilot --version`
-
-### 4. Install Squad
-
-Follow the instructions at [github.com/bradygaster/squad](https://github.com/bradygaster/squad).
-
-### 5. Clone this repo and run setup
+### 2. Clone the repo and run setup
 
 ```powershell
 git clone https://github.com/<org>/companion-module-review.git
@@ -41,202 +24,164 @@ cd companion-module-review
 pwsh setup.ps1
 ```
 
-`setup.ps1` configures git hooks and creates the sibling `companion-modules-reviewing/` directory where module repos are cloned during reviews.
+`setup.ps1` does three things, all idempotent:
+- Configures the git hooks (which prevent cloned modules being committed).
+- Creates the gitignored `companion-modules-reviewing/` directory **inside the repo** where modules are cloned during reviews.
+- Clones the official module templates into the gitignored `companion-module-templates/` (v2 `companion-module-template-{js,ts}` from GitHub; v1 `-{js,ts}-v1` variants pinned to the last v1.x commit) — these are what `validate-template.ps1` diffs each module against. Override their location with `COMPANION_TEMPLATES_DIR`.
 
-### 6. Verify GitHub auth
-
-The scripts use the `gh` CLI for GitHub and the BitFocus portal API.
+### 3. Verify GitHub auth
 
 ```powershell
-gh auth status
+gh auth status      # run `gh auth login` if needed
 ```
 
-If not authenticated, run `gh auth login` first.
+The scripts use your existing `gh` auth for both GitHub and the BitFocus portal API — no extra credentials.
 
-### 7. Open the workspace (optional but recommended)
+### 4. Open the workspace (optional)
 
-Open `companion-module-review.code-workspace` in VS Code for full multi-repo support across both the review repo and any cloned modules.
+Open `companion-module-review.code-workspace` in VS Code.
+
+### 5. Verify the install
+
+Run the script test suites — they need no network and should all pass:
+
+```powershell
+pwsh scripts/tests/ReviewState.Tests.ps1
+pwsh scripts/tests/ValidateTemplate.Tests.ps1
+pwsh scripts/tests/ModuleFacts.Tests.ps1
+```
 
 ---
 
-## Running a review
+## Usage
 
-1. Open a terminal and run `copilot` to enter the Copilot CLI
-2. Run `/agents` and select **Squad** as the agent
-3. Ask the team to start a review:
-   - Auto-select the next pending module: `"hey team, let's review the next module"`
-   - Review a specific module: `"hey team, let's review companion-module-allenheath-sq"`
+### Run a review
 
-The squad will discover the module, clone it, run the structured review, and produce a fix branch automatically.
+In Claude Code, say **"review the next module"** or **"review companion-module-X"**, or run **`/review-module [name] [tag|module|both]`**. This triggers the `review-companion-module` skill, which runs the pipeline in order — `bitfocus-queue` → `bitfocus-setup-module` → `module-facts` → `validate-template -RunBuild` → three parallel review subagents (`companion-protocol-reviewer`, `companion-qa-reviewer`, `companion-compliance-reviewer`) → assemble one review under `reviews/{module-name}/` + a ⬜ `TRACKER.md` row. It is **report-only**: it never modifies the module or creates fix branches. (See [CLAUDE.md](CLAUDE.md).)
+
+**Scope** (default `tag`):
+- `tag` — only this release's changes (the `previousTag..reviewTag` diff); findings are new/regression; pre-existing issues not surfaced.
+- `module` — the whole current module, flat by severity (no diff, no new-vs-existing split).
+- `both` — the whole module classified new vs pre-existing (only new blocks; pre-existing noted).
+
+### Scripts reference
+
+All scripts are read-only against GitHub/BitFocus except `git clone` (setup) and `cleanup` (local deletes). Add `-Json` where available for machine-readable output.
+
+| Script | What it does |
+|--------|--------------|
+| **`bitfocus-queue.ps1 [-Json]`** | Show the pending review queue, oldest first, **labeled by local review state** (`needs review` / `reviewed - feedback pending` / `re-review?`). "Next up" never points at a module already reviewed locally whose feedback hasn't been sent yet. |
+| **`bitfocus-setup-module.ps1 [-ModuleName <name>] [-Force] [-Json]`** | Validate `PENDING` status, find the previous approved tag, and clone the module into `companion-modules-reviewing/`. Auto-selects the oldest module **that still needs review** (skips feedback-pending). Naming a feedback-pending module requires `-Force`. |
+| **`module-facts.ps1 -ModuleDir <path> [-GitTag <tag>] [-SkipTemplateCheck] [-Json]`** | The shared **fact sheet**: language (JS/TS), API version → the single applicable api-compliance skill, package.json/manifest essentials, detected protocols, source-tree list, and a template-compliance summary. Run once at review start; hand it to every reviewer. |
+| **`validate-template.ps1 -ModuleDir <path> [-ExpectedVersion <tag>] [-RunBuild] [-TemplateDir <path>] [-Json]`** | The **deterministic** template review: required files, config-file parity, package.json/manifest fields, LICENSE, `src/`-only source, devDependencies, husky, gitignored-not-committed. Auto-selects the matching template by API version × language (the `-v1`/v2, js/ts variants in `companion-module-templates/`). `-RunBuild` also runs `yarn install`/`yarn package` (+ `yarn lint` for TS). Exits 1 on any Critical. |
+| **`cleanup-modules.ps1`** | Remove cloned `companion-module-*` directories from `companion-modules-reviewing/` to reclaim disk. |
+
+### The review process, mapped to the tooling
+
+| Step | Tooling |
+|------|---------|
+| Find the next module | `bitfocus-queue.ps1` (skips already-reviewed) |
+| Set it up | `bitfocus-setup-module.ps1` (clone + previous-tag lookup) |
+| Gather shared context | `module-facts.ps1` → fact sheet |
+| Deterministic compliance | `validate-template.ps1 -RunBuild` |
+| Judgment review | the review subagents (protocol, QA/logic, compliance/tests) read the fact sheet + the one applicable api skill |
+| Assemble + record | single review file under `reviews/{module}/` + a ⬜ row in `reviews/TRACKER.md` |
+| Deliver feedback | send the maintainer the review via the developer portal, then mark the row ✅ in `TRACKER.md` |
+
+> The ✅/⬜ column in `TRACKER.md` is how the queue knows a module is done. A module stays in the online queue until feedback is uploaded, so marking ✅ after delivery is what keeps it from being reviewed twice.
 
 ---
 
 ## How it works
 
-1. **Discover** — Check what's pending on the BitFocus developer portal (`scripts/bitfocus-queue.ps1`)
-2. **Set up** — Clone the target module into the sibling `companion-modules-reviewing/` workspace (`scripts/bitfocus-setup-module.ps1`)
-3. **Review** — The squad (Mal, Wash, Kaylee, Zoe, Simon) analyse the module across template compliance, API compliance, actions, feedbacks, variables, presets, and OSC integration
-4. **Assemble** — Scribe assembles findings into a single review file under `reviews/{module-name}/` and adds a ⬜ entry to `reviews/TRACKER.md`
-5. **Fix** — Kaylee and Wash create a `fix/v{version}-{date}-issues` branch inside the module repo with individual commits per issue
+1. **Discover** — `bitfocus-queue.ps1` lists pending modules and labels each by local review state.
+2. **Set up** — `bitfocus-setup-module.ps1` clones the target into `companion-modules-reviewing/`.
+3. **Bootstrap** — `module-facts.ps1` produces the shared fact sheet (language, API version, protocols, template-check summary); `validate-template.ps1 -RunBuild` runs the deterministic compliance + build/lint.
+4. **Review** — three review subagents (protocol, QA/logic, compliance) review at the chosen scope, loading only the applicable v1/v2 api-compliance skill.
+5. **Assemble** — the orchestrator merges all findings into one review under `reviews/{module-name}/` and adds a ⬜ row to `reviews/TRACKER.md`.
+6. **Deliver** — send the maintainer the review via the developer portal; they apply the fixes. (Reviews never edit the module — report only.) Mark the TRACKER row ✅ once delivered.
 
 ---
 
 ## Directory structure
 
 ```text
-companion-module-review/          ← this repo
-├── reviews/                      ← completed review files
-├── scripts/                      ← PowerShell automation
-│   ├── bitfocus-queue.ps1        ← show pending review queue (read-only)
-│   ├── bitfocus-setup-module.ps1 ← clone + validate a module for review
-│   └── cleanup-modules.ps1       ← remove cloned modules except templates
-├── .squad/                       ← squad team state (agents, decisions, skills)
-├── .copilot/                     ← Copilot agent skills
-└── squad-export.json             ← squad export (gitignored)
-
-companion-modules-reviewing/      ← sibling directory (gitignored contents)
-├── companion-module-template-ts/ ← TypeScript template (reference)
-├── companion-module-template-js/ ← JavaScript template (reference)
-└── companion-module-{name}/      ← cloned modules under review
+companion-module-review/            ← this repo
+├── reviews/                        ← completed review files + TRACKER.md
+├── scripts/                        ← PowerShell automation
+│   ├── lib/ReviewState.ps1         ← shared helpers (modules dir, TRACKER parsing, review state)
+│   ├── bitfocus-queue.ps1          ← pending queue, labeled by review state (read-only)
+│   ├── bitfocus-setup-module.ps1   ← clone + validate a module (dedups against local reviews)
+│   ├── module-facts.ps1            ← shared "fact sheet" gathered once per review
+│   ├── validate-template.ps1       ← deterministic template/build/lint compliance
+│   ├── cleanup-modules.ps1         ← remove cloned modules
+│   └── tests/                      ← self-contained test suites (no Pester)
+├── companion-modules-reviewing/    ← cloned modules under review (gitignored)
+│   └── companion-module-{name}/    ← one per module, its own git repo
+├── companion-module-templates/     ← official templates, cloned by setup.ps1 (gitignored)
+│   ├── companion-module-template-js / -ts        ← v2 templates
+│   └── companion-module-template-js-v1 / -ts-v1  ← v1 templates (pinned commits)
+└── .claude/                        ← the review system
+    ├── skills/                     ← review-companion-module orchestrator + companion/review knowledge
+    ├── agents/                     ← the three review subagents
+    └── commands/                   ← /review-module
 ```
+> Override the templates location with `COMPANION_TEMPLATES_DIR` if you keep them elsewhere.
 
 ---
 
-## Scripts
+## Review roles
 
-### `scripts/bitfocus-queue.ps1`
+The review runs in Claude Code as an orchestrator skill plus three subagents:
 
-Shows the pending review queue from the BitFocus developer portal, sorted oldest-first. Read-only — never clones anything. Run this first to see what needs reviewing.
+| Role | What it does |
+| ---- | ------------ |
+| **`review-companion-module`** (orchestrator skill) | Runs the pipeline, dispatches the subagents, assembles the report, writes the TRACKER row. Architecture + final verdict. |
+| **`companion-protocol-reviewer`** | Network lifecycle, OSC/TCP/UDP/HTTP/Bonjour, socket cleanup, status transitions. |
+| **`companion-qa-reviewer`** | Bugs, edge cases, error handling, performance, async correctness. |
+| **`companion-compliance-reviewer`** | v1.x/v2.x API compliance, actions/feedbacks/presets/variables/config structure, upgrade scripts, tests. |
 
-```powershell
-pwsh scripts/bitfocus-queue.ps1
-```
-
-Output: a table of pending modules, their submitted tags, days waiting, and whether they're already cloned locally.
-
-### `scripts/bitfocus-setup-module.ps1`
-
-Validates and clones a module for review. Auto-selects the oldest PENDING module if no name is given. Verifies `PENDING` status (skips `WITHDRAWN`), finds the previous approved tag for diff context, and clones the GitHub repo.
-
-```powershell
-# Auto-select oldest pending module:
-pwsh scripts/bitfocus-setup-module.ps1
-
-# Or specify a module explicitly:
-pwsh scripts/bitfocus-setup-module.ps1 -ModuleName allenheath-sq
-```
-
-### `scripts/cleanup-modules.ps1`
-
-Removes all `companion-module-*` directories from the sibling `companion-modules-reviewing/` directory, except the two template repos. Run after finishing reviews to reclaim disk space.
-
-```powershell
-pwsh scripts/cleanup-modules.ps1
-```
-
----
-
-## The squad (Firefly cast)
-
-| Name | Role | Scope |
-| ------ | ------ | ------- |
-| **Mal** | Lead / Coordinator | Scope, final verdict, decisions |
-| **Wash** | Backend / Protocol | Network lifecycle, OSC, connection errors, status transitions |
-| **Kaylee** | Module Dev | Actions, feedbacks, variables, presets, template compliance, auto-fix |
-| **Zoe** | Tester | Test coverage, edge cases, quality |
-| **Simon** | API Compliance | v1.x and v2.0 API checks |
-| **Scribe** | Silent logger | Assembles review file, logs decisions |
-| **Ralph** | Monitor | Work queue, BitFocus dashboard, backlog |
+Deterministic template/build/lint compliance is handled by `validate-template.ps1`, not a subagent.
 
 ---
 
 ## Skills
 
-Skills are Copilot Agent Skills (SKILL.md files) that teach the squad domain knowledge. They live in two locations:
+Skills (`.claude/skills/*/SKILL.md`) are the orchestrator plus the companion/review domain knowledge the orchestrator and subagents read.
 
-| Location | Purpose |
-| ---------- | --------- |
-| `.squad/skills/` | Project-specific skills for this review workflow |
-| `.copilot/skills/` | Personal/global skills (also available to all squad agents) |
+### Companion module reference
 
-### Companion Module Development Skills
-
-These teach the squad the Bitfocus Companion module API — used both during review and when implementing auto-fixes.
+Reference for understanding and reviewing module code (the Companion module API). Examples are protocol-neutral.
 
 | Skill | Description |
 | ------- | ------------- |
-| `companion-actions` | Full reference for `CompanionActionDefinition`, option field types, callbacks, subscribe/unsubscribe lifecycle |
-| `companion-action-file-pattern` | Multi-file action pattern: creating `src/actions/action-{category}.ts` files and wiring them into the `actions.ts` aggregator |
-| `companion-add-action-to-category-file` | Add actions to an existing category file (3-step recipe) |
-| `companion-feedbacks` | Full reference for boolean and advanced feedback definitions, `checkFeedbacks`, subscribe/unsubscribe |
-| `companion-feedback-file-pattern` | Multi-file feedback pattern: creating `src/feedbacks/feedback-{category}.ts` files and wiring the aggregator |
-| `companion-add-feedback-to-category-file` | Add feedbacks to an existing category file |
-| `companion-config` | Config field types (`textinput`, `number`, `dropdown`, `checkbox`, `secret`, etc.), `Regex.*` constants, `configUpdated()` lifecycle |
-| `companion-upgrades` | Upgrade scripts (`CompanionStaticUpgradeScript`), migration helpers, version numbering |
-| `companion-variable-definition` | Declare variables with `setVariableDefinitions()`, `variableId` naming rules, dynamic registration |
-| `companion-variable-set-value` | Set and read variable values with `setVariableValues()` / `getVariableValue()` |
-| `companion-preset-category-file` | Enum-based preset category file pattern and aggregator wiring |
-| `companion-add-preset-to-category-file` | Add presets to an existing category file |
-| `osc-integration` | OSC UDP/TCP integration using the `osc` npm package: socket lifecycle, send, receive, action wiring, state updates |
+| `companion-actions` · `companion-action-file-pattern` · `companion-add-action-to-category-file` | Action definitions, the multi-file action pattern, and adding actions |
+| `companion-feedbacks` · `companion-feedback-file-pattern` · `companion-add-feedback-to-category-file` | Boolean/advanced feedbacks, the multi-file pattern, and adding feedbacks |
+| `companion-preset-category-file` · `companion-add-preset-to-category-file` | Enum-based preset pattern / adding presets |
+| `companion-config` | Config field types, regex constants, `configUpdated()` lifecycle |
+| `companion-variable-definition` · `companion-variable-set-value` | Declare variables / set & read values |
+| `companion-upgrades` | Upgrade scripts, migration helpers, version numbering |
+| `osc-integration` | OSC UDP/TCP integration with the `osc` package |
 
-### Review Workflow Skills
-
-These govern how reviews are conducted and how results are structured.
+### Review workflow
 
 | Skill | Description |
 | ------- | ------------- |
-| `companion-template-compliance` | Full checklist for JS and TS template compliance: required files, `package.json` rules, `manifest.json` rules, HELP.md validation, husky hooks. All violations are 🔴 Critical |
-| `companion-v1-api-compliance` | Per-version checklist for `@companion-module/base` v1.5–v1.14 (Companion 3.1–4.2): deprecated patterns, breaking changes, upgrade recommendations |
-| `companion-v2-api-compliance` | Checklist for `@companion-module/base` v2.0+ (Companion 4.3+): removed APIs, breaking changes, expression handling |
-| `companion-bitfocus-dashboard` | BitFocus developer portal API: list pending reviews, get previous approved tag, derive repo URLs, clone workflow. PowerShell and bash patterns included |
-| `review-scorecard` | Standard scorecard format (issue counts by severity, New vs Existing columns), Table of Contents format, anchor generation rules |
-| `review-auto-fix` | Fix branch workflow: branch naming (`fix/v{version}-{date}-issues`), commit strategy (one commit per issue), scope of fixes, no-PR rule |
-| `project-conventions` | Project-level conventions (template — fill in as the codebase evolves) |
-| `make-skill-template` | Meta-skill for creating new skills: SKILL.md frontmatter, directory structure, validation checklist |
-
-### Squad / Agent Framework Skills
-
-These govern how the squad operates as a team and are shared across all projects.
-
-| Skill | Description |
-| ------- | ------------- |
-| `agent-collaboration` | Worktree awareness, decision recording, cross-agent communication, reviewer lockout protocol |
-| `agent-conduct` | Hard rules: Product Isolation Rule (no hardcoded agent names in product code), Peer Quality Check |
-| `architectural-proposals` | How to write architectural proposals: required sections, tone ceiling, wave restructuring, risk documentation |
-| `ci-validation-gates` | Defensive CI/CD: semver validation, NPM token type, retry logic for registry propagation, draft release detection |
-| `cli-wiring` | CLI command wiring checklist: command file → routing block → help text (prevents the "implemented but not routed" bug) |
-| `client-compatibility` | Platform detection (CLI vs VS Code vs fallback), spawn adaptations per surface, SQL tool caveat |
-| `cross-squad` | Coordinating work across multiple Squad instances via manifests, issue handoff protocol, feedback loops |
-| `distributed-mesh` | Distributed squad coordination using git as transport: three-zone model (local/remote-trusted/remote-opaque), `mesh.json`, sync scripts |
-| `docs-standards` | Microsoft Style Guide rules, Squad-specific formatting patterns, structure conventions |
-| `economy-mode` | Cost-optimized model selection: activation phrases, model substitution table, persistent config |
-| `external-comms` | PAO workflow for drafting community responses: scan → classify → draft → human review gate → post → audit |
-| `gh-auth-isolation` | Managing multiple GitHub accounts (EMU + personal): detecting active identity, token extraction, push patterns |
-| `git-workflow` | Squad branching model: `dev`-first, `squad/{number}-{slug}` branch names, worktree patterns for parallel issues |
-| `github-multi-account` | AI-driven setup for `ghp`/`ghw` aliases for personal/work GitHub accounts |
-| `history-hygiene` | Record final outcomes to history.md, not intermediate states or reversed decisions |
-| `humanizer` | Tone enforcement for external-facing community responses: warm, active voice, second person, specific |
-| `init-mode` | Team initialization: Phase 1 proposal (no files created), Phase 2 team creation, casting algorithm, `## Members` header requirement |
-| `model-selection` | 5-layer model resolution hierarchy: per-agent config → global config → session directive → charter preference → task-aware auto |
-| `nap` | Context hygiene: compress histories, prune logs, archive stale decisions before heavy fan-out work |
-| `personal-squad` | User-level agents that travel across projects: ghost protocol (advise only, no writes to project state) |
-| `release-process` | Step-by-step release runbook: semver validation, NPM token type, tag/release workflow, rollback procedure |
-| `reskill` | Team-wide charter optimization: extract shared patterns into skills, trim charters to ≤1.5KB |
-| `reviewer-protocol` | Reviewer rejection and strict lockout semantics: rejected author is locked out, different agent must revise |
-| `secret-handling` | Never read `.env` files, never write secrets to `.squad/` committed files, Scribe pre-commit validation |
-| `session-recovery` | Find and resume interrupted Copilot CLI sessions via `session_store` SQL queries |
-| `squad-conventions` | Squad CLI codebase conventions: zero dependencies, `node:test`, `fatal()` pattern, Windows compatibility |
-| `test-discipline` | Update tests when changing APIs — same commit, keep assertion arrays in sync with disk reality |
-| `windows-compatibility` | Cross-platform patterns: safe timestamps (no colons), `path.join()`, `git commit -F` (no inline newlines) |
+| `companion-template-compliance` | Thin wrapper: run `validate-template.ps1`, interpret findings, judge the few non-deterministic items (HELP quality, tsconfig deviations, manifest version normalization) |
+| `companion-v1-api-compliance` · `companion-v2-api-compliance` | Per-version API checklists (the orchestrator loads only the one that applies) |
+| `companion-bitfocus-dashboard` | BitFocus portal API: pending reviews, previous-tag lookup, repo URLs, clone workflow |
+| `review-scorecard` | Standard scorecard / Table-of-Contents format |
+| `review-follow-up-same-tag` | How to run a re-review that verifies a maintainer's fixes |
+| `review-yarn4-lockfile-validation` | Yarn 4 lockfile validation checks |
+| `project-conventions` | Review output location, naming, report-only directives, TRACKER update |
 
 ---
 
 ## Authentication
 
-The BitFocus portal API and GitHub use your existing `gh` CLI auth. No extra credentials needed.
+The BitFocus portal API and GitHub both use your existing `gh` CLI auth — no extra credentials.
 
 ```powershell
-# Verify auth is set up
 gh auth status
 ```
 

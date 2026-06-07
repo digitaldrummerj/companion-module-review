@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pwsh scripts/:*)",
+      "Bash(git -C:*)",
+      "Bash(mkdir -p reviews/:*)",
+      "Bash(date -u:*)"
+    ]
+  }
+}

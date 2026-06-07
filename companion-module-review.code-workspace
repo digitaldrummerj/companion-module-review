@@ -3,10 +3,6 @@
 		{
 			"name": "companion-module-review",
 			"path": "."
-		},
-		{
-			"name": "companion-modules-reviewing",
-			"path": "../companion-modules-reviewing"
 		}
 	],
 	"settings": {
