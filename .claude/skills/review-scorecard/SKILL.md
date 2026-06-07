@@ -48,17 +48,7 @@ Insert this section immediately after the Verdict section.
 
 **Severity rows to include:** Always include Critical through Low. Include "Nice to Have" only if there are findings at that level.
 
-**Blocking count:** Count all findings in the `## 🔴 Critical` and `## 🟠 High` main sections. Pre-existing issues in those main sections still block per review policy. Do NOT count the `⚠️ Pre-existing Notes` table entries as blocking — those are explicitly non-blocking.
-
-**Fix complexity:** Estimate based on the blocking issues only:
-- **Quick** — all blocking fixes are one-liners or simple substitutions
-- **Medium** — blocking fixes require logic changes or new code (< 50 lines total)
-- **Complex** — blocking fixes require architectural changes, file moves, or significant new code
-
-**Health delta:** State how many issues were introduced in this release vs. how many pre-existing issues were surfaced:
-- "0 introduced · 3 pre-existing surfaced" — release added nothing new, but old issues were found
-- "7 introduced · 9 pre-existing noted" — release introduced new issues, with pre-existing also noted
-- "2 introduced · 0 pre-existing" — clean pre-existing record, but this release added issues
+**Blocking count:** Count all findings in the `## 🔴 Critical` and `## 🟠 High` main sections. Pre-existing issues in those main sections still block per review policy. Do NOT count the `⚠️ Pre-existing Notes` table entries as blocking — those are explicitly non-blocking. This "blocking" determination drives the 📋 Issues Blocking/Non-blocking grouping and the Verdict; it is not printed as a scorecard line.
 
 ### Scorecard Template
 
@@ -73,13 +63,23 @@ Insert this section immediately after the Verdict section.
 | 🟢 Low | {n} | {n} | {n} |
 | 💡 Nice to Have | {n} | {n} | {n} |
 | **Total** | **{n}** | **{n}** | **{n}** |
-
-**Blocking:** {n} issue(s) ({brief description — e.g., "1 new critical"})  
-**Fix complexity:** {Quick / Medium / Complex} — {one-line description}  
-**Health delta:** {n} introduced · {n} pre-existing {surfaced/noted}  
 ```
 
 Omit the "Nice to Have" row if there are no findings at that level.
+
+### Verdict Format
+
+The **Verdict** section (immediately before the Scorecard in the assembled review) contains only the status line — no reasoning or "Reason:" paragraph:
+
+```markdown
+## Verdict: ❌ Changes Required
+```
+
+or
+
+```markdown
+## Verdict: ✅ Approved
+```
 
 ### Example — Changes Required with pre-existing blocking issues
 
@@ -94,10 +94,6 @@ Omit the "Nice to Have" row if there are no findings at that level.
 | 🟢 Low | 1 | 0 | 1 |
 | 💡 Nice to Have | 1 | 0 | 1 |
 | **Total** | **2** | **3** | **5** |
-
-**Blocking:** 3 issues (3 pre-existing high)  
-**Fix complexity:** Quick — three one-line fixes  
-**Health delta:** 2 introduced · 3 pre-existing surfaced  
 ```
 
 ### Example — Changes Required with new critical issue
@@ -112,10 +108,6 @@ Omit the "Nice to Have" row if there are no findings at that level.
 | 🟡 Medium | 3 | 3 | 6 |
 | 🟢 Low | 3 | 4 | 7 |
 | **Total** | **7** | **9** | **16** |
-
-**Blocking:** 1 issue (1 new critical)  
-**Fix complexity:** Quick — one-line fix required  
-**Health delta:** 7 introduced · 9 pre-existing noted  
 ```
 
 ---
@@ -176,18 +168,18 @@ Each item is a GitHub-flavored Markdown task list item (`- [ ]`). On a re-review
 ## Updated Section Order in Assembled Review
 
 1. Title + meta header
-2. **Fix Summary for Maintainer**
-3. **📊 Scorecard** ← this skill
-4. **Verdict**
-5. **📋 Issues** ← this skill (formerly "Table of Contents")
-6. 🔴 Critical
-7. 🟠 High
-8. 🟡 Medium
-9. 🟢 Low
-10. 💡 Nice to Have
-11. 🔮 Next Release
-12. ⚠️ Pre-existing Notes
-13. 🧪 Tests
-14. ✅ What's Solid
+2. **📊 Scorecard** ← this skill
+3. **Verdict**
+4. **📋 Issues** ← this skill (formerly "Table of Contents")
+5. 🔴 Critical
+6. 🟠 High
+7. 🟡 Medium
+8. 🟢 Low
+9. 💡 Nice to Have
+10. 🔮 Next Release
+11. ⚠️ Pre-existing Notes
+12. 🧪 Tests *(only when tests are present; omit entirely if none found)*
+
+The **Verdict** (item 3) is the status line only — no reasoning paragraph (see "Verdict Format" above).
 
 Omit any section that has no findings.

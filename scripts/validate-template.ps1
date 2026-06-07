@@ -72,7 +72,11 @@ if (Test-Path $pkgPath) {
 
 function Has-Prop { param($Obj, [string]$Name) $Obj -and ($Obj.PSObject.Properties.Name -contains $Name) }
 
-$isTs = (Test-Path (Join-Path $ModuleDir 'tsconfig.json')) -or ((Has-Prop $pkg 'type') -and $pkg.type -eq 'module')
+# TS is signalled by a tsconfig, .ts sources, or a typescript devDependency — NOT by
+# package.json "type": "module", which only marks the JS as ESM (a pure-JS module can be ESM too).
+$hasTsSource = @(Get-ChildItem -Path (Join-Path $ModuleDir 'src') -Filter '*.ts' -Recurse -File -ErrorAction SilentlyContinue).Count -gt 0
+$hasTsDevDep = (Has-Prop $pkg 'devDependencies') -and (Has-Prop $pkg.devDependencies 'typescript')
+$isTs = (Test-Path (Join-Path $ModuleDir 'tsconfig.json')) -or $hasTsSource -or $hasTsDevDep
 $lang = if ($isTs) { 'TS' } else { 'JS' }
 $langLower = $lang.ToLower()
 
@@ -148,6 +152,18 @@ foreach ($rel in $configFiles) {
     if (-not (Test-Path $tplFile)) { continue }   # template lacks it; nothing to compare
     $modLines = @(Read-NormalizedLines $modFile)
     $tplLines = @(Read-NormalizedLines $tplFile)
+    if ($rel -eq '.gitignore') {
+        # Subset rule: every template entry must be present in the module's .gitignore.
+        # Extra module entries are allowed and not flagged. Blank and comment lines in
+        # the template are not entries, so they're skipped.
+        $missing = @($tplLines | Where-Object {
+            $_ -ne '' -and -not $_.StartsWith('#') -and ($modLines -notcontains $_)
+        })
+        if ($missing.Count -gt 0) {
+            Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Missing template .gitignore entries: $($missing -join ', ')"
+        }
+        continue
+    }
     if (($modLines -join "`n") -ne ($tplLines -join "`n")) {
         $firstDiff = ''
         $max = [math]::Max($modLines.Count, $tplLines.Count)

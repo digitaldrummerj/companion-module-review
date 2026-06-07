@@ -28,7 +28,7 @@ pwsh scripts/validate-template.ps1 -ModuleDir <module path> -ExpectedVersion <gi
 | Area | Finding ids |
 |------|-------------|
 | Required files present; no `package-lock.json` | `FILE-MISSING`, `NPM-LOCK` |
-| Config-file parity vs template (`.gitattributes`, `.gitignore`, `.prettierignore`, `.yarnrc.yml`, and TS `eslint.config.mjs`/`tsconfig*.json`) | `CONFIG-DIFF` |
+| Config-file parity vs template — exact match for `.gitattributes`, `.prettierignore`, `.yarnrc.yml`, and TS `eslint.config.mjs`/`tsconfig*.json`. `.gitignore` is a **subset** check: every template entry must be present, but **extra** module entries are allowed and not flagged | `CONFIG-DIFF` |
 | Gitignored artifacts not committed (`node_modules`, `/pkg`, `*.tgz`, `/dist`, `/.yarn`, …) | `GITIGNORED-COMMITTED` |
 | `LICENSE` matches template (only the copyright line may differ; no placeholder) | `LICENSE-DIFF`, `LICENSE-PLACEHOLDER` |
 | All source under `src/` (none at module root) | `SRC-AT-ROOT` |

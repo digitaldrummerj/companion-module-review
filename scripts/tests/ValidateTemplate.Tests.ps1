@@ -73,7 +73,7 @@ try {
     # ── GOOD module (matches template) ───────────────────────────────────────
     $good = Join-Path $root 'companion-module-foo'
     Set-File (Join-Path $good '.gitattributes')  "* text=auto eol=lf"
-    Set-File (Join-Path $good '.gitignore')       $gitignore
+    Set-File (Join-Path $good '.gitignore')      "$gitignore`n.idea/`n*.log"   # extra entries OK (subset check)
     Set-File (Join-Path $good '.prettierignore')  "package.json`n/LICENSE.md"
     Set-File (Join-Path $good '.yarnrc.yml')      "nodeLinker: node-modules"
     Set-File (Join-Path $good 'LICENSE')          $licenseGood
@@ -114,7 +114,7 @@ try {
     # ── BAD module ───────────────────────────────────────────────────────────
     $bad = Join-Path $root 'companion-module-bar'
     Set-File (Join-Path $bad '.gitattributes')  "* text=auto"            # CONFIG-DIFF
-    Set-File (Join-Path $bad '.gitignore')       $gitignore
+    Set-File (Join-Path $bad '.gitignore')      "node_modules/`npackage-lock.json`n/pkg`n/*.tgz`nDEBUG-*"  # drops /.yarn → CONFIG-DIFF (.gitignore)
     # .prettierignore intentionally missing                              # FILE-MISSING
     Set-File (Join-Path $bad '.yarnrc.yml')      "nodeLinker: node-modules"
     Set-File (Join-Path $bad 'LICENSE')          $licenseBad             # LICENSE-PLACEHOLDER
@@ -155,6 +155,7 @@ try {
     $b = Invoke-Validator $bad $tpl
     $ids = @($b.findings | ForEach-Object { $_.id })
     Ok ($ids -contains 'CONFIG-DIFF')          "flags .gitattributes config diff"
+    Ok (@($b.findings | Where-Object { $_.id -eq 'CONFIG-DIFF' -and $_.file -eq '.gitignore' }).Count -gt 0) "flags .gitignore missing a template entry"
     Ok ($ids -contains 'FILE-MISSING')         "flags missing .prettierignore"
     Ok ($ids -contains 'NPM-LOCK')             "flags package-lock.json"
     Ok ($ids -contains 'SRC-AT-ROOT')          "flags source file at module root"

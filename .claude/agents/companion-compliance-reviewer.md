@@ -27,4 +27,4 @@ Read the source via the fact sheet's src list, per the **scope** the orchestrato
 First release (no previous tag) under tag/both → review the whole module (all eligible).
 
 ## Output
-Return a findings list. For each: severity (🔴/🟠/🟡/🟢/💡), `file:line` (or file for file-level), classification (for tag/both scopes), a one-line description, and a concrete suggested fix **for the maintainer**. Include a short **Tests** summary line (found? pass/fail? quality?). For `both`, group pre-existing items separately. Do not write any files.
+Return a findings list. For each: severity (🔴/🟠/🟡/🟢/💡), `file:line` (or file for file-level), classification (for tag/both scopes), a one-line description, and a concrete suggested fix **for the maintainer**. Include a short **Tests** summary line (pass/fail? quality?) **only when tests exist**; if no test framework/files/`test` script are present, report nothing about tests (do not write a "no tests found" line — the assembler omits the section entirely). For `both`, group pre-existing items separately. Do not write any files.
