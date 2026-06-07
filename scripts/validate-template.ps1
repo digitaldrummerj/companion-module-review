@@ -114,8 +114,11 @@ if (Test-Path $tplManPath) { try { $tplMan = Get-Content -Raw -LiteralPath $tplM
 
 # ── 1. Required files ────────────────────────────────────────────────────────
 $requiredCommon = @('.gitattributes','.gitignore','.prettierignore','.yarnrc.yml','LICENSE','package.json','yarn.lock','companion/manifest.json','companion/HELP.md')
-$requiredJs = @('src/main.js')
-$requiredTs = @('eslint.config.mjs','tsconfig.build.json','tsconfig.json','.husky/pre-commit','src/main.ts')
+# Entry-point filename is NOT hard-required — it may differ from the template (e.g. src/index.js).
+# Its validity is enforced by the package.json main / manifest runtime.entrypoint checks below
+# (existence + consistency) plus the -RunBuild build step.
+$requiredJs = @()
+$requiredTs = @('eslint.config.mjs','tsconfig.build.json','tsconfig.json','.husky/pre-commit')
 $required = if ($isTs) { $requiredCommon + $requiredTs } else { $requiredCommon + $requiredJs }
 foreach ($rel in $required) {
     if (-not (Test-Path (Join-Path $ModuleDir $rel))) {
@@ -249,10 +252,13 @@ if ($pkg) {
             Add-Finding 'PKG-VERSION' 'Critical' 'package.json' "version '$($pkg.version)' != git tag '$want'"
         }
     }
-    # main: from template if available, else lang default.
-    $expectedMain = if ($tplPkg -and (Has-Prop $tplPkg 'main')) { $tplPkg.main } elseif ($isTs) { 'dist/main.js' } else { 'src/main.js' }
-    if ((Has-Prop $pkg 'main') -and $pkg.main -ne $expectedMain) {
-        Add-Finding 'PKG-MAIN' 'Critical' 'package.json' "main '$($pkg.main)' should be '$expectedMain'"
+    # main need not match the template filename, but if present it must reference an existing
+    # entry file. Build outputs under dist/ are absent in a source checkout (the build step
+    # validates those), so they are not existence-checked here.
+    if ((Has-Prop $pkg 'main') -and "$($pkg.main)" -notmatch '(^|/)dist/') {
+        if (-not (Test-Path (Join-Path $ModuleDir $pkg.main))) {
+            Add-Finding 'PKG-MAIN' 'Critical' 'package.json' "main '$($pkg.main)' references a file that does not exist"
+        }
     }
     if ((Has-Prop $pkg 'repository') -and (Has-Prop $pkg.repository 'url') -and $pkg.repository.url -ne $expectedRepo) {
         Add-Finding 'PKG-REPO' 'Critical' 'package.json' "repository.url '$($pkg.repository.url)' should be '$expectedRepo'"
@@ -340,11 +346,27 @@ if (Test-Path $manifestPath) {
                 Add-Finding 'MAN-TYPE' 'Critical' 'companion/manifest.json' "type '$($man.type)' should be '$($tplMan.type)'"
             }
         }
-        # runtime.type / runtime.api / runtime.entrypoint must match the template (lang+version specific).
+        # runtime.type / runtime.api must match the template (lang+version specific).
         if ($tplMan -and (Has-Prop $tplMan 'runtime') -and (Has-Prop $man 'runtime')) {
-            foreach ($rp in @('type','api','entrypoint')) {
+            foreach ($rp in @('type','api')) {
                 if ((Has-Prop $tplMan.runtime $rp) -and (Has-Prop $man.runtime $rp) -and $man.runtime.$rp -ne $tplMan.runtime.$rp) {
                     Add-Finding 'MAN-RUNTIME' 'Critical' 'companion/manifest.json' "runtime.$rp '$($man.runtime.$rp)' should be '$($tplMan.runtime.$rp)'"
+                }
+            }
+        }
+        # runtime.entrypoint need NOT match the template filename. It must reference an existing
+        # file (dist/ build outputs are skipped — absent until built) and resolve to the same
+        # file as package.json main.
+        if ((Has-Prop $man 'runtime') -and (Has-Prop $man.runtime 'entrypoint')) {
+            $entryRel  = "$($man.runtime.entrypoint)"
+            $entryFull = [System.IO.Path]::GetFullPath((Join-Path (Join-Path $ModuleDir 'companion') $entryRel))
+            if ($entryRel -notmatch '(^|/)dist/' -and -not (Test-Path $entryFull)) {
+                Add-Finding 'MAN-RUNTIME' 'Critical' 'companion/manifest.json' "runtime.entrypoint '$entryRel' references a file that does not exist"
+            }
+            if (Has-Prop $pkg 'main') {
+                $mainFull = [System.IO.Path]::GetFullPath((Join-Path $ModuleDir "$($pkg.main)"))
+                if ($mainFull -ne $entryFull) {
+                    Add-Finding 'ENTRY-MISMATCH' 'Critical' 'companion/manifest.json' "runtime.entrypoint '$entryRel' and package.json main '$($pkg.main)' resolve to different files"
                 }
             }
         }

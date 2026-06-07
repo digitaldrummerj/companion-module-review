@@ -111,6 +111,54 @@ try {
     $g = Invoke-Validator $good $tpl
     Ok ($g.counts.critical -eq 0) "no critical findings (got $($g.counts.critical): $(@($g.findings | ForEach-Object { $_.id }) -join ','))"
 
+    # ── GOOD module with a non-template entry filename (src/index.js) ─────────
+    # Mirrors real modules (e.g. dashmaster-2k) that name their entry src/index.js.
+    # main + entrypoint reference the existing file and agree → no entry findings.
+    $good2 = Join-Path $root 'companion-module-idx'
+    Set-File (Join-Path $good2 '.gitattributes')   "* text=auto eol=lf"
+    Set-File (Join-Path $good2 '.gitignore')       $gitignore
+    Set-File (Join-Path $good2 '.prettierignore')  "package.json`n/LICENSE.md"
+    Set-File (Join-Path $good2 '.yarnrc.yml')      "nodeLinker: node-modules"
+    Set-File (Join-Path $good2 'LICENSE')          $licenseGood
+    Set-File (Join-Path $good2 'yarn.lock')        "# yarn lockfile"
+    Set-File (Join-Path $good2 'src/index.js')     "// entry"
+    Set-File (Join-Path $good2 'companion/HELP.md') "# Idx`n`nThis module controls an Idx device.`nConfigure host and port.`nActions: play, stop.`nFeedbacks: playing state.`nTroubleshooting: check the network."
+    Set-File (Join-Path $good2 'package.json') (@'
+{
+  "name": "idx",
+  "version": "1.2.0",
+  "main": "src/index.js",
+  "scripts": { "format": "prettier -w .", "package": "companion-module-build" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/bitfocus/companion-module-idx.git" },
+  "engines": { "node": "^22.20", "yarn": "^4" },
+  "dependencies": { "@companion-module/base": "~2.0.4" },
+  "devDependencies": { "@companion-module/tools": "^3.0.1", "prettier": "^3.8.3" },
+  "prettier": "@companion-module/tools/.prettierrc.json",
+  "packageManager": "yarn@4.12.0"
+}
+'@)
+    Set-File (Join-Path $good2 'companion/manifest.json') (@'
+{
+  "type": "connection",
+  "id": "idx",
+  "name": "idx",
+  "maintainers": [ { "name": "Jane Dev", "email": "jane@example.com" } ],
+  "repository": "git+https://github.com/bitfocus/companion-module-idx.git",
+  "runtime": { "type": "node22", "api": "nodejs-ipc", "entrypoint": "../src/index.js" },
+  "keywords": ["lighting", "osc"]
+}
+'@)
+
+    Write-Host "GOOD module (src/index.js entry)"
+    $g2 = Invoke-Validator $good2 $tpl
+    $g2ids = @($g2.findings | ForEach-Object { $_.id })
+    Ok ($g2.counts.critical -eq 0)               "no critical findings for src/index.js entry (got $($g2.counts.critical): $($g2ids -join ','))"
+    Ok (-not ($g2ids -contains 'PKG-MAIN'))      "does not flag src/index.js main (exists)"
+    Ok (-not ($g2ids -contains 'MAN-RUNTIME'))   "does not flag ../src/index.js entrypoint"
+    Ok (-not ($g2ids -contains 'ENTRY-MISMATCH')) "main and entrypoint agree"
+    Ok (-not ($g2ids -contains 'FILE-MISSING'))  "does not require src/main.js by name"
+
     # ── BAD module ───────────────────────────────────────────────────────────
     $bad = Join-Path $root 'companion-module-bar'
     Set-File (Join-Path $bad '.gitattributes')  "* text=auto"            # CONFIG-DIFF
@@ -128,7 +176,7 @@ try {
 {
   "name": "bar",
   "version": "1.2.0",
-  "main": "main.js",
+  "main": "src/missing.js",
   "scripts": { "format": "prettier -w ." },
   "license": "MIT",
   "repository": { "type": "git", "url": "git+https://github.com/someone/companion-module-bar.git" },
@@ -144,7 +192,7 @@ try {
   "name": "bar-module",
   "maintainers": [ { "name": "Your name", "email": "Your email" } ],
   "repository": "git+https://github.com/someone/companion-module-bar.git",
-  "runtime": { "type": "node22", "api": "nodejs-ipc", "entrypoint": "../dist/main.js" },
+  "runtime": { "type": "node22", "api": "nodejs-ipc", "entrypoint": "../src/alsogone.js" },
   "keywords": ["companion", "bar"]
 }
 '@)
@@ -160,7 +208,8 @@ try {
     Ok ($ids -contains 'NPM-LOCK')             "flags package-lock.json"
     Ok ($ids -contains 'SRC-AT-ROOT')          "flags source file at module root"
     Ok ($ids -contains 'LICENSE-PLACEHOLDER')  "flags placeholder LICENSE copyright"
-    Ok ($ids -contains 'PKG-MAIN')             "flags wrong main"
+    Ok ($ids -contains 'PKG-MAIN')             "flags main referencing a non-existent file"
+    Ok ($ids -contains 'ENTRY-MISMATCH')       "flags main/entrypoint resolving to different files"
     Ok ($ids -contains 'PKG-REPO')             "flags wrong repository.url"
     Ok ($ids -contains 'PKG-FIELD')            "flags missing engines (template-derived)"
     Ok ($ids -contains 'PKG-YARN')             "flags non-yarn4 packageManager"
@@ -170,7 +219,7 @@ try {
     Ok ($ids -contains 'MAN-PLACEHOLDER')      "flags placeholder maintainer"
     Ok ($ids -contains 'MAN-KEYWORD')          "flags banned keyword 'companion'"
     Ok ($ids -contains 'MAN-TYPE')             "flags missing manifest type (template has it)"
-    Ok ($ids -contains 'MAN-RUNTIME')          "flags wrong runtime.entrypoint"
+    Ok ($ids -contains 'MAN-RUNTIME')          "flags runtime.entrypoint referencing a non-existent file"
     Ok ($ids -contains 'HELP-STUB')            "flags HELP.md stub"
     Ok ($ids -contains 'GITIGNORED-COMMITTED') "flags committed node_modules"
     Ok ($b.counts.critical -gt 0)              "reports critical count > 0"

@@ -44,8 +44,57 @@ Reference checklist for reviewing BitFocus Companion modules against the v2.0 AP
 | `imageBuffer` as raw Buffer | Must be base64 encoded string: `buffer.toString('base64')` |
 | `learn` callback returns all options | Should return **only** learned options (returning all overwrites user expressions) |
 | Upgrade script options as raw values | Must handle `{ isExpression: boolean, value: X }` shape |
-| `setPresetDefinitions([...])` single array | Now takes two params: `setPresetDefinitions(structure, presets)` |
+| `setPresetDefinitions([...])` single array | Two params now: `setPresetDefinitions(structure, presets)` — see **Presets (v2)** below |
 | Absolute delays in presets | Removed — all delays are now relative |
+
+---
+
+## Presets (v2)
+
+v2 presets differ from v1 in three ways reviewers frequently get **backwards**. Do not apply
+v1 preset rules to a v2 module.
+
+**Registration — two arguments:**
+```js
+this.setPresetDefinitions(structure, presets)
+```
+- `presets` — a flat object keyed by preset id: `{ myPresetId: { ... } }`.
+- `structure` — an array of **sections** that arrange those presets in the UI.
+
+**Preset shape** (`CompanionSimplePresetDefinition`):
+```js
+presets.my_preset = {
+  type: 'simple',          // the ONLY valid v2 type — NOT 'button' (that's v1)
+  name: 'My Preset',       // shown as a tooltip
+  style: { text: 'Go', size: 'auto', color: 0xffffff, bgcolor: 0x000000 },
+  steps: [{ down: [{ actionId: 'my_action', options: {} }], up: [] }],
+  feedbacks: [],
+  // NO `category` field in v2 — grouping is done by `structure` (below).
+  // optional: keywords?, previewStyle?, options?, localVariables?
+}
+```
+
+**Structure — grouping/sections** (replaces v1's per-preset `category`):
+```js
+const structure = [
+  { id: 'main', name: 'Main', definitions: ['my_preset', 'other_preset'] },
+]
+```
+`definitions` is an array of preset ids (or of groups). **Every preset id in `presets` must
+be referenced somewhere in `structure`**, or Companion warns *"preset definitions exist in
+presets but are not referenced by structure."*
+
+**⚠️ Common reviewer mistake — do NOT flag these on a v2 module:**
+
+| | v1 (base `^1.x`) | **v2 (base `^2.x`)** |
+|---|---|---|
+| call | `setPresetDefinitions(presets)` | `setPresetDefinitions(structure, presets)` |
+| `type` | `'button'` (and `'text'`) | **`'simple'`** |
+| grouping | `category: '<string>'` per preset | `structure` sections array — **no `category`** |
+
+A v2 preset using `type: 'simple'`, no `category`, and a two-arg
+`setPresetDefinitions(structure, presets)` is **correct**. Never tell the maintainer to
+switch to `'button'`, add a `category`, or collapse to a single argument — those are v1.
 
 ---
 
@@ -93,3 +142,4 @@ Upgrade scripts in v2.0 receive options as:
 
 - [v2.0 API Changes](https://companion.free/for-developers/module-development/api-changes/v2.0)
 - [All API Changes](https://companion.free/for-developers/module-development/api-changes/)
+- [Presets](https://companion.free/for-developers/module-development/connection-basics/presets)

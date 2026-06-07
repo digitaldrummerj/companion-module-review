@@ -32,8 +32,8 @@ pwsh scripts/validate-template.ps1 -ModuleDir <module path> -ExpectedVersion <gi
 | Gitignored artifacts not committed (`node_modules`, `/pkg`, `*.tgz`, `/dist`, `/.yarn`, …) | `GITIGNORED-COMMITTED` |
 | `LICENSE` matches template (only the copyright line may differ; no placeholder) | `LICENSE-DIFF`, `LICENSE-PLACEHOLDER` |
 | All source under `src/` (none at module root) | `SRC-AT-ROOT` |
-| `package.json`: version-vs-tag, `main`, `repository.url`, required fields, `packageManager` (yarn@4), required scripts, devDependencies, lint-staged | `PKG-VERSION`, `PKG-MAIN`, `PKG-REPO`, `PKG-FIELD`, `PKG-YARN`, `PKG-SCRIPT`, `PKG-DEVDEP`, `PKG-LINTSTAGED`, `PKG-DEP` |
-| `manifest.json`: id==name, non-placeholder/non-empty maintainers, banned keywords, `type` (v2 `connection`), `runtime.type/api/entrypoint` | `MAN-IDNAME`, `MAN-PLACEHOLDER`, `MAN-MAINT`, `MAN-KEYWORD`, `MAN-TYPE`, `MAN-RUNTIME` |
+| `package.json`: version-vs-tag, `main` (references an existing entry file; filename may differ from the template), `repository.url`, required fields, `packageManager` (yarn@4), required scripts, devDependencies, lint-staged | `PKG-VERSION`, `PKG-MAIN`, `PKG-REPO`, `PKG-FIELD`, `PKG-YARN`, `PKG-SCRIPT`, `PKG-DEVDEP`, `PKG-LINTSTAGED`, `PKG-DEP` |
+| `manifest.json`: id==name, non-placeholder/non-empty maintainers, banned keywords, `type` (v2 `connection`), `runtime.type/api` (must match template), `runtime.entrypoint` (exists and resolves to the same file as `main`) | `MAN-IDNAME`, `MAN-PLACEHOLDER`, `MAN-MAINT`, `MAN-KEYWORD`, `MAN-TYPE`, `MAN-RUNTIME`, `ENTRY-MISMATCH` |
 | `companion/HELP.md` not a stub | `HELP-STUB` |
 | TS husky `pre-commit` runs `lint-staged` | `HUSKY` |
 | Build / lint (with `-RunBuild`) | `BUILD-INSTALL`, `BUILD-PACKAGE`, `LINT` |
@@ -46,6 +46,7 @@ no `type` field).
 
 - **HELP.md quality.** The script only catches stubs (placeholder string, `## Your module`, <5 meaningful lines). You still judge whether the content is *useful*: what the module does, how to configure it (host/port/auth), available actions/feedbacks/variables, troubleshooting. Thin-but-real docs are acceptable; empty scaffolding is not.
 - **`tsconfig` deviations.** A `CONFIG-DIFF` on `tsconfig*.json` is reported as Critical, but a deliberate, justified deviation (e.g. `nodenext` resolution) may be acceptable — confirm the maintainer's rationale before insisting.
+- **Entry-point filename.** `package.json main` and `manifest runtime.entrypoint` do **not** have to match the template's `src/main.js` / `../src/main.js`. A non-template name (e.g. `src/index.js`) is fine as long as both fields are present, reference a file that **exists**, and resolve to the **same** file. The validator already checks this: `PKG-MAIN`/`MAN-RUNTIME` fire only when the referenced file is missing, and `ENTRY-MISMATCH` fires only when `main` and `entrypoint` point to different files. Do **not** ask the maintainer to rename their entry to `main.js` when it loads correctly.
 - **Manifest version normalization.** `companion/manifest.json` `version` of `"0.0.0"` is acceptable/preferred in source control. If a real version string is committed instead, it must exactly match `package.json`. Treat `package.json` (vs the git tag) and the manifest as **separate** checks.
 - **Banned keywords nuance.** The script flags the static-banned terms (`companion`, `module`, `stream deck`, `bitfocus`) and keywords matching the module id. Also flag the **manufacturer or product name** (e.g. `easyworship`, `tallyccupro`) — these add no search value.
 
