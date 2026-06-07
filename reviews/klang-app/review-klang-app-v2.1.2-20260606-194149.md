@@ -18,12 +18,12 @@
 
 | Severity | 🆕 New | ⚠️ Existing | Total |
 |----------|--------|-------------|-------|
-| 🔴 Critical | 4 | 0 | 4 |
-| 🟠 High | 2 | 0 | 2 |
+| 🔴 Critical | 2| 0 | 2 |
+| 🟠 High | 1 | 0 | 1 |
 | 🟡 Medium | 3 | 0 | 3 |
 | 🟢 Low | 0 | 0 | 0 |
 | 💡 Nice to Have | 0 | 0 | 0 |
-| **Total** | **9** | **0** | **9** |
+| **Total** | **6** | **0** | **6** |
 
 ## Verdict: ❌ Changes Required
 
