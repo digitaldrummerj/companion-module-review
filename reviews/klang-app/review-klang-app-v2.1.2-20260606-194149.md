@@ -31,8 +31,6 @@
 
 **Blocking**
 
-- [ ] [C1: manifest `name` does not equal `id`](#c1-manifest-name-does-not-equal-id)
-- [ ] [C2: manifest keyword `Klang` is low-value](#c2-manifest-keyword-klang-is-low-value)
 - [ ] [C3: LICENSE differs from template](#c3-license-differs-from-template)
 - [ ] [C5: tsconfig.build.json differs from template](#c5-tsconfigbuildjson-differs-from-template)
 - [ ] [H1: Connection status reports Ok regardless of socket state](#h1-connection-status-reports-ok-regardless-of-socket-state)
@@ -44,22 +42,6 @@
 - [ ] [M4: presets are typed as Record string any](#m4-presets-are-typed-as-record-string-any)
 
 ## 🔴 Critical
-
-### C1: manifest `name` does not equal `id`
-
-**File:** `companion/manifest.json:4-5` · **Source:** deterministic template check (`MAN-IDNAME`)
-
-`id` is `"klang-app"` but `name` is `"KLANG:app"`. The template/schema requires `name` to equal `id` (the short slug); the human-readable product string is carried by `shortname`, `manufacturer`, and `products` (all already populated correctly).
-
-**Fix:** Set `"name": "klang-app"`. Leave `shortname`/`manufacturer`/`products` as the display strings.
-
-### C2: manifest keyword `Klang` is low-value
-
-**File:** `companion/manifest.json:28` · **Source:** deterministic template check (`MAN-KEYWORD`)
-
-`keywords` includes `"Klang"` — the manufacturer/product name, which adds no search value (users already find the module by its name/manufacturer). Keyword lists should describe *capability*, not repeat the brand.
-
-**Fix:** Remove `"Klang"` (consider also dropping the other brand/product-line terms `"Konductor"`, `"Vokal"`, `"DMI-Klang"` in favour of capability keywords like `"audio"`, `"immersive"`, `"mixer"`).
 
 ### C3: LICENSE differs from template
 
