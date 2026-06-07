@@ -36,7 +36,6 @@
 - [ ] [C3: LICENSE differs from template](#c3-license-differs-from-template)
 - [ ] [C5: tsconfig.build.json differs from template](#c5-tsconfigbuildjson-differs-from-template)
 - [ ] [H1: Connection status reports Ok regardless of socket state](#h1-connection-status-reports-ok-regardless-of-socket-state)
-- [ ] [H2: configUpdated does not rebuild actions or presets](#h2-configupdated-does-not-rebuild-actions-or-presets)
 
 **Non-blocking**
 
@@ -103,13 +102,6 @@ Net effect: if the receive port fails to bind (e.g. port 8000 already in use —
 
 **Fix:** Let `OSC` own all status transitions — remove the eager `updateStatus(Ok)` from `init()`/`configUpdated()`; keep `Ok` only in the `'ready'` handler; and in the `'error'` handler call `this.instance.updateStatus(InstanceStatus.ConnectionFailure, err.message)` (use `UnknownError` for unexpected codes) and log every error, not just `EADDRINUSE`.
 
-### H2: configUpdated does not rebuild actions or presets
-
-**File:** `src/main.ts:40-48`
-
-`configUpdated()` rebuilds the OSC connection but does **not** call `this.updateActions()` / `this.updatePresets()`. The mix dropdown depends on `config.type` (`buildMixChoices` returns 12 mixes for `vokal`, else 16 — `actions.ts:8,17`). So switching the device type in config will not refresh the available mix choices until the instance is fully re-initialized. The operator sees stale options.
-
-**Fix:** In `configUpdated()`, also call `this.updateActions()` and `this.updatePresets()` after reconnecting.
 
 ## 🟡 Medium
 
