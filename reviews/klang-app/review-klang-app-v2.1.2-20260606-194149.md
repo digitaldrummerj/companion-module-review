@@ -1,9 +1,9 @@
-# Review — klang-app v2.1.2
+# Review — klang-app v2.1.2 and v2.2.1
 
 | | |
 |---|---|
 | **Module** | klang-app (`KLANG:app`) |
-| **Review tag** | v2.1.2 |
+| **Review tag** | v2.1.2, v2.2.1 | 
 | **Previous tag** | v1.0.2 |
 | **Scope** | `tag` (only the `v1.0.2..v2.1.2` diff — a full v1→v2 rewrite, so effectively the whole `src/` is new) |
 | **Language / API** | TypeScript · @companion-module/base v2.x (`~2.0.3`) |
