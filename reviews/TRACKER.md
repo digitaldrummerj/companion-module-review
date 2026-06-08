@@ -52,7 +52,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | dmxcontrolprojects-dmxcontrol3 | v1.2.0 | 2026-06-06 | [review](dmxcontrolprojects-dmxcontrol3/review-dmxcontrolprojects-dmxcontrol3-v1.2.0-20260606-194106.md) |
 | ✅ | klang-app | v2.1.2, v2.2.1 | 2026-06-06 | [review](klang-app/review-klang-app-v2.1.2-20260606-194149.md) |
 | ✅ | dashmaster-2k | v1.0.0 | 2026-06-06 | [review](dashmaster-2k/review-dashmaster-2k-v1.0.0-20260606-194532.md) |
-| ⬜ | oscidi-oscidi | v0.1.2 | 2026-06-07 | [review](oscidi-oscidi/review-oscidi-oscidi-v0.1.2-20260607-014644.md) |
+| ✅ | oscidi-oscidi | v0.1.2 | 2026-06-07 | [review](oscidi-oscidi/review-oscidi-oscidi-v0.1.2-20260607-014644.md) |
 | ⬜ | novastar-switcher | v3.0.0 | 2026-06-07 | [review](novastar-switcher/review-novastar-switcher-v3.0.0-20260607-015014.md) |
-| ⬜ | atlona-camera-visca | v0.9.1 | 2026-06-07 | [review](atlona-camera-visca/review-atlona-camera-visca-v0.9.1-20260607-015412.md) |
+| ✅ | atlona-camera-visca | v0.9.1 | 2026-06-07 | [review](atlona-camera-visca/review-atlona-camera-visca-v0.9.1-20260607-015412.md) |
 | ⬜ | zinc-oscpoint | v2.0.0 | 2026-06-07 | [review](zinc-oscpoint/review-zinc-oscpoint-v2.0.0-20260607-015643.md) |
