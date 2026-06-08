@@ -22,6 +22,11 @@
 .PARAMETER ModuleName
     Optional. The module name without the "companion-module-" prefix (e.g. "allenheath-sq").
     If omitted, the oldest reviewable pending module is selected automatically.
+.PARAMETER ReviewTag
+    Optional. The specific pending version/tag to review (e.g. "v2.1.0" or "2.1.0"). Requires
+    -ModuleName. When a module has more than one version pending, this selects which one; without
+    it, the oldest pending version is used. Errors (listing the pending versions) if the requested
+    version is not pending review for that module.
 .PARAMETER Force
     Required to set up a module that is already reviewed locally with feedback still pending.
     Without it, such a module is refused (auto-select skips it; explicit -ModuleName errors out).
@@ -30,14 +35,21 @@
 .EXAMPLE
     pwsh scripts/bitfocus-setup-module.ps1
     pwsh scripts/bitfocus-setup-module.ps1 -ModuleName allenheath-sq
+    pwsh scripts/bitfocus-setup-module.ps1 -ModuleName allenheath-sq -ReviewTag v2.1.0
     pwsh scripts/bitfocus-setup-module.ps1 -ModuleName allenheath-sq -Force
 #>
 
 param(
     [string]$ModuleName,
+    [string]$ReviewTag,
     [switch]$Force,
     [switch]$Json
 )
+
+if ($ReviewTag -and -not $ModuleName) {
+    Write-Error "-ReviewTag requires -ModuleName (a version can only be chosen for a named module)."
+    exit 1
+}
 
 $ErrorActionPreference = 'Stop'
 
@@ -85,10 +97,23 @@ function Get-EntryState {
 # ── Step 2: Resolve the target module + Step 3: guard against re-review ───────
 
 if ($ModuleName) {
-    $target = $queue | Where-Object { $_.moduleName -eq $ModuleName } | Select-Object -First 1
-    if (-not $target) {
+    $candidates = @($queue | Where-Object { $_.moduleName -eq $ModuleName })
+    if ($candidates.Count -eq 0) {
         Write-Error "Module '$ModuleName' not found in the pending queue."
         exit 1
+    }
+
+    if ($ReviewTag) {
+        $normWanted = ConvertTo-NormalizedTag $ReviewTag
+        $target = $candidates | Where-Object { (ConvertTo-NormalizedTag $_.gitTag) -eq $normWanted } | Select-Object -First 1
+        if (-not $target) {
+            $available = ($candidates | ForEach-Object { $_.gitTag }) -join ', '
+            Write-Error "Version '$ReviewTag' is not pending review for '$ModuleName'. Pending versions: $available"
+            exit 1
+        }
+    } else {
+        # No version specified — oldest pending (queue is sorted createdAt ascending).
+        $target = $candidates | Select-Object -First 1
     }
 
     $state = Get-EntryState $target
@@ -190,6 +215,17 @@ if (Test-Path $cloneDir) {
     git clone $repoUrl $cloneDir
     Write-Status "Cloned to: $cloneDir" 'Green'
 }
+
+# ── Step 6b: Check out the exact review tag ──────────────────────────────────
+# Review the version actually being submitted (not whatever the default branch is at).
+Write-Status "Checking out $pendingTag ..."
+git -C $cloneDir fetch --tags --quiet
+git -C $cloneDir checkout --quiet $pendingTag
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Failed to check out tag '$pendingTag' in $cloneDir."
+    exit 1
+}
+Write-Status "Checked out: $pendingTag" 'Green'
 
 # ── Step 7: Print coordinator summary ────────────────────────────────────────
 

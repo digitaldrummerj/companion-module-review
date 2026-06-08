@@ -21,6 +21,7 @@ State the chosen scope to the user before proceeding.
 ## Step 1 — Pick the target
 
 - If the user named a module (e.g. "allenheath-sq"), use it (strip any `companion-module-` prefix).
+- If the user also named a **version/tag** (e.g. "v2.1.0" / "2.1.0"), capture it — it selects which pending version to review when a module has more than one queued. A version only applies alongside a named module; without one, the **oldest** pending version is reviewed.
 - Otherwise: `pwsh scripts/bitfocus-queue.ps1 -Json` → the target is the first entry whose `state` is `needs-review` (the script excludes `feedback-pending`). If all are `feedback-pending`, tell the user there's nothing new and stop.
 
 ## Step 2 — Set up the module
@@ -28,7 +29,7 @@ State the chosen scope to the user before proceeding.
 ```
 pwsh scripts/bitfocus-setup-module.ps1 -ModuleName <name> -Json
 ```
-Clones into `companion-modules-reviewing/`; returns `{ module, reviewTag, previousTag, directory }`. `previousTag` is needed for `tag`/`both`; for `module` scope it's not used. If it errors that the module is already reviewed with feedback pending, surface that; only re-run with `-Force` if the user confirms.
+Add `-ReviewTag <version>` when the user specified a version (omit it otherwise — the oldest pending version is used). Clones into `companion-modules-reviewing/` **and checks out the resolved tag**, so the fact sheet (Step 3), the validate-template build (Step 4), and the `previousTag..reviewTag` diff (Step 5) all reflect that exact version. Returns `{ module, reviewTag, previousTag, directory }`; `previousTag` is needed for `tag`/`both`, not for `module` scope. If a specified version isn't pending, the script errors and lists the module's pending versions — relay that. If it errors that the module is already reviewed with feedback pending, surface that; only re-run with `-Force` if the user confirms.
 
 ## Step 3 — Generate the shared fact sheet
 
