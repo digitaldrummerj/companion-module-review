@@ -48,7 +48,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | videopathe-qtimer | v1.0.1 | 2026-04-16 | [review](videopathe-qtimer/review-videopathe-qtimer-v1.0.1-20260416-065000.md) |
 | ✅ | logos-proclaim | v1.2.1 | 2026-04-20 | published.  manual review. |
 | ✅ | creativeland-capacitimer | v1.1.3 | 2026-06-06 | [review](creativeland-capacitimer/review-creativeland-capacitimer-v1.1.3-20260606-163445.md) |
-| ⬜ | clearcom-rest | v0.3.4 | 2026-06-06 | [review](clearcom-rest/review-clearcom-rest-v0.3.4-20260606-194121.md) |
+| ✅ | clearcom-rest | v0.3.4 | 2026-06-06 | [review](clearcom-rest/review-clearcom-rest-v0.3.4-20260606-194121.md) |
 | ✅ | dmxcontrolprojects-dmxcontrol3 | v1.2.0 | 2026-06-06 | [review](dmxcontrolprojects-dmxcontrol3/review-dmxcontrolprojects-dmxcontrol3-v1.2.0-20260606-194106.md) |
 | ✅ | klang-app | v2.1.2, v2.2.1 | 2026-06-06 | [review](klang-app/review-klang-app-v2.1.2-20260606-194149.md) |
 | ✅ | dashmaster-2k | v1.0.0 | 2026-06-06 | [review](dashmaster-2k/review-dashmaster-2k-v1.0.0-20260606-194532.md) |
@@ -60,8 +60,8 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | newblue-captivate | v1.2.5 | 2026-06-08 | [review](newblue-captivate/review-newblue-captivate-v1.2.5-20260608-170843.md) |
 | ✅ | yunxi-yolobox | v1.0.0 | 2026-06-08 | [review](yunxi-yolobox/review-yunxi-yolobox-v1.0.0-20260608-170743.md) |
 | ✅ | studiotech-dante | v0.7.2 | 2026-06-08 | [review](studiotech-dante/review-studiotech-dante-v0.7.2-20260608-170828.md) |
-| ⬜ | aimp-audioplayer | v1.0.0 | 2026-06-08 | [review](aimp-audioplayer/review-aimp-audioplayer-v1.0.0-20260608-170952.md) |
+| ✅ | aimp-audioplayer | v1.0.0 | 2026-06-08 | [review](aimp-audioplayer/review-aimp-audioplayer-v1.0.0-20260608-170952.md) |
 | ✅ | biamp-tesira | v3.0.2 | 2026-06-08 | [review](biamp-tesira/review-biamp-tesira-v3.0.2-20260608-171026.md) |
-| ⬜ | waves-lv1 | v1.0.0 | 2026-06-08 | [review](waves-lv1/review-waves-lv1-v1.0.0-20260608-171818.md) |
-| ⬜ | waves-lv1 | v1.0.1 | 2026-06-08 | [review](waves-lv1/review-waves-lv1-v1.0.1-20260608-181452.md) |
+| ✅ | waves-lv1 | v1.0.0 | 2026-06-08 | [review](waves-lv1/review-waves-lv1-v1.0.0-20260608-171818.md) |
+| ✅ | waves-lv1 | v1.0.1 | 2026-06-08 | [review](waves-lv1/review-waves-lv1-v1.0.1-20260608-181452.md) |
 | ⬜ | meyersound-galaxy | v1.4.2 | 2026-06-08 | [review](meyersound-galaxy/review-meyersound-galaxy-v1.4.2-20260608-172444.md) |
