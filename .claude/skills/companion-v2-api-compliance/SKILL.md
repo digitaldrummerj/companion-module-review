@@ -37,7 +37,7 @@ Reference checklist for reviewing BitFocus Companion modules against the v2.0 AP
 | Removed / Changed API | v2.0 Replacement |
 |---|---|
 | `setVariableDefinitions([...])` array form | Object form: `{ varId: { name: '...' } }` |
-| `parseVariablesInString(...)` | Removed — Companion auto-parses variables in `textinput` fields with `useVariables: true` |
+| `parseVariablesInString(...)` | Removed — Companion auto-parses variables in **any input field** with `useVariables: true` (v2 — not just `textinput`) |
 | `checkFeedbacks()` (no args) | `checkAllFeedbacks()` |
 | `optionsToIgnoreForSubscribe` | Replaced by allowlist `optionsToMonitorForSubscribe` |
 | Feedback `subscribe` lifecycle method | Removed — `callback` is the only entry point; `unsubscribe` used for cleanup only |
@@ -100,7 +100,7 @@ switch to `'button'`, add a `category`, or collapse to a single argument — tho
 
 ## 🟡 Medium (important but not immediately breaking)
 
-- If a module uses `textinput` fields for numbers just to allow variables, consider converting to `number` type fields and using `FixupNumericOrVariablesValueToExpressions` helper in an upgrade script
+- In v2 a `number` field can carry `useVariables: true` directly, so a `textinput` field is no longer *required* to allow variables on a numeric option. If a module still uses `textinput` for numbers purely for variable support, converting to a properly-typed `number` field (with `useVariables: true`) is a hygiene improvement — use the `FixupNumericOrVariablesValueToExpressions` helper in an upgrade script to migrate existing values. This is optional cleanup, not a prerequisite for variables to work.
 - Dropdown values should be user-friendly strings — expressions will require the user to type them; cryptic values (`ch1=0`) are painful
 - Actions with `subscribe` for connection management should set `optionsToMonitorForSubscribe` to avoid extra calls when unrelated options change
 
@@ -109,13 +109,28 @@ switch to `'button'`, add a `category`, or collapse to a single argument — tho
 ## Expression Handling Reference (v2.0)
 
 Companion automatically parses expressions in action/feedback options when:
-- Field is `textinput` with `useVariables: true` → variables are parsed
+- Field declares `useVariables: true` → variables are parsed (any input field type, not only `textinput`)
 - Field does NOT have `disableAutoExpression: true` → user can toggle to expression mode
 
 When in expression mode, `event.options.myField` receives the computed result, validated against the field type:
 - `number` field: clamped to `min`/`max`
 - `dropdown` field: must match a valid option (unless `useCustom: true`)
 - Set `allowInvalidValues: true` to receive non-standard values
+
+**⚠️ Common reviewer mistake — `useVariables` is NOT `textinput`-only in v2:**
+
+In v2, `useVariables: true` is a valid option on **all** input field types — `number`, `dropdown`,
+`checkbox`, `colorpicker`, `multidropdown`, etc. — not just `textinput`. It is **not** a dead or
+ignored property on a `number` field; it enables the auto-expression toggle, and the callback reads
+the resolved `event.options.*`.
+
+| | v1 (base `^1.x`) | **v2 (base `^2.x`)** |
+|---|---|---|
+| `useVariables` valid on | `textinput` only | **any input field** (`number`, `dropdown`, `checkbox`, …) |
+
+Do **not** flag `useVariables: true` on a non-`textinput` field, and do **not** advise the maintainer
+to drop it. The finding *"`useVariables: true` on a `number` field is ignored / a dead property"* is a
+**v1-only** finding — it is wrong for a v2 (`^2.x`) module.
 
 Upgrade scripts in v2.0 receive options as:
 ```ts
