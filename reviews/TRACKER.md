@@ -55,14 +55,13 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | oscidi-oscidi | v0.1.2 | 2026-06-07 | [review](oscidi-oscidi/review-oscidi-oscidi-v0.1.2-20260607-014644.md) |
 | ✅ | novastar-switcher | v3.0.0 | 2026-06-07 | [review](novastar-switcher/review-novastar-switcher-v3.0.0-20260607-015014.md) |
 | ✅ | atlona-camera-visca | v0.9.1 | 2026-06-07 | [review](atlona-camera-visca/review-atlona-camera-visca-v0.9.1-20260607-015412.md) |
-| ✅  | zinc-oscpoint | v2.0.0 | 2026-06-07 | [review](zinc-oscpoint/review-zinc-oscpoint-v2.0.0-20260607-015643.md) |
+| ✅ | zinc-oscpoint | v2.0.0 | 2026-06-07 | [review](zinc-oscpoint/review-zinc-oscpoint-v2.0.0-20260607-015643.md) |
 | ✅ | clearcom-rest | v0.4.0 | 2026-06-08 | [review](clearcom-rest/review-clearcom-rest-v0.4.0-20260608-170715.md) |
 | ✅ | newblue-captivate | v1.2.5 | 2026-06-08 | [review](newblue-captivate/review-newblue-captivate-v1.2.5-20260608-170843.md) |
 | ⬜ | yunxi-yolobox | v1.0.0 | 2026-06-08 | [review](yunxi-yolobox/review-yunxi-yolobox-v1.0.0-20260608-170743.md) |
 | ✅ | studiotech-dante | v0.7.2 | 2026-06-08 | [review](studiotech-dante/review-studiotech-dante-v0.7.2-20260608-170828.md) |
 | ⬜ | aimp-audioplayer | v1.0.0 | 2026-06-08 | [review](aimp-audioplayer/review-aimp-audioplayer-v1.0.0-20260608-170952.md) |
-| ⬜ | biamp-tesira | v3.0.2 | 2026-06-08 | [review](biamp-tesira/review-biamp-tesira-v3.0.2-20260608-171026.md) |
+| ✅ | biamp-tesira | v3.0.2 | 2026-06-08 | [review](biamp-tesira/review-biamp-tesira-v3.0.2-20260608-171026.md) |
 | ⬜ | waves-lv1 | v1.0.0 | 2026-06-08 | [review](waves-lv1/review-waves-lv1-v1.0.0-20260608-171818.md) |
 | ⬜ | waves-lv1 | v1.0.1 | 2026-06-08 | [review](waves-lv1/review-waves-lv1-v1.0.1-20260608-181452.md) |
 | ⬜ | meyersound-galaxy | v1.4.2 | 2026-06-08 | [review](meyersound-galaxy/review-meyersound-galaxy-v1.4.2-20260608-172444.md) |
-| ⬜ | pltech-kumatimer | v2.0.4 | 2026-06-08 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.0.4-20260608-181440.md) |
