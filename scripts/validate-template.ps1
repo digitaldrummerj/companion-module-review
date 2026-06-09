@@ -145,6 +145,18 @@ function Read-NormalizedLines {
     return @($lines[0..$i])
 }
 
+function Normalize-TsconfigLine {
+    # The template ships a commented-out jest hint in the compilerOptions "types"
+    # array: ["node" /* , "jest" ] // uncomment this if using jest */]. Deleting that
+    # dead comment (leaving ["node"]) is an accepted divergence, not a CONFIG-DIFF — so
+    # strip inline comments and normalize bracket spacing before comparing tsconfig lines.
+    param([string]$Line)
+    $l = $Line -replace '/\*.*?\*/', ''   # drop inline block comments (incl. the jest hint)
+    $l = $l -replace '//.*$', ''          # drop trailing line comments
+    $l = $l -replace '\s*\]', ']'         # collapse whitespace before a closing bracket
+    return $l.TrimEnd()
+}
+
 $configFiles = @('.gitattributes','.gitignore','.prettierignore','.yarnrc.yml')
 if ($isTs) { $configFiles += @('eslint.config.mjs','tsconfig.json','tsconfig.build.json') }
 
@@ -155,6 +167,10 @@ foreach ($rel in $configFiles) {
     if (-not (Test-Path $tplFile)) { continue }   # template lacks it; nothing to compare
     $modLines = @(Read-NormalizedLines $modFile)
     $tplLines = @(Read-NormalizedLines $tplFile)
+    if ($rel -like 'tsconfig*.json') {
+        $modLines = @($modLines | ForEach-Object { Normalize-TsconfigLine $_ })
+        $tplLines = @($tplLines | ForEach-Object { Normalize-TsconfigLine $_ })
+    }
     if ($rel -eq '.gitignore') {
         # Subset rule: every template entry must be present in the module's .gitignore.
         # Extra module entries are allowed and not flagged. Blank and comment lines in

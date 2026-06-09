@@ -159,6 +159,77 @@ try {
     Ok (-not ($g2ids -contains 'ENTRY-MISMATCH')) "main and entrypoint agree"
     Ok (-not ($g2ids -contains 'FILE-MISSING'))  "does not require src/main.js by name"
 
+    # ── TS template + modules: tsconfig jest-hint exception ──────────────────
+    # The template's compilerOptions.types ships a commented-out jest hint:
+    #   "types": ["node" /* , "jest" ] // uncomment this if using jest */]
+    # Deleting that dead comment (leaving ["node"]) is an accepted divergence and
+    # must NOT raise CONFIG-DIFF; a real change (node16) still must.
+    $tsTpl = Join-Path $root 'companion-module-template-ts'
+    Set-File (Join-Path $tsTpl '.gitattributes')  "* text=auto eol=lf"
+    Set-File (Join-Path $tsTpl '.gitignore')       $gitignore
+    Set-File (Join-Path $tsTpl '.prettierignore')  "package.json`n/LICENSE.md"
+    Set-File (Join-Path $tsTpl '.yarnrc.yml')      "nodeLinker: node-modules"
+    Set-File (Join-Path $tsTpl 'LICENSE')          $licenseTpl
+    Set-File (Join-Path $tsTpl 'eslint.config.mjs') "export default []"
+    Set-File (Join-Path $tsTpl 'tsconfig.build.json') "{ `"extends`": `"./tsconfig.json`" }"
+    Set-File (Join-Path $tsTpl 'tsconfig.json') "{`n`t`"compilerOptions`": {`n`t`t`"types`": [`"node`" /* , `"jest`" ] // uncomment this if using jest */]`n`t}`n}"
+
+    function New-TsModule($name, $typesLine) {
+        $dir = Join-Path $root "companion-module-$name"
+        Set-File (Join-Path $dir '.gitattributes')  "* text=auto eol=lf"
+        Set-File (Join-Path $dir '.gitignore')      $gitignore
+        Set-File (Join-Path $dir '.prettierignore') "package.json`n/LICENSE.md"
+        Set-File (Join-Path $dir '.yarnrc.yml')     "nodeLinker: node-modules"
+        Set-File (Join-Path $dir 'LICENSE')         $licenseGood
+        Set-File (Join-Path $dir 'eslint.config.mjs') "export default []"
+        Set-File (Join-Path $dir 'tsconfig.build.json') "{ `"extends`": `"./tsconfig.json`" }"
+        Set-File (Join-Path $dir 'tsconfig.json')   "{`n`t`"compilerOptions`": {`n`t`t$typesLine`n`t}`n}"
+        Set-File (Join-Path $dir '.husky/pre-commit') "yarn lint-staged"
+        Set-File (Join-Path $dir 'yarn.lock')       "# yarn lockfile"
+        Set-File (Join-Path $dir 'src/main.ts')     "// entry"
+        Set-File (Join-Path $dir 'companion/HELP.md') "# $name`n`nThis module controls a device.`nConfigure host and port.`nActions: play, stop.`nFeedbacks: playing state.`nTroubleshooting: check the network."
+        Set-File (Join-Path $dir 'package.json') (@"
+{
+  "name": "$name",
+  "version": "1.2.0",
+  "main": "src/main.ts",
+  "scripts": { "format": "prettier -w .", "package": "companion-module-build" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/bitfocus/companion-module-$name.git" },
+  "engines": { "node": "^22.20", "yarn": "^4" },
+  "dependencies": { "@companion-module/base": "~2.0.4" },
+  "devDependencies": { "@companion-module/tools": "^3.0.1", "prettier": "^3.8.3" },
+  "prettier": "@companion-module/tools/.prettierrc.json",
+  "packageManager": "yarn@4.12.0"
+}
+"@)
+        Set-File (Join-Path $dir 'companion/manifest.json') (@"
+{
+  "type": "connection",
+  "id": "$name",
+  "name": "$name",
+  "maintainers": [ { "name": "Jane Dev", "email": "jane@example.com" } ],
+  "repository": "git+https://github.com/bitfocus/companion-module-$name.git",
+  "runtime": { "type": "node22", "api": "nodejs-ipc", "entrypoint": "../src/main.ts" },
+  "keywords": ["lighting", "osc"]
+}
+"@)
+        return $dir
+    }
+
+    $tsGood = New-TsModule 'tsgood' '"types": ["node"]'                # jest hint removed
+    $tsBad  = New-TsModule 'tsbad'  '"types": ["node16"]'              # real divergence
+
+    Write-Host "TS module (tsconfig jest hint removed)"
+    $tg = Invoke-Validator $tsGood $tsTpl
+    $tgConfigDiffs = @($tg.findings | Where-Object { $_.id -eq 'CONFIG-DIFF' -and $_.file -eq 'tsconfig.json' })
+    Ok ($tgConfigDiffs.Count -eq 0) "does not flag tsconfig.json when only the commented jest hint was removed"
+
+    Write-Host "TS module (real tsconfig divergence)"
+    $tb = Invoke-Validator $tsBad $tsTpl
+    $tbConfigDiffs = @($tb.findings | Where-Object { $_.id -eq 'CONFIG-DIFF' -and $_.file -eq 'tsconfig.json' })
+    Ok ($tbConfigDiffs.Count -gt 0) "still flags a real tsconfig.json divergence (node16)"
+
     # ── BAD module ───────────────────────────────────────────────────────────
     $bad = Join-Path $root 'companion-module-bar'
     Set-File (Join-Path $bad '.gitattributes')  "* text=auto"            # CONFIG-DIFF
