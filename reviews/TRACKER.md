@@ -57,7 +57,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | atlona-camera-visca | v0.9.1 | 2026-06-07 | [review](atlona-camera-visca/review-atlona-camera-visca-v0.9.1-20260607-015412.md) |
 | ✅  | zinc-oscpoint | v2.0.0 | 2026-06-07 | [review](zinc-oscpoint/review-zinc-oscpoint-v2.0.0-20260607-015643.md) |
 | ✅ | clearcom-rest | v0.4.0 | 2026-06-08 | [review](clearcom-rest/review-clearcom-rest-v0.4.0-20260608-170715.md) |
-| ⬜ | newblue-captivate | v1.2.5 | 2026-06-08 | [review](newblue-captivate/review-newblue-captivate-v1.2.5-20260608-170843.md) |
+| ✅ | newblue-captivate | v1.2.5 | 2026-06-08 | [review](newblue-captivate/review-newblue-captivate-v1.2.5-20260608-170843.md) |
 | ⬜ | yunxi-yolobox | v1.0.0 | 2026-06-08 | [review](yunxi-yolobox/review-yunxi-yolobox-v1.0.0-20260608-170743.md) |
 | ✅ | studiotech-dante | v0.7.2 | 2026-06-08 | [review](studiotech-dante/review-studiotech-dante-v0.7.2-20260608-170828.md) |
 | ⬜ | aimp-audioplayer | v1.0.0 | 2026-06-08 | [review](aimp-audioplayer/review-aimp-audioplayer-v1.0.0-20260608-170952.md) |
