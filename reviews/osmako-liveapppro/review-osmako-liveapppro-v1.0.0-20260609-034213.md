@@ -19,10 +19,10 @@
 |----------|--------|-------------|-------|
 | 🔴 Critical | 6 | 0 | 6 |
 | 🟠 High | 1 | 0 | 1 |
-| 🟡 Medium | 3 | 0 | 3 |
-| 🟢 Low | 7 | 0 | 7 |
+| 🟡 Medium | 2 | 0 | 2 |
+| 🟢 Low | 2 | 0 | 2 |
 | 💡 Nice to Have | 1 | 0 | 1 |
-| **Total** | **18** | **0** | **18** |
+| **Total** | **11** | **0** | **11** |
 
 ## Verdict: ❌ Changes Required
 
@@ -42,14 +42,8 @@
 
 - [ ] [M1: Polling loop has no reentrancy guard — polls overlap and stack against a slow or dead host](#m1-polling-loop-has-no-reentrancy-guard--polls-overlap-and-stack-against-a-slow-or-dead-host)
 - [ ] [M2: No BadConfig status — an empty host produces a malformed URL and silent failure](#m2-no-badconfig-status--an-empty-host-produces-a-malformed-url-and-silent-failure)
-- [ ] [M3: manifest runtime.apiVersion is the placeholder 0.0.0](#m3-manifest-runtimeapiversion-is-the-placeholder-000)
-- [ ] [L1: Overlay feedback matching depends on unconfirmed server index semantics](#l1-overlay-feedback-matching-depends-on-unconfirmed-server-index-semantics)
-- [ ] [L2: Action POST failures are only logged, never surfaced to the operator](#l2-action-post-failures-are-only-logged-never-surfaced-to-the-operator)
-- [ ] [L3: current_item_id variable mixes number and empty-string types](#l3-current_item_id-variable-mixes-number-and-empty-string-types)
-- [ ] [L4: Port default of 80 may not match the LiveApp Pro Inbox Server](#l4-port-default-of-80-may-not-match-the-liveapp-pro-inbox-server)
 - [ ] [L5: Boolean variables are emitted as the literal strings true/false](#l5-boolean-variables-are-emitted-as-the-literal-strings-truefalse)
 - [ ] [L6: Overlay-list fetch failures are swallowed with no diagnostic](#l6-overlay-list-fetch-failures-are-swallowed-with-no-diagnostic)
-- [ ] [L7: post() ignores the response body and any API-level error payload](#l7-post-ignores-the-response-body-and-any-api-level-error-payload)
 - [ ] [N1: Number() coercion of options can produce NaN with no guard](#n1-number-coercion-of-options-can-produce-nan-with-no-guard)
 
 ---
