@@ -71,5 +71,5 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | biamp-qtx | v0.1.1 | 2026-06-09 | [review](biamp-qtx/review-biamp-qtx-v0.1.1-20260609-033900.md) |
 | ⬜ | telycam-ptz-ip-camera | v1.0.0 | 2026-06-09 | [review](telycam-ptz-ip-camera/review-telycam-ptz-ip-camera-v1.0.0-20260609-034006.md) |
 | ⬜ | 1stpass-1stpass | v1.1.1 | 2026-06-09 | [review](1stpass-1stpass/review-1stpass-1stpass-v1.1.1-20260609-034134.md) |
-| ⬜ | renewedvision-propresenter-api | v1.1.1 | 2026-06-09 | [review](renewedvision-propresenter-api/review-renewedvision-propresenter-api-v1.1.1-20260609-034136.md) |
+| ✅ | renewedvision-propresenter-api | v1.1.1 | 2026-06-09 | [review](renewedvision-propresenter-api/review-renewedvision-propresenter-api-v1.1.1-20260609-034136.md) |
 | ✅ | osmako-liveapppro | v1.0.0 | 2026-06-09 | [review](osmako-liveapppro/review-osmako-liveapppro-v1.0.0-20260609-034213.md) |
