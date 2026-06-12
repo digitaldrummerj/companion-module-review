@@ -35,7 +35,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | generic-snmp | v3.0.1 | 2026-04-09 | [review](generic-snmp/review-generic-snmp-v3.0.1-20260409-214750.md) |
 | ✅ | fiverecords-tallyccupro | v3.1.0 | 2026-04-09 | [review](fiverecords-tallyccupro/review-fiverecords-tallyccupro-v3.1.0-20260409-220735.md) |
 | ✅ | creativeland-capacitimer | v1.1.1 | 2026-04-09 | [review](creativeland-capacitimer/review-creativeland-capacitimer-v1.1.1-20260409-222116.md) |
-| ⬜ | behringer-wing | v2.3.1 | 2026-04-16 | [review](behringer-wing/review-behringer-wing-v2.3.1-20260416-054930.md) |
+| ✅ | behringer-wing | v2.3.1 | 2026-04-16 | [review](behringer-wing/review-behringer-wing-v2.3.1-20260416-054930.md) |
 | ✅ | generic-snmp | v3.0.1 | 2026-04-16 | [review](generic-snmp/review-generic-snmp-v3.0.1-20260416-055357.md) |
 | ✅ | generic-snmp | v3.0.2 | 2026-04-16 | [review](generic-snmp/review-generic-snmp-v3.0.2-20260416-055914.md) |
 | ✅ | adder-ccs-pro | v0.1.2 | 2026-04-16 | [review](adder-ccs-pro/review-adder-ccs-pro-v0.1.2-20260416-060356.md) |
@@ -72,4 +72,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | telycam-ptz-ip-camera | v1.0.0 | 2026-06-09 | [review](telycam-ptz-ip-camera/review-telycam-ptz-ip-camera-v1.0.0-20260609-034006.md) |
 | ⬜ | 1stpass-1stpass | v1.1.1 | 2026-06-09 | [review](1stpass-1stpass/review-1stpass-1stpass-v1.1.1-20260609-034134.md) |
 | ⬜ | renewedvision-propresenter-api | v1.1.1 | 2026-06-09 | [review](renewedvision-propresenter-api/review-renewedvision-propresenter-api-v1.1.1-20260609-034136.md) |
-| ⬜ | osmako-liveapppro | v1.0.0 | 2026-06-09 | [review](osmako-liveapppro/review-osmako-liveapppro-v1.0.0-20260609-034213.md) |
+| ✅ | osmako-liveapppro | v1.0.0 | 2026-06-09 | [review](osmako-liveapppro/review-osmako-liveapppro-v1.0.0-20260609-034213.md) |

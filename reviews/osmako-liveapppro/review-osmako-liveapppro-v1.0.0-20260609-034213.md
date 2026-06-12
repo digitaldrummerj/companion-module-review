@@ -29,8 +29,9 @@
 ## 📋 Issues
 
 **Blocking**
-- [ ] [C1: Build fails — package.json is hand-rolled and missing the required template scripts, devDependencies, and fields](#c1-build-fails-packagejson-is-hand-rolled-and-missing-the-required-template-scripts-devdependencies-and-fields)
-- [ ] [C2: Build artifacts and dependencies committed to the repo — node_modules, dist, pkg, and a tgz](#c2-build-artifacts-and-dependencies-committed-to-the-repo-node_modules-dist-pkg-and-a-tgz)
+
+- [ ] [C1: Build fails — package.json is hand-rolled and missing the required template scripts, devDependencies, and fields](#c1-build-fails--packagejson-is-hand-rolled-and-missing-the-required-template-scripts-devdependencies-and-fields)
+- [ ] [C2: Build artifacts and dependencies committed to the repo — node_modules, dist, pkg, and a tgz](#c2-build-artifacts-and-dependencies-committed-to-the-repo--node_modules-dist-pkg-and-a-tgz)
 - [ ] [C3: Required template files are missing](#c3-required-template-files-are-missing)
 - [ ] [C4: tsconfig.json does not extend the template's tsconfig.build.json](#c4-tsconfigjson-does-not-extend-the-templates-tsconfigbuildjson)
 - [ ] [C5: Legacy ESLint config and lint failure](#c5-legacy-eslint-config-and-lint-failure)
@@ -38,8 +39,9 @@
 - [ ] [H1: Connection status gets stuck on Connecting when the device is unreachable from the first poll](#h1-connection-status-gets-stuck-on-connecting-when-the-device-is-unreachable-from-the-first-poll)
 
 **Non-blocking**
-- [ ] [M1: Polling loop has no reentrancy guard — polls overlap and stack against a slow or dead host](#m1-polling-loop-has-no-reentrancy-guard-polls-overlap-and-stack-against-a-slow-or-dead-host)
-- [ ] [M2: No BadConfig status — an empty host produces a malformed URL and silent failure](#m2-no-badconfig-status-an-empty-host-produces-a-malformed-url-and-silent-failure)
+
+- [ ] [M1: Polling loop has no reentrancy guard — polls overlap and stack against a slow or dead host](#m1-polling-loop-has-no-reentrancy-guard--polls-overlap-and-stack-against-a-slow-or-dead-host)
+- [ ] [M2: No BadConfig status — an empty host produces a malformed URL and silent failure](#m2-no-badconfig-status--an-empty-host-produces-a-malformed-url-and-silent-failure)
 - [ ] [M3: manifest runtime.apiVersion is the placeholder 0.0.0](#m3-manifest-runtimeapiversion-is-the-placeholder-000)
 - [ ] [L1: Overlay feedback matching depends on unconfirmed server index semantics](#l1-overlay-feedback-matching-depends-on-unconfirmed-server-index-semantics)
 - [ ] [L2: Action POST failures are only logged, never surfaced to the operator](#l2-action-post-failures-are-only-logged-never-surfaced-to-the-operator)
@@ -61,6 +63,7 @@
 The package was written by hand rather than derived from the official TS template, so the standard build does not run. `yarn package` (the build the release process invokes, which runs `companion-module-build`) fails because the `package` script does not exist. The TypeScript source itself compiles cleanly under `tsc`, so this is purely packaging — but a release that can't be packaged can't ship.
 
 Specifically, relative to the official `companion-module-template-ts`, `package.json` is missing:
+
 - **Scripts:** `postinstall`, `format`, `package`, `build:main`, `dev`, `lint:raw`, `lint` (only `build` / `build:watch` are present).
 - **devDependencies:** `@companion-module/tools`, `@types/node`, `eslint`, `husky`, `lint-staged`, `prettier`, `rimraf`, `typescript-eslint`.
 - **Fields:** `prettier`, `packageManager`, and the `lint-staged` section.
@@ -168,33 +171,9 @@ The `host` field has a default but no required/empty validation. If the user cle
 
 **Fix (maintainer):** At the top of `init()`/`configUpdated()`, if `config.host` is empty/whitespace, call `updateStatus(InstanceStatus.BadConfig, 'Host is required')`, skip `startPolling()`, and return.
 
-### M3: manifest runtime.apiVersion is the placeholder 0.0.0
-
-`companion/manifest.json:24`
-
-`runtime.apiVersion` is `"0.0.0"`, a placeholder rather than the API generation the module targets. Bitfocus tooling uses this field for compatibility gating; other 2.x modules declare a real value (typically `"1.0.0"`).
-
-**Fix (maintainer):** Set `runtime.apiVersion` to the actual supported API generation (typically `"1.0.0"` for a current `node22` / base 2.x module).
-
 ---
 
 ## 🟢 Low
-
-### L1: Overlay feedback matching depends on unconfirmed server index semantics
-
-`src/feedbacks.ts:57-61` vs `src/actions.ts:138` and `src/presets.ts:103-116`
-
-Actions convert the 1-based UI value to 0-based and send it directly as the API `index` (`overlayActivate(n-1)`). The feedback does the same conversion (`idx = overlayIndex - 1`) and then matches against `o.index` from the parsed overlay list (`src/api.ts:186`). This is only correct if the server's `index` in `/overlay/list` is a dense 0-based grid position aligning with the value `/overlay/activate` accepts. If the list `index` is instead an arbitrary id or 1-based, the feedback will highlight the wrong button (or none) while the action still works.
-
-**Fix (maintainer):** Confirm against a live device that the `index` returned by `/overlay/list` uses the same 0-based keying that `/overlay/activate` expects; if not, reconcile (e.g. match on array position, or document the contract).
-
-### L2: Action POST failures are only logged, never surfaced to the operator
-
-`src/actions.ts:27` (`err` helper) and every action callback using `.catch(err(...))`
-
-When an action's POST fails (device gone, HTTP 4xx/5xx), the error is logged via `logError` and swallowed. The operator pressing the button sees nothing — no status change, no feedback — and the module keeps advertising whatever the last poll set. This logs rather than crashing (so non-blocking), but the operator-visible behavior is a button that silently does nothing.
-
-**Fix (maintainer):** On action failure, additionally nudge status toward `InstanceStatus.ConnectionFailure`, or at minimum log at `warn`/`error` with the failing path so it's diagnosable. Passing the instance (or an `onError` that updates status) into `buildActionDefinitions` would let action failures surface like poll failures.
 
 ### L3: current_item_id variable mixes number and empty-string types
 
@@ -203,14 +182,6 @@ When an action's POST fails (device gone, HTTP 4xx/5xx), the error is logged via
 `current_item_id` is emitted as a number when present and `''` when null (`itemId` is `number | null`). Companion accepts both, but the mixed type can surprise expressions doing arithmetic/comparison on the variable.
 
 **Fix (maintainer):** Emit a consistent string: `state.videocue.itemId != null ? String(state.videocue.itemId) : ''`.
-
-### L4: Port default of 80 may not match the LiveApp Pro Inbox Server
-
-`src/config.ts:30` (and the host default at `:23`)
-
-The `port` field defaults to `80`, while the static-text hint tells the user to "enter the IP address and port shown in the app," implying the Inbox Server advertises a specific port. If that port is a known non-80 value, defaulting to it reduces setup friction; defaulting to 80 will silently fail for most users (compounded by H1/M2).
-
-**Fix (maintainer):** Confirm the Inbox Server's default port and set it as the field default (or leave 80 only if that genuinely is the app default).
 
 ### L5: Boolean variables are emitted as the literal strings true/false
 
@@ -228,14 +199,6 @@ The `port` field defaults to `80`, while the static-text hint tells the user to 
 
 **Fix (maintainer):** Log at `debug` inside the `.catch` so the failure is observable without affecting the connected state.
 
-### L7: post() ignores the response body and any API-level error payload
-
-`src/api.ts:155-163`
-
-`post()` checks only `res.ok` (HTTP status). If the LiveApp API can return HTTP 200 with an error/`success:false` JSON body, the action is reported as succeeded. Acceptable if the API always signals failure via HTTP status codes.
-
-**Fix (maintainer):** Confirm the API's error contract; if failures are encoded in the body, parse and throw on `success:false`.
-
 ---
 
 ## 💡 Nice to Have
@@ -249,13 +212,3 @@ With `type: 'number'` option fields the value is normally numeric, but if an opt
 **Fix (maintainer):** Guard with `if (!Number.isFinite(n)) return` before posting.
 
 ---
-
-## Reviewer notes (not findings)
-
-The following were checked and are **correct** for the installed `@companion-module/base` 2.0.4 — recorded so they aren't re-raised:
-
-- **`useVariables: true` on "Load Item by Name"** (`src/actions.ts:75,79`) reading `action.options.name` directly is **correct**. In 2.0.4 the action callback context (`CompanionActionContext`) has **no** `parseVariablesInString`; the framework resolves variable/expression option values *before* invoking the callback. (An initial reviewer pass flagged this as a bug — verified against the installed types as a false positive.)
-- The v2.0.4 API shapes used here are all valid: default-export class + `export const UpgradeScripts = []` (no `runEntrypoint`); 3-arg `init(config, isFirstInit, secrets)`; two-arg `setPresetDefinitions(structure, presets)` with `CompanionPresetSection[]` and `type: 'simple'` presets; object-form `setVariableDefinitions`; `checkAllFeedbacks()`.
-- `destroy()` clears the poll timer; `configUpdated()` correctly stops, resets, re-targets, and restarts. Every fetch has a 3000ms `AbortSignal.timeout`. `parseState()` defensively coerces all untrusted hardware JSON.
-- The empty `UpgradeScripts` array is correct and required for a first release.
-- The deterministic `MAN-IDNAME` check (manifest `id` ≠ `name`) does **not** apply here: `id` is the slug and `name` is the display name, which are supposed to differ (consistent with approved modules like `biamp-qtx` → "Qt X"). Excluded as a false positive.
