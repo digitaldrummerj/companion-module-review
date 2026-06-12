@@ -65,7 +65,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | waves-lv1 | v1.0.0 | 2026-06-08 | [review](waves-lv1/review-waves-lv1-v1.0.0-20260608-171818.md) |
 | ✅ | waves-lv1 | v1.0.1 | 2026-06-08 | [review](waves-lv1/review-waves-lv1-v1.0.1-20260608-181452.md) |
 | ✅ | meyersound-galaxy | v1.4.2 | 2026-06-08 | [review](meyersound-galaxy/review-meyersound-galaxy-v1.4.2-20260608-172444.md) |
-| ⬜ | disguise-track-notes | v1.0.0 | 2026-06-09 | [review](disguise-track-notes/review-disguise-track-notes-v1.0.0-20260609-033803.md) |
+| ✅ | disguise-track-notes | v1.0.0 | 2026-06-09 | [review](disguise-track-notes/review-disguise-track-notes-v1.0.0-20260609-033803.md) |
 | ⬜ | cuevacontrol-relo-io8 | v1.0.2 | 2026-06-09 | [review](cuevacontrol-relo-io8/review-cuevacontrol-relo-io8-v1.0.2-20260609-033844.md) |
 | ⬜ | ezcastpro-kvm | v0.1.2 | 2026-06-09 | [review](ezcastpro-kvm/review-ezcastpro-kvm-v0.1.2-20260609-033856.md) |
 | ⬜ | biamp-qtx | v0.1.1 | 2026-06-09 | [review](biamp-qtx/review-biamp-qtx-v0.1.1-20260609-033900.md) |
