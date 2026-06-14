@@ -68,7 +68,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | disguise-track-notes | v1.0.0 | 2026-06-09 | [review](disguise-track-notes/review-disguise-track-notes-v1.0.0-20260609-033803.md) |
 | ⬜ | cuevacontrol-relo-io8 | v1.0.2 | 2026-06-09 | [review](cuevacontrol-relo-io8/review-cuevacontrol-relo-io8-v1.0.2-20260609-033844.md) |
 | ⬜ | ezcastpro-kvm | v0.1.2 | 2026-06-09 | [review](ezcastpro-kvm/review-ezcastpro-kvm-v0.1.2-20260609-033856.md) |
-| ⬜ | biamp-qtx | v0.1.1 | 2026-06-09 | [review](biamp-qtx/review-biamp-qtx-v0.1.1-20260609-033900.md) |
+| ✅ | biamp-qtx | v0.1.1 | 2026-06-09 | [review](biamp-qtx/review-biamp-qtx-v0.1.1-20260609-033900.md) |
 | ⬜ | telycam-ptz-ip-camera | v1.0.0 | 2026-06-09 | [review](telycam-ptz-ip-camera/review-telycam-ptz-ip-camera-v1.0.0-20260609-034006.md) |
 | ⬜ | 1stpass-1stpass | v1.1.1 | 2026-06-09 | [review](1stpass-1stpass/review-1stpass-1stpass-v1.1.1-20260609-034134.md) |
 | ✅ | renewedvision-propresenter-api | v1.1.1 | 2026-06-09 | [review](renewedvision-propresenter-api/review-renewedvision-propresenter-api-v1.1.1-20260609-034136.md) |
