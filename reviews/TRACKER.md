@@ -73,3 +73,12 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | 1stpass-1stpass | v1.1.1 | 2026-06-09 | [review](1stpass-1stpass/review-1stpass-1stpass-v1.1.1-20260609-034134.md) |
 | ✅ | renewedvision-propresenter-api | v1.1.1 | 2026-06-09 | [review](renewedvision-propresenter-api/review-renewedvision-propresenter-api-v1.1.1-20260609-034136.md) |
 | ✅ | osmako-liveapppro | v1.0.0 | 2026-06-09 | [review](osmako-liveapppro/review-osmako-liveapppro-v1.0.0-20260609-034213.md) |
+| ⬜ | waves-lv1 | v1.0.3 | 2026-06-14 | [review](waves-lv1/review-waves-lv1-v1.0.3-20260614-220418.md) |
+| ⬜ | videowalrus-simpleclock | v1.4.1 | 2026-06-14 | [review](videowalrus-simpleclock/review-videowalrus-simpleclock-v1.4.1-20260614-220559.md) |
+| ✅ | pltech-kumatimer | v2.1.0 | 2026-06-14 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.1.0-20260614-220611.md) |
+| ⬜ | biamp-tesira | v3.0.3 | 2026-06-14 | [review](biamp-tesira/review-biamp-tesira-v3.0.3-20260614-220715.md) |
+| ⬜ | novastar-switcher | v3.0.1 | 2026-06-14 | [review](novastar-switcher/review-novastar-switcher-v3.0.1-20260614-220636.md) |
+| ⬜ | pixotope-gateway | v1.1.0 | 2026-06-14 | [review](pixotope-gateway/review-pixotope-gateway-v1.1.0-20260614-220833.md) |
+| ⬜ | iccms-sib | v3.0.0 | 2026-06-14 | [review](iccms-sib/review-iccms-sib-v3.0.0-20260614-220826.md) |
+| ⬜ | leolabs-ableset | v1.8.1 | 2026-06-14 | [review](leolabs-ableset/review-leolabs-ableset-v1.8.1-20260614-221250.md) |
+| ⬜ | yunxi-yolobox | v1.0.2 | 2026-06-16 | [review](yunxi-yolobox/review-yunxi-yolobox-v1.0.2-20260616-025420.md) |
