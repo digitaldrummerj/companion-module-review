@@ -81,4 +81,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | pixotope-gateway | v1.1.0 | 2026-06-14 | [review](pixotope-gateway/review-pixotope-gateway-v1.1.0-20260614-220833.md) |
 | ⬜ | iccms-sib | v3.0.0 | 2026-06-14 | [review](iccms-sib/review-iccms-sib-v3.0.0-20260614-220826.md) |
 | ⬜ | leolabs-ableset | v1.8.1 | 2026-06-14 | [review](leolabs-ableset/review-leolabs-ableset-v1.8.1-20260614-221250.md) |
-| ⬜ | yunxi-yolobox | v1.0.2 | 2026-06-16 | [review](yunxi-yolobox/review-yunxi-yolobox-v1.0.2-20260616-025420.md) |
+| ✅ | yunxi-yolobox | v1.0.2 | 2026-06-16 | [review](yunxi-yolobox/review-yunxi-yolobox-v1.0.2-20260616-025420.md) |
