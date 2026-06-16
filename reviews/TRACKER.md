@@ -76,7 +76,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | waves-lv1 | v1.0.3 | 2026-06-14 | [review](waves-lv1/review-waves-lv1-v1.0.3-20260614-220418.md) |
 | ⬜ | videowalrus-simpleclock | v1.4.1 | 2026-06-14 | [review](videowalrus-simpleclock/review-videowalrus-simpleclock-v1.4.1-20260614-220559.md) |
 | ✅ | pltech-kumatimer | v2.1.0 | 2026-06-14 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.1.0-20260614-220611.md) |
-| ⬜ | biamp-tesira | v3.0.3 | 2026-06-14 | [review](biamp-tesira/review-biamp-tesira-v3.0.3-20260614-220715.md) |
+| ✅ | biamp-tesira | v3.0.3 | 2026-06-14 | [review](biamp-tesira/review-biamp-tesira-v3.0.3-20260614-220715.md) |
 | ✅ | novastar-switcher | v3.0.1 | 2026-06-14 | [review](novastar-switcher/review-novastar-switcher-v3.0.1-20260614-220636.md) |
 | ⬜ | pixotope-gateway | v1.1.0 | 2026-06-14 | [review](pixotope-gateway/review-pixotope-gateway-v1.1.0-20260614-220833.md) |
 | ⬜ | iccms-sib | v3.0.0 | 2026-06-14 | [review](iccms-sib/review-iccms-sib-v3.0.0-20260614-220826.md) |
