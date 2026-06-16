@@ -73,7 +73,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | 1stpass-1stpass | v1.1.1 | 2026-06-09 | [review](1stpass-1stpass/review-1stpass-1stpass-v1.1.1-20260609-034134.md) |
 | ✅ | renewedvision-propresenter-api | v1.1.1 | 2026-06-09 | [review](renewedvision-propresenter-api/review-renewedvision-propresenter-api-v1.1.1-20260609-034136.md) |
 | ✅ | osmako-liveapppro | v1.0.0 | 2026-06-09 | [review](osmako-liveapppro/review-osmako-liveapppro-v1.0.0-20260609-034213.md) |
-| ⬜ | waves-lv1 | v1.0.3 | 2026-06-14 | [review](waves-lv1/review-waves-lv1-v1.0.3-20260614-220418.md) |
+| ✅ | waves-lv1 | v1.0.3 | 2026-06-14 | [review](waves-lv1/review-waves-lv1-v1.0.3-20260614-220418.md) |
 | ⬜ | videowalrus-simpleclock | v1.4.1 | 2026-06-14 | [review](videowalrus-simpleclock/review-videowalrus-simpleclock-v1.4.1-20260614-220559.md) |
 | ✅ | pltech-kumatimer | v2.1.0 | 2026-06-14 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.1.0-20260614-220611.md) |
 | ✅ | biamp-tesira | v3.0.3 | 2026-06-14 | [review](biamp-tesira/review-biamp-tesira-v3.0.3-20260614-220715.md) |
