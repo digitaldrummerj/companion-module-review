@@ -50,6 +50,23 @@ function Resolve-TemplatesDir {
     return Join-Path $RepoRoot "companion-module-templates"
 }
 
+function Test-ModuleIsTypeScript {
+    <# Single source of truth for TS-vs-JS classification, shared by validate-template.ps1
+       and module-facts.ps1 so the two can't drift.
+
+       TS is signalled ONLY by a tsconfig.json or actual .ts source files. A genuine TS
+       module always ships a tsconfig.json (it can't compile without one), so this is
+       sufficient. Deliberately NOT signalled by:
+         - a `typescript` devDependency — now a standard peer of typescript-eslint for
+           linting plain-JS modules with flat config (a JS module can declare it).
+         - package.json "type": "module" — only marks the JS as ESM; pure-JS can be ESM too. #>
+    param([Parameter(Mandatory)][string]$ModuleDir)
+
+    if (Test-Path (Join-Path $ModuleDir 'tsconfig.json')) { return $true }
+    $tsSrc = @(Get-ChildItem -Path (Join-Path $ModuleDir 'src') -Filter '*.ts' -Recurse -File -ErrorAction SilentlyContinue)
+    return ($tsSrc.Count -gt 0)
+}
+
 function ConvertTo-NormalizedTag {
     <# Strip a single leading 'v' so 'v2.1.0' and '2.1.0' compare equal. #>
     param([string]$Tag)

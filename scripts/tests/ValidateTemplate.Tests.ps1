@@ -159,6 +159,53 @@ try {
     Ok (-not ($g2ids -contains 'ENTRY-MISMATCH')) "main and entrypoint agree"
     Ok (-not ($g2ids -contains 'FILE-MISSING'))  "does not require src/main.js by name"
 
+    # ── JS module that declares a `typescript` devDependency ─────────────────
+    # `typescript` is a standard peer of typescript-eslint for linting plain-JS modules
+    # with flat config, NOT a TS signal. The module must validate as JS (no tsconfig /
+    # .husky / build-script criticals). Regression: yunxi-yolobox v1.0.3.
+    $jsTsDep = Join-Path $root 'companion-module-jstsdep'
+    Set-File (Join-Path $jsTsDep '.gitattributes')  "* text=auto eol=lf"
+    Set-File (Join-Path $jsTsDep '.gitignore')      $gitignore
+    Set-File (Join-Path $jsTsDep '.prettierignore') "package.json`n/LICENSE.md"
+    Set-File (Join-Path $jsTsDep '.yarnrc.yml')     "nodeLinker: node-modules"
+    Set-File (Join-Path $jsTsDep 'LICENSE')         $licenseGood
+    Set-File (Join-Path $jsTsDep 'yarn.lock')       "# yarn lockfile"
+    Set-File (Join-Path $jsTsDep 'src/main.js')     "// entry"
+    Set-File (Join-Path $jsTsDep 'companion/HELP.md') "# Jstsdep`n`nThis module controls a device.`nConfigure host and port.`nActions: play, stop.`nFeedbacks: playing state.`nTroubleshooting: check the network."
+    Set-File (Join-Path $jsTsDep 'package.json') (@'
+{
+  "name": "jstsdep",
+  "version": "1.2.0",
+  "main": "src/main.js",
+  "scripts": { "format": "prettier -w .", "package": "companion-module-build" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/bitfocus/companion-module-jstsdep.git" },
+  "engines": { "node": "^22.20", "yarn": "^4" },
+  "dependencies": { "@companion-module/base": "~2.0.4" },
+  "devDependencies": { "@companion-module/tools": "^3.0.1", "prettier": "^3.8.3", "typescript": "^5.6.0", "typescript-eslint": "^8.44.1" },
+  "prettier": "@companion-module/tools/.prettierrc.json",
+  "packageManager": "yarn@4.12.0"
+}
+'@)
+    Set-File (Join-Path $jsTsDep 'companion/manifest.json') (@'
+{
+  "type": "connection",
+  "id": "jstsdep",
+  "name": "jstsdep",
+  "maintainers": [ { "name": "Jane Dev", "email": "jane@example.com" } ],
+  "repository": "git+https://github.com/bitfocus/companion-module-jstsdep.git",
+  "runtime": { "type": "node22", "api": "nodejs-ipc", "entrypoint": "../src/main.js" },
+  "keywords": ["lighting", "osc"]
+}
+'@)
+
+    Write-Host "JS module with a typescript devDependency"
+    $jtd = Invoke-Validator $jsTsDep $tpl
+    $jtdMissing = @($jtd.findings | Where-Object { $_.id -eq 'FILE-MISSING' -and $_.file -in @('tsconfig.json','tsconfig.build.json','.husky/pre-commit') })
+    Ok ($jtd.language -eq 'JS')        "classifies as JS despite the typescript devDependency"
+    Ok ($jtdMissing.Count -eq 0)       "does not demand TS-only files (tsconfig/.husky)"
+    Ok ($jtd.counts.critical -eq 0)    "no critical findings (got $($jtd.counts.critical): $(@($jtd.findings | ForEach-Object { $_.id }) -join ','))"
+
     # ── TS template + modules: tsconfig jest-hint exception ──────────────────
     # The template's compilerOptions.types ships a commented-out jest hint:
     #   "types": ["node" /* , "jest" ] // uncomment this if using jest */]

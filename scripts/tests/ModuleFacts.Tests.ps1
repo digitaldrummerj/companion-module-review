@@ -54,6 +54,23 @@ try {
     Ok ($f2.apiVersion -eq 'v2')                         "v2 detected from base ~2.0.4"
     Ok ($f2.apiSkill -eq 'companion-v2-api-compliance')  "selects v2 api-compliance skill"
     Ok (@($f2.protocols) -contains 'HTTP')               "detects HTTP protocol"
+
+    # JS module that declares a `typescript` devDependency (the typescript-eslint peer).
+    # Must stay JS — a devDep is not a TS signal. (Regression: yunxi-yolobox v1.0.3.)
+    $jsTsDep = Join-Path $root 'companion-module-jstsdep'
+    Set-File (Join-Path $jsTsDep 'package.json') '{"name":"jstsdep","version":"1.0.0","type":"module","dependencies":{"@companion-module/base":"~1.12.0"},"devDependencies":{"typescript":"^5.6.0","typescript-eslint":"^8.44.1"}}'
+    Set-File (Join-Path $jsTsDep 'src/index.js') 'export default {}'
+
+    $f3 = Facts $jsTsDep
+    Ok ($f3.language -eq 'JS')  "JS with a typescript devDependency stays JS"
+
+    # ESM JS module (type: module, no tsconfig, no .ts) — must stay JS.
+    $jsEsm = Join-Path $root 'companion-module-jsesm'
+    Set-File (Join-Path $jsEsm 'package.json') '{"name":"jsesm","version":"1.0.0","type":"module","dependencies":{"@companion-module/base":"~1.12.0"}}'
+    Set-File (Join-Path $jsEsm 'src/index.js') 'export default {}'
+
+    $f4 = Facts $jsEsm
+    Ok ($f4.language -eq 'JS')  "ESM JS module (type:module, no tsconfig) stays JS"
 }
 finally {
     if (Test-Path $root) { Remove-Item -Recurse -Force $root }

@@ -33,6 +33,8 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+. "$PSScriptRoot/lib/ReviewState.ps1"
+
 if (-not (Test-Path $ModuleDir)) { Write-Error "ModuleDir not found: $ModuleDir"; exit 2 }
 $ModuleDir = (Resolve-Path $ModuleDir).Path
 
@@ -42,8 +44,9 @@ function Read-Json { param([string]$Path) if (Test-Path $Path) { try { return Ge
 $pkg = Read-Json (Join-Path $ModuleDir 'package.json')
 $man = Read-Json (Join-Path $ModuleDir 'companion/manifest.json')
 
-# Language + API version (mirror validate-template.ps1's detection).
-$isTs = (Test-Path (Join-Path $ModuleDir 'tsconfig.json')) -or ((Has-Prop $pkg 'type') -and $pkg.type -eq 'module')
+# Language + API version. Shares Test-ModuleIsTypeScript with validate-template.ps1
+# (lib/ReviewState.ps1) so the two stay in lockstep: TS = tsconfig.json OR .ts sources.
+$isTs = Test-ModuleIsTypeScript $ModuleDir
 $lang = if ($isTs) { 'TS' } else { 'JS' }
 $baseRange = if ((Has-Prop $pkg 'dependencies') -and (Has-Prop $pkg.dependencies '@companion-module/base')) { [string]$pkg.dependencies.'@companion-module/base' } else { $null }
 $apiMajor = 2

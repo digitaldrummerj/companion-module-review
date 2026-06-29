@@ -72,11 +72,10 @@ if (Test-Path $pkgPath) {
 
 function Has-Prop { param($Obj, [string]$Name) $Obj -and ($Obj.PSObject.Properties.Name -contains $Name) }
 
-# TS is signalled by a tsconfig, .ts sources, or a typescript devDependency — NOT by
-# package.json "type": "module", which only marks the JS as ESM (a pure-JS module can be ESM too).
-$hasTsSource = @(Get-ChildItem -Path (Join-Path $ModuleDir 'src') -Filter '*.ts' -Recurse -File -ErrorAction SilentlyContinue).Count -gt 0
-$hasTsDevDep = (Has-Prop $pkg 'devDependencies') -and (Has-Prop $pkg.devDependencies 'typescript')
-$isTs = (Test-Path (Join-Path $ModuleDir 'tsconfig.json')) -or $hasTsSource -or $hasTsDevDep
+# Language detection lives in lib/ReviewState.ps1 (Test-ModuleIsTypeScript) so this script
+# and module-facts.ps1 share one rule: TS = tsconfig.json OR .ts sources — NOT a `typescript`
+# devDependency (a typescript-eslint peer on plain-JS modules) and NOT package.json "type": "module".
+$isTs = Test-ModuleIsTypeScript $ModuleDir
 $lang = if ($isTs) { 'TS' } else { 'JS' }
 $langLower = $lang.ToLower()
 
