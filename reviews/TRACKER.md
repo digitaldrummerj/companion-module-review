@@ -86,7 +86,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | highcriteria-lhs | v1.0.2 | 2026-06-29 | [review](highcriteria-lhs/review-highcriteria-lhs-v1.0.2-20260629-171218.md) |
 | ✅ | kiloview-cubex1 | v1.0.0 | 2026-06-29 | [review](kiloview-cubex1/review-kiloview-cubex1-v1.0.0-20260629-171220.md) |
 | ⬜ | ezcastpro-kvm | v0.1.3 | 2026-06-29 | [review](ezcastpro-kvm/review-ezcastpro-kvm-v0.1.3-20260629-171236.md) |
-| ⬜ | biamp-qtx | v0.1.2 | 2026-06-29 | [review](biamp-qtx/review-biamp-qtx-v0.1.2-20260629-171312.md) |
+| ✅ | biamp-qtx | v0.1.2 | 2026-06-29 | [review](biamp-qtx/review-biamp-qtx-v0.1.2-20260629-171312.md) |
 | ✅  | hopla-powerstudio | v1.0.0 | 2026-06-29 | [review](hopla-powerstudio/review-hopla-powerstudio-v1.0.0-20260629-171316.md) |
 | ⬜ | nec-projectors | v1.0.0 | 2026-06-29 | [review](nec-projectors/review-nec-projectors-v1.0.0-20260629-171342.md) |
 | ⬜ | kiloview-decoder | v1.0.1 | 2026-06-29 | [review](kiloview-decoder/review-kiloview-decoder-v1.0.1-20260629-171425.md) |
