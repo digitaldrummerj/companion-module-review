@@ -83,7 +83,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | leolabs-ableset | v1.8.1 | 2026-06-14 | [review](leolabs-ableset/review-leolabs-ableset-v1.8.1-20260614-221250.md) |
 | ✅ | yunxi-yolobox | v1.0.2 | 2026-06-16 | [review](yunxi-yolobox/review-yunxi-yolobox-v1.0.2-20260616-025420.md) |
 | ✅  | yunxi-yolobox | v1.0.3 | 2026-06-21 | [review](yunxi-yolobox/review-yunxi-yolobox-v1.0.3-20260621-170813.md) |
-| ⬜ | highcriteria-lhs | v1.0.2 | 2026-06-29 | [review](highcriteria-lhs/review-highcriteria-lhs-v1.0.2-20260629-171218.md) |
+| ✅ | highcriteria-lhs | v1.0.2 | 2026-06-29 | [review](highcriteria-lhs/review-highcriteria-lhs-v1.0.2-20260629-171218.md) |
 | ✅ | kiloview-cubex1 | v1.0.0 | 2026-06-29 | [review](kiloview-cubex1/review-kiloview-cubex1-v1.0.0-20260629-171220.md) |
 | ⬜ | ezcastpro-kvm | v0.1.3 | 2026-06-29 | [review](ezcastpro-kvm/review-ezcastpro-kvm-v0.1.3-20260629-171236.md) |
 | ⬜ | biamp-qtx | v0.1.2 | 2026-06-29 | [review](biamp-qtx/review-biamp-qtx-v0.1.2-20260629-171312.md) |
