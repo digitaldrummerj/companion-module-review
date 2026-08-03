@@ -89,5 +89,5 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | biamp-qtx | v0.1.2 | 2026-06-29 | [review](biamp-qtx/review-biamp-qtx-v0.1.2-20260629-171312.md) |
 | ✅  | hopla-powerstudio | v1.0.0 | 2026-06-29 | [review](hopla-powerstudio/review-hopla-powerstudio-v1.0.0-20260629-171316.md) |
 | ✅ | nec-projectors | v1.0.0 | 2026-06-29 | [review](nec-projectors/review-nec-projectors-v1.0.0-20260629-171342.md) |
-| ⬜ | kiloview-decoder | v1.0.1 | 2026-06-29 | [review](kiloview-decoder/review-kiloview-decoder-v1.0.1-20260629-171425.md) |
-| ⬜ | 1stpass-1stpass | v1.1.2 | 2026-06-29 | [review](1stpass-1stpass/review-1stpass-1stpass-v1.1.2-20260629-171600.md) |
+| ✅ | aimp-audioplayer | v1.0.2 | 2026-07-01 | [review](aimp-audioplayer/review-aimp-audioplayer-v1.0.2-20260701-205147.md) |
+| ⬜ | videowalrus-simpleclock | v1.4.2 | 2026-07-01 | [review](videowalrus-simpleclock/review-videowalrus-simpleclock-v1.4.2-20260701-205217.md) |
