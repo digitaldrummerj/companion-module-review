@@ -92,7 +92,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | aimp-audioplayer | v1.0.2 | 2026-07-01 | [review](aimp-audioplayer/review-aimp-audioplayer-v1.0.2-20260701-205147.md) |
 | ✅ | videowalrus-simpleclock | v1.4.2 | 2026-07-01 | [review](videowalrus-simpleclock/review-videowalrus-simpleclock-v1.4.2-20260701-205217.md) |
 | ✅ | easyprompter-remote | v1.1.0 | 2026-08-03 | [review](easyprompter-remote/review-easyprompter-remote-v1.1.0-20260803-183832.md) |
-| ⬜ | nextologies-nextotalk | v1.0.0 | 2026-08-03 | [review](nextologies-nextotalk/review-nextologies-nextotalk-v1.0.0-20260803-184331.md) |
+| ✅ | nextologies-nextotalk | v1.0.0 | 2026-08-03 | [review](nextologies-nextotalk/review-nextologies-nextotalk-v1.0.0-20260803-184331.md) |
 | ⬜ | internetclicker-internetclickerremote | v2.0.6 | 2026-08-03 | [review](internetclicker-internetclickerremote/review-internetclicker-internetclickerremote-v2.0.6-20260803-184426.md) |
 | ⬜ | crewlan-connect | v1.1.0 | 2026-08-03 | [review](crewlan-connect/review-crewlan-connect-v1.1.0-20260803-184441.md) |
 | ⬜ | webcomms-panel | v2.0.0 | 2026-08-03 | [review](webcomms-panel/review-webcomms-panel-v2.0.0-20260803-184412.md) |
