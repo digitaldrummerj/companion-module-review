@@ -94,7 +94,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | easyprompter-remote | v1.1.0 | 2026-08-03 | [review](easyprompter-remote/review-easyprompter-remote-v1.1.0-20260803-183832.md) |
 | ✅ | nextologies-nextotalk | v1.0.0 | 2026-08-03 | [review](nextologies-nextotalk/review-nextologies-nextotalk-v1.0.0-20260803-184331.md) |
 | ✅ | internetclicker-internetclickerremote | v2.0.6 | 2026-08-03 | [review](internetclicker-internetclickerremote/review-internetclicker-internetclickerremote-v2.0.6-20260803-184426.md) |
-| ⬜ | crewlan-connect | v1.1.0 | 2026-08-03 | [review](crewlan-connect/review-crewlan-connect-v1.1.0-20260803-184441.md) |
+| ✅ | crewlan-connect | v1.1.0 | 2026-08-03 | [review](crewlan-connect/review-crewlan-connect-v1.1.0-20260803-184441.md) |
 | ⬜ | webcomms-panel | v2.0.0 | 2026-08-03 | [review](webcomms-panel/review-webcomms-panel-v2.0.0-20260803-184412.md) |
 | ⬜ | vrchat-midi-multicammixer | v1.0.7 | 2026-08-03 | [review](vrchat-midi-multicammixer/review-vrchat-midi-multicammixer-v1.0.7-20260803-184728.md) |
 | ⬜ | malighting-grandma3 | v1.4.0 | 2026-08-03 | [review](malighting-grandma3/review-malighting-grandma3-v1.4.0-20260803-184757.md) |
