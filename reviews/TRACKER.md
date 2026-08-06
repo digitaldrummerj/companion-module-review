@@ -101,8 +101,10 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | leolabs-ableset | v1.9.0 | 2026-08-03 | [review](leolabs-ableset/review-leolabs-ableset-v1.9.0-20260803-185203.md) |
 | ✅ | stype-realline | v2.0.0 | 2026-08-03 | [review](stype-realline/review-stype-realline-v2.0.0-20260803-185522.md) |
 | ⬜ | videopathe-qmonitor | v1.0.0 | 2026-08-03 | [review](videopathe-qmonitor/review-videopathe-qmonitor-v1.0.0-20260803-185708.md) |
-| ⬜ | lindy-38359-matrix | v1.0.1 | 2026-08-03 | [review](lindy-38359-matrix/review-lindy-38359-matrix-v1.0.1-20260803-185623.md) |
+| ✅ | lindy-38359-matrix | v1.0.1 | 2026-08-03 | [review](lindy-38359-matrix/review-lindy-38359-matrix-v1.0.1-20260803-185623.md) |
 | ⬜ | videopathe-qmapper | v1.0.1 | 2026-08-03 | [review](videopathe-qmapper/review-videopathe-qmapper-v1.0.1-20260803-185815.md) |
 | ⬜ | fblab-bpm2osc | v1.0.1 | 2026-08-03 | [review](fblab-bpm2osc/review-fblab-bpm2osc-v1.0.1-20260803-185925.md) |
 | ⬜ | roland-v1-4k | v0.1.2 | 2026-08-03 | [review](roland-v1-4k/review-roland-v1-4k-v0.1.2-20260803-190044.md) |
 | ✅ | panasonic-cameras | v1.3.0 | 2026-08-03 | [review](panasonic-cameras/review-panasonic-cameras-v1.3.0-20260803-190513.md) |
+| ⬜ | easyprompter-remote | v1.2.1 | 2026-08-06 | [review](easyprompter-remote/review-easyprompter-remote-v1.2.1-20260806-211216.md) |
+| ⬜ | panasonic-cameras | v2.0.0 | 2026-08-06 | [review](panasonic-cameras/review-panasonic-cameras-v2.0.0-20260806-212257.md) |
