@@ -17,6 +17,11 @@
     language: v2 modules use companion-module-template-{js|ts}, v1 modules use the
     "-v1"-suffixed variant. Templates are auto-detected under COMPANION_TEMPLATES_DIR
     (default companion-module-templates/ inside the repo), or passed via -TemplateDir.
+
+    One exception: .yarnrc.yml is repo tooling rather than API surface, and Bitfocus only
+    updates it on main, so it is always compared against the non-"-v1" template when one
+    exists — and by parsed key, not raw text (key order, quote style, and blank lines are
+    not divergences; a missing/extra key or a conflicting value is).
 .PARAMETER ModuleDir
     Path to the cloned module under review.
 .PARAMETER TemplateDir
@@ -103,6 +108,15 @@ if (-not $TemplateDir -or -not (Test-Path $TemplateDir)) {
 }
 $TemplateDir = (Resolve-Path $TemplateDir).Path
 
+# .yarnrc.yml is repo tooling, not API-versioned — Bitfocus updates it on main only, so a
+# v1 module is judged against the current (main) template's yarnrc rather than the pinned
+# v1 template's stale copy. Falls back to $TemplateDir when there's no sibling to use.
+$yarnrcTemplateDir = $TemplateDir
+if ($TemplateDir -match '-v1$') {
+    $sibling = $TemplateDir -replace '-v1$',''
+    if (Test-Path (Join-Path $sibling '.yarnrc.yml')) { $yarnrcTemplateDir = $sibling }
+}
+
 # Load the template's package.json + manifest so expectations are derived from the
 # actual matched template (version-correct) rather than hardcoded.
 $tplPkg = $null; $tplMan = $null
@@ -144,6 +158,19 @@ function Read-NormalizedLines {
     return @($lines[0..$i])
 }
 
+function Get-FirstLineDiff {
+    # Describe the first line where two normalized files diverge, in the phrasing the
+    # config-parity and LICENSE checks both report. Returns '' if they are identical.
+    param([string[]]$ModuleLines, [string[]]$TemplateLines)
+    $max = [math]::Max($ModuleLines.Count, $TemplateLines.Count)
+    for ($i = 0; $i -lt $max; $i++) {
+        $m = if ($i -lt $ModuleLines.Count) { $ModuleLines[$i] } else { '<missing>' }
+        $t = if ($i -lt $TemplateLines.Count) { $TemplateLines[$i] } else { '<missing>' }
+        if ($m -ne $t) { return "line $($i+1): found '$m', template '$t'" }
+    }
+    return ''
+}
+
 function Normalize-TsconfigLine {
     # The template ships a commented-out jest hint in the compilerOptions "types"
     # array: ["node" /* , "jest" ] // uncomment this if using jest */]. Deleting that
@@ -156,14 +183,88 @@ function Normalize-TsconfigLine {
     return $l.TrimEnd()
 }
 
+function Read-YarnrcMap {
+    # .yarnrc.yml is a flat, two-level file in practice (scalars plus the occasional
+    # block sequence such as npmPreapprovedPackages), so a small hand-rolled parser is
+    # enough and keeps this script dependency-free. Comparing parsed keys instead of raw
+    # text means key order, quote style, and blank lines never produce a CONFIG-DIFF.
+    param([string]$Path)
+    $map = [ordered]@{}
+    if (-not (Test-Path $Path)) { return $map }
+    $text = Get-Content -Raw -LiteralPath $Path
+    if ($null -eq $text) { return $map }
+
+    function Get-Scalar {
+        param([string]$Value)
+        $v = $Value.Trim()
+        if ($v.Length -ge 2) {
+            $q = $v[0]
+            if (($q -eq '"' -or $q -eq "'") -and $v[-1] -eq $q) { $v = $v.Substring(1, $v.Length - 2) }
+        }
+        return $v
+    }
+
+    $seq = @{}          # key -> list of sequence items
+    $currentKey = $null
+    foreach ($raw in ($text -split "`r?`n")) {
+        $line = $raw -replace '\s+#.*$', ''      # trailing comment
+        if ($line.Trim() -eq '' -or $line.TrimStart().StartsWith('#')) { continue }
+        if ($line -match '^\s+-\s*(.+)$') {
+            if ($currentKey -and $seq.ContainsKey($currentKey)) { $seq[$currentKey] += ,(Get-Scalar $Matches[1]) }
+            continue
+        }
+        if ($line -match '^(\S[^:]*):\s*(.*)$') {
+            $currentKey = $Matches[1].Trim()
+            $value = $Matches[2]
+            if ($value.Trim() -eq '') {
+                $seq[$currentKey] = @()          # block key; items follow
+                $map[$currentKey] = ''
+            } else {
+                $map[$currentKey] = Get-Scalar $value
+            }
+        }
+    }
+    # Sequences compare as a sorted set, so item order doesn't matter either.
+    foreach ($k in @($seq.Keys)) {
+        $map[$k] = '[' + ((@($seq[$k]) | Sort-Object) -join ', ') + ']'
+    }
+    return $map
+}
+
 $configFiles = @('.gitattributes','.gitignore','.prettierignore','.yarnrc.yml')
 if ($isTs) { $configFiles += @('eslint.config.mjs','tsconfig.json','tsconfig.build.json') }
 
 foreach ($rel in $configFiles) {
     $modFile = Join-Path $ModuleDir $rel
-    $tplFile = Join-Path $TemplateDir $rel
+    # .yarnrc.yml comes from the main template even for v1 modules (see $yarnrcTemplateDir).
+    $tplFile = if ($rel -eq '.yarnrc.yml') { Join-Path $yarnrcTemplateDir $rel } else { Join-Path $TemplateDir $rel }
     if (-not (Test-Path $modFile)) { continue }   # already reported as missing
     if (-not (Test-Path $tplFile)) { continue }   # template lacks it; nothing to compare
+    if ($rel -eq '.yarnrc.yml') {
+        # Key-level comparison: the module must carry exactly the template's keys with
+        # matching values. Missing keys drop the template's supply-chain hardening;
+        # conflicting values and extra keys change install behaviour for everyone.
+        $modMap = Read-YarnrcMap $modFile
+        $tplMap = Read-YarnrcMap $tplFile
+        if ($modMap.Count -eq 0 -and (Read-NormalizedLines $modFile).Count -gt 0) {
+            Add-Finding 'CONFIG-DIFF' 'Critical' $rel 'Could not parse .yarnrc.yml as YAML key/value pairs'
+            continue
+        }
+        $missingKeys = @($tplMap.Keys | Where-Object { -not $modMap.Contains($_) })
+        if ($missingKeys.Count -gt 0) {
+            Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Missing template keys: $($missingKeys -join ', ')"
+        }
+        $mismatches = @($tplMap.Keys | Where-Object { $modMap.Contains($_) -and $modMap[$_] -ne $tplMap[$_] } |
+            ForEach-Object { "$_ = '$($modMap[$_])' (template '$($tplMap[$_])')" })
+        if ($mismatches.Count -gt 0) {
+            Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Value mismatch: $($mismatches -join '; ')"
+        }
+        $extraKeys = @($modMap.Keys | Where-Object { -not $tplMap.Contains($_) })
+        if ($extraKeys.Count -gt 0) {
+            Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Extra keys not in template: $($extraKeys -join ', ')"
+        }
+        continue
+    }
     $modLines = @(Read-NormalizedLines $modFile)
     $tplLines = @(Read-NormalizedLines $tplFile)
     if ($rel -like 'tsconfig*.json') {
@@ -183,14 +284,7 @@ foreach ($rel in $configFiles) {
         continue
     }
     if (($modLines -join "`n") -ne ($tplLines -join "`n")) {
-        $firstDiff = ''
-        $max = [math]::Max($modLines.Count, $tplLines.Count)
-        for ($i = 0; $i -lt $max; $i++) {
-            $m = if ($i -lt $modLines.Count) { $modLines[$i] } else { '<missing>' }
-            $t = if ($i -lt $tplLines.Count) { $tplLines[$i] } else { '<missing>' }
-            if ($m -ne $t) { $firstDiff = "line $($i+1): found '$m', template '$t'"; break }
-        }
-        Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Differs from template ($firstDiff)"
+        Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Differs from template ($(Get-FirstLineDiff $modLines $tplLines))"
     }
 }
 
@@ -224,28 +318,19 @@ if ($tplGitignore -and (Test-Path (Join-Path $ModuleDir '.git'))) {
     }
 }
 
-# ── 3b. LICENSE content must match template (only the copyright line may differ) ─
+# ── 3b. LICENSE must match the template exactly ──────────────────────────────
+# The template's LICENSE is the licence Bitfocus ships for every module, copyright line
+# included — it is not a scaffold with placeholders to fill in. So this is a plain exact
+# match: a different licence body, or a different copyright holder/year, is a divergence.
+# Line endings and trailing whitespace are normalized away by Read-NormalizedLines, so a
+# CRLF checkout of the correct text is not a finding.
 $modLicense = Join-Path $ModuleDir 'LICENSE'
 $tplLicense = Join-Path $TemplateDir 'LICENSE'
 if ((Test-Path $modLicense) -and (Test-Path $tplLicense)) {
-    $isCopyright = { param($line) $line -match '(?i)copyright' }
     $modL = @(Read-NormalizedLines $modLicense)
     $tplL = @(Read-NormalizedLines $tplLicense)
-    if ($modL.Count -ne $tplL.Count) {
-        Add-Finding 'LICENSE-DIFF' 'Critical' 'LICENSE' "Does not match template LICENSE (line count differs)"
-    } else {
-        for ($i = 0; $i -lt $tplL.Count; $i++) {
-            if ($modL[$i] -eq $tplL[$i]) { continue }
-            if ((& $isCopyright $modL[$i]) -and (& $isCopyright $tplL[$i])) {
-                # Copyright line may differ in year/author, but must not be a placeholder.
-                if ($modL[$i] -match '(?i)your name|your company') {
-                    Add-Finding 'LICENSE-PLACEHOLDER' 'Critical' 'LICENSE' "Copyright line is a placeholder: '$($modL[$i])'"
-                }
-                continue
-            }
-            Add-Finding 'LICENSE-DIFF' 'Critical' 'LICENSE' "Differs from template (line $($i+1): found '$($modL[$i])')"
-            break
-        }
+    if (($modL -join "`n") -ne ($tplL -join "`n")) {
+        Add-Finding 'LICENSE-DIFF' 'High' 'LICENSE' "Differs from template ($(Get-FirstLineDiff $modL $tplL))"
     }
 }
 
@@ -329,10 +414,10 @@ if (Test-Path $manifestPath) {
     try { $man = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json }
     catch { Add-Finding 'MAN-PARSE' 'Critical' 'companion/manifest.json' "Not valid JSON: $($_.Exception.Message)" }
     if ($man) {
+        # NOTE: manifest `name` is the human-facing module name and is *expected* to differ
+        # from the slug `id` (e.g. id "fblab-bpm2osc" / name "BPM2OSC"). Do not reinstate an
+        # id == name check here — it is not a Bitfocus requirement.
         $moduleName = (Split-Path $ModuleDir -Leaf) -replace '^companion-module-',''
-        if ((Has-Prop $man 'id') -and (Has-Prop $man 'name') -and $man.id -ne $man.name) {
-            Add-Finding 'MAN-IDNAME' 'Critical' 'companion/manifest.json' "id '$($man.id)' != name '$($man.name)'"
-        }
         if (-not (Has-Prop $man 'maintainers') -or @($man.maintainers).Count -eq 0) {
             Add-Finding 'MAN-MAINT' 'Critical' 'companion/manifest.json' 'maintainers is empty'
         } else {

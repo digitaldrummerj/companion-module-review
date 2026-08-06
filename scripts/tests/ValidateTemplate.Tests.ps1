@@ -30,9 +30,21 @@ function Invoke-Validator($ModuleDir, $TemplateDir) {
 }
 
 $gitignore = "node_modules/`npackage-lock.json`n/pkg`n/*.tgz`nDEBUG-*`n/.yarn"
-$licenseTpl  = "MIT License`n`nCopyright (c) 2025 Template Author`n`nPermission is hereby granted, free of charge, to any person obtaining a copy`nof this software."
-$licenseGood = "MIT License`n`nCopyright (c) 2026 Jane Dev`n`nPermission is hereby granted, free of charge, to any person obtaining a copy`nof this software."
-$licenseBad  = "MIT License`n`nCopyright (c) 2026 Your name`n`nPermission is hereby granted, free of charge, to any person obtaining a copy`nof this software."
+
+# .yarnrc.yml — Bitfocus hardened the template's copy on 2026-06-24 (1 key → 4). It is
+# compared by parsed key, not raw text, so only a missing/extra key or a conflicting
+# value is a divergence.
+$yarnrcTpl   = "nodeLinker: node-modules`nenableScripts: false`nnpmMinimalAgeGate: 3d`nnpmPreapprovedPackages:`n  - `"@companion-module/*`""
+# Same four keys reordered, with blank lines and a single-quoted glob: cosmetic only.
+$yarnrcCosmetic = "npmPreapprovedPackages:`n  - '@companion-module/*'`n`nenableScripts: false`n`nnodeLinker: node-modules`n`nnpmMinimalAgeGate: 3d"
+# The pre-2026-06-24 template contents, still shipped by older modules.
+$yarnrcOld   = "nodeLinker: node-modules"
+# LICENSE must match the template exactly — the copyright line included. The three
+# variants below cover the ways a module can diverge.
+$licenseTpl       = "MIT License`n`nCopyright (c) 2025 Template Author`n`nPermission is hereby granted, free of charge, to any person obtaining a copy`nof this software."
+$licenseCopyright = "MIT License`n`nCopyright (c) 2026 Jane Dev`n`nPermission is hereby granted, free of charge, to any person obtaining a copy`nof this software."
+$licenseBody      = "The MIT License`n`nCopyright (c) 2025 Template Author`n`nPermission is hereby granted, free of charge, to any person obtaining a copy`nof this software."
+$licenseShort     = "MIT License`n`nCopyright (c) 2025 Template Author"
 
 $root = Join-Path ([System.IO.Path]::GetTempPath()) "validatetpl-$([System.IO.Path]::GetRandomFileName())"
 try {
@@ -41,7 +53,7 @@ try {
     Set-File (Join-Path $tpl '.gitattributes')  "* text=auto eol=lf"
     Set-File (Join-Path $tpl '.gitignore')       $gitignore
     Set-File (Join-Path $tpl '.prettierignore')  "package.json`n/LICENSE.md"
-    Set-File (Join-Path $tpl '.yarnrc.yml')      "nodeLinker: node-modules"
+    Set-File (Join-Path $tpl '.yarnrc.yml')      $yarnrcTpl
     Set-File (Join-Path $tpl 'LICENSE')          $licenseTpl
     Set-File (Join-Path $tpl 'package.json') (@'
 {
@@ -75,8 +87,8 @@ try {
     Set-File (Join-Path $good '.gitattributes')  "* text=auto eol=lf"
     Set-File (Join-Path $good '.gitignore')      "$gitignore`n.idea/`n*.log"   # extra entries OK (subset check)
     Set-File (Join-Path $good '.prettierignore')  "package.json`n/LICENSE.md"
-    Set-File (Join-Path $good '.yarnrc.yml')      "nodeLinker: node-modules"
-    Set-File (Join-Path $good 'LICENSE')          $licenseGood
+    Set-File (Join-Path $good '.yarnrc.yml')      $yarnrcCosmetic   # reordered/quoted differently — must still pass
+    Set-File (Join-Path $good 'LICENSE')          $licenseTpl
     Set-File (Join-Path $good 'yarn.lock')        "# yarn lockfile"
     Set-File (Join-Path $good 'src/main.js')      "// entry"
     Set-File (Join-Path $good 'companion/HELP.md') "# Foo`n`nThis module controls a Foo device.`nConfigure host and port.`nActions: play, stop.`nFeedbacks: playing state.`nTroubleshooting: check the network."
@@ -110,6 +122,8 @@ try {
     Write-Host "GOOD module"
     $g = Invoke-Validator $good $tpl
     Ok ($g.counts.critical -eq 0) "no critical findings (got $($g.counts.critical): $(@($g.findings | ForEach-Object { $_.id }) -join ','))"
+    $gYarn = @($g.findings | Where-Object { $_.id -eq 'CONFIG-DIFF' -and $_.file -eq '.yarnrc.yml' })
+    Ok ($gYarn.Count -eq 0) "does not flag .yarnrc.yml for key order, blank lines, or quote style"
 
     # ── GOOD module with a non-template entry filename (src/index.js) ─────────
     # Mirrors real modules (e.g. dashmaster-2k) that name their entry src/index.js.
@@ -118,8 +132,8 @@ try {
     Set-File (Join-Path $good2 '.gitattributes')   "* text=auto eol=lf"
     Set-File (Join-Path $good2 '.gitignore')       $gitignore
     Set-File (Join-Path $good2 '.prettierignore')  "package.json`n/LICENSE.md"
-    Set-File (Join-Path $good2 '.yarnrc.yml')      "nodeLinker: node-modules"
-    Set-File (Join-Path $good2 'LICENSE')          $licenseGood
+    Set-File (Join-Path $good2 '.yarnrc.yml')      $yarnrcTpl
+    Set-File (Join-Path $good2 'LICENSE')          $licenseTpl
     Set-File (Join-Path $good2 'yarn.lock')        "# yarn lockfile"
     Set-File (Join-Path $good2 'src/index.js')     "// entry"
     Set-File (Join-Path $good2 'companion/HELP.md') "# Idx`n`nThis module controls an Idx device.`nConfigure host and port.`nActions: play, stop.`nFeedbacks: playing state.`nTroubleshooting: check the network."
@@ -167,8 +181,8 @@ try {
     Set-File (Join-Path $jsTsDep '.gitattributes')  "* text=auto eol=lf"
     Set-File (Join-Path $jsTsDep '.gitignore')      $gitignore
     Set-File (Join-Path $jsTsDep '.prettierignore') "package.json`n/LICENSE.md"
-    Set-File (Join-Path $jsTsDep '.yarnrc.yml')     "nodeLinker: node-modules"
-    Set-File (Join-Path $jsTsDep 'LICENSE')         $licenseGood
+    Set-File (Join-Path $jsTsDep '.yarnrc.yml')     $yarnrcTpl
+    Set-File (Join-Path $jsTsDep 'LICENSE')         $licenseTpl
     Set-File (Join-Path $jsTsDep 'yarn.lock')       "# yarn lockfile"
     Set-File (Join-Path $jsTsDep 'src/main.js')     "// entry"
     Set-File (Join-Path $jsTsDep 'companion/HELP.md') "# Jstsdep`n`nThis module controls a device.`nConfigure host and port.`nActions: play, stop.`nFeedbacks: playing state.`nTroubleshooting: check the network."
@@ -215,7 +229,7 @@ try {
     Set-File (Join-Path $tsTpl '.gitattributes')  "* text=auto eol=lf"
     Set-File (Join-Path $tsTpl '.gitignore')       $gitignore
     Set-File (Join-Path $tsTpl '.prettierignore')  "package.json`n/LICENSE.md"
-    Set-File (Join-Path $tsTpl '.yarnrc.yml')      "nodeLinker: node-modules"
+    Set-File (Join-Path $tsTpl '.yarnrc.yml')      $yarnrcTpl
     Set-File (Join-Path $tsTpl 'LICENSE')          $licenseTpl
     Set-File (Join-Path $tsTpl 'eslint.config.mjs') "export default []"
     Set-File (Join-Path $tsTpl 'tsconfig.build.json') "{ `"extends`": `"./tsconfig.json`" }"
@@ -226,8 +240,8 @@ try {
         Set-File (Join-Path $dir '.gitattributes')  "* text=auto eol=lf"
         Set-File (Join-Path $dir '.gitignore')      $gitignore
         Set-File (Join-Path $dir '.prettierignore') "package.json`n/LICENSE.md"
-        Set-File (Join-Path $dir '.yarnrc.yml')     "nodeLinker: node-modules"
-        Set-File (Join-Path $dir 'LICENSE')         $licenseGood
+        Set-File (Join-Path $dir '.yarnrc.yml')     $yarnrcTpl
+        Set-File (Join-Path $dir 'LICENSE')         $licenseTpl
         Set-File (Join-Path $dir 'eslint.config.mjs') "export default []"
         Set-File (Join-Path $dir 'tsconfig.build.json') "{ `"extends`": `"./tsconfig.json`" }"
         Set-File (Join-Path $dir 'tsconfig.json')   "{`n`t`"compilerOptions`": {`n`t`t$typesLine`n`t}`n}"
@@ -277,13 +291,119 @@ try {
     $tbConfigDiffs = @($tb.findings | Where-Object { $_.id -eq 'CONFIG-DIFF' -and $_.file -eq 'tsconfig.json' })
     Ok ($tbConfigDiffs.Count -gt 0) "still flags a real tsconfig.json divergence (node16)"
 
+    # ── .yarnrc.yml divergences ──────────────────────────────────────────────
+    # Compared by parsed key against the *main* template (never the pinned -v1 one),
+    # so cosmetics pass but a missing key, conflicting value, or extra key is Critical.
+    # Builds an otherwise-clean JS module; callers vary one file at a time. Also reused by
+    # the LICENSE cases below via -license.
+    function New-YarnrcModule($name, $yarnrc, $baseRange = '~2.0.4', $license = $licenseTpl) {
+        $dir = Join-Path $root "companion-module-$name"
+        Set-File (Join-Path $dir '.gitattributes')  "* text=auto eol=lf"
+        Set-File (Join-Path $dir '.gitignore')      $gitignore
+        Set-File (Join-Path $dir '.prettierignore') "package.json`n/LICENSE.md"
+        Set-File (Join-Path $dir '.yarnrc.yml')     $yarnrc
+        Set-File (Join-Path $dir 'LICENSE')         $license
+        Set-File (Join-Path $dir 'yarn.lock')       "# yarn lockfile"
+        Set-File (Join-Path $dir 'src/main.js')     "// entry"
+        Set-File (Join-Path $dir 'companion/HELP.md') "# $name`n`nThis module controls a device.`nConfigure host and port.`nActions: play, stop.`nFeedbacks: playing state.`nTroubleshooting: check the network."
+        Set-File (Join-Path $dir 'package.json') (@"
+{
+  "name": "$name",
+  "version": "1.2.0",
+  "main": "src/main.js",
+  "scripts": { "format": "prettier -w .", "package": "companion-module-build" },
+  "license": "MIT",
+  "repository": { "type": "git", "url": "git+https://github.com/bitfocus/companion-module-$name.git" },
+  "engines": { "node": "^22.20", "yarn": "^4" },
+  "dependencies": { "@companion-module/base": "$baseRange" },
+  "devDependencies": { "@companion-module/tools": "^3.0.1", "prettier": "^3.8.3" },
+  "prettier": "@companion-module/tools/.prettierrc.json",
+  "packageManager": "yarn@4.12.0"
+}
+"@)
+        Set-File (Join-Path $dir 'companion/manifest.json') (@"
+{
+  "type": "connection",
+  "id": "$name",
+  "name": "$name",
+  "maintainers": [ { "name": "Jane Dev", "email": "jane@example.com" } ],
+  "repository": "git+https://github.com/bitfocus/companion-module-$name.git",
+  "runtime": { "type": "node22", "api": "nodejs-ipc", "entrypoint": "../src/main.js" },
+  "keywords": ["lighting", "osc"]
+}
+"@)
+        return $dir
+    }
+    function Get-YarnrcFindings($result) {
+        return @($result.findings | Where-Object { $_.id -eq 'CONFIG-DIFF' -and $_.file -eq '.yarnrc.yml' })
+    }
+
+    Write-Host ".yarnrc.yml — pre-hardening (1-key) file"
+    $yOld = Get-YarnrcFindings (Invoke-Validator (New-YarnrcModule 'yarnold' $yarnrcOld) $tpl)
+    Ok ($yOld.Count -eq 1 -and $yOld[0].message -match 'Missing template keys:.*enableScripts.*npmMinimalAgeGate.*npmPreapprovedPackages') `
+        "flags the old 1-key .yarnrc.yml, naming every missing hardening key"
+
+    Write-Host ".yarnrc.yml — conflicting value"
+    $yVal = Get-YarnrcFindings (Invoke-Validator (New-YarnrcModule 'yarnval' ($yarnrcTpl -replace 'enableScripts: false','enableScripts: true')) $tpl)
+    Ok ($yVal.Count -eq 1 -and $yVal[0].message -match "Value mismatch:.*enableScripts = 'true' \(template 'false'\)") `
+        "flags enableScripts: true as a value mismatch, and nothing else"
+
+    Write-Host ".yarnrc.yml — extra key"
+    $yExtra = Get-YarnrcFindings (Invoke-Validator (New-YarnrcModule 'yarnextra' "$yarnrcTpl`nyarnPath: .yarn/releases/yarn-4.10.3.cjs") $tpl)
+    Ok ($yExtra.Count -eq 1 -and $yExtra[0].message -match 'Extra keys not in template: yarnPath') `
+        "flags a key the template does not have (yarnPath)"
+
+    # ── v1 modules are judged against the main template's .yarnrc.yml ────────
+    # Bitfocus only updates .yarnrc.yml on main; the -v1 template is pinned to an older
+    # commit that still carries the 1-key file. A v1 module shipping the current hardened
+    # file must NOT be flagged (regression: panasonic-cameras v1.3.0).
+    $tplV1 = Join-Path $root 'companion-module-template-js-v1'
+    Copy-Item -Recurse -Force $tpl $tplV1
+    Set-File (Join-Path $tplV1 '.yarnrc.yml') $yarnrcOld
+
+    Write-Host "v1 module shipping the current (main) .yarnrc.yml"
+    $v1New = Get-YarnrcFindings (Invoke-Validator (New-YarnrcModule 'yarnv1new' $yarnrcTpl '~1.14.0') $tplV1)
+    Ok ($v1New.Count -eq 0) "does not flag a v1 module carrying the main template's hardened .yarnrc.yml"
+
+    Write-Host "v1 module still on the pinned v1 template's .yarnrc.yml"
+    $v1Old = Get-YarnrcFindings (Invoke-Validator (New-YarnrcModule 'yarnv1old' $yarnrcOld '~1.14.0') $tplV1)
+    Ok ($v1Old.Count -eq 1 -and $v1Old[0].message -match 'Missing template keys') `
+        "judges v1 modules against the main template's yarnrc, not the pinned -v1 copy"
+
+    # ── LICENSE must match the template exactly ──────────────────────────────
+    # The template's LICENSE is the licence itself, copyright line included — not a
+    # scaffold to personalise. Any divergence is a High finding.
+    function Get-LicenseFindings($result) {
+        return @($result.findings | Where-Object { $_.id -eq 'LICENSE-DIFF' })
+    }
+
+    Write-Host "LICENSE — matches the template"
+    $lOk = Get-LicenseFindings (Invoke-Validator (New-YarnrcModule 'licok' $yarnrcTpl) $tpl)
+    Ok ($lOk.Count -eq 0) "does not flag a LICENSE identical to the template"
+
+    Write-Host "LICENSE — copyright line differs only"
+    $lCopy = Get-LicenseFindings (Invoke-Validator (New-YarnrcModule 'liccopy' $yarnrcTpl '~2.0.4' $licenseCopyright) $tpl)
+    Ok ($lCopy.Count -eq 1 -and $lCopy[0].severity -eq 'High') `
+        "flags a differing copyright line at High (the copyright line is no longer exempt)"
+    Ok ($lCopy.Count -eq 1 -and $lCopy[0].message -match "line 3: found 'Copyright \(c\) 2026 Jane Dev'") `
+        "names the differing copyright line"
+
+    Write-Host "LICENSE — fewer lines than the template"
+    $lShort = Get-LicenseFindings (Invoke-Validator (New-YarnrcModule 'licshort' $yarnrcTpl '~2.0.4' $licenseShort) $tpl)
+    Ok ($lShort.Count -eq 1 -and $lShort[0].message -match '<missing>') `
+        "flags a truncated LICENSE and reports the missing line"
+
+    Write-Host "LICENSE — CRLF line endings, same text"
+    $lCrlf = Get-LicenseFindings (Invoke-Validator (New-YarnrcModule 'liccrlf' $yarnrcTpl '~2.0.4' ($licenseTpl -replace "`n", "`r`n")) $tpl)
+    Ok ($lCrlf.Count -eq 0) "does not flag a CRLF checkout of the correct LICENSE text"
+
     # ── BAD module ───────────────────────────────────────────────────────────
     $bad = Join-Path $root 'companion-module-bar'
     Set-File (Join-Path $bad '.gitattributes')  "* text=auto"            # CONFIG-DIFF
     Set-File (Join-Path $bad '.gitignore')      "node_modules/`npackage-lock.json`n/pkg`n/*.tgz`nDEBUG-*"  # drops /.yarn → CONFIG-DIFF (.gitignore)
     # .prettierignore intentionally missing                              # FILE-MISSING
-    Set-File (Join-Path $bad '.yarnrc.yml')      "nodeLinker: node-modules"
-    Set-File (Join-Path $bad 'LICENSE')          $licenseBad             # LICENSE-PLACEHOLDER
+    Set-File (Join-Path $bad '.yarnrc.yml')      $yarnrcTpl
+    Set-File (Join-Path $bad 'LICENSE')          $licenseBody            # LICENSE-DIFF (body text)
     Set-File (Join-Path $bad 'yarn.lock')        "# yarn lockfile"
     Set-File (Join-Path $bad 'src/main.js')      "// entry"
     Set-File (Join-Path $bad 'main.js')          "// stray root source"  # SRC-AT-ROOT
@@ -325,7 +445,10 @@ try {
     Ok ($ids -contains 'FILE-MISSING')         "flags missing .prettierignore"
     Ok ($ids -contains 'NPM-LOCK')             "flags package-lock.json"
     Ok ($ids -contains 'SRC-AT-ROOT')          "flags source file at module root"
-    Ok ($ids -contains 'LICENSE-PLACEHOLDER')  "flags placeholder LICENSE copyright"
+    $badLicense = @($b.findings | Where-Object { $_.id -eq 'LICENSE-DIFF' })
+    Ok ($badLicense.Count -eq 1)                       "flags a LICENSE whose body text differs from the template"
+    Ok ($badLicense[0].severity -eq 'High')            "reports LICENSE-DIFF at High, not Critical"
+    Ok (-not ($ids -contains 'LICENSE-PLACEHOLDER'))   "no longer emits LICENSE-PLACEHOLDER (exact match subsumes it)"
     Ok ($ids -contains 'PKG-MAIN')             "flags main referencing a non-existent file"
     Ok ($ids -contains 'ENTRY-MISMATCH')       "flags main/entrypoint resolving to different files"
     Ok ($ids -contains 'PKG-REPO')             "flags wrong repository.url"
@@ -333,7 +456,9 @@ try {
     Ok ($ids -contains 'PKG-YARN')             "flags non-yarn4 packageManager"
     Ok ($ids -contains 'PKG-SCRIPT')           "flags missing package script (template-derived)"
     Ok ($ids -contains 'PKG-DEVDEP')           "flags missing devDependency (template-derived)"
-    Ok ($ids -contains 'MAN-IDNAME')           "flags manifest id != name"
+    # The fixture is deliberately id "bar" / name "bar-module": manifest `name` is the
+    # human-facing name and may differ from the slug `id`, so this must NOT be flagged.
+    Ok (-not ($ids -contains 'MAN-IDNAME'))    "does not flag manifest id != name (name is human-facing, not the slug)"
     Ok ($ids -contains 'MAN-PLACEHOLDER')      "flags placeholder maintainer"
     Ok ($ids -contains 'MAN-KEYWORD')          "flags banned keyword 'companion'"
     Ok ($ids -contains 'MAN-TYPE')             "flags missing manifest type (template has it)"
