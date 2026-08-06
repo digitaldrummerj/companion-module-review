@@ -105,4 +105,10 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | roland-v1-4k | v0.1.2 | 2026-08-03 | [review](roland-v1-4k/review-roland-v1-4k-v0.1.2-20260803-190044.md) |
 | ✅ | panasonic-cameras | v1.3.0 | 2026-08-03 | [review](panasonic-cameras/review-panasonic-cameras-v1.3.0-20260803-190513.md) |
 | ⬜ | easyprompter-remote | v1.2.1 | 2026-08-06 | [review](easyprompter-remote/review-easyprompter-remote-v1.2.1-20260806-211216.md) |
-| ⬜ | panasonic-cameras | v2.0.0 | 2026-08-06 | [review](panasonic-cameras/review-panasonic-cameras-v2.0.0-20260806-212257.md) |
+| ✅ | panasonic-cameras | v2.0.0 | 2026-08-06 | [review](panasonic-cameras/review-panasonic-cameras-v2.0.0-20260806-212257.md) |
+| ⬜ | biamp-qtx | v0.1.3 | 2026-08-06 | [review](biamp-qtx/review-biamp-qtx-v0.1.3-20260806-234248.md) |
+| ⬜ | cvmeventi-countdown | v3.0.2 | 2026-08-06 | [review](cvmeventi-countdown/review-cvmeventi-countdown-v3.0.2-20260806-234339.md) |
+| ⬜ | waves-lv1 | v1.1.0 | 2026-08-06 | [review](waves-lv1/review-waves-lv1-v1.1.0-20260806-234519.md) |
+| ⬜ | riedel-smartpanel | v1.2.0-beta.1 | 2026-08-06 | [review](riedel-smartpanel/review-riedel-smartpanel-v1.2.0-beta.1-20260806-234425.md) |
+| ⬜ | streamlabs-desktop | v1.0.1 | 2026-08-06 | [review](streamlabs-desktop/review-streamlabs-desktop-v1.0.1-20260806-234554.md) |
+| ⬜ | aja-helo | v2.5.0 | 2026-08-06 | [review](aja-helo/review-aja-helo-v2.5.0-20260806-235022.md) |
