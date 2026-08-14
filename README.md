@@ -29,6 +29,8 @@ pwsh setup.ps1
 - Creates the gitignored `companion-modules-reviewing/` directory **inside the repo** where modules are cloned during reviews.
 - Clones the official module templates into the gitignored `companion-module-templates/` (v2 `companion-module-template-{js,ts}` from GitHub; v1 `-{js,ts}-v1` variants pinned to the last v1.x commit) — these are what `validate-template.ps1` diffs each module against. Override their location with `COMPANION_TEMPLATES_DIR`.
 
+  Templates that already exist are only **reported on**, never pulled: reviews often run several at a time against the same clones, so an automatic update would move the reference underneath a review in progress. Refresh them deliberately, between sessions, with `pwsh scripts/update-templates.ps1`. Every review verifies the clone against upstream first and stops if it is behind — a stale template produces false findings against a correct module.
+
 ### 3. Verify GitHub auth
 
 ```powershell
@@ -44,6 +46,12 @@ Open `companion-module-review.code-workspace` in VS Code.
 ### 5. Verify the install
 
 Run the script test suites — they need no network and should all pass:
+
+```powershell
+pwsh scripts/tests/run-all.ps1           # all suites, combined summary (add -Quiet for one line each)
+```
+
+Or individually:
 
 ```powershell
 pwsh scripts/tests/ReviewState.Tests.ps1
@@ -73,7 +81,8 @@ All scripts are read-only against GitHub/BitFocus except `git clone` (setup) and
 | **`bitfocus-queue.ps1 [-Json]`** | Show the pending review queue, oldest first, **labeled by local review state** (`needs review` / `reviewed - feedback pending` / `re-review?`). "Next up" never points at a module already reviewed locally whose feedback hasn't been sent yet. |
 | **`bitfocus-setup-module.ps1 [-ModuleName <name>] [-Force] [-Json]`** | Validate `PENDING` status, find the previous approved tag, and clone the module into `companion-modules-reviewing/`. Auto-selects the oldest module **that still needs review** (skips feedback-pending). Naming a feedback-pending module requires `-Force`. |
 | **`module-facts.ps1 -ModuleDir <path> [-GitTag <tag>] [-SkipTemplateCheck] [-Json]`** | The shared **fact sheet**: language (JS/TS), API version → the single applicable api-compliance skill, package.json/manifest essentials, detected protocols, source-tree list, and a template-compliance summary. Run once at review start; hand it to every reviewer. |
-| **`validate-template.ps1 -ModuleDir <path> [-ExpectedVersion <tag>] [-RunBuild] [-TemplateDir <path>] [-Json]`** | The **deterministic** template review: required files, config-file parity, package.json/manifest fields, LICENSE, `src/`-only source, devDependencies, husky, gitignored-not-committed. Auto-selects the matching template by API version × language (the `-v1`/v2, js/ts variants in `companion-module-templates/`). `-RunBuild` also runs `yarn install`/`yarn package` (+ `yarn lint` for TS). Exits 1 on any Critical. |
+| **`validate-template.ps1 -ModuleDir <path> [-ExpectedVersion <tag>] [-RunBuild] [-TemplateDir <path>] [-SkipTemplateFreshness] [-Json]`** | The **deterministic** template review: required files, config-file parity, package.json/manifest fields, LICENSE, `src/`-only source, devDependencies, husky, gitignored-not-committed. Auto-selects the matching template by API version × language (the `-v1`/v2, js/ts variants in `companion-module-templates/`). Verifies the template clone against upstream **before** comparing anything (read-only `git ls-remote`; no fetch, no pull) — a clone behind upstream would judge the module against outdated expectations. Which files are compared is derived from the template's own tracked files, so a file added upstream is checked automatically. `-RunBuild` also runs `yarn install`/`yarn package` (+ `yarn lint` for TS). Exits 1 on any Critical, **3** if the template is stale or unverifiable. |
+| **`update-templates.ps1 [-DryRun] [-Yes] [-Json]`** | **The only thing that ever moves a template.** Fast-forwards the two v2 clones to `origin/main` (`--ff-only`; refuses a dirty work tree or a diverged clone) and asserts the pinned `-v1` clones haven't drifted. Warns when reviews look in flight. Never run by the pipeline — refresh between review sessions, not during one. |
 | **`cleanup-modules.ps1`** | Remove cloned `companion-module-*` directories from `companion-modules-reviewing/` to reclaim disk. |
 
 ### The review process, mapped to the tooling
@@ -82,7 +91,8 @@ All scripts are read-only against GitHub/BitFocus except `git clone` (setup) and
 |------|---------|
 | Find the next module | `bitfocus-queue.ps1` (skips already-reviewed) |
 | Set it up | `bitfocus-setup-module.ps1` (clone + previous-tag lookup) |
-| Gather shared context | `module-facts.ps1` → fact sheet |
+| Gather shared context | `module-facts.ps1` → fact sheet (also establishes template freshness) |
+| Template up to date? | if not, the review **stops** — `update-templates.ps1`, then start over |
 | Deterministic compliance | `validate-template.ps1 -RunBuild` |
 | Judgment review | the review subagents (protocol, QA/logic, compliance/tests) read the fact sheet + the one applicable api skill |
 | Assemble + record | single review file under `reviews/{module}/` + a ⬜ row in `reviews/TRACKER.md` |
@@ -96,7 +106,7 @@ All scripts are read-only against GitHub/BitFocus except `git clone` (setup) and
 
 1. **Discover** — `bitfocus-queue.ps1` lists pending modules and labels each by local review state.
 2. **Set up** — `bitfocus-setup-module.ps1` clones the target into `companion-modules-reviewing/`.
-3. **Bootstrap** — `module-facts.ps1` produces the shared fact sheet (language, API version, protocols, template-check summary); `validate-template.ps1 -RunBuild` runs the deterministic compliance + build/lint.
+3. **Bootstrap** — `module-facts.ps1` produces the shared fact sheet (language, API version, protocols, template-check summary) and verifies the template clone is current; a stale clone aborts the review here, before any build or subagent runs. `validate-template.ps1 -RunBuild` then runs the deterministic compliance + build/lint.
 4. **Review** — three review subagents (protocol, QA/logic, compliance) review at the chosen scope, loading only the applicable v1/v2 api-compliance skill.
 5. **Assemble** — the orchestrator merges all findings into one review under `reviews/{module-name}/` and adds a ⬜ row to `reviews/TRACKER.md`.
 6. **Deliver** — send the maintainer the review via the developer portal; they apply the fixes. (Reviews never edit the module — report only.) Mark the TRACKER row ✅ once delivered.

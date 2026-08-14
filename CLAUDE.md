@@ -23,12 +23,14 @@ The **only** output of a review is the markdown file under `reviews/`. The maint
 
 - `scripts/` — the review pipeline (PowerShell; `scripts/lib/ReviewState.ps1` holds shared path/state helpers). Tests in `scripts/tests/` (no Pester).
 - `companion-modules-reviewing/` — cloned modules under review (gitignored; each is its own git repo). **Never commit these.**
-- `companion-module-templates/` — official JS/TS, v1/v2 templates the validator diffs against (gitignored; cloned by `setup.ps1`). Override with `COMPANION_TEMPLATES_DIR`.
+- `companion-module-templates/` — official JS/TS, v1/v2 templates the validator diffs against (gitignored; cloned by `setup.ps1`). Override with `COMPANION_TEMPLATES_DIR`. **Never auto-updated:** concurrent review sessions share these clones, so an automatic pull would move the reference mid-review. Refresh explicitly with `pwsh scripts/update-templates.ps1` *between* sessions — it is the only thing that ever moves a template.
 - `reviews/` — completed reviews + `TRACKER.md` (the ✅/⬜ feedback-submitted ledger; ⬜ + a local review = "don't re-review yet").
 - `.claude/` — the review system: `skills/` (the `review-companion-module` orchestrator + the companion/review knowledge skills it reads by path), `agents/` (the three review subagents), `commands/` (`/review-module`), and `settings.json`.
 
 ## Conventions
 
 - Run scripts with `pwsh`. They honor `COMPANION_MODULES_DIR` / `COMPANION_TEMPLATES_DIR`.
+- A review **aborts** if the template clone is behind upstream — a stale reference produces false findings against a correct module. Refresh with `update-templates.ps1`, then re-run.
 - Reviews run one module at a time.
+- Run the tests with `pwsh scripts/tests/run-all.ps1` (no network needed).
 - Don't auto-commit the review file — write it and let the user review before they push it to this repo and deliver it.
