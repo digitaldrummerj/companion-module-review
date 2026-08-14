@@ -18,6 +18,7 @@ description: Handle Companion module follow-up reviews where the maintainer resu
 3. Diff the tag against the current branch to see whether any post-tag changes are outside the release.
 4. Re-check only the prior findings plus any changed code in the release delta.
 5. Re-validate prior template/config findings against the authoritative template before carrying them forward; a same-tag follow-up can close a prior finding if the original diagnosis was too strict or factually wrong.
+   - **A finding the prior review didn't have is not automatically a regression.** The validator's compared-file set is derived from the template's tracked files and the template itself moves, so a file can be judged now that wasn't judged then (`.github/workflows/**` is the current example) — and a template refresh can change what "correct" means for a file that never changed. Before calling anything new, check whether the *module* changed or the *reference* did. If the reference did, classify it as pre-existing and say so plainly.
 6. If there is no module-code delta, carry forward the still-valid prior findings and explicitly say no new release-delta issues were introduced.
 
 ## Output Pattern

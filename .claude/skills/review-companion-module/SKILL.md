@@ -36,14 +36,30 @@ Add `-ReviewTag <version>` when the user specified a version (omit it otherwise 
 ```
 pwsh scripts/module-facts.ps1 -ModuleDir <directory> -GitTag <reviewTag> -Json
 ```
-Capture `language`, `apiVersion`, **`apiSkill`** (`companion-v1-api-compliance` or `companion-v2-api-compliance`), `protocols`, `srcFiles`, `templateCheck`.
+Capture `language`, `apiVersion`, **`apiSkill`** (`companion-v1-api-compliance` or `companion-v2-api-compliance`), `protocols`, `srcFiles`, `templateCheck`, **`templateFreshness`**.
+
+### Step 3a — Template freshness gate (STOP here if it fails)
+
+If **`templateFreshness`** is anything other than `fresh`, `pinned`, or `skipped` — i.e. `stale`, `unverified`, or `error` — **STOP**. Do not run Step 4, do not dispatch subagents, do not write a review file, do not add a TRACKER row.
+
+The reason to stop rather than report: with an out-of-date template every `CONFIG-DIFF`, `FILE-MISSING`, `PKG-DEVDEP`, `MAN-RUNTIME`, and `.yarnrc.yml` key finding is derived from wrong expectations. A report full of false Criticals is worse than no report, and the maintainer can't act on your local clone anyway. Stopping here — before `-RunBuild`'s full `yarn install` and before three subagents — also costs nothing.
+
+Tell the user the local and upstream SHAs from `templateCheck` / the validator output and:
+
+```
+pwsh scripts/update-templates.ps1     # then re-run the review
+```
+
+Templates are never refreshed automatically because concurrent review sessions share these clones. If the user explicitly wants an offline run, re-invoke Step 3 **and** Step 4 with `-SkipTemplateFreshness` (threading it to only one still aborts) and record `Template freshness: skipped (offline)` in the meta table.
 
 ## Step 4 — Deterministic compliance + build/lint
 
 ```
 pwsh scripts/validate-template.ps1 -ModuleDir <directory> -ExpectedVersion <reviewTag> -RunBuild -Json
 ```
-Every `Critical` finding is **blocking** — carry each into the review verbatim. (These are full-module checks; they apply regardless of scope, since a release that breaks the build/template can't ship.)
+Every `Critical` finding is **blocking** — carry each into the review verbatim. (These are full-module checks; they apply regardless of scope, since a release that breaks the build/template can't ship.) `Medium` findings (currently `.github/**` parity) are reported but non-blocking.
+
+`TEMPLATE-STALE`, `TEMPLATE-UNVERIFIED`, and `TEMPLATE-COVERAGE` are **environment** findings about your workspace, not the module — they never appear in the review markdown. The first two should have already stopped you at Step 3a; `TEMPLATE-COVERAGE` means the template gained a file the validator has no rule for, so mention it to the user and move on.
 
 ## Step 5 — Scope the review surface
 
@@ -64,7 +80,13 @@ Launch all three with the Agent tool in one message. Give each: the **scope** (S
 
 ## Step 7 — Assemble the review
 
-Read `.claude/skills/review-scorecard/SKILL.md` for the 📊 Scorecard and 📋 Issues format. Merge the Step-4 deterministic findings + the subagents' findings into ONE file, deduped by file+line. Header meta table includes a **`Scope:`** line (`tag` / `module` / `both`). Sections in order: title + meta, **📊 Scorecard**, **Verdict**, **📋 Issues** (Blocking / Non-blocking), `🔴 Critical` → `🟠 High` → `🟡 Medium` → `🟢 Low` → `💡 Nice to Have` → `🔮 Next Release` → `⚠️ Pre-existing Notes` → `🧪 Tests`. Omit empty sections. The **Verdict** section is the status line only (`✅ Approved` / `❌ Changes Required`) — no reasoning paragraph. Include `🧪 Tests` **only if tests were found** (framework/files/`test` script present) — if none, omit the section entirely rather than writing "no tests found." Plain text (no emoji) in individual issue headings for stable anchors.
+Read `.claude/skills/review-scorecard/SKILL.md` for the 📊 Scorecard and 📋 Issues format. Merge the Step-4 deterministic findings + the subagents' findings into ONE file, deduped by file+line. Header meta table includes a **`Scope:`** line (`tag` / `module` / `both`) and a **`Template`** row naming the exact revision the verdict was rendered against, so a disputed finding can be re-checked at that commit later:
+
+```markdown
+| **Template** | `companion-module-template-js-v1` @ `9e222b4` (2026-03-26, pinned) · `.yarnrc.yml` from `companion-module-template-js` @ `0f916f9` (2026-06-24) |
+```
+
+Take the values from the validator's `templateRevision` / `yarnrcTemplate`; v2 modules have no second clause. If the run used `-SkipTemplateFreshness`, append `— freshness not verified (offline run)`. Sections in order: title + meta, **📊 Scorecard**, **Verdict**, **📋 Issues** (Blocking / Non-blocking), `🔴 Critical` → `🟠 High` → `🟡 Medium` → `🟢 Low` → `💡 Nice to Have` → `🔮 Next Release` → `⚠️ Pre-existing Notes` → `🧪 Tests`. Omit empty sections. The **Verdict** section is the status line only (`✅ Approved` / `❌ Changes Required`) — no reasoning paragraph. Include `🧪 Tests` **only if tests were found** (framework/files/`test` script present) — if none, omit the section entirely rather than writing "no tests found." Plain text (no emoji) in individual issue headings for stable anchors.
 
 Scope adjusts the presentation:
 - **`tag`:** omit `⚠️ Pre-existing Notes`; scorecard "⚠️ Existing" column is 0 (all findings new).
