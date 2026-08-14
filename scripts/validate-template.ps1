@@ -18,6 +18,20 @@
     "-v1"-suffixed variant. Templates are auto-detected under COMPANION_TEMPLATES_DIR
     (default companion-module-templates/ inside the repo), or passed via -TemplateDir.
 
+    BEFORE comparing anything, the local template clone is verified against its upstream
+    with a read-only `git ls-remote` — no fetch, no pull, nothing written. A clone that is
+    behind upstream would judge the module against outdated expectations and produce false
+    findings, so it is a blocking TEMPLATE-STALE. Templates are NEVER auto-updated here:
+    concurrent review sessions share these clones, so refreshing is a separate, deliberate
+    act (scripts/update-templates.ps1). The "-v1" clones sit in detached HEAD by design and
+    are exempt.
+
+    Which files get compared is derived from the template's own tracked files
+    (`git ls-files`) minus module-owned paths, so a file newly added upstream is compared
+    automatically instead of waiting for someone to edit a list in this script. A template
+    file matching no rule still gets compared, and raises an informational
+    TEMPLATE-COVERAGE so the gap can't go silent.
+
     One exception: .yarnrc.yml is repo tooling rather than API surface, and Bitfocus only
     updates it on main, so it is always compared against the non-"-v1" template when one
     exists — and by parsed key, not raw text (key order, quote style, and blank lines are
@@ -32,8 +46,14 @@
 .PARAMETER RunBuild
     Also run `yarn install --immutable` + `yarn package` (and `yarn lint` for TS) and gate
     on success. Slow and requires network; off by default.
+.PARAMETER SkipTemplateFreshness
+    Skip the upstream freshness check (deliberate offline runs). Equivalent to setting
+    COMPANION_SKIP_TEMPLATE_FRESHNESS=1.
 .PARAMETER Json
     Emit findings as JSON instead of a console report.
+.OUTPUTS
+    Exit codes: 0 clean · 1 one or more Critical findings · 2 unusable -ModuleDir or no
+    template found · 3 the template clone is stale or could not be verified.
 .EXAMPLE
     pwsh scripts/validate-template.ps1 -ModuleDir ../companion-modules-reviewing/companion-module-foo
     pwsh scripts/validate-template.ps1 -ModuleDir ./mod -ExpectedVersion v1.2.0 -RunBuild -Json
@@ -44,6 +64,7 @@ param(
     [string]$TemplateDir,
     [string]$ExpectedVersion,
     [switch]$RunBuild,
+    [switch]$SkipTemplateFreshness,
     [switch]$Json
 )
 
@@ -117,6 +138,67 @@ if ($TemplateDir -match '-v1$') {
     if (Test-Path (Join-Path $sibling '.yarnrc.yml')) { $yarnrcTemplateDir = $sibling }
 }
 
+# ── 0. Template freshness — MUST run before any comparison ───────────────────
+# Ordering is load-bearing: a clone that is behind upstream produces false CONFIG-DIFF /
+# FILE-MISSING / PKG-DEVDEP findings against a module that is actually correct (this has
+# happened — see reviews/roland-v1-4k, where a pre-hardening .yarnrc.yml clone flagged the
+# module's correct `enableScripts: false` as an extra line). Establishing "the reference is
+# current" first is what makes every finding below trustworthy.
+#
+# Strictly read-only: `git ls-remote` against the configured origin. Nothing is fetched,
+# pulled, or written — several review sessions share these clones and an automatic update
+# would change the reference underneath a review already in progress.
+$freshnessChecks = [System.Collections.Generic.List[object]]::new()
+$seenTplDirs = [System.Collections.Generic.HashSet[string]]::new()
+
+# The check set is every clone whose contents feed an expectation:
+#   - the matched template;
+#   - the yarnrc source, which for a v1 module is the *v2* sibling (see above);
+#   - one hop through a pinned clone's local origin, since the "-v1" clones are cloned from
+#     the v2 clone — that parent is the thing that can actually fall behind GitHub.
+$freshnessTargets = @($TemplateDir, $yarnrcTemplateDir)
+$tplInfo = Get-GitRepoInfo -Dir $TemplateDir
+if ($tplInfo.IsRepo -and $tplInfo.Detached -and $tplInfo.OriginIsLocalDir) {
+    $freshnessTargets += $tplInfo.OriginLocalPath
+}
+foreach ($dir in $freshnessTargets) {
+    if (-not $dir) { continue }
+    $key = try { (Resolve-Path -LiteralPath $dir -ErrorAction Stop).Path } catch { $dir }
+    if (-not $seenTplDirs.Add($key)) { continue }
+
+    $fr = Test-TemplateFreshness -TemplateDir $dir -SkipCheck:$SkipTemplateFreshness
+
+    # A directory that isn't a git clone can't be verified. That only matters for the
+    # templates this script resolved itself — an explicitly passed -TemplateDir pointing at a
+    # plain copy or a test fixture is a deliberate choice, not an unverifiable production
+    # reference, so it stays silent.
+    if ($fr.status -eq 'unmanaged' -and -not $PSBoundParameters.ContainsKey('TemplateDir')) {
+        $fr.status = 'unverified'
+    }
+    $freshnessChecks.Add($fr)
+
+    if ($fr.status -eq 'stale') {
+        Add-Finding 'TEMPLATE-STALE' 'Critical' $fr.leaf (
+            "Local template clone is behind upstream — this review would be judged against an " +
+            "outdated template. $($fr.message) Refresh explicitly (templates are NEVER " +
+            "auto-updated): pwsh scripts/update-templates.ps1 — do this between review " +
+            "sessions, not during one, then re-run the review.")
+    } elseif ($fr.status -eq 'unverified') {
+        Add-Finding 'TEMPLATE-UNVERIFIED' 'Critical' $fr.leaf (
+            "Could not verify the template clone against upstream ($($fr.message)). A review " +
+            "must attest which template revision it judged against. For a deliberate offline " +
+            "run pass -SkipTemplateFreshness or set COMPANION_SKIP_TEMPLATE_FRESHNESS=1.")
+    }
+}
+$freshnessStatuses = @($freshnessChecks | ForEach-Object { $_.status })
+$freshnessOverall =
+    if ($freshnessStatuses -contains 'stale')       { 'stale' }
+    elseif ($freshnessStatuses -contains 'unverified') { 'unverified' }
+    elseif ($freshnessStatuses -contains 'skipped')    { 'skipped' }
+    elseif ($freshnessStatuses -contains 'fresh')      { 'fresh' }
+    elseif ($freshnessStatuses -contains 'pinned')     { 'pinned' }
+    else                                               { 'unmanaged' }
+
 # Load the template's package.json + manifest so expectations are derived from the
 # actual matched template (version-correct) rather than hardcoded.
 $tplPkg = $null; $tplMan = $null
@@ -126,14 +208,22 @@ $tplManPath = Join-Path $TemplateDir 'companion/manifest.json'
 if (Test-Path $tplManPath) { try { $tplMan = Get-Content -Raw -LiteralPath $tplManPath | ConvertFrom-Json } catch { } }
 
 # ── 1. Required files ────────────────────────────────────────────────────────
-$requiredCommon = @('.gitattributes','.gitignore','.prettierignore','.yarnrc.yml','LICENSE','package.json','yarn.lock','companion/manifest.json','companion/HELP.md')
+# Only files that are required REGARDLESS of what the template happens to track live here.
+# Everything else (.gitattributes, .gitignore, .prettierignore, .yarnrc.yml, and the TS-only
+# eslint.config.mjs / tsconfig*.json / .husky/pre-commit) is derived from the template's own
+# file list in §2 — which also gets the JS-vs-TS split right for free, since the JS template
+# genuinely tracks no .husky/ or tsconfig.
+#
+# yarn.lock is the reason this list can't just be "whatever the template tracks": the v2
+# templates deliberately don't commit one, but every module must ship one. The remaining four
+# ARE template-tracked, but their contents are judged by their own dedicated sections below
+# (LICENSE-DIFF, PKG-*, MAN-*, HELP-STUB), so they appear here for the presence check only.
+#
 # Entry-point filename is NOT hard-required — it may differ from the template (e.g. src/index.js).
 # Its validity is enforced by the package.json main / manifest runtime.entrypoint checks below
 # (existence + consistency) plus the -RunBuild build step.
-$requiredJs = @()
-$requiredTs = @('eslint.config.mjs','tsconfig.build.json','tsconfig.json','.husky/pre-commit')
-$required = if ($isTs) { $requiredCommon + $requiredTs } else { $requiredCommon + $requiredJs }
-foreach ($rel in $required) {
+$requiredExtra = @('yarn.lock','LICENSE','package.json','companion/manifest.json','companion/HELP.md')
+foreach ($rel in $requiredExtra) {
     if (-not (Test-Path (Join-Path $ModuleDir $rel))) {
         Add-Finding 'FILE-MISSING' 'Critical' $rel 'Required file is missing'
     }
@@ -231,47 +321,129 @@ function Read-YarnrcMap {
     return $map
 }
 
-$configFiles = @('.gitattributes','.gitignore','.prettierignore','.yarnrc.yml')
-if ($isTs) { $configFiles += @('eslint.config.mjs','tsconfig.json','tsconfig.build.json') }
+function Get-TemplateTrackedFiles {
+    # The set of files to compare is the template's own tracked file list, not a list
+    # maintained by hand in this script — so a config file Bitfocus adds upstream is compared
+    # on the next review instead of silently going unchecked until someone notices.
+    param([Parameter(Mandatory)][string]$Dir)
 
-foreach ($rel in $configFiles) {
-    $modFile = Join-Path $ModuleDir $rel
+    $tracked = Invoke-GitRead @('-C', $Dir, 'ls-files')
+    if ($null -ne $tracked -and $tracked -ne '') {
+        return @($tracked -split "`r?`n" | Where-Object { $_ } | Sort-Object -Unique)
+    }
+    # Not a git clone (a plain copy, or a test fixture): fall back to walking the tree.
+    $root = (Resolve-Path -LiteralPath $Dir).Path.TrimEnd([IO.Path]::DirectorySeparatorChar)
+    $files = @(Get-ChildItem -LiteralPath $Dir -Recurse -File -Force -ErrorAction SilentlyContinue |
+        ForEach-Object { $_.FullName.Substring($root.Length + 1) -replace '\\', '/' } |
+        Where-Object { $_ -notlike '.git/*' -and $_ -notlike 'node_modules/*' })
+    return @($files | Sort-Object -Unique)
+}
+
+# How each template-tracked path is judged. FIRST MATCH WINS, so order matters.
+#   exact             byte-for-byte after whitespace normalization
+#   tsconfig          exact, after stripping comments (the template's jest hint is optional)
+#   gitignore-subset  every template entry must be present; module extras are fine
+#   yarnrc            parsed key/value comparison, sourced from the v2 template
+#   covered-elsewhere a dedicated section below owns this file's content
+#   module-owned      legitimately differs per module; never compared
+#   skip-binary       not text; a line diff would be meaningless
+# A path matching NO row is still compared (as 'exact') but raises TEMPLATE-COVERAGE, so a
+# newly-added template file can never slip through unjudged.
+$templateFileRules = @(
+    @{ Pattern = '.yarnrc.yml';             Kind = 'yarnrc';           Severity = 'Critical'; Source = 'yarnrc' }
+    @{ Pattern = '.gitignore';              Kind = 'gitignore-subset'; Severity = 'Critical' }
+    @{ Pattern = 'tsconfig*.json';          Kind = 'tsconfig';         Severity = 'Critical' }
+    @{ Pattern = '.gitattributes';          Kind = 'exact';            Severity = 'Critical' }
+    @{ Pattern = '.prettierignore';         Kind = 'exact';            Severity = 'Critical' }
+    @{ Pattern = 'eslint.config.mjs';       Kind = 'exact';            Severity = 'Critical' }
+    @{ Pattern = '.husky/*';                Kind = 'exact';            Severity = 'Critical' }
+    # CI workflows and issue templates are compared, but at Medium: the usual divergence is
+    # GitHub Action pin churn (actions/checkout@v4 vs the template's @v7), which is not
+    # something the module maintainer did wrong and must not block a release.
+    @{ Pattern = '.github/*';               Kind = 'exact';            Severity = 'Medium' }
+    @{ Pattern = 'LICENSE';                 Kind = 'covered-elsewhere' }   # §3b LICENSE-DIFF
+    @{ Pattern = 'package.json';            Kind = 'covered-elsewhere' }   # §4 PKG-*
+    @{ Pattern = 'companion/manifest.json'; Kind = 'covered-elsewhere' }   # §5 MAN-*
+    @{ Pattern = 'companion/HELP.md';       Kind = 'covered-elsewhere' }   # §6 HELP-STUB
+    @{ Pattern = 'README.md';               Kind = 'module-owned' }
+    @{ Pattern = 'src/*';                   Kind = 'module-owned' }
+    @{ Pattern = 'yarn.lock';               Kind = 'module-owned' }        # js-v1 tracks it; per-module by nature
+    @{ Pattern = '*.png';                   Kind = 'skip-binary' }
+    @{ Pattern = '*.jpg';                   Kind = 'skip-binary' }
+    @{ Pattern = '*.ico';                   Kind = 'skip-binary' }
+    @{ Pattern = '*.gif';                   Kind = 'skip-binary' }
+    @{ Pattern = '*.webp';                  Kind = 'skip-binary' }
+    @{ Pattern = '*.zip';                   Kind = 'skip-binary' }
+)
+
+function Resolve-TemplateFileRule {
+    param([Parameter(Mandatory)][string]$Rel)
+    foreach ($r in $templateFileRules) {
+        if ($Rel -like $r.Pattern) {
+            return [pscustomobject]@{
+                Kind      = $r.Kind
+                Severity  = if ($r.ContainsKey('Severity')) { $r.Severity } else { 'Critical' }
+                Source    = if ($r.ContainsKey('Source'))   { $r.Source }   else { 'template' }
+                Defaulted = $false
+            }
+        }
+    }
+    return [pscustomobject]@{ Kind = 'exact'; Severity = 'Critical'; Source = 'template'; Defaulted = $true }
+}
+
+foreach ($rel in (Get-TemplateTrackedFiles -Dir $TemplateDir)) {
+    $rule = Resolve-TemplateFileRule $rel
+    if ($rule.Kind -in @('module-owned', 'covered-elsewhere', 'skip-binary')) { continue }
+
     # .yarnrc.yml comes from the main template even for v1 modules (see $yarnrcTemplateDir).
-    $tplFile = if ($rel -eq '.yarnrc.yml') { Join-Path $yarnrcTemplateDir $rel } else { Join-Path $TemplateDir $rel }
-    if (-not (Test-Path $modFile)) { continue }   # already reported as missing
+    $tplFile = if ($rule.Source -eq 'yarnrc') { Join-Path $yarnrcTemplateDir $rel } else { Join-Path $TemplateDir $rel }
     if (-not (Test-Path $tplFile)) { continue }   # template lacks it; nothing to compare
-    if ($rel -eq '.yarnrc.yml') {
+
+    $modFile = Join-Path $ModuleDir $rel
+    if (-not (Test-Path $modFile)) {
+        # Presence and content are decided in one pass so a missing file is reported once,
+        # as FILE-MISSING, and never also as a CONFIG-DIFF against an empty file.
+        Add-Finding 'FILE-MISSING' $rule.Severity $rel 'Required file is missing (tracked by the template)'
+        continue
+    }
+    if ($rule.Defaulted) {
+        Add-Finding 'TEMPLATE-COVERAGE' 'Info' $rel (
+            "Template tracks this file but validate-template.ps1 has no explicit rule for it — " +
+            "compared by exact normalized text as a fallback. Add a row to `$templateFileRules " +
+            "in scripts/validate-template.ps1 and a case to the compliance skill's finding table.")
+    }
+    if ($rule.Kind -eq 'yarnrc') {
         # Key-level comparison: the module must carry exactly the template's keys with
         # matching values. Missing keys drop the template's supply-chain hardening;
         # conflicting values and extra keys change install behaviour for everyone.
         $modMap = Read-YarnrcMap $modFile
         $tplMap = Read-YarnrcMap $tplFile
         if ($modMap.Count -eq 0 -and (Read-NormalizedLines $modFile).Count -gt 0) {
-            Add-Finding 'CONFIG-DIFF' 'Critical' $rel 'Could not parse .yarnrc.yml as YAML key/value pairs'
+            Add-Finding 'CONFIG-DIFF' $rule.Severity $rel 'Could not parse .yarnrc.yml as YAML key/value pairs'
             continue
         }
         $missingKeys = @($tplMap.Keys | Where-Object { -not $modMap.Contains($_) })
         if ($missingKeys.Count -gt 0) {
-            Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Missing template keys: $($missingKeys -join ', ')"
+            Add-Finding 'CONFIG-DIFF' $rule.Severity $rel "Missing template keys: $($missingKeys -join ', ')"
         }
         $mismatches = @($tplMap.Keys | Where-Object { $modMap.Contains($_) -and $modMap[$_] -ne $tplMap[$_] } |
             ForEach-Object { "$_ = '$($modMap[$_])' (template '$($tplMap[$_])')" })
         if ($mismatches.Count -gt 0) {
-            Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Value mismatch: $($mismatches -join '; ')"
+            Add-Finding 'CONFIG-DIFF' $rule.Severity $rel "Value mismatch: $($mismatches -join '; ')"
         }
         $extraKeys = @($modMap.Keys | Where-Object { -not $tplMap.Contains($_) })
         if ($extraKeys.Count -gt 0) {
-            Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Extra keys not in template: $($extraKeys -join ', ')"
+            Add-Finding 'CONFIG-DIFF' $rule.Severity $rel "Extra keys not in template: $($extraKeys -join ', ')"
         }
         continue
     }
     $modLines = @(Read-NormalizedLines $modFile)
     $tplLines = @(Read-NormalizedLines $tplFile)
-    if ($rel -like 'tsconfig*.json') {
+    if ($rule.Kind -eq 'tsconfig') {
         $modLines = @($modLines | ForEach-Object { Normalize-TsconfigLine $_ })
         $tplLines = @($tplLines | ForEach-Object { Normalize-TsconfigLine $_ })
     }
-    if ($rel -eq '.gitignore') {
+    if ($rule.Kind -eq 'gitignore-subset') {
         # Subset rule: every template entry must be present in the module's .gitignore.
         # Extra module entries are allowed and not flagged. Blank and comment lines in
         # the template are not entries, so they're skipped.
@@ -279,12 +451,12 @@ foreach ($rel in $configFiles) {
             $_ -ne '' -and -not $_.StartsWith('#') -and ($modLines -notcontains $_)
         })
         if ($missing.Count -gt 0) {
-            Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Missing template .gitignore entries: $($missing -join ', ')"
+            Add-Finding 'CONFIG-DIFF' $rule.Severity $rel "Missing template .gitignore entries: $($missing -join ', ')"
         }
         continue
     }
     if (($modLines -join "`n") -ne ($tplLines -join "`n")) {
-        Add-Finding 'CONFIG-DIFF' 'Critical' $rel "Differs from template ($(Get-FirstLineDiff $modLines $tplLines))"
+        Add-Finding 'CONFIG-DIFF' $rule.Severity $rel "Differs from template ($(Get-FirstLineDiff $modLines $tplLines))"
     }
 }
 
@@ -484,9 +656,13 @@ if (Test-Path $helpPath) {
 }
 
 # ── 7. husky (TS) ────────────────────────────────────────────────────────────
+# The hook is now also content-compared in §2 (the template tracks it), so a hook that
+# diverges *and* drops lint-staged would otherwise be reported twice for the same line.
+# The CONFIG-DIFF is the more actionable of the two, so it wins.
 if ($isTs) {
     $hook = Join-Path $ModuleDir '.husky/pre-commit'
-    if (Test-Path $hook) {
+    $alreadyReported = @($findings | Where-Object { $_.id -eq 'CONFIG-DIFF' -and $_.file -eq '.husky/pre-commit' }).Count -gt 0
+    if ((Test-Path $hook) -and -not $alreadyReported) {
         if ((Get-Content -Raw -LiteralPath $hook) -notmatch 'lint-staged') {
             Add-Finding 'HUSKY' 'Critical' '.husky/pre-commit' "Hook should run 'lint-staged'"
         }
@@ -509,26 +685,56 @@ if ($RunBuild) {
 }
 
 # ── Output ───────────────────────────────────────────────────────────────────
+function Get-RevisionRecord {
+    # Which template revision this verdict was rendered against — recorded so a finished
+    # review is self-attesting and a disputed finding can be re-checked at that exact commit.
+    param([Parameter(Mandatory)][string]$Dir)
+    $i = Get-GitRepoInfo -Dir $Dir
+    return [pscustomobject]@{
+        dir         = $Dir
+        leaf        = (Split-Path $Dir -Leaf)
+        sha         = $i.Sha
+        shortSha    = $i.ShortSha
+        committedAt = if ($i.CommittedAt) { ($i.CommittedAt -split 'T')[0] } else { $null }
+        branch      = $i.Branch
+        pinned      = [bool]$i.Detached
+    }
+}
+
 $result = [pscustomobject]@{
-    moduleDir   = $ModuleDir
-    templateDir = $TemplateDir
-    language    = $lang
-    apiVersion  = $apiVer
-    findings    = $findings
-    counts      = [pscustomobject]@{
+    moduleDir         = $ModuleDir
+    templateDir       = $TemplateDir
+    language          = $lang
+    apiVersion        = $apiVer
+    templateFreshness = [pscustomobject]@{ status = $freshnessOverall; checks = @($freshnessChecks) }
+    templateRevision  = Get-RevisionRecord -Dir $TemplateDir
+    yarnrcTemplate    = if ($yarnrcTemplateDir -ne $TemplateDir) { Get-RevisionRecord -Dir $yarnrcTemplateDir } else { $null }
+    findings          = $findings
+    counts            = [pscustomobject]@{
         critical = @($findings | Where-Object severity -eq 'Critical').Count
         high     = @($findings | Where-Object severity -eq 'High').Count
         medium   = @($findings | Where-Object severity -eq 'Medium').Count
+        info     = @($findings | Where-Object severity -eq 'Info').Count
     }
 }
 
 if ($Json) {
-    $result | ConvertTo-Json -Depth 6
+    # Depth 8: templateFreshness.checks[] nests a level deeper than the old shape, and
+    # ConvertTo-Json silently stringifies anything past the limit.
+    $result | ConvertTo-Json -Depth 8
 } else {
+    $frColor = switch ($freshnessOverall) { 'fresh' { 'Green' } 'pinned' { 'Green' } 'skipped' { 'DarkYellow' } default { 'Red' } }
     Write-Host ""
     Write-Host "validate-template — $lang module ($apiVer)" -ForegroundColor Cyan
     Write-Host "  module:   $ModuleDir"
     Write-Host "  template: $TemplateDir"
+    foreach ($c in $freshnessChecks) {
+        $cColor = switch ($c.status) { 'fresh' { 'Green' } 'pinned' { 'Green' } 'skipped' { 'DarkYellow' } 'unmanaged' { 'DarkGray' } default { 'Red' } }
+        Write-Host ("    {0,-38} {1}" -f $c.leaf, $c.message) -ForegroundColor $cColor
+    }
+    if ($freshnessOverall -in @('stale','unverified')) {
+        Write-Host "  >> Refresh first:  pwsh scripts/update-templates.ps1  (templates are never auto-updated)" -ForegroundColor $frColor
+    }
     Write-Host ("─" * 70)
     if ($findings.Count -eq 0) {
         Write-Host "No deterministic template violations found." -ForegroundColor Green
@@ -539,9 +745,16 @@ if ($Json) {
         }
     }
     Write-Host ("─" * 70)
-    Write-Host ("Critical: {0}  High: {1}  Medium: {2}" -f $result.counts.critical, $result.counts.high, $result.counts.medium)
+    Write-Host ("Critical: {0}  High: {1}  Medium: {2}  Info: {3}" -f $result.counts.critical, $result.counts.high, $result.counts.medium, $result.counts.info)
     Write-Host ""
     Write-Host "Reviewer judgment still required: is HELP.md meaningful, are any tsconfig deviations justified." -ForegroundColor DarkGray
 }
 
-exit ($(if ($result.counts.critical -gt 0) { 1 } else { 0 }))
+# A stale or unverifiable template outranks the findings: nothing below it can be trusted,
+# so callers get a distinct code rather than having to tell "module is broken" (1) apart
+# from "our reference is wrong" (3).
+exit ($(
+    if ($freshnessOverall -in @('stale','unverified')) { 3 }
+    elseif ($result.counts.critical -gt 0) { 1 }
+    else { 0 }
+))

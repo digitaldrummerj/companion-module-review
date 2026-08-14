@@ -28,6 +28,49 @@ function Invoke-Validator($ModuleDir, $TemplateDir) {
     $out = & pwsh -NoProfile -File $validator -ModuleDir $ModuleDir -TemplateDir $TemplateDir -Json 2>$null
     return ($out | ConvertFrom-Json)
 }
+# Same, but with extra switches and the child's exit code captured. The plain
+# Invoke-Validator above deliberately passes no freshness switch: every legacy fixture
+# template is a non-git directory, so those calls double as the regression guard proving
+# the freshness gate stays silent on an explicitly-passed -TemplateDir.
+function Invoke-ValidatorArgs($ModuleDir, $TemplateDir, [string[]]$Extra) {
+    $argv = @('-NoProfile', '-File', $validator, '-ModuleDir', $ModuleDir, '-TemplateDir', $TemplateDir, '-Json') + @($Extra)
+    $out = & pwsh @argv 2>$null
+    $code = $LASTEXITCODE
+    $parsed = if ($out) { $out | ConvertFrom-Json } else { $null }
+    return [pscustomobject]@{ Result = $parsed; ExitCode = $code }
+}
+
+# Git fixtures for the freshness tests. `git clone <local path>` produces a clone whose
+# origin is a filesystem path and whose HEAD tracks a branch — `git ls-remote` resolves it
+# with zero network, so advancing the "upstream" by one commit makes the clone
+# deterministically stale. Nothing here touches GitHub.
+function Git-Q($Dir, [string[]]$Argv) {
+    & git -C $Dir -c user.name='t' -c user.email='t@t' -c commit.gpgsign=false @Argv 2>$null | Out-Null
+}
+function New-GitTemplate($Dir) {
+    & git -C $Dir init -q 2>$null | Out-Null
+    Git-Q $Dir @('checkout', '-q', '-B', 'main')
+    Git-Q $Dir @('add', '-A')
+    Git-Q $Dir @('commit', '-q', '-m', 'init')
+    return $Dir
+}
+function New-TemplateClone($Upstream, $Dest) {
+    & git clone -q $Upstream $Dest 2>$null | Out-Null
+    return $Dest
+}
+function Add-UpstreamCommit($Dir, $RelPath, $Content) {
+    Set-File (Join-Path $Dir $RelPath) $Content
+    Git-Q $Dir @('add', '-A')
+    Git-Q $Dir @('commit', '-q', '-m', "add $RelPath")
+}
+function Find-Findings($Result, $Id, $File) {
+    return @($Result.findings | Where-Object { $_.id -eq $Id -and ($null -eq $File -or $_.file -eq $File) })
+}
+
+# The cache would make "advance upstream, re-check" non-deterministic. Disabled for the
+# whole suite except where a test explicitly re-enables it.
+$script:prevTtl = $env:COMPANION_TEMPLATE_FRESHNESS_TTL
+$env:COMPANION_TEMPLATE_FRESHNESS_TTL = '0'
 
 $gitignore = "node_modules/`npackage-lock.json`n/pkg`n/*.tgz`nDEBUG-*`n/.yarn"
 
@@ -466,8 +509,201 @@ try {
     Ok ($ids -contains 'HELP-STUB')            "flags HELP.md stub"
     Ok ($ids -contains 'GITIGNORED-COMMITTED') "flags committed node_modules"
     Ok ($b.counts.critical -gt 0)              "reports critical count > 0"
+    Ok ($null -ne $b.counts.info)              "counts now carries an info bucket"
+
+    # ── Freshness: the template clone must not be behind upstream ─────────────
+    # Every fixture above passes a non-git -TemplateDir and expects silence; these build a
+    # real (local) upstream + clone pair so the gate can be exercised without a network.
+    $fresh = Join-Path $root 'freshness'
+    $upstream = Join-Path $fresh 'upstream'
+    Copy-Item -Recurse -Force $tpl $upstream
+    New-GitTemplate $upstream | Out-Null
+    $clone = New-TemplateClone $upstream (Join-Path $fresh 'clone')
+
+    Write-Host "Template freshness — clone matches upstream"
+    $f1 = (Invoke-ValidatorArgs $good $clone @()).Result
+    Ok ($f1.templateFreshness.status -eq 'fresh')            "reports status 'fresh' when the clone matches origin/main"
+    Ok ((Find-Findings $f1 'TEMPLATE-STALE' $null).Count -eq 0) "raises no TEMPLATE-STALE for an up-to-date clone"
+    Ok ($f1.templateRevision.shortSha -eq (& git -C $clone rev-parse --short HEAD)) "records the exact template revision it judged against"
+    Ok ($null -ne $f1.templateRevision.committedAt)          "records the template's commit date"
+
+    Write-Host "Template freshness — upstream has moved on"
+    Add-UpstreamCommit $upstream 'NEWFILE.md' "upstream moved"
+    $f2r = Invoke-ValidatorArgs $good $clone @()
+    $f2  = $f2r.Result
+    $stale = Find-Findings $f2 'TEMPLATE-STALE' $null
+    Ok ($f2.templateFreshness.status -eq 'stale')   "reports status 'stale' once upstream is ahead"
+    Ok ($stale.Count -eq 1)                          "raises exactly one TEMPLATE-STALE"
+    Ok ($stale.Count -eq 1 -and $stale[0].severity -eq 'Critical') "TEMPLATE-STALE is Critical (blocking)"
+    Ok ($stale.Count -eq 1 -and $stale[0].message -match 'update-templates\.ps1') "the message names the refresh command"
+    Ok ($stale.Count -eq 1 -and $stale[0].message -match [regex]::Escape((& git -C $clone rev-parse --short HEAD))) "the message carries the local short sha"
+    Ok ($f2r.ExitCode -eq 3)                         "exits 3 on a stale template, distinct from 1 (module defects)"
+
+    Write-Host "Template freshness — opt-outs"
+    $f3 = (Invoke-ValidatorArgs $good $clone @('-SkipTemplateFreshness')).Result
+    Ok ($f3.templateFreshness.status -eq 'skipped')             "-SkipTemplateFreshness reports 'skipped'"
+    Ok ((Find-Findings $f3 'TEMPLATE-STALE' $null).Count -eq 0) "-SkipTemplateFreshness silences TEMPLATE-STALE"
+    $prevSkip = $env:COMPANION_SKIP_TEMPLATE_FRESHNESS
+    $env:COMPANION_SKIP_TEMPLATE_FRESHNESS = '1'
+    $f4 = (Invoke-ValidatorArgs $good $clone @()).Result
+    $env:COMPANION_SKIP_TEMPLATE_FRESHNESS = $prevSkip
+    Ok ($f4.templateFreshness.status -eq 'skipped')             "COMPANION_SKIP_TEMPLATE_FRESHNESS=1 also opts out"
+
+    Write-Host "Template freshness — unreachable upstream"
+    $unreachable = New-TemplateClone $upstream (Join-Path $fresh 'unreachable')
+    Git-Q $unreachable @('remote', 'set-url', 'origin', (Join-Path $fresh 'no-such-repo'))
+    $f5 = (Invoke-ValidatorArgs $good $unreachable @()).Result
+    Ok ($f5.templateFreshness.status -eq 'unverified')              "an unreachable origin reports 'unverified', not 'fresh'"
+    Ok ((Find-Findings $f5 'TEMPLATE-UNVERIFIED' $null).Count -eq 1) "raises TEMPLATE-UNVERIFIED"
+    Ok ((Find-Findings $f5 'TEMPLATE-STALE' $null).Count -eq 0)      "does not also claim the clone is stale"
+
+    Write-Host "Template freshness — pinned (detached) clone is exempt"
+    $pinned = New-TemplateClone $upstream (Join-Path $fresh 'pinned')
+    Git-Q $pinned @('checkout', '-q', '--detach', 'HEAD~1')
+    $f6 = (Invoke-ValidatorArgs $good $pinned @()).Result
+    $f6pin = @($f6.templateFreshness.checks | Where-Object { $_.leaf -eq 'pinned' })
+    Ok ($f6pin.Count -eq 1 -and $f6pin[0].status -eq 'pinned')  "a detached clone reports 'pinned' even when its parent moved"
+    Ok ((Find-Findings $f6 'TEMPLATE-STALE' $null).Count -eq 0) "a pinned clone (the -v1 case) is never flagged stale"
+
+    # The production v1 shape: the pinned "-v1" clone is created FROM the v2 clone, and the
+    # v2 clone is the thing that can fall behind GitHub. Pinning the child must not hide a
+    # stale parent — the parent supplies the .yarnrc.yml expectations for v1 modules.
+    Write-Host "Template freshness — pinned clone with a stale parent"
+    $parent = New-TemplateClone $upstream (Join-Path $fresh 'parent')
+    Git-Q $parent @('checkout', '-q', '-B', 'main')
+    $child  = New-TemplateClone $parent (Join-Path $fresh 'child')
+    Git-Q $child @('checkout', '-q', '--detach', 'HEAD')
+    Add-UpstreamCommit $upstream 'ANOTHER.md' "upstream moved again"
+    $f6b = (Invoke-ValidatorArgs $good $child @()).Result
+    $f6bStale = Find-Findings $f6b 'TEMPLATE-STALE' $null
+    Ok ($f6bStale.Count -eq 1 -and $f6bStale[0].file -eq 'parent') "a stale parent is caught through the pinned child's local origin"
+    Ok ($f6b.templateFreshness.status -eq 'stale')                 "…and the overall status is stale, so the review still aborts"
+
+    # The validator runs twice per review (once nested in module-facts.ps1, once from the
+    # orchestrator), so the remote lookup is cached to keep a transient network blip from
+    # becoming a blocking TEMPLATE-UNVERIFIED. Only the REMOTE side is cached — the local sha
+    # is always read fresh, which is what makes a just-refreshed clone read 'fresh' at once.
+    Write-Host "Template freshness — remote lookup is cached"
+    $cacheDir = Join-Path $root 'cachehome'
+    New-Item -ItemType Directory -Path $cacheDir -Force | Out-Null
+    $prevTmp = $env:TMPDIR
+    $env:TMPDIR = $cacheDir
+    $env:COMPANION_TEMPLATE_FRESHNESS_TTL = '600'
+    $cacheClone = New-TemplateClone $upstream (Join-Path $fresh 'cached')
+    $c1 = (Invoke-ValidatorArgs $good $cacheClone @()).Result
+    $c2 = (Invoke-ValidatorArgs $good $cacheClone @()).Result
+    $env:COMPANION_TEMPLATE_FRESHNESS_TTL = '0'
+    $env:TMPDIR = $prevTmp
+    Ok ($c1.templateFreshness.checks[0].cached -eq $false) "the first lookup goes to the remote"
+    Ok ($c2.templateFreshness.checks[0].cached -eq $true)  "a second lookup within the TTL is served from cache"
+    Ok ($c2.templateFreshness.status -eq $c1.templateFreshness.status) "the cached lookup reaches the same verdict"
+
+    Write-Host "Template freshness — non-git fixture template"
+    Ok ($g.templateFreshness.status -eq 'unmanaged')            "an explicitly-passed non-git template stays silent (regression guard)"
+    Ok ((Find-Findings $g 'TEMPLATE-UNVERIFIED' $null).Count -eq 0) "…and raises no TEMPLATE-UNVERIFIED"
+
+    # ── Derived compared-file set ─────────────────────────────────────────────
+    # Which files get compared comes from the template's own tracked files, so a file added
+    # upstream is compared automatically. These fixtures add files to the *template* and
+    # assert the module is judged against them.
+    Write-Host "Derived file set — a file the template tracks but the module lacks"
+    $dtpl = Join-Path $root 'derived-tpl'
+    Copy-Item -Recurse -Force $tpl $dtpl
+    Set-File (Join-Path $dtpl '.github/workflows/node.yaml')  "name: node`njobs: {}"
+    Set-File (Join-Path $dtpl '.github/workflows/checks.yaml') "name: checks`njobs: {}"
+    Set-File (Join-Path $dtpl 'README.md')                     "# Template readme"
+    Set-File (Join-Path $dtpl 'src/main.js')                   "// template entry"
+    Set-File (Join-Path $dtpl 'logo.png')                      "PNGDATA-template"
+
+    $d1 = Invoke-Validator $good $dtpl
+    $miss = Find-Findings $d1 'FILE-MISSING' '.github/workflows/node.yaml'
+    Ok ($miss.Count -eq 1)                                        "a template-tracked file missing from the module is reported"
+    Ok ($miss.Count -eq 1 -and $miss[0].severity -eq 'Medium')     ".github/** lands at Medium, not blocking"
+    Ok ((Find-Findings $d1 'CONFIG-DIFF' '.github/workflows/node.yaml').Count -eq 0) "a missing file is not ALSO reported as a content diff"
+
+    Write-Host "Derived file set — module-owned files are never compared"
+    Set-File (Join-Path $good 'README.md')  "# Foo readme, quite different"
+    Set-File (Join-Path $good 'logo.png')   "PNGDATA-module-different"
+    $d2 = Invoke-Validator $good $dtpl
+    Ok ((Find-Findings $d2 'CONFIG-DIFF' 'README.md').Count -eq 0)   "README.md is module-owned and never diffed"
+    Ok ((Find-Findings $d2 'CONFIG-DIFF' 'src/main.js').Count -eq 0) "src/** is module-owned and never diffed"
+    Ok ((Find-Findings $d2 'CONFIG-DIFF' 'logo.png').Count -eq 0)    "binaries are skipped, not line-diffed"
+    Ok ((Find-Findings $d2 'CONFIG-DIFF' 'LICENSE').Count -eq 0)     "LICENSE stays with its own LICENSE-DIFF rule"
+    Ok ((Find-Findings $d2 'CONFIG-DIFF' 'package.json').Count -eq 0) "package.json stays with the PKG-* rules"
+
+    Write-Host "Derived file set — a differing .github file is a content diff"
+    Set-File (Join-Path $good '.github/workflows/node.yaml')  "name: node`njobs: { build: {} }"
+    Set-File (Join-Path $good '.github/workflows/checks.yaml') "name: checks`njobs: {}"
+    $d3 = Invoke-Validator $good $dtpl
+    $diff = Find-Findings $d3 'CONFIG-DIFF' '.github/workflows/node.yaml'
+    Ok ($diff.Count -eq 1)                                     "a diverging .github workflow is reported"
+    Ok ($diff.Count -eq 1 -and $diff[0].severity -eq 'Medium') "…at Medium"
+    Ok ((Find-Findings $d3 'FILE-MISSING' '.github/workflows/node.yaml').Count -eq 0) "…and not also as missing"
+    Ok ((Find-Findings $d3 'CONFIG-DIFF' '.github/workflows/checks.yaml').Count -eq 0) "an identical .github workflow is not flagged"
+    Ok ($d3.counts.critical -eq 0)                             ".github findings never raise the critical count"
+
+    Write-Host "Derived file set — a template file with no rule"
+    Set-File (Join-Path $dtpl '.editorconfig') "root = true`nindent_style = tab"
+    Set-File (Join-Path $good '.editorconfig') "root = true`nindent_style = space"
+    $d4 = Invoke-Validator $good $dtpl
+    Ok ((Find-Findings $d4 'TEMPLATE-COVERAGE' '.editorconfig').Count -eq 1) "an unrecognized template file raises TEMPLATE-COVERAGE"
+    Ok ((Find-Findings $d4 'TEMPLATE-COVERAGE' '.editorconfig')[0].severity -eq 'Info') "TEMPLATE-COVERAGE is Info — a validator gap, not a maintainer defect"
+    Ok ((Find-Findings $d4 'CONFIG-DIFF' '.editorconfig').Count -eq 1)       "…and it is still compared, so drift can't go silent"
+    Set-File (Join-Path $good '.editorconfig') "root = true`nindent_style = tab"
+    $d5 = Invoke-Validator $good $dtpl
+    Ok ((Find-Findings $d5 'TEMPLATE-COVERAGE' '.editorconfig').Count -eq 1) "TEMPLATE-COVERAGE fires on the missing rule even when contents match"
+    Ok ((Find-Findings $d5 'CONFIG-DIFF' '.editorconfig').Count -eq 0)       "…with no CONFIG-DIFF when the file is identical"
+    Ok ($d5.counts.critical -eq 0)                                           "an Info finding does not raise the critical count"
+
+    Write-Host "Derived file set — yarn.lock is required but never diffed"
+    Set-File (Join-Path $dtpl 'yarn.lock') "# template lockfile, totally different"
+    $d6 = Invoke-Validator $good $dtpl
+    Ok ((Find-Findings $d6 'CONFIG-DIFF' 'yarn.lock').Count -eq 0) "yarn.lock is per-module and never diffed (the js-v1 template tracks one)"
+    $nolock = Join-Path $root 'companion-module-nolock'
+    Copy-Item -Recurse -Force $good $nolock
+    Remove-Item -Force (Join-Path $nolock 'yarn.lock')
+    $d6b = Invoke-Validator $nolock $tpl
+    $lockMiss = Find-Findings $d6b 'FILE-MISSING' 'yarn.lock'
+    Ok ($lockMiss.Count -eq 1)                                   "…but a module with no yarn.lock is still flagged"
+    Ok ($lockMiss.Count -eq 1 -and $lockMiss[0].severity -eq 'Critical') "…as Critical, even though no template tracks it"
+
+    # ── TS-only requirements must not leak into JS ────────────────────────────
+    # This used to be a hardcoded $requiredTs list applied to every TS module. Now it falls
+    # out of the template's own file list, so the JS template (which tracks no .husky/ and
+    # no tsconfig) can't demand them.
+    Write-Host "Derived file set — JS module vs JS template"
+    $d7 = Invoke-Validator $good $tpl
+    Ok ((Find-Findings $d7 'FILE-MISSING' '.husky/pre-commit').Count -eq 0) "a JS module is not asked for .husky/pre-commit"
+    Ok ((Find-Findings $d7 'FILE-MISSING' 'tsconfig.json').Count -eq 0)     "a JS module is not asked for tsconfig.json"
+
+    # ── husky: one finding per problem, not two ───────────────────────────────
+    Write-Host "husky — no double report"
+    $ttpl = Join-Path $root 'ts-template'
+    Copy-Item -Recurse -Force $tpl $ttpl
+    Set-File (Join-Path $ttpl 'tsconfig.json')       "{ `"compilerOptions`": { `"strict`": true } }"
+    Set-File (Join-Path $ttpl 'tsconfig.build.json') "{ `"extends`": `"./tsconfig.json`" }"
+    Set-File (Join-Path $ttpl 'eslint.config.mjs')   "export default []"
+    Set-File (Join-Path $ttpl '.husky/pre-commit')   "npx lint-staged"
+    $tmod = Join-Path $root 'companion-module-tsmod'
+    Copy-Item -Recurse -Force $good $tmod
+    Remove-Item -Recurse -Force (Join-Path $tmod 'src')
+    Remove-Item -Force (Join-Path $tmod '.editorconfig') -ErrorAction SilentlyContinue
+    Remove-Item -Recurse -Force (Join-Path $tmod '.github') -ErrorAction SilentlyContinue
+    Set-File (Join-Path $tmod 'src/main.ts')          "// entry"
+    Set-File (Join-Path $tmod 'tsconfig.json')        "{ `"compilerOptions`": { `"strict`": true } }"
+    Set-File (Join-Path $tmod 'tsconfig.build.json')  "{ `"extends`": `"./tsconfig.json`" }"
+    Set-File (Join-Path $tmod 'eslint.config.mjs')    "export default []"
+    Set-File (Join-Path $tmod '.husky/pre-commit')    "npm test"      # differs AND drops lint-staged
+    $h = Invoke-Validator $tmod $ttpl
+    Ok ((Find-Findings $h 'CONFIG-DIFF' '.husky/pre-commit').Count -eq 1) "a diverging husky hook is reported as CONFIG-DIFF"
+    Ok ((Find-Findings $h 'HUSKY' '.husky/pre-commit').Count -eq 0)       "…and not ALSO as HUSKY (one problem, one finding)"
+    Set-File (Join-Path $tmod '.husky/pre-commit')    "npx lint-staged"
+    $h2 = Invoke-Validator $tmod $ttpl
+    Ok ((Find-Findings $h2 'CONFIG-DIFF' '.husky/pre-commit').Count -eq 0) "a matching husky hook is clean"
+    Ok ((Find-Findings $h2 'HUSKY' $null).Count -eq 0)                     "…with no HUSKY finding either"
 }
 finally {
+    $env:COMPANION_TEMPLATE_FRESHNESS_TTL = $script:prevTtl
     if (Test-Path $root) { Remove-Item -Recurse -Force $root }
 }
 

@@ -41,26 +41,67 @@ if (Test-Path $modulesDir) {
 # 4. Clone the official module templates into companion-module-templates/ (gitignored).
 #    validate-template.ps1 / module-facts.ps1 diff each module against these. v2 from
 #    GitHub; v1 cloned from the v2 clone and checked out at the last v1.x commit.
+#
+#    This step CLONES but never PULLS. Existing clones are only reported on, because several
+#    review sessions share them and a pull here would move the reference underneath a review
+#    in progress. Refreshing is a separate, deliberate command: scripts/update-templates.ps1.
 $templatesDir = Resolve-TemplatesDir $PSScriptRoot
 if (-not (Test-Path $templatesDir)) { New-Item -ItemType Directory -Path $templatesDir | Out-Null }
 
-$v1Commits = @{ js = '9e222b4d0b1a68b2acda7d8adb52c9f90ee4c3d1'; ts = '42609d8dab515a25ec2f3b3c7adafe57aa41b7be' }
+$v1Commits = Get-TemplateV1Pins
 foreach ($lang in 'js', 'ts') {
     $v2 = Join-Path $templatesDir "companion-module-template-$lang"
     if (Test-Path $v2) {
-        Write-Host "[OK] Template already present: companion-module-template-$lang" -ForegroundColor Green
+        $fr = Test-TemplateFreshness -TemplateDir $v2
+        switch ($fr.status) {
+            'fresh' {
+                Write-Host "[OK] companion-module-template-$lang - up to date ($($fr.localShortSha), $($fr.localDate))" -ForegroundColor Green
+            }
+            'stale' {
+                Write-Host "[!!] companion-module-template-$lang - BEHIND UPSTREAM" -ForegroundColor Red
+                Write-Host "     local $($fr.localShortSha) ($($fr.localDate))   upstream $($fr.remoteSha.Substring(0,7))" -ForegroundColor Red
+                Write-Host "     Refresh with:  pwsh scripts/update-templates.ps1" -ForegroundColor Red
+                Write-Host "     (never auto-updated - concurrent review sessions would fight over them)" -ForegroundColor DarkGray
+            }
+            default {
+                Write-Host "[??] companion-module-template-$lang - freshness unknown at $($fr.localShortSha) ($($fr.localDate))" -ForegroundColor DarkYellow
+                Write-Host "     $($fr.message)" -ForegroundColor DarkGray
+            }
+        }
     } else {
         Write-Host "[..] Cloning companion-module-template-$lang ..." -ForegroundColor DarkGray
         git clone --quiet "https://github.com/bitfocus/companion-module-template-$lang" $v2
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[!!] Clone FAILED for companion-module-template-$lang - reviews cannot run without it" -ForegroundColor Red
+            continue
+        }
         Write-Host "[OK] Cloned companion-module-template-$lang" -ForegroundColor Green
     }
+
+    # The v1 clone is pinned in detached HEAD at the last v1.x commit, so v1 modules are
+    # judged against the API surface of their own era rather than against main. It is never
+    # fetched; setup only creates it, and update-templates.ps1 only asserts it hasn't moved.
     $v1 = Join-Path $templatesDir "companion-module-template-$lang-v1"
     if (Test-Path $v1) {
-        Write-Host "[OK] Template already present: companion-module-template-$lang-v1" -ForegroundColor Green
+        $info = Get-GitRepoInfo -Dir $v1
+        if ($info.Sha -eq $v1Commits[$lang] -and $info.Detached) {
+            Write-Host "[OK] companion-module-template-$lang-v1 - pinned at $($info.ShortSha) (detached, intentional)" -ForegroundColor Green
+        } else {
+            Write-Host "[!!] companion-module-template-$lang-v1 - HEAD $($info.ShortSha) is not the pinned v1.x commit" -ForegroundColor Red
+            Write-Host "     Re-pin:  git -C `"$v1`" checkout --detach $($v1Commits[$lang])" -ForegroundColor Red
+        }
     } elseif (Test-Path $v2) {
         Write-Host "[..] Creating companion-module-template-$lang-v1 (pinned to last v1.x commit) ..." -ForegroundColor DarkGray
         git clone --quiet $v2 $v1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[!!] Clone FAILED for companion-module-template-$lang-v1" -ForegroundColor Red
+            continue
+        }
         git -C $v1 checkout --quiet $v1Commits[$lang]
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[!!] Could not check out the pinned v1.x commit in companion-module-template-$lang-v1" -ForegroundColor Red
+            continue
+        }
         Write-Host "[OK] Created companion-module-template-$lang-v1" -ForegroundColor Green
     }
 }

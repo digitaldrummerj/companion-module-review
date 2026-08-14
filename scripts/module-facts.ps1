@@ -16,6 +16,9 @@
     The submitted git tag (passed through to the template check's version match).
 .PARAMETER SkipTemplateCheck
     Don't invoke validate-template.ps1 (faster; omits the compliance summary).
+.PARAMETER SkipTemplateFreshness
+    Passed through to validate-template.ps1: don't verify the template clone against
+    upstream. For deliberate offline runs only.
 .PARAMETER Json
     Emit JSON instead of the human-readable fact sheet.
 .EXAMPLE
@@ -27,6 +30,7 @@ param(
     [Parameter(Mandatory)][string]$ModuleDir,
     [string]$GitTag,
     [switch]$SkipTemplateCheck,
+    [switch]$SkipTemplateFreshness,
     [switch]$Json
 )
 
@@ -84,23 +88,55 @@ if (Test-Path $srcDir) {
 }
 
 # Template-compliance summary (reuse validate-template.ps1; don't duplicate the rules).
+# This is also where template freshness is established, which is why the orchestrator can
+# abort on a stale clone here — before the expensive -RunBuild pass and before any reviewer
+# agent is dispatched against expectations that would have been wrong anyway.
 $templateCheck = $null
+$templateFreshness = if ($SkipTemplateCheck) { 'not-checked' } else { 'unknown' }
 if (-not $SkipTemplateCheck) {
     $vt = Join-Path $PSScriptRoot 'validate-template.ps1'
     $vtArgs = @('-NoProfile', '-File', $vt, '-ModuleDir', $ModuleDir, '-Json')
     if ($GitTag) { $vtArgs += @('-ExpectedVersion', $GitTag) }
+    if ($SkipTemplateFreshness) { $vtArgs += '-SkipTemplateFreshness' }
+    # Capture stderr rather than discarding it: this used to be `2>$null` + a bare catch,
+    # which rendered a crashed validator as "(skipped)" — a failure that looked like a
+    # deliberate omission. A check that silently doesn't run is the exact thing this whole
+    # freshness mechanism exists to prevent.
+    $stderrFile = [System.IO.Path]::GetTempFileName()
     try {
-        $raw = & pwsh @vtArgs 2>$null
+        $raw = & pwsh @vtArgs 2>$stderrFile
         if ($raw) {
             $parsed = $raw | ConvertFrom-Json
+            $templateFreshness = $parsed.templateFreshness.status
             $templateCheck = [pscustomobject]@{
-                critical      = $parsed.counts.critical
-                high          = $parsed.counts.high
-                criticalIds   = @($parsed.findings | Where-Object severity -eq 'Critical' | ForEach-Object { $_.id } | Sort-Object -Unique)
-                templateUsed  = Split-Path $parsed.templateDir -Leaf
+                critical     = $parsed.counts.critical
+                high         = $parsed.counts.high
+                criticalIds  = @($parsed.findings | Where-Object severity -eq 'Critical' | ForEach-Object { $_.id } | Sort-Object -Unique)
+                templateUsed = Split-Path $parsed.templateDir -Leaf
+                templateSha  = $parsed.templateRevision.shortSha
+                templateDate = $parsed.templateRevision.committedAt
+                freshness    = $templateFreshness
+                error        = $null
+            }
+        } else {
+            $err = (Get-Content -Raw -LiteralPath $stderrFile -ErrorAction SilentlyContinue)
+            $templateFreshness = 'error'
+            $templateCheck = [pscustomobject]@{
+                critical = $null; high = $null; criticalIds = @(); templateUsed = $null
+                templateSha = $null; templateDate = $null; freshness = 'error'
+                error = if ($err) { $err.Trim() } else { 'validate-template.ps1 produced no output' }
             }
         }
-    } catch { $templateCheck = $null }
+    } catch {
+        $templateFreshness = 'error'
+        $templateCheck = [pscustomobject]@{
+            critical = $null; high = $null; criticalIds = @(); templateUsed = $null
+            templateSha = $null; templateDate = $null; freshness = 'error'
+            error = $_.Exception.Message
+        }
+    } finally {
+        Remove-Item -LiteralPath $stderrFile -Force -ErrorAction SilentlyContinue
+    }
 }
 
 $facts = [pscustomobject]@{
@@ -118,6 +154,9 @@ $facts = [pscustomobject]@{
     protocols     = $detected
     srcFileCount  = $srcFiles.Count
     srcFiles      = $srcFiles
+    # Hoisted to the top level so the review orchestrator can gate on one field: anything
+    # other than 'fresh' / 'pinned' / 'skipped' means stop, refresh, and re-run.
+    templateFreshness = $templateFreshness
     templateCheck = $templateCheck
 }
 
@@ -136,10 +175,17 @@ Write-Host ("  package:         {0}@{1}   manifest id: {2}" -f $facts.packageNam
 Write-Host ("  runtime entry:   {0}" -f $facts.runtimeEntry)
 Write-Host ("  Protocols:       {0}" -f $(if ($detected) { $detected -join ', ' } else { '(none detected)' }))
 Write-Host ("  Source files:    {0} under src/" -f $facts.srcFileCount)
-if ($templateCheck) {
+if ($templateCheck -and $templateCheck.error) {
+    Write-Host ("  Template check:  FAILED TO RUN — {0}" -f $templateCheck.error) -ForegroundColor Red
+} elseif ($templateCheck) {
+    $rev = if ($templateCheck.templateSha) { " @ $($templateCheck.templateSha) $($templateCheck.templateDate)" } else { '' }
     $col = if ($templateCheck.critical -gt 0) { 'Red' } else { 'Green' }
-    Write-Host ("  Template check:  {0} critical, {1} high  (vs {2})" -f $templateCheck.critical, $templateCheck.high, $templateCheck.templateUsed) -ForegroundColor $col
+    Write-Host ("  Template check:  {0} critical, {1} high  (vs {2}{3})" -f $templateCheck.critical, $templateCheck.high, $templateCheck.templateUsed, $rev) -ForegroundColor $col
     if ($templateCheck.criticalIds) { Write-Host ("                   {0}" -f ($templateCheck.criticalIds -join ', ')) -ForegroundColor Red }
+    if ($templateFreshness -in @('stale', 'unverified')) {
+        Write-Host ("  TEMPLATE $($templateFreshness.ToUpper()) — findings above are judged against the wrong reference.") -ForegroundColor Red
+        Write-Host  "  Run: pwsh scripts/update-templates.ps1   then re-run the review." -ForegroundColor Red
+    }
 } else {
     Write-Host "  Template check:  (skipped)"
 }

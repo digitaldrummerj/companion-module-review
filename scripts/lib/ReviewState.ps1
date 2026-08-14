@@ -50,6 +50,280 @@ function Resolve-TemplatesDir {
     return Join-Path $RepoRoot "companion-module-templates"
 }
 
+function Get-TemplateV1Pins {
+    <# The last v1.x commit of each official template, by language. The "-v1" template clones
+       are checked out here in detached HEAD and MUST stay there — v1 modules are judged
+       against the API surface as it stood at the v1/v2 boundary, not against main.
+
+       Single source of truth: setup.ps1 creates the pins, update-templates.ps1 asserts they
+       haven't drifted, and validate-template.ps1 treats a detached clone as intentionally
+       pinned (and therefore exempt from the upstream freshness check). #>
+    return @{
+        js = '9e222b4d0b1a68b2acda7d8adb52c9f90ee4c3d1'
+        ts = '42609d8dab515a25ec2f3b3c7adafe57aa41b7be'
+    }
+}
+
+function Invoke-GitRead {
+    <# Run a git command and return its trimmed stdout, or $null if it failed.
+
+       Every git call in the freshness path is READ-ONLY and is *expected* to fail in normal
+       operation (symbolic-ref on a detached HEAD, ls-remote against an unreachable origin),
+       so failure must be a return value rather than an exception. Two things are neutralized
+       locally: $ErrorActionPreference (callers set 'Stop') and
+       $PSNativeCommandUseErrorActionPreference, which turns a non-zero native exit into a
+       terminating error on PowerShell configs where it's enabled. #>
+    param([Parameter(Mandatory)][string[]]$Arguments)
+
+    $ErrorActionPreference = 'Continue'
+    $PSNativeCommandUseErrorActionPreference = $false
+
+    try { $out = & git @Arguments 2>$null } catch { return $null }
+    if ($LASTEXITCODE -ne 0) { return $null }
+    if ($null -eq $out) { return '' }
+    return (($out -join "`n").Trim())
+}
+
+function Get-GitRepoInfo {
+    <# Read-only snapshot of a git work tree: HEAD, branch (or detached), commit date, origin.
+       Never fetches, never writes a ref. Returns IsRepo=$false for a non-repo directory. #>
+    param([Parameter(Mandatory)][string]$Dir)
+
+    $info = [ordered]@{
+        Dir = $Dir; IsRepo = $false; Branch = $null; Detached = $false
+        Sha = $null; ShortSha = $null; CommittedAt = $null
+        Remote = $null; OriginUrl = $null; OriginIsLocalDir = $false; OriginLocalPath = $null
+    }
+    if (-not (Test-Path -LiteralPath $Dir)) { return [pscustomobject]$info }
+
+    if ((Invoke-GitRead @('-C', $Dir, 'rev-parse', '--is-inside-work-tree')) -ne 'true') {
+        return [pscustomobject]$info
+    }
+    $info.IsRepo = $true
+
+    # symbolic-ref -q fails on a detached HEAD — that is exactly the pinned-v1-clone signature,
+    # and it's a purely local check (no network, no assumptions about the origin URL).
+    $branch = Invoke-GitRead @('-C', $Dir, 'symbolic-ref', '-q', '--short', 'HEAD')
+    if ([string]::IsNullOrWhiteSpace($branch)) { $info.Detached = $true } else { $info.Branch = $branch }
+
+    $info.Sha         = Invoke-GitRead @('-C', $Dir, 'rev-parse', 'HEAD')
+    $info.ShortSha    = Invoke-GitRead @('-C', $Dir, 'rev-parse', '--short', 'HEAD')
+    $info.CommittedAt = Invoke-GitRead @('-C', $Dir, 'log', '-1', '--format=%cI', 'HEAD')
+
+    $remote = $null
+    if ($info.Branch) { $remote = Invoke-GitRead @('-C', $Dir, 'config', '--get', "branch.$($info.Branch).remote") }
+    if ([string]::IsNullOrWhiteSpace($remote)) { $remote = 'origin' }
+    $info.Remote = $remote
+
+    $url = Invoke-GitRead @('-C', $Dir, 'remote', 'get-url', $remote)
+    if (-not [string]::IsNullOrWhiteSpace($url)) {
+        $info.OriginUrl = $url
+        # A filesystem origin means a clone-of-a-clone — how the "-v1" templates are created.
+        if ($url -notmatch '^[a-z][a-z0-9+.-]*://' -and $url -notmatch '^[^/]+@[^/]+:') {
+            $resolved = try { (Resolve-Path -LiteralPath $url -ErrorAction Stop).Path } catch { $null }
+            if ($resolved -and (Test-Path -LiteralPath $resolved -PathType Container)) {
+                $info.OriginIsLocalDir = $true
+                $info.OriginLocalPath  = $resolved
+            }
+        }
+    }
+    return [pscustomobject]$info
+}
+
+function Get-TemplateFreshnessCachePath {
+    <# One small file per remote, in the system temp dir.
+
+       Temp dir, not companion-module-templates/: that directory may be read-only or shared
+       via COMPANION_TEMPLATES_DIR, and a stray file inside a git clone shows up in its
+       status. One file per remote rather than one shared map: several review sessions write
+       concurrently, and with a single merged file the last writer silently drops the other
+       remotes' entries. Independent files can't lose an update, so no lock is needed. #>
+    param([string]$Key)
+
+    $dir = Join-Path ([System.IO.Path]::GetTempPath()) 'companion-module-review/template-freshness'
+    if (-not $Key) { return $dir }
+    $md5   = [System.Security.Cryptography.MD5]::Create()
+    $hash  = [BitConverter]::ToString($md5.ComputeHash([Text.Encoding]::UTF8.GetBytes($Key))).Replace('-', '').ToLower()
+    $md5.Dispose()
+    return Join-Path $dir "$hash.json"
+}
+
+function Get-RemoteHeadSha {
+    <#
+    .SYNOPSIS
+        Resolve a remote branch tip with `git ls-remote` — read-only, no fetch, no ref writes.
+    .DESCRIPTION
+        Cached with a short TTL because the validator runs twice per review (once nested in
+        module-facts.ps1, once from the orchestrator) against up to two clones, and every extra
+        network round-trip is another chance for a transient failure to become a blocking
+        TEMPLATE-UNVERIFIED.
+
+        ONLY the remote side is cached; the local SHA is always read fresh. That makes the
+        cache self-invalidating: the moment update-templates.ps1 fast-forwards a clone,
+        local == cachedRemote and the next run reads 'fresh' with no stale window.
+
+        Failures are never cached — a cached failure would keep reviews blocked for the whole
+        TTL after the network came back.
+    .OUTPUTS
+        [pscustomobject] Sha, Cached (bool), Error
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Url,
+        [Parameter(Mandatory)][string]$Branch,
+        [int]$TtlSeconds = -1
+    )
+
+    if ($TtlSeconds -lt 0) {
+        $TtlSeconds = 600
+        if ($env:COMPANION_TEMPLATE_FRESHNESS_TTL) {
+            $parsed = 0
+            if ([int]::TryParse($env:COMPANION_TEMPLATE_FRESHNESS_TTL, [ref]$parsed)) { $TtlSeconds = $parsed }
+        }
+    }
+
+    $key       = "$Url#$Branch"
+    $cachePath = Get-TemplateFreshnessCachePath -Key $key
+    if ($TtlSeconds -gt 0 -and (Test-Path -LiteralPath $cachePath)) {
+        # A partially-written or corrupt entry is indistinguishable from no entry: both mean
+        # "look it up again". Never let a bad cache file fail a review.
+        try {
+            $entry = Get-Content -Raw -LiteralPath $cachePath | ConvertFrom-Json -AsHashtable
+            $age = ([datetime]::UtcNow - ([datetime]$entry['checkedAt']).ToUniversalTime()).TotalSeconds
+            if ($age -ge 0 -and $age -lt $TtlSeconds -and $entry['remoteSha'] -match '^[0-9a-f]{40}$') {
+                return [pscustomobject]@{ Sha = $entry['remoteSha']; Cached = $true; Error = $null }
+            }
+        } catch { }
+    }
+
+    # Guard against a credential prompt or a dead connection hanging the whole review.
+    $prevPrompt = $env:GIT_TERMINAL_PROMPT
+    $prevLimit  = $env:GIT_HTTP_LOW_SPEED_LIMIT
+    $prevTime   = $env:GIT_HTTP_LOW_SPEED_TIME
+    $env:GIT_TERMINAL_PROMPT     = '0'
+    $env:GIT_HTTP_LOW_SPEED_LIMIT = '1000'
+    $env:GIT_HTTP_LOW_SPEED_TIME  = '10'
+    try {
+        $raw = Invoke-GitRead @('ls-remote', '--heads', $Url, $Branch)
+    } finally {
+        $env:GIT_TERMINAL_PROMPT      = $prevPrompt
+        $env:GIT_HTTP_LOW_SPEED_LIMIT = $prevLimit
+        $env:GIT_HTTP_LOW_SPEED_TIME  = $prevTime
+    }
+
+    if ($null -eq $raw) {
+        return [pscustomobject]@{ Sha = $null; Cached = $false; Error = "git ls-remote failed for $Url" }
+    }
+    if ([string]::IsNullOrWhiteSpace($raw)) {
+        return [pscustomobject]@{ Sha = $null; Cached = $false; Error = "remote $Url has no branch '$Branch'" }
+    }
+    $sha = ($raw -split "`n")[0].Split("`t")[0].Trim()
+    if ($sha -notmatch '^[0-9a-f]{40}$') {
+        return [pscustomobject]@{ Sha = $null; Cached = $false; Error = "unparseable ls-remote output for $Url" }
+    }
+
+    if ($TtlSeconds -gt 0) {
+        # Temp file + atomic move, so a concurrent reader never sees a half-written entry.
+        # The cache is a pure optimization: if any of this fails, carry on silently.
+        try {
+            $dir = Split-Path -Parent $cachePath
+            if (-not (Test-Path -LiteralPath $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
+            $tmp = "$cachePath.$PID-$([guid]::NewGuid().ToString('N').Substring(0,8)).tmp"
+            @{ url = $Url; branch = $Branch; remoteSha = $sha; checkedAt = [datetime]::UtcNow.ToString('o') } |
+                ConvertTo-Json -Depth 3 | Set-Content -LiteralPath $tmp -Encoding utf8NoBOM
+            Move-Item -LiteralPath $tmp -Destination $cachePath -Force
+        } catch { }
+    }
+
+    return [pscustomobject]@{ Sha = $sha; Cached = $false; Error = $null }
+}
+
+function Test-TemplateFreshness {
+    <#
+    .SYNOPSIS
+        Is this template clone missing upstream changes? Read-only; never fetches or pulls.
+    .DESCRIPTION
+        Templates are shared by every concurrent review session, so this never modifies them —
+        it only reports. Refreshing is a deliberate, separate act (scripts/update-templates.ps1).
+
+        Status values:
+          fresh      local HEAD == origin/<branch>
+          stale      local HEAD != origin/<branch>            -> blocking
+          unverified could not reach the remote                -> blocking
+          pinned     detached HEAD (the "-v1" clones)          -> exempt by design
+          unmanaged  not a git work tree (a plain copy or a test fixture)
+          skipped    caller opted out
+    .OUTPUTS
+        [pscustomobject] dir, leaf, status, localSha, localShortSha, localDate, remoteSha,
+                         branch, originUrl, cached, message
+    #>
+    param(
+        [Parameter(Mandatory)][string]$TemplateDir,
+        [switch]$SkipCheck
+    )
+
+    # Resolve-TemplatesDir returns COMPANION_TEMPLATES_DIR verbatim without validating it,
+    # so a bad env var reaches here as a nonexistent path.
+    $resolved = try { (Resolve-Path -LiteralPath $TemplateDir -ErrorAction Stop).Path } catch { $TemplateDir }
+    $out = [ordered]@{
+        dir = $resolved; leaf = (Split-Path $resolved -Leaf); status = 'unmanaged'
+        localSha = $null; localShortSha = $null; localDate = $null; remoteSha = $null
+        branch = $null; originUrl = $null; cached = $false; message = $null
+    }
+
+    if ($SkipCheck -or $env:COMPANION_SKIP_TEMPLATE_FRESHNESS -eq '1') {
+        $out.status = 'skipped'
+        $out.message = 'Freshness check skipped by request.'
+        return [pscustomobject]$out
+    }
+
+    $info = Get-GitRepoInfo -Dir $resolved
+    if (-not $info.IsRepo) {
+        $out.message = "Not a git work tree — cannot verify against upstream."
+        return [pscustomobject]$out
+    }
+
+    $out.localSha      = $info.Sha
+    $out.localShortSha = $info.ShortSha
+    $out.localDate     = if ($info.CommittedAt) { ($info.CommittedAt -split 'T')[0] } else { $null }
+    $out.branch        = $info.Branch
+    $out.originUrl     = $info.OriginUrl
+
+    if ($info.Detached) {
+        $out.status = 'pinned'
+        $out.message = "Detached HEAD at $($info.ShortSha) — intentionally pinned, not checked against upstream."
+        return [pscustomobject]$out
+    }
+    if (-not $info.OriginUrl) {
+        # No remote configured is "not set up for upstream tracking", the same category as a
+        # plain directory copy — NOT the same as a clone that names an upstream we then
+        # failed to reach. The caller decides whether that's tolerable (it is for an
+        # explicitly-passed -TemplateDir, it isn't for an auto-resolved production template).
+        $out.status = 'unmanaged'
+        $out.message = "No '$($info.Remote)' remote configured — cannot verify against upstream."
+        return [pscustomobject]$out
+    }
+
+    $remote = Get-RemoteHeadSha -Url $info.OriginUrl -Branch $info.Branch
+    $out.cached = $remote.Cached
+    if (-not $remote.Sha) {
+        $out.status  = 'unverified'
+        $out.message = $remote.Error
+        return [pscustomobject]$out
+    }
+
+    $out.remoteSha = $remote.Sha
+    if ($remote.Sha -eq $info.Sha) {
+        $out.status  = 'fresh'
+        $out.message = "Up to date at $($info.ShortSha) ($($out.localDate), $($info.Branch))."
+    } else {
+        $out.status  = 'stale'
+        # No commit count: without a fetch the remote object isn't local, so "N commits behind"
+        # would be a guess. State the inequality and let update-templates.ps1 show the log.
+        $out.message = "Local HEAD $($info.ShortSha) ($($out.localDate)) != $($info.Remote)/$($info.Branch) $($remote.Sha.Substring(0,7)) on $($info.OriginUrl)."
+    }
+    return [pscustomobject]$out
+}
+
 function Test-ModuleIsTypeScript {
     <# Single source of truth for TS-vs-JS classification, shared by validate-template.ps1
        and module-facts.ps1 so the two can't drift.
