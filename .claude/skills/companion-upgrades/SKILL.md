@@ -1,6 +1,7 @@
 ---
 name: companion-upgrades
-description: 'Reference for Bitfocus Companion module upgrade scripts using @companion-module/base. Use when asked to create upgrade scripts, migrate user data, handle breaking changes to actions/feedbacks/config, or rename IDs. Also use when user needs help with CompanionStaticUpgradeScript, version migrations, or the upgrade helper functions.'
+description: '(@companion-module/base v1.x) Reference for Bitfocus Companion module upgrade scripts using @companion-module/base. Use when asked to create upgrade scripts, migrate user data, handle breaking changes to actions/feedbacks/config, or rename IDs. Also use when user needs help with CompanionStaticUpgradeScript, version migrations, or the upgrade helper functions. For v2 modules use companion-v2-upgrades instead.'
+license: MIT
 ---
 
 # Companion Upgrades Skill
@@ -322,26 +323,32 @@ export const UpgradeScripts: CompanionStaticUpgradeScript<ModuleConfig>[] = [
 ## Common Pitfalls
 
 1. **Removing or reordering scripts**
+
    - ❌ NEVER remove or reorder scripts in the array
    - ✅ Add new scripts to the end, use `EmptyUpgradeScript` for no-op versions
 
 2. **Not returning all three properties**
+
    - Always return `{ updatedConfig, updatedActions, updatedFeedbacks }`
    - Return original values if unchanged (or `null` for config)
 
 3. **Forgetting to delete old properties**
+
    - After renaming, delete the old property to avoid confusion
    - `delete config.oldField`
 
 4. **Not handling undefined values**
+
    - Always check if property exists before migrating
    - `if (config.oldField !== undefined) { ... }`
 
 5. **Mutating without returning**
+
    - Must return the mutated arrays/config, not just mutate in place
    - Scripts should modify AND return
 
 6. **Wrong TypeScript types**
+
    - Cast config to `any` when accessing renamed fields: `const config = props.config as any`
    - Cast back to `ModuleConfig` when returning: `updatedConfig: config as ModuleConfig`
 
@@ -374,6 +381,7 @@ import {
 - **companion-config** — Config structure changes require upgrade scripts
 - **companion-actions** — Action definition changes require migration
 - **companion-feedbacks** — Feedback definition changes require migration
+- **companion-v2-upgrades** — the @companion-module/base v2.x version of this skill; for migrating a v1 module see **companion-v1-to-v2-migration**
 
 ## Version Numbering
 

@@ -1,6 +1,7 @@
 ---
 name: companion-bitfocus-dashboard
 description: 'Discover pending Companion module reviews from the BitFocus developer portal API. Use when asked "what''s pending", "show the queue", "what needs reviewing", "check the BitFocus dashboard", "clone a module", or "work through the pending review queue". Provides authenticated access to the pending review list, previous approved tag lookup, GitHub repo URL derivation, and auto-clone workflow.'
+license: MIT
 ---
 
 # BitFocus Developer Portal — Module Discovery

@@ -1,6 +1,7 @@
 ---
 name: companion-variable-set-value
-description: 'How to set variable values with setVariableValues() and read them with getVariableValue() in a Bitfocus Companion module. Use when you need to update variable state, set variable value on init, handle device state update, or read a variable to compute its next value. Use companion-variable-definition to declare new variables first before setting values.'
+description: '(@companion-module/base v1.x) How to set variable values with setVariableValues() and read them with getVariableValue() in a Bitfocus Companion module. Use when you need to update variable state, set variable value on init, handle device state update, or read a variable to compute its next value. Use companion-variable-definition to declare new variables first before setting values. For v2 modules use companion-v2-variable-set-value instead.'
+license: MIT
 ---
 
 # Companion Variable Set Value Skill
@@ -145,3 +146,4 @@ self.setVariableValues(values)
 - **`companion-variable-definition`** — sibling skill; use this to declare variable IDs and labels with `setVariableDefinitions()` before setting values
 - **`companion-actions`** — actions can call `setVariableValues()` to update state in response to button presses
 - **`companion-feedbacks`** — feedbacks can read variables to drive button colour/style
+- **`companion-v2-variable-set-value`** — the @companion-module/base v2.x version of this skill; for migrating a v1 module see **`companion-v1-to-v2-migration`**

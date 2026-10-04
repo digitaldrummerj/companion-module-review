@@ -1,6 +1,7 @@
 ---
 name: companion-variable-definition
-description: "Reference for declaring and registering Companion module variables using setVariableDefinitions and CompanionVariableDefinition. Use when you need to register variables, define variable ID naming, expose state as text in Companion's variable picker, or build dynamic variable sets from device capabilities. Do NOT use to update values — use companion-variable-set-value to update values after they are defined."
+description: "(@companion-module/base v1.x) Reference for declaring and registering Companion module variables using setVariableDefinitions and CompanionVariableDefinition. Use when you need to register variables, define variable ID naming, expose state as text in Companion's variable picker, or build dynamic variable sets from device capabilities. Do NOT use to update values — use companion-variable-set-value to update values after they are defined. For v2 modules use companion-v2-variable-definition instead."
+license: MIT
 ---
 
 # Companion Variable Definition Skill
@@ -140,3 +141,4 @@ import type { CompanionVariableDefinition } from '@companion-module/base'
 - **`companion-variable-set-value`** — sibling skill; handles `setVariableValues()`, `getVariableValue()`, updating values on state change, and setting initial values after definitions are registered
 - **`companion-action-file-pattern`** — actions can trigger value updates
 - **`companion-feedbacks`** — feedbacks can display variable values
+- **`companion-v2-variable-definition`** — the @companion-module/base v2.x version of this skill; for migrating a v1 module see **`companion-v1-to-v2-migration`**
