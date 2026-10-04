@@ -11,6 +11,9 @@ The orchestrator gives you: the **scope**, the **fact sheet** (including **`apiS
 
 ## First: load the right knowledge
 - Read **`.claude/skills/<apiSkill>/SKILL.md`** (only the one the fact sheet names — `companion-v1-api-compliance` for v1.x, `companion-v2-api-compliance` for v2.x). Apply its per-version checks.
+- For v2 modules, also read **only** the reference files the fact sheet lists in **`apiReferences`** (paths are relative to that skill's directory, e.g. `.claude/skills/companion-v2-api-compliance/references/v2.0.md` and, for API 2.1+, `references/v2.1.md`). Use the fact sheet's **`apiLevel`** / **`baseVersion`** rather than re-resolving the version, and state them at the top of your findings.
+- **Never** flag a missing feature from a later API version than `apiLevel` (e.g. asking a 2.0 module for `affectedProperties`, abort signals or `hasResult`). Using a later-version feature on an earlier `apiLevel` *is* a finding — the skill says how to report it.
+- Treat **`apiScan`** hints as leads: open each `file:line`, confirm it is live code that applies to this `apiLevel`, then report it with the severity from the skill. Never copy a hint into the findings unverified, and don't assume a clean `apiScan` means the module is compliant.
 - Consult the relevant reference skills **on demand** if you need API detail: `.claude/skills/companion-actions`, `-feedbacks`, `-config`, `-variable-definition`, `-variable-set-value`, `-upgrades`. Don't load them all up front.
 
 ## What you own
