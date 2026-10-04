@@ -10,7 +10,7 @@ description: Compliance checks for Companion modules on @companion-module/base v
 Reference checklist for reviewing BitFocus Companion modules on `@companion-module/base` v1.x
 (Companion 3.1 through 4.2).
 
-Covers API versions v1.5 through v1.14. For v2.0+ modules, see `companion-v2-api-compliance/SKILL.md`.
+Covers API versions v1.5 through v1.14. For v2.0+ modules (including v2.1), use the `companion-v2-api-compliance` skill instead.
 
 ---
 
@@ -219,9 +219,9 @@ Use these as "🔮 Next Release" section content in review files:
 | v1.5–v1.11 | → v1.12 | Node.js permissions model; `isVisibleExpression` |
 | v1.5–v1.12 | → v1.13 | Auto variable parsing; `secret-text`; value feedbacks |
 | v1.5–v1.13 | → v1.14 | Automated config layout consistency |
-| Any v1.x | → v2.0 | Expression support, full API modernization, Node 22 required (drops Node 18) |
+| Any v1.x | → v2.0 (Companion 4.3+) or v2.1 (Companion 5.0+); see `companion-v1-to-v2-migration` | Expression support, full API modernization, Node 22 required (drops Node 18); 2.1 adds abort signals, action results, layered presets |
 
-> Note: v2.0 has breaking changes — see `companion-v2-api-compliance/SKILL.md` before recommending it.
+> Note: v2.x has breaking changes. Check them against the `companion-v2-api-compliance` skill before you recommend an upgrade, and point the developer to `companion-v1-to-v2-migration` for the migration steps.
 
 ---
 
@@ -236,3 +236,4 @@ Use these as "🔮 Next Release" section content in review files:
 - [API 1.13](https://companion.free/for-developers/module-development/api-changes/v1.13) — Companion 4.1+
 - [API 1.14](https://companion.free/for-developers/module-development/api-changes/v1.14) — Companion 4.2+
 - [API 2.0](https://companion.free/for-developers/module-development/api-changes/v2.0) — Companion 4.3+
+- [API 2.1](https://companion.free/for-developers/module-development/api-changes/v2.1) — Companion 5.0+
