@@ -341,6 +341,235 @@ function Test-ModuleIsTypeScript {
     return ($tsSrc.Count -gt 0)
 }
 
+function Get-CompanionBaseLockfileVersion {
+    <# Internal: pull the resolved @companion-module/base version out of a lockfile's text.
+
+       Lockfiles are parsed with regexes rather than a YAML/JSON library on purpose — the
+       scripts stay dependency-free, and only one package's entry is ever needed. Returns the
+       version string, or $null when the lockfile has no entry for the package (a stub or a
+       lockfile from a different package manager). When the lockfile resolves the package more
+       than once (a transitive copy alongside the direct one), the entry whose descriptor
+       carries the package.json range wins; otherwise the first entry. #>
+    param(
+        [Parameter(Mandatory)][string]$Kind,
+        [Parameter(Mandatory)][string]$Text,
+        [string]$Range
+    )
+
+    $entries = [System.Collections.Generic.List[object]]::new()
+    switch ($Kind) {
+        'yarn' {
+            # Yarn Berry:  "@companion-module/base@npm:~2.1.3":      then   version: 2.1.3
+            # Yarn 1:      "@companion-module/base@~1.12.1":          then   version "1.12.1"
+            # A header may list several descriptors ("a@npm:x, a@npm:y":). The block's version
+            # line is the first `version` line indented under the header.
+            $lines = $Text -split "`r?`n"
+            for ($i = 0; $i -lt $lines.Count; $i++) {
+                $h = $lines[$i]
+                if ($h -notmatch '^\S' -or $h -notmatch '@companion-module/base@' -or $h -notmatch ':\s*$') { continue }
+                for ($j = $i + 1; $j -lt $lines.Count -and $lines[$j] -match '^\s'; $j++) {
+                    if ($lines[$j] -match '^\s+version:?\s+"?([0-9][^"\s]*)"?\s*$') {
+                        $entries.Add([pscustomobject]@{ Header = $h; Version = $Matches[1] })
+                        break
+                    }
+                }
+            }
+        }
+        'npm' {
+            try { $j = $Text | ConvertFrom-Json -AsHashtable } catch { return $null }
+            if ($j -and $j.ContainsKey('packages') -and $j['packages'].ContainsKey('node_modules/@companion-module/base')) {
+                return [string]$j['packages']['node_modules/@companion-module/base']['version']
+            }
+            # lockfileVersion 1 layout
+            if ($j -and $j.ContainsKey('dependencies') -and $j['dependencies'].ContainsKey('@companion-module/base')) {
+                return [string]$j['dependencies']['@companion-module/base']['version']
+            }
+            return $null
+        }
+        'pnpm' {
+            # pnpm v6+ importer block:   '@companion-module/base':  specifier: ~2.1.3  version: 2.1.3
+            if ($Text -match "(?m)^\s+'?@companion-module/base'?:\s*\r?\n\s+specifier:.*\r?\n\s+version:\s*'?([0-9][^'\s(]*)") {
+                return $Matches[1]
+            }
+            # older inline importer form:   '@companion-module/base': 2.1.3
+            if ($Text -match "(?m)^\s+'?@companion-module/base'?:\s*'?([0-9][^'\s(]*)'?\s*$") { return $Matches[1] }
+            # packages section key:   /@companion-module/base@2.1.3:   or   '@companion-module/base@2.1.3':
+            if ($Text -match "(?m)^\s+'?/?@companion-module/base@([0-9][^'\s:(]*)") { return $Matches[1] }
+            return $null
+        }
+    }
+
+    if ($entries.Count -eq 0) { return $null }
+    if ($Range) {
+        $want = [regex]::Escape($Range)
+        $hit = @($entries | Where-Object { $_.Header -match "@companion-module/base@(npm:)?$want(\s*[,`"']|:\s*$)" } | Select-Object -First 1)
+        if ($hit.Count -gt 0) { return $hit[0].Version }
+    }
+    return $entries[0].Version
+}
+
+function Resolve-CompanionBaseVersion {
+    <#
+    .SYNOPSIS
+        Which @companion-module/base version does this module actually build against?
+    .DESCRIPTION
+        Mirrors Step 1 of the companion-v2-api-compliance skill, so the scripts and the
+        reviewer agree on the API level being judged. A module on base 2.1 must be reviewed
+        with the 2.1 rules, and a module on 2.0 must NOT be asked for 2.1 features — so the
+        major version alone (what the scripts used before) is not enough.
+
+        Sources, first hit wins — the installed version beats the declared range:
+          1. yarn.lock            (Yarn Berry `"…@npm:range":` / `version: X`, and Yarn 1)
+          2. package-lock.json
+          3. pnpm-lock.yaml
+          4. node_modules/@companion-module/base/package.json
+          5. the package.json range:
+               exact `2.1.3`                → that version
+               `~2.1.3` / `2.1.x` / `2.1`  → 2.1 (patch-only range: unambiguous)
+               `^2.0.0`, `>=2`, `*`, …      → AMBIGUOUS — spans minors; the lowest allowed
+                                              minor is used and `ambiguous` is set so the
+                                              review can suggest pinning
+        A module with no @companion-module/base dependency at all keeps the scripts' old
+        default (major 2) and is marked ambiguous.
+    .OUTPUTS
+        [pscustomobject] range, version, source, major, minor, apiLevel ('1' | '2.0' | '2.1'
+        | '2.N'), ambiguous
+    #>
+    param([Parameter(Mandatory)][string]$ModuleDir)
+
+    $range = $null
+    $pkgPath = Join-Path $ModuleDir 'package.json'
+    if (Test-Path -LiteralPath $pkgPath) {
+        try {
+            $pkg = Get-Content -Raw -LiteralPath $pkgPath | ConvertFrom-Json -AsHashtable
+            if ($pkg -and $pkg.ContainsKey('dependencies') -and $pkg['dependencies'] -and $pkg['dependencies'].ContainsKey('@companion-module/base')) {
+                $range = [string]$pkg['dependencies']['@companion-module/base']
+            }
+        } catch { }
+    }
+
+    $version = $null; $source = $null; $ambiguous = $false
+    foreach ($lf in @(
+            @{ File = 'yarn.lock';         Kind = 'yarn' }
+            @{ File = 'package-lock.json'; Kind = 'npm' }
+            @{ File = 'pnpm-lock.yaml';    Kind = 'pnpm' })) {
+        $p = Join-Path $ModuleDir $lf.File
+        if (-not (Test-Path -LiteralPath $p)) { continue }
+        $text = Get-Content -Raw -LiteralPath $p -ErrorAction SilentlyContinue
+        if (-not $text) { continue }
+        $v = Get-CompanionBaseLockfileVersion -Kind $lf.Kind -Text $text -Range $range
+        if ($v -match '^\d+\.\d+') { $version = $v; $source = $lf.File; break }
+    }
+
+    if (-not $version) {
+        $nm = Join-Path $ModuleDir 'node_modules/@companion-module/base/package.json'
+        if (Test-Path -LiteralPath $nm) {
+            try {
+                $v = (Get-Content -Raw -LiteralPath $nm | ConvertFrom-Json).version
+                if ("$v" -match '^\d+\.\d+') { $version = "$v"; $source = 'node_modules' }
+            } catch { }
+        }
+    }
+
+    if (-not $version -and $range) {
+        # Strip an aliased spec (npm:@companion-module/base@~2.1.3) down to the range itself.
+        $r = ($range -replace '^npm:.*@', '').Trim()
+        $source = 'package.json range'
+        if ($r -match '^=?\s*v?(\d+)\.(\d+)\.(\d+)(-[0-9A-Za-z.-]+)?$') {
+            $version = "$($Matches[1]).$($Matches[2]).$($Matches[3])$($Matches[4])"
+        } elseif ($r -match '^~\s*v?(\d+)\.(\d+)(?:\.(\d+))?') {
+            $version = "$($Matches[1]).$($Matches[2]).$(if ($Matches[3]) { $Matches[3] } else { '0' })"
+        } elseif ($r -match '^v?(\d+)\.(\d+)(?:\.[xX*])?$') {
+            $version = "$($Matches[1]).$($Matches[2]).0"
+        } elseif ($r -match '(\d+)(?:\.(\d+|[xX*]))?(?:\.(\d+|[xX*]))?') {
+            # ^X.Y.Z, >=X, X.x, X — anything that lets the minor float. Capture the groups
+            # first: the -match calls below overwrite $Matches.
+            $ma = $Matches[1]; $mi = "$($Matches[2])"; $pa = "$($Matches[3])"
+            if ($mi -notmatch '^\d+$') { $mi = '0' }
+            if ($pa -notmatch '^\d+$') { $pa = '0' }
+            $version = "$ma.$mi.$pa"
+            $ambiguous = $true
+        }
+    }
+
+    $major = 2; $minor = 0
+    if ($version -match '^(\d+)\.(\d+)') { $major = [int]$Matches[1]; $minor = [int]$Matches[2] }
+    else { $source = 'none'; $ambiguous = $true }
+
+    # A floating minor only matters once there is more than one API level per major.
+    # Every 1.x module is reviewed with the single v1 skill, so it is never "ambiguous".
+    if ($major -le 1) { $ambiguous = $false }
+
+    return [pscustomobject]@{
+        range     = $range
+        version   = $version
+        source    = $source
+        major     = $major
+        minor     = $minor
+        apiLevel  = if ($major -le 1) { '1' } else { "$major.$minor" }
+        ambiguous = $ambiguous
+    }
+}
+
+function Get-CompanionApiProfile {
+    <#
+    .SYNOPSIS
+        What a given API level means for a review: which compliance skill, which of that
+        skill's per-version reference files, the minimum Companion release, and which
+        manifest runtimes are legitimate.
+    .DESCRIPTION
+        The v2 compliance skill keeps one reference file per minor version
+        (references/v2.0.md, references/v2.1.md, …) and a module is judged against every file
+        up to its own level — never a later one. That is what stops a 2.0 module being told to
+        adopt 2.1-only features. apiReferences lists the files that SHOULD apply; when
+        -SkillsDir is given, any that don't exist there are reported in referencesMissing
+        (e.g. a 2.2 module reviewed before anyone wrote references/v2.2.md).
+
+        allowedRuntimes is $null for v1: v1 runtimes are judged against the pinned v1
+        template exactly as before. For v2 the template still pins node22, but API 2.1 added
+        node26 — so the runtime check can't be a plain template comparison any more.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$ApiLevel,
+        [string]$SkillsDir
+    )
+
+    $major = 2; $minor = 0
+    if ($ApiLevel -match '^(\d+)(?:\.(\d+))?$') {
+        $major = [int]$Matches[1]
+        if ($Matches[2]) { $minor = [int]$Matches[2] }
+    }
+
+    if ($major -le 1) {
+        return [pscustomobject]@{
+            apiSkill = 'companion-v1-api-compliance'; apiReferences = @(); referencesMissing = @()
+            minCompanion = $null; allowedRuntimes = $null
+        }
+    }
+
+    $skill = "companion-v$major-api-compliance"
+    $refs = @(0..$minor | ForEach-Object { "references/v$major.$_.md" })
+    $missing = @()
+    if ($SkillsDir) {
+        $skillDir = Join-Path $SkillsDir $skill
+        $missing = @($refs | Where-Object { -not (Test-Path -LiteralPath (Join-Path $skillDir $_)) })
+    }
+    # Companion release that introduced each module API level. Unknown future levels report
+    # $null rather than a guess.
+    $minCompanion = @{ '2.0' = '4.3'; '2.1' = '5.0' }["$major.$minor"]
+    # Assigned inside the branches: `$x = if (…) { @('a') }` would unroll the one-element
+    # array to a bare string, and the JSON consumers expect a list.
+    if ($major -eq 2 -and $minor -eq 0) { $runtimes = @('node22') } else { $runtimes = @('node22', 'node26') }
+
+    return [pscustomobject]@{
+        apiSkill          = $skill
+        apiReferences     = $refs
+        referencesMissing = $missing
+        minCompanion      = $minCompanion
+        allowedRuntimes   = $runtimes
+    }
+}
+
 function ConvertTo-NormalizedTag {
     <# Strip a single leading 'v' so 'v2.1.0' and '2.1.0' compare equal. #>
     param([string]$Tag)

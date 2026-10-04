@@ -92,6 +92,111 @@ try {
     # TrackerSubmitted nullability
     Assert-Equal $null (State 'epsilon-mod' 'v3.0.0').TrackerSubmitted "epsilon: no row => TrackerSubmitted null"
     Assert-Equal $false (State 'beta-mod' 'v2.0.0').TrackerSubmitted "beta: unsubmitted row => TrackerSubmitted false"
+
+    # ── Resolve-CompanionBaseVersion ─────────────────────────────────────────
+    # The installed version must win over the declared range, because the API level the
+    # module really builds against is what decides which compliance rules apply.
+    Write-Host "Resolve-CompanionBaseVersion"
+    function New-VerModule {
+        param([string]$Name, [string]$Range, [hashtable]$Files = @{})
+        $d = Join-Path $root "ver-$Name"
+        New-Item -ItemType Directory -Path $d -Force | Out-Null
+        $deps = if ($null -ne $Range) { "`"dependencies`":{`"@companion-module/base`":`"$Range`"}" } else { "`"dependencies`":{}" }
+        Set-Content -LiteralPath (Join-Path $d 'package.json') -Value "{`"name`":`"$Name`",$deps}" -Encoding utf8
+        foreach ($k in $Files.Keys) {
+            $p = Join-Path $d $k
+            New-Item -ItemType Directory -Path (Split-Path -Parent $p) -Force | Out-Null
+            Set-Content -LiteralPath $p -Value $Files[$k] -Encoding utf8
+        }
+        return $d
+    }
+
+    $berry = @'
+"@companion-module/base@npm:~2.1.3":
+  version: 2.1.3
+  resolution: "@companion-module/base@npm:2.1.3"
+'@
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'berry' '~2.1.0' @{ 'yarn.lock' = $berry })
+    Assert-Equal '2.1.3'     $r.version  "yarn Berry lockfile: resolved version"
+    Assert-Equal 'yarn.lock' $r.source   "yarn Berry lockfile: source"
+    Assert-Equal '2.1'       $r.apiLevel "yarn Berry lockfile: apiLevel 2.1"
+    Assert-Equal $false      $r.ambiguous "lockfile version is never ambiguous"
+
+    # Lockfile beats a caret range: ^2.0.0 alone would be ambiguous, the lockfile says 2.1.
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'berry-caret' '^2.0.0' @{ 'yarn.lock' = "`"@companion-module/base@npm:^2.0.0`":`n  version: 2.1.1`n" })
+    Assert-Equal '2.1' $r.apiLevel "caret range + lockfile => lockfile's 2.1"
+    Assert-Equal $false $r.ambiguous "caret range resolved by lockfile is not ambiguous"
+
+    # Two resolutions (a transitive copy too): the one matching the package.json range wins.
+    $two = "`"@companion-module/base@npm:~1.14.1`":`n  version: 1.14.1`n`n`"@companion-module/base@npm:~2.0.4`":`n  version: 2.0.4`n"
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'berry-two' '~2.0.4' @{ 'yarn.lock' = $two })
+    Assert-Equal '2.0.4' $r.version "two lockfile entries: the one for the package.json range wins"
+
+    $yarn1 = "`"@companion-module/base@~1.12.1`":`n  version `"1.12.1`"`n  resolved `"https://registry.yarnpkg.com/x`"`n"
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'yarn1' '~1.12.1' @{ 'yarn.lock' = $yarn1 })
+    Assert-Equal '1.12.1' $r.version  "yarn 1 lockfile: resolved version"
+    Assert-Equal '1'      $r.apiLevel "v1 apiLevel is '1'"
+
+    $npm = '{"lockfileVersion":3,"packages":{"":{},"node_modules/@companion-module/base":{"version":"2.0.4"}}}'
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'npm' '^2.0.0' @{ 'package-lock.json' = $npm })
+    Assert-Equal '2.0.4'             $r.version "package-lock.json: resolved version"
+    Assert-Equal 'package-lock.json' $r.source  "package-lock.json: source"
+
+    $pnpm = "lockfileVersion: '9.0'`nimporters:`n  .:`n    dependencies:`n      '@companion-module/base':`n        specifier: ~2.1.3`n        version: 2.1.3`n"
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'pnpm' '~2.1.3' @{ 'pnpm-lock.yaml' = $pnpm })
+    Assert-Equal '2.1.3'          $r.version "pnpm-lock.yaml: resolved version"
+    Assert-Equal 'pnpm-lock.yaml' $r.source  "pnpm-lock.yaml: source"
+
+    # A stub lockfile (no entry) falls through to node_modules.
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'nm' '^2.0.0' @{ 'yarn.lock' = '# yarn lockfile'; 'node_modules/@companion-module/base/package.json' = '{"version":"2.1.0"}' })
+    Assert-Equal '2.1.0'        $r.version "stub lockfile falls through to node_modules"
+    Assert-Equal 'node_modules' $r.source  "node_modules: source"
+
+    # package.json range only
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'exact' '2.0.4')
+    Assert-Equal '2.0'   $r.apiLevel  "exact range 2.0.4 => 2.0"
+    Assert-Equal $false  $r.ambiguous "exact range is not ambiguous"
+    Assert-Equal 'package.json range' $r.source "range-only: source"
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'tilde' '~2.1.3')
+    Assert-Equal '2.1'  $r.apiLevel  "tilde range ~2.1.3 => 2.1"
+    Assert-Equal $false $r.ambiguous "tilde range is not ambiguous"
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'xrange' '2.1.x')
+    Assert-Equal '2.1'  $r.apiLevel  "x-range 2.1.x => 2.1"
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'caret' '^2.0.0')
+    Assert-Equal '2.0'  $r.apiLevel  "caret range ^2.0.0 => lowest minor, 2.0"
+    Assert-Equal $true  $r.ambiguous "caret range on v2 is ambiguous"
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'caret1' '^1.12.1')
+    Assert-Equal '1'    $r.apiLevel  "caret range ^1.12.1 => 1"
+    Assert-Equal $false $r.ambiguous "v1 is never ambiguous (one v1 skill)"
+    $r = Resolve-CompanionBaseVersion (New-VerModule 'nodep' $null)
+    Assert-Equal '2.0'  $r.apiLevel  "no base dependency keeps the old v2 default"
+    Assert-Equal 'none' $r.source    "no base dependency: source none"
+    Assert-Equal $true  $r.ambiguous "no base dependency is ambiguous"
+
+    # ── Get-CompanionApiProfile ──────────────────────────────────────────────
+    Write-Host "Get-CompanionApiProfile"
+    $p = Get-CompanionApiProfile -ApiLevel '1'
+    Assert-Equal 'companion-v1-api-compliance' $p.apiSkill "v1 => v1 skill"
+    Assert-Equal 0 @($p.apiReferences).Count "v1 => no reference files"
+    Assert-Equal $null $p.allowedRuntimes "v1 runtimes stay template-judged"
+    $p = Get-CompanionApiProfile -ApiLevel '2.0'
+    Assert-Equal 'companion-v2-api-compliance' $p.apiSkill "2.0 => v2 skill"
+    Assert-Equal 'references/v2.0.md' (@($p.apiReferences) -join ',') "2.0 => only references/v2.0.md"
+    Assert-Equal '4.3' $p.minCompanion "2.0 => Companion 4.3+"
+    Assert-Equal 'node22' (@($p.allowedRuntimes) -join ',') "2.0 => node22 only"
+    Assert-Equal 1 @($p.allowedRuntimes).Count "2.0 allowedRuntimes stays a list"
+    $p = Get-CompanionApiProfile -ApiLevel '2.1'
+    Assert-Equal 'references/v2.0.md,references/v2.1.md' (@($p.apiReferences) -join ',') "2.1 => v2.0 + v2.1 references"
+    Assert-Equal '5.0' $p.minCompanion "2.1 => Companion 5.0+"
+    Assert-Equal 'node22,node26' (@($p.allowedRuntimes) -join ',') "2.1 => node22 + node26"
+
+    $skills = Join-Path $root 'skills'
+    New-Item -ItemType Directory -Path (Join-Path $skills 'companion-v2-api-compliance/references') -Force | Out-Null
+    Set-Content -LiteralPath (Join-Path $skills 'companion-v2-api-compliance/references/v2.0.md') -Value 'x'
+    Set-Content -LiteralPath (Join-Path $skills 'companion-v2-api-compliance/references/v2.1.md') -Value 'x'
+    $p = Get-CompanionApiProfile -ApiLevel '2.2' -SkillsDir $skills
+    Assert-Equal 'references/v2.2.md' (@($p.referencesMissing) -join ',') "2.2 with no v2.2.md => reported missing"
+    Assert-Equal $null $p.minCompanion "unknown future level => no guessed Companion version"
 }
 finally {
     if (Test-Path $root) { Remove-Item -Recurse -Force $root }
