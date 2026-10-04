@@ -71,6 +71,41 @@ try {
 
     $f4 = Facts $jsEsm
     Ok ($f4.language -eq 'JS')  "ESM JS module (type:module, no tsconfig) stays JS"
+
+    # ── API level (not just the major) ───────────────────────────────────────
+    # v1: one skill, no reference files, apiVersion/apiSkill unchanged.
+    Ok ($f.apiLevel -eq '1')                            "v1 module => apiLevel '1'"
+    Ok (@($f.apiReferences).Count -eq 0)                "v1 module => no v2 reference files"
+
+    # 2.0 from the package.json range: only references/v2.0.md, Companion 4.3+.
+    Ok ($f2.apiLevel -eq '2.0')                         "~2.0.4 => apiLevel 2.0"
+    Ok ((@($f2.apiReferences) -join ',') -eq 'references/v2.0.md') "2.0 => loads only references/v2.0.md"
+    Ok ($f2.minCompanion -eq '4.3')                     "2.0 => Companion 4.3+"
+    Ok ($f2.baseVersionSource -eq 'package.json range') "no lockfile => version from the range"
+    Ok ($f2.apiAmbiguous -eq $false)                    "~2.0.4 is not ambiguous"
+
+    # 2.1 from a Yarn Berry lockfile, even though package.json says ^2.0.0.
+    $v21 = Join-Path $root 'companion-module-v21'
+    Set-File (Join-Path $v21 'tsconfig.json') '{}'
+    Set-File (Join-Path $v21 'package.json') '{"name":"v21","version":"3.0.0","type":"module","dependencies":{"@companion-module/base":"^2.0.0"}}'
+    Set-File (Join-Path $v21 'yarn.lock') "`"@companion-module/base@npm:^2.0.0`":`n  version: 2.1.3`n"
+    Set-File (Join-Path $v21 'src/main.ts') 'export default class X {}'
+    $f5 = Facts $v21
+    Ok ($f5.apiVersion -eq 'v2')                        "2.1 module keeps apiVersion 'v2' (backward compatible)"
+    Ok ($f5.apiSkill -eq 'companion-v2-api-compliance') "2.1 module keeps the v2 skill"
+    Ok ($f5.apiLevel -eq '2.1')                         "lockfile 2.1.3 => apiLevel 2.1"
+    Ok ($f5.baseVersion -eq '2.1.3')                    "baseVersion from the lockfile"
+    Ok ($f5.baseVersionSource -eq 'yarn.lock')          "baseVersionSource yarn.lock"
+    Ok ((@($f5.apiReferences) -join ',') -eq 'references/v2.0.md,references/v2.1.md') "2.1 => v2.0 + v2.1 references"
+    Ok ($f5.minCompanion -eq '5.0')                     "2.1 => Companion 5.0+"
+    Ok ($f5.apiAmbiguous -eq $false)                    "lockfile-resolved caret range is not ambiguous"
+
+    # Caret range, no lockfile: ambiguous, lowest minor.
+    $amb = Join-Path $root 'companion-module-amb'
+    Set-File (Join-Path $amb 'package.json') '{"name":"amb","version":"1.0.0","dependencies":{"@companion-module/base":"^2.0.0"}}'
+    Set-File (Join-Path $amb 'src/main.js') 'export default {}'
+    $f6 = Facts $amb
+    Ok ($f6.apiLevel -eq '2.0' -and $f6.apiAmbiguous -eq $true) "^2.0.0 without a lockfile => 2.0, ambiguous"
 }
 finally {
     if (Test-Path $root) { Remove-Item -Recurse -Force $root }

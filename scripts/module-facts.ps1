@@ -53,10 +53,17 @@ $man = Read-Json (Join-Path $ModuleDir 'companion/manifest.json')
 $isTs = Test-ModuleIsTypeScript $ModuleDir
 $lang = if ($isTs) { 'TS' } else { 'JS' }
 $baseRange = if ((Has-Prop $pkg 'dependencies') -and (Has-Prop $pkg.dependencies '@companion-module/base')) { [string]$pkg.dependencies.'@companion-module/base' } else { $null }
-$apiMajor = 2
-if ($baseRange -and $baseRange -match '(\d+)') { $apiMajor = [int]$Matches[1] }
+
+# API level, not just the major: 2.0 and 2.1 are reviewed against different reference files
+# of the same skill, and a 2.0 module must never be asked for 2.1 features. The version comes
+# from the lockfile when there is one (shared resolver in lib/ReviewState.ps1, mirroring the
+# compliance skill's Step 1). apiVersion / apiSkill keep their old meaning for consumers that
+# only know about the major.
+$base = Resolve-CompanionBaseVersion $ModuleDir
+$apiMajor = $base.major
 $apiVer = "v$apiMajor"
-$apiSkill = if ($apiMajor -le 1) { 'companion-v1-api-compliance' } else { 'companion-v2-api-compliance' }
+$apiProfile = Get-CompanionApiProfile -ApiLevel $base.apiLevel -SkillsDir (Join-Path (Split-Path -Parent $PSScriptRoot) '.claude/skills')
+$apiSkill = $apiProfile.apiSkill
 
 # Protocol hints — scan deps + a shallow source grep for transport markers.
 $depNames = @()
@@ -146,6 +153,16 @@ $facts = [pscustomobject]@{
     language      = $lang
     apiVersion    = $apiVer
     apiSkill      = $apiSkill
+    apiLevel      = $base.apiLevel
+    baseVersion   = $base.version
+    baseVersionSource = $base.source
+    # true when only a minor-floating range (^2.0.0) was available: apiLevel is the lowest the
+    # range allows, and the review should suggest pinning.
+    apiAmbiguous  = $base.ambiguous
+    minCompanion  = $apiProfile.minCompanion
+    # The compliance reviewer loads apiSkill plus exactly these files, and nothing newer.
+    apiReferences = @($apiProfile.apiReferences)
+    apiReferencesMissing = @($apiProfile.referencesMissing)
     baseRange     = $baseRange
     packageName   = if (Has-Prop $pkg 'name') { $pkg.name } else { $null }
     packageVersion = if (Has-Prop $pkg 'version') { $pkg.version } else { $null }
@@ -170,6 +187,18 @@ Write-Host "Module Fact Sheet — $($facts.module)" -ForegroundColor Cyan
 Write-Host ("─" * 64)
 Write-Host ("  Language:        {0}   API: {1}" -f $facts.language, $facts.apiVersion)
 Write-Host ("  Apply skill:     {0}  (load ONLY this api-compliance skill)" -f $facts.apiSkill) -ForegroundColor Yellow
+$apiLine = "$(if ($facts.apiLevel -eq '1') { '1.x' } else { $facts.apiLevel }) (base $($facts.baseVersion) from $($facts.baseVersionSource))"
+if ($facts.minCompanion) { $apiLine += " -> Companion $($facts.minCompanion)+" }
+Write-Host ("  API level:       {0}" -f $apiLine) -ForegroundColor Yellow
+if ($facts.apiReferences.Count -gt 0) {
+    Write-Host ("  Load references: {0}  (and nothing newer)" -f ($facts.apiReferences -join ', ')) -ForegroundColor Yellow
+}
+if ($facts.apiAmbiguous) {
+    Write-Host  "  API level AMBIGUOUS — no lockfile entry; the range lets the minor float. Assumed the lowest; suggest pinning ~2.N.x." -ForegroundColor DarkYellow
+}
+if ($facts.apiReferencesMissing.Count -gt 0) {
+    Write-Host ("  Not in the skill copy: {0} — review against the files that exist and say so." -f ($facts.apiReferencesMissing -join ', ')) -ForegroundColor DarkYellow
+}
 Write-Host ("  @companion/base: {0}" -f $facts.baseRange)
 Write-Host ("  package:         {0}@{1}   manifest id: {2}" -f $facts.packageName, $facts.packageVersion, $facts.manifestId)
 Write-Host ("  runtime entry:   {0}" -f $facts.runtimeEntry)
