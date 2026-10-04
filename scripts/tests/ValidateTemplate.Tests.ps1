@@ -701,6 +701,84 @@ try {
     $h2 = Invoke-Validator $tmod $ttpl
     Ok ((Find-Findings $h2 'CONFIG-DIFF' '.husky/pre-commit').Count -eq 0) "a matching husky hook is clean"
     Ok ((Find-Findings $h2 'HUSKY' $null).Count -eq 0)                     "…with no HUSKY finding either"
+
+    # ── API 2.1 allowances: node26 runtime + node26 tsconfig preset ──────────
+    # The v2 templates still pin base 2.0.x / node22. API 2.1 added node26, so a 2.1 module
+    # on node26 (manifest runtime + tools' node26 tsconfig preset) is correct and must not be
+    # flagged — while a 2.0 module on node26 still must be, and any other tsconfig
+    # difference still is a CONFIG-DIFF.
+    $apiTpl = Join-Path $root 'companion-module-template-ts-api'
+    Copy-Item -Recurse -Force $tsTpl $apiTpl
+    Set-File (Join-Path $apiTpl 'tsconfig.build.json') "{`n`t`"extends`": `"@companion-module/tools/tsconfig/node22/recommended-esm.json`",`n`t`"compilerOptions`": { `"outDir`": `"./dist`" }`n}"
+    Set-File (Join-Path $apiTpl 'package.json') (Get-Content -Raw (Join-Path (New-TsModule 'tplsrc' '"types": ["node"]') 'package.json'))
+    Set-File (Join-Path $apiTpl 'companion/manifest.json') (@'
+{
+  "type": "connection",
+  "id": "your-module-name",
+  "name": "your-module-name",
+  "maintainers": [ { "name": "Your name", "email": "Your email" } ],
+  "runtime": { "type": "node22", "api": "nodejs-ipc", "entrypoint": "../src/main.ts" },
+  "keywords": []
+}
+'@)
+    function New-ApiModule($name, $baseRange, $runtime, $buildExtends, [string]$lockVersion) {
+        $dir = New-TsModule $name '"types": ["node"]'
+        Set-File (Join-Path $dir 'tsconfig.build.json') "{`n`t`"extends`": `"$buildExtends`",`n`t`"compilerOptions`": { `"outDir`": `"./dist`" }`n}"
+        $pkgText = (Get-Content -Raw (Join-Path $dir 'package.json')) -replace '"~2\.0\.4"', "`"$baseRange`""
+        Set-File (Join-Path $dir 'package.json') $pkgText
+        $manText = (Get-Content -Raw (Join-Path $dir 'companion/manifest.json')) -replace '"node22"', "`"$runtime`""
+        Set-File (Join-Path $dir 'companion/manifest.json') $manText
+        if ($lockVersion) {
+            Set-File (Join-Path $dir 'yarn.lock') "`"@companion-module/base@npm:$baseRange`":`n  version: $lockVersion`n"
+        }
+        return $dir
+    }
+    $preset22 = '@companion-module/tools/tsconfig/node22/recommended-esm.json'
+    $preset26 = '@companion-module/tools/tsconfig/node26/recommended.json'
+
+    Write-Host "API 2.1 — node26 runtime + node26 tsconfig preset"
+    $m21 = New-ApiModule 'api21n26' '~2.1.3' 'node26' $preset26 '2.1.3'
+    $r21 = Invoke-Validator $m21 $apiTpl
+    Ok ($r21.apiLevel -eq '2.1')                                         "reports apiLevel 2.1 (from yarn.lock)"
+    Ok ($r21.baseVersion -eq '2.1.3' -and $r21.baseVersionSource -eq 'yarn.lock') "reports baseVersion + source"
+    Ok ((Find-Findings $r21 'MAN-RUNTIME' $null).Count -eq 0)            "node26 on API 2.1 is not a MAN-RUNTIME"
+    Ok ((Find-Findings $r21 'CONFIG-DIFF' 'tsconfig.build.json').Count -eq 0) "node26 tools preset on API 2.1 is not a CONFIG-DIFF"
+    $n26 = Find-Findings $r21 'TSCONFIG-NODE26' 'tsconfig.build.json'
+    Ok ($n26.Count -eq 1 -and $n26[0].severity -eq 'Info')              "…it is an Info TSCONFIG-NODE26 note instead"
+    Ok ($r21.counts.critical -eq 0)                                      "clean 2.1/node26 module has no criticals (got $(@($r21.findings | Where-Object severity -eq 'Critical' | ForEach-Object { $_.id }) -join ','))"
+
+    Write-Host "API 2.1 — node22 stays valid"
+    $m21b = New-ApiModule 'api21n22' '~2.1.3' 'node22' $preset22 '2.1.3'
+    $r21b = Invoke-Validator $m21b $apiTpl
+    Ok ((Find-Findings $r21b 'MAN-RUNTIME' $null).Count -eq 0)           "node22 on API 2.1 is fine"
+    Ok ((Find-Findings $r21b 'TSCONFIG-NODE26' $null).Count -eq 0)       "no node26 note when nothing changed"
+
+    Write-Host "API 2.0 — node26 is a version mismatch"
+    $m20 = New-ApiModule 'api20n26' '~2.0.4' 'node26' $preset26 '2.0.4'
+    $r20 = Invoke-Validator $m20 $apiTpl
+    $rt = Find-Findings $r20 'MAN-RUNTIME' 'companion/manifest.json'
+    Ok ($rt.Count -eq 1 -and $rt[0].severity -eq 'Critical')            "node26 on API 2.0 is a Critical MAN-RUNTIME"
+    Ok ($rt.Count -eq 1 -and $rt[0].message -match '>= 2\.1')            "…whose message says node26 needs base >= 2.1"
+    Ok ((Find-Findings $r20 'CONFIG-DIFF' 'tsconfig.build.json').Count -eq 1) "node26 preset on API 2.0 is still a CONFIG-DIFF"
+    Ok ((Find-Findings $r20 'TSCONFIG-NODE26' $null).Count -eq 0)        "…with no node26 allowance"
+
+    Write-Host "API 2.1 — node26 preset plus another change"
+    $m21c = New-ApiModule 'api21mix' '~2.1.3' 'node26' $preset26 '2.1.3'
+    Set-File (Join-Path $m21c 'tsconfig.build.json') "{`n`t`"extends`": `"$preset26`",`n`t`"compilerOptions`": { `"outDir`": `"./build`" }`n}"
+    $r21c = Invoke-Validator $m21c $apiTpl
+    Ok ((Find-Findings $r21c 'CONFIG-DIFF' 'tsconfig.build.json').Count -eq 1) "any other tsconfig difference is still a Critical CONFIG-DIFF"
+    Ok ((Find-Findings $r21c 'TSCONFIG-NODE26' $null).Count -eq 0)       "…and not excused as a node26 note"
+
+    Write-Host "API 2.1 — node26 preset but runtime still node22"
+    $m21d = New-ApiModule 'api21half' '~2.1.3' 'node22' $preset26 '2.1.3'
+    $r21d = Invoke-Validator $m21d $apiTpl
+    Ok ((Find-Findings $r21d 'CONFIG-DIFF' 'tsconfig.build.json').Count -eq 1) "node26 preset without a node26 runtime is still a CONFIG-DIFF"
+
+    Write-Host "API 2.1 — an unknown runtime is still flagged"
+    $m21e = New-ApiModule 'api21n18' '~2.1.3' 'node18' $preset22 '2.1.3'
+    $r21e = Invoke-Validator $m21e $apiTpl
+    $rt18 = Find-Findings $r21e 'MAN-RUNTIME' 'companion/manifest.json'
+    Ok ($rt18.Count -eq 1 -and $rt18[0].message -match 'node22, node26') "node18 on API 2.1 lists the allowed runtimes"
 }
 finally {
     $env:COMPANION_TEMPLATE_FRESHNESS_TTL = $script:prevTtl
