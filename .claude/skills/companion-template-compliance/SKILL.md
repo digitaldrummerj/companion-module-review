@@ -68,7 +68,7 @@ meta table.
 | **(Info — for you, not the maintainer)** The template tracks a file the validator has no rule for. It is still compared, as exact text; add a row to `$templateFileRules` in `scripts/validate-template.ps1` and a line to this table | `TEMPLATE-COVERAGE` |
 | Gitignored artifacts not committed (`node_modules`, `/pkg`, `*.tgz`, `/dist`, `/.yarn`, …) | `GITIGNORED-COMMITTED` |
 | **(High)** `LICENSE` matches the template **exactly** — the copyright line included (see below) | `LICENSE-DIFF` |
-| All source under `src/` (none at module root) | `SRC-AT-ROOT` |
+| All source under `src/` (none at module root). Tool config files named `<tool>.config.(js|ts)` (`vitest.config.ts`, `vite.config.js`, `jest.config.ts`, …) belong at the root and are exempt | `SRC-AT-ROOT` |
 | `package.json`: version-vs-tag, `main` (references an existing entry file; filename may differ from the template), `repository.url`, required fields, `packageManager` (yarn@4), required scripts, devDependencies, lint-staged | `PKG-VERSION`, `PKG-MAIN`, `PKG-REPO`, `PKG-FIELD`, `PKG-YARN`, `PKG-SCRIPT`, `PKG-DEVDEP`, `PKG-LINTSTAGED`, `PKG-DEP` |
 | `manifest.json`: non-placeholder/non-empty maintainers, banned keywords, `type` (v2 `connection`), `runtime.type/api` (must match template, except the API 2.1 `node26` allowance below), `runtime.entrypoint` (exists and resolves to the same file as `main`) | `MAN-PLACEHOLDER`, `MAN-MAINT`, `MAN-KEYWORD`, `MAN-TYPE`, `MAN-RUNTIME`, `ENTRY-MISMATCH` |
 | `companion/HELP.md` not a stub | `HELP-STUB` |
@@ -84,6 +84,13 @@ meta table.
 | base ≥ 2.1, `runtime.type: "node26"`, `tsconfig.build.json` extends `@companion-module/tools/tsconfig/node26/recommended(.json)` where the template has `node22/recommended-esm.json` | `TSCONFIG-NODE26` (Info, for you) instead of `CONFIG-DIFF` — any *other* tsconfig difference is still a Critical `CONFIG-DIFF` |
 
 `TSCONFIG-NODE26` is an environment note like `TEMPLATE-COVERAGE`: it does not go into the review markdown.
+
+**Accepted deviation: `tsconfig.json` widened to type-check tests.** `tsconfig.json` is the editor/typecheck config; the build uses `tsconfig.build.json`, which stays an exact match. A module that ships tests may widen `tsconfig.json` with:
+- extra `include` / `exclude` entries (`tests/**/*.ts`, `scripts/**/*.ts`, `vitest.config.ts`, …)
+- extra `compilerOptions.types` entries (`vitest/globals`, `jest`, …)
+- `compilerOptions.rootDir` and `compilerOptions.noEmit`
+
+Every value the template sets must still be present and unchanged. If that holds, the validator reports an Info `TSCONFIG-DEV-SCOPE` listing what was widened, instead of a `CONFIG-DIFF`. Anything else in `tsconfig.json` (a different `extends`, another compiler option, a removed template `include`) is still a Critical `CONFIG-DIFF`. `TSCONFIG-DEV-SCOPE` does not go into the review markdown either.
 
 Expectations are derived from the matched template, so v1 modules are checked against the
 v1 template and are not flagged for v2-only differences (e.g. v1 manifests correctly have
@@ -146,7 +153,7 @@ manifest.json maintainers[0].name = "Your name"  ← placeholder, must be replac
 ```
 
 Findings addressed to *you* rather than the maintainer — `TEMPLATE-STALE`,
-`TEMPLATE-UNVERIFIED`, `TEMPLATE-COVERAGE`, `TSCONFIG-NODE26` — never appear in the review markdown.
+`TEMPLATE-UNVERIFIED`, `TEMPLATE-COVERAGE`, `TSCONFIG-NODE26`, `TSCONFIG-DEV-SCOPE` — never appear in the review markdown.
 
 If the script cannot run (templates unavailable), fall back to comparing the module directly
 against the matching template repo in `companion-module-templates/` (run `setup.ps1` to clone
