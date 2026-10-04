@@ -36,7 +36,16 @@ Add `-ReviewTag <version>` when the user specified a version (omit it otherwise 
 ```
 pwsh scripts/module-facts.ps1 -ModuleDir <directory> -GitTag <reviewTag> -Json
 ```
-Capture `language`, `apiVersion`, **`apiSkill`** (`companion-v1-api-compliance` or `companion-v2-api-compliance`), `protocols`, `srcFiles`, `templateCheck`, **`templateFreshness`**.
+Capture `language`, `apiVersion`, **`apiSkill`** (`companion-v1-api-compliance` or `companion-v2-api-compliance`), `protocols`, `srcFiles`, `templateCheck`, **`templateFreshness`**, and the API-level fields:
+
+| Field | Meaning |
+|---|---|
+| `apiLevel` | `1`, `2.0`, `2.1`, … — the exact API rule set (resolved from `yarn.lock` / lockfile / `node_modules`, falling back to the `package.json` range) |
+| `baseVersion` / `baseVersionSource` | e.g. `2.1.3` from `yarn.lock` |
+| `apiAmbiguous` | `true` when only a caret range (`^2.x`) was available, so the minor version had to be assumed |
+| `minCompanion` | the Companion version the module needs (4.3 for API 2.0, 5.0 for API 2.1) |
+| `apiReferences` | the reference files of `apiSkill` the compliance reviewer must load (e.g. `references/v2.0.md`, `references/v2.1.md`) |
+| `apiScan` | deterministic version-specific hints from `scripts/api-scan.ps1` (leads for the compliance reviewer, not findings) |
 
 ### Step 3a — Template freshness gate (STOP here if it fails)
 
@@ -71,7 +80,7 @@ Every `Critical` finding is **blocking** — carry each into the review verbatim
 
 ## Step 6 — Dispatch the review subagents (in parallel)
 
-Launch all three with the Agent tool in one message. Give each: the **scope** (Step 0), the **fact sheet**, the clone `directory`, the `previousTag`, and the `apiSkill` name. Each returns findings (severity, `file:line`, classification when scope ≠ module, description, suggested fix **for the maintainer**) — they never edit the module.
+Launch all three with the Agent tool in one message. Give each: the **scope** (Step 0), the **fact sheet**, the clone `directory`, the `previousTag`, and the `apiSkill` name. Give the compliance reviewer also `apiLevel`, `baseVersion`, `apiReferences`, and `apiScan`. Each returns findings (severity, `file:line`, classification when scope ≠ module, description, suggested fix **for the maintainer**) — they never edit the module.
 - `companion-protocol-reviewer` — connection lifecycle, sockets, OSC/TCP/UDP/HTTP/Bonjour, timeouts, `destroy()` cleanup, `InstanceStatus`.
 - `companion-qa-reviewer` — bugs, edge cases, error handling, performance, async correctness, silent failures.
 - `companion-compliance-reviewer` — reads `.claude/skills/<apiSkill>/SKILL.md`; actions/feedbacks/presets/variables/config structure, upgrade scripts, test detection (absence is non-blocking).
@@ -86,7 +95,13 @@ Read `.claude/skills/review-scorecard/SKILL.md` for the 📊 Scorecard and 📋 
 | **Template** | `companion-module-template-js-v1` @ `9e222b4` (2026-03-26, pinned) · `.yarnrc.yml` from `companion-module-template-js` @ `0f916f9` (2026-06-24) |
 ```
 
-Take the values from the validator's `templateRevision` / `yarnrcTemplate`; v2 modules have no second clause. If the run used `-SkipTemplateFreshness`, append `— freshness not verified (offline run)`. Sections in order: title + meta, **📊 Scorecard**, **Verdict**, **📋 Issues** (Blocking / Non-blocking), `🔴 Critical` → `🟠 High` → `🟡 Medium` → `🟢 Low` → `💡 Nice to Have` → `🔮 Next Release` → `⚠️ Pre-existing Notes` → `🧪 Tests`. Omit empty sections. The **Verdict** section is the status line only (`✅ Approved` / `❌ Changes Required`) — no reasoning paragraph. Include `🧪 Tests` **only if tests were found** (framework/files/`test` script present) — if none, omit the section entirely rather than writing "no tests found." Plain text (no emoji) in individual issue headings for stable anchors.
+Take the values from the validator's `templateRevision` / `yarnrcTemplate`; v2 modules have no second clause. Add an **`API`** row from the fact sheet:
+
+```markdown
+| **API** | 2.1 (base 2.1.3, yarn.lock) — requires Companion 5.0+ |
+```
+
+For v1 modules write e.g. `1 (base 1.14.1, yarn.lock)`. If `apiAmbiguous` is true, add a 🟡 Medium finding asking the maintainer to pin `@companion-module/base` with `~2.N.x` (or commit the lockfile) so the target API version — and the Companion version users need — is explicit. If the run used `-SkipTemplateFreshness`, append `— freshness not verified (offline run)`. Sections in order: title + meta, **📊 Scorecard**, **Verdict**, **📋 Issues** (Blocking / Non-blocking), `🔴 Critical` → `🟠 High` → `🟡 Medium` → `🟢 Low` → `💡 Nice to Have` → `🔮 Next Release` → `⚠️ Pre-existing Notes` → `🧪 Tests`. Omit empty sections. The **Verdict** section is the status line only (`✅ Approved` / `❌ Changes Required`) — no reasoning paragraph. Include `🧪 Tests` **only if tests were found** (framework/files/`test` script present) — if none, omit the section entirely rather than writing "no tests found." Plain text (no emoji) in individual issue headings for stable anchors.
 
 Scope adjusts the presentation:
 - **`tag`:** omit `⚠️ Pre-existing Notes`; scorecard "⚠️ Existing" column is 0 (all findings new).
