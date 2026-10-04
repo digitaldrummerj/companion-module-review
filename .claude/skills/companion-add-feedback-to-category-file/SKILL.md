@@ -1,6 +1,7 @@
 ---
 name: companion-add-feedback-to-category-file
-description: 'Add one or more feedbacks to an existing feedback category file in a Companion module. Use when you need to extend feedbacks in an existing src/feedbacks/feedback-{category}.ts file, add a feedback to a feedback category file, or grow the feedback list of an existing category file. Does NOT apply when no feedback category file exists yet — use companion-feedback-file-pattern instead.'
+description: '(@companion-module/base v1.x) Add one or more feedbacks to an existing feedback category file in a Companion module. Use when you need to extend feedbacks in an existing src/feedbacks/feedback-{category}.ts file, add a feedback to a feedback category file, or grow the feedback list of an existing category file. Does NOT apply when no feedback category file exists yet — use companion-feedback-file-pattern instead. For v2 modules use companion-v2-add-feedback-to-category-file instead.'
+license: MIT
 ---
 
 # Companion Add Feedback to Category File
@@ -170,3 +171,4 @@ callback: (feedback) => {
 - **`companion-feedback-file-pattern`** skill — use when creating a brand-new feedback category file (includes aggregator wiring)
 - `src/feedbacks/feedback-utils.ts` — `getTargetOption()` and `targetChoices()` shared helpers
 - `src/feedbacks/feedback-target-status.ts` — example of a boolean feedback category file with multiple feedbacks
+- **companion-v2-add-feedback-to-category-file** — the @companion-module/base v2.x version of this skill; for migrating a v1 module see **companion-v1-to-v2-migration**

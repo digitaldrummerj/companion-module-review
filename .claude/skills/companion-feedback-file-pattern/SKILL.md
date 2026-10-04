@@ -1,6 +1,7 @@
 ---
 name: companion-feedback-file-pattern
-description: 'Creates a new feedback category file in a Companion module and wires it into the aggregator. Use when no src/feedbacks/feedback-{category}.ts exists yet for the category. Does NOT apply when the category file already exists — use companion-add-feedback-to-category-file instead to add feedbacks to an existing file.'
+description: '(@companion-module/base v1.x) Creates a new feedback category file in a Companion module and wires it into the aggregator. Use when no src/feedbacks/feedback-{category}.ts exists yet for the category. Does NOT apply when the category file already exists — use companion-add-feedback-to-category-file instead to add feedbacks to an existing file. For v2 modules use companion-v2-feedback-file-pattern instead.'
+license: MIT
 ---
 
 # Companion Feedback File Pattern
@@ -372,3 +373,4 @@ Zero TypeScript errors means the new file is properly typed and wired.
 - `@companion-module/base` TypeScript types — `CompanionFeedbackDefinition`, `CompanionFeedbackDefinitions`, `SomeCompanionFeedbackInputField`
 - **companion-feedbacks** skill — reference for `CompanionFeedbackDefinition` API details, boolean vs advanced, subscribe/unsubscribe
 - Companion module development docs: https://companion-module.github.io/companion-module-tools/
+- **companion-v2-feedback-file-pattern** — the @companion-module/base v2.x version of this skill; for migrating a v1 module see **companion-v1-to-v2-migration**

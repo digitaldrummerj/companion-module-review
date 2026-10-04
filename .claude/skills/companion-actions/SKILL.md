@@ -1,6 +1,7 @@
 ---
 name: companion-actions
-description: 'Reference for Bitfocus Companion module action definitions using @companion-module/base. Use when asked to add an action, implement a button command, define action options, or wire up a device control. Also use when user needs help with action callbacks, subscribe/unsubscribe lifecycle, or the CompanionActionDefinition API.'
+description: '(@companion-module/base v1.x) Reference for Bitfocus Companion module action definitions using @companion-module/base. Use when asked to add an action, implement a button command, define action options, or wire up a device control. Also use when user needs help with action callbacks, subscribe/unsubscribe lifecycle, or the CompanionActionDefinition API. For v2 modules use companion-v2-actions instead.'
+license: MIT
 ---
 
 # Companion Actions Skill
@@ -32,7 +33,7 @@ Defines a single action with its name, options, and callback.
 
 ### `SomeCompanionActionInputField`
 
-Union type covering all option field types: `textinput`, `number`, `dropdown`, `checkbox`, `colorpicker`, `multidropdown`, `bonjourdevice`, `static-text`, `custom-variable`.
+Union type covering all option field types: `textinput`, `number`, `dropdown`, `checkbox`, `colorpicker`, `multidropdown`, `static-text`, `custom-variable`. (`bonjour-device` and `secret-text` are config-only field types.)
 
 Each field requires: `id`, `type`, `label`. Additional properties vary by type (e.g., `min`/`max` for `number`, `choices` for `dropdown`).
 
@@ -249,4 +250,5 @@ import type {
 
 - **companion-config** — For understanding option field types (they match config field types)
 - **companion-feedbacks** — Actions often trigger feedback updates via `self.checkFeedbacks()`
-- **companion-variables** — Actions may update variable values via `self.setVariableValues()`
+- **companion-variable-set-value** — Actions may update variable values via `self.setVariableValues()` (declare them first with **companion-variable-definition**)
+- **companion-v2-actions** — the @companion-module/base v2.x version of this skill; for migrating a v1 module see **companion-v1-to-v2-migration**

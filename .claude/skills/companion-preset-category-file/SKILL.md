@@ -1,6 +1,7 @@
 ---
 name: companion-preset-category-file
-description: 'Teaches the enum-based preset category file pattern used in split-file Companion modules. Use when asked to create preset file, add preset category, add preset category file, wire presets, extend presets.ts aggregator, or use enum-based preset IDs in a src/presets/preset-{category}.ts file.'
+description: '(@companion-module/base v1.x) Teaches the enum-based preset category file pattern used in split-file Companion modules. Use when asked to create preset file, add preset category, add preset category file, wire presets, extend presets.ts aggregator, or use enum-based preset IDs in a src/presets/preset-{category}.ts file. For v2 modules use companion-v2-preset-category-file instead.'
+license: MIT
 ---
 
 # Companion Preset Category File Pattern
@@ -388,3 +389,4 @@ Currently defined:
 - `src/presets/preset-utils.ts` — `CompanionPresetExt` type, `colorWhite`/`colorBlack` constants, `btn()` helper
 - Sibling skill: `companion-action-file-pattern` — the parallel pattern this skill mirrors
 - Sibling skill: `companion-add-preset-to-category-file` — use when category file already exists
+- **companion-v2-preset-category-file** — the @companion-module/base v2.x version of this skill; for migrating a v1 module see **companion-v1-to-v2-migration**

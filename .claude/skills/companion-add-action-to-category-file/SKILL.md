@@ -1,6 +1,7 @@
 ---
 name: companion-add-action-to-category-file
-description: 'Add one or more actions to an existing action category file in a Companion module. Use when you need to extend actions in an existing src/actions/action-{category}.ts file, add action to an action category file, or grow the action list of an existing category file. Does NOT apply when no action category file exists yet — use companion-action-file-pattern instead.'
+description: '(@companion-module/base v1.x) Add one or more actions to an existing action category file in a Companion module. Use when you need to extend actions in an existing src/actions/action-{category}.ts file, add action to an action category file, or grow the action list of an existing category file. Does NOT apply when no action category file exists yet — use companion-action-file-pattern instead. For v2 modules use companion-v2-add-action-to-category-file instead.'
+license: MIT
 ---
 
 # Companion Add Action to Category File
@@ -148,3 +149,4 @@ import { buildCommand } from './action-utils.js'
 - **`companion-action-file-pattern`** skill — use this when creating a brand-new action category file (includes aggregator wiring)
 - `src/actions/action-global-recording.ts` — clean example of sync callbacks dispatching device commands
 - `src/actions/action-target.ts` — example with async callbacks and target-selection options
+- **companion-v2-add-action-to-category-file** — the @companion-module/base v2.x version of this skill; for migrating a v1 module see **companion-v1-to-v2-migration**
