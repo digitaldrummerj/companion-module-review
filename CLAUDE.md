@@ -6,7 +6,7 @@ This repo reviews Bitfocus Companion modules for release approval and produces a
 
 Say **"review the next module"** or **"review companion-module-X"**, or use **`/review-module [name] [tag|module|both]`**. Both invoke the `review-companion-module` skill, which runs the pipeline in order:
 
-`bitfocus-queue.ps1` → `bitfocus-setup-module.ps1` → `module-facts.ps1` → `validate-template.ps1 -RunBuild` → dispatch the `companion-protocol-reviewer`, `companion-qa-reviewer`, and `companion-compliance-reviewer` subagents → assemble one review under `reviews/{module}/` + a ⬜ `TRACKER.md` row.
+`bitfocus-queue.ps1` → `bitfocus-setup-module.ps1` → `module-facts.ps1` (runs `api-scan.ps1`; reports the API level — 1 / 2.0 / 2.1 — and which v2 reference files apply) → `validate-template.ps1 -RunBuild` → dispatch the `companion-protocol-reviewer`, `companion-qa-reviewer`, and `companion-compliance-reviewer` subagents → assemble one review under `reviews/{module}/` + a ⬜ `TRACKER.md` row.
 
 **Scope** (default `tag`): `tag` = only this release's changes (`previousTag..reviewTag` diff); `module` = the whole current module, flat by severity; `both` = whole module classified new vs pre-existing.
 

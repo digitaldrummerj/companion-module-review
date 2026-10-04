@@ -57,6 +57,7 @@ Or individually:
 pwsh scripts/tests/ReviewState.Tests.ps1
 pwsh scripts/tests/ValidateTemplate.Tests.ps1
 pwsh scripts/tests/ModuleFacts.Tests.ps1
+pwsh scripts/tests/ApiScan.Tests.ps1
 ```
 
 ---
@@ -80,10 +81,12 @@ All scripts are read-only against GitHub/BitFocus except `git clone` (setup) and
 |--------|--------------|
 | **`bitfocus-queue.ps1 [-Json]`** | Show the pending review queue, oldest first, **labeled by local review state** (`needs review` / `reviewed - feedback pending` / `re-review?`). "Next up" never points at a module already reviewed locally whose feedback hasn't been sent yet. |
 | **`bitfocus-setup-module.ps1 [-ModuleName <name>] [-Force] [-Json]`** | Validate `PENDING` status, find the previous approved tag, and clone the module into `companion-modules-reviewing/`. Auto-selects the oldest module **that still needs review** (skips feedback-pending). Naming a feedback-pending module requires `-Force`. |
-| **`module-facts.ps1 -ModuleDir <path> [-GitTag <tag>] [-SkipTemplateCheck] [-Json]`** | The shared **fact sheet**: language (JS/TS), API version → the single applicable api-compliance skill, package.json/manifest essentials, detected protocols, source-tree list, and a template-compliance summary. Run once at review start; hand it to every reviewer. |
-| **`validate-template.ps1 -ModuleDir <path> [-ExpectedVersion <tag>] [-RunBuild] [-TemplateDir <path>] [-SkipTemplateFreshness] [-Json]`** | The **deterministic** template review: required files, config-file parity, package.json/manifest fields, LICENSE, `src/`-only source, devDependencies, husky, gitignored-not-committed. Auto-selects the matching template by API version × language (the `-v1`/v2, js/ts variants in `companion-module-templates/`). Verifies the template clone against upstream **before** comparing anything (read-only `git ls-remote`; no fetch, no pull) — a clone behind upstream would judge the module against outdated expectations. Which files are compared is derived from the template's own tracked files, so a file added upstream is checked automatically. `-RunBuild` also runs `yarn install`/`yarn package` (+ `yarn lint` for TS). Exits 1 on any Critical, **3** if the template is stale or unverifiable. |
+| **`module-facts.ps1 -ModuleDir <path> [-GitTag <tag>] [-SkipTemplateCheck] [-SkipTemplateFreshness] [-SkipApiScan] [-Json]`** | The shared **fact sheet**: language (JS/TS), API version → the single applicable api-compliance skill, the exact **API level** (`1` / `2.0` / `2.1`, resolved from the lockfile before the `package.json` range — `baseVersion`, `baseVersionSource`, `apiAmbiguous` when only a minor-floating range like `^2.0.0` was available) with the minimum Companion release and the **`apiReferences`** the compliance reviewer must load (`references/v2.0.md`, plus `v2.1.md` for 2.1 — never a later one), package.json/manifest essentials, detected protocols, source-tree list, a template-compliance summary, and the **`apiScan`** hints from `api-scan.ps1`. Run once at review start; hand it to every reviewer. |
+| **`validate-template.ps1 -ModuleDir <path> [-ExpectedVersion <tag>] [-RunBuild] [-TemplateDir <path>] [-SkipTemplateFreshness] [-Json]`** | The **deterministic** template review: required files, config-file parity, package.json/manifest fields, LICENSE, `src/`-only source, devDependencies, husky, gitignored-not-committed. Auto-selects the matching template by API version × language (the `-v1`/v2, js/ts variants in `companion-module-templates/`). Verifies the template clone against upstream **before** comparing anything (read-only `git ls-remote`; no fetch, no pull) — a clone behind upstream would judge the module against outdated expectations. Which files are compared is derived from the template's own tracked files, so a file added upstream is checked automatically. **API 2.1 allowances:** the v2 templates still pin base 2.0.x / `node22`, so `runtime.type` is judged against the module's API level — `node26` is accepted on 2.1 and a Critical `MAN-RUNTIME` on 2.0 — and a tsconfig whose only difference is extending tools' `node26/recommended` preset (2.1 + `node26` runtime) is an Info `TSCONFIG-NODE26`, not a `CONFIG-DIFF`. `-RunBuild` also runs `yarn install`/`yarn package` (+ `yarn lint` for TS). Exits 1 on any Critical, **3** if the template is stale or unverifiable. |
+| **`api-scan.ps1 -ModuleDir <path> [-ApiLevel <level>] [-Json]`** | Deterministic, comment-aware grep of `src/` + the manifest for API usage, keyed to the module's API level: v1 leftovers on any v2 module (`V1-*`), 2.1-only features on a 2.0 module (`LATER-API-2.1`), missing `affectedProperties` / `optionsToMonitorForSubscribe` and deprecated `setCustomVariableValue` on 2.1, and two v2 behaviours that compile but misbehave (`HELPER-SEND-AWAIT`, `BOOL-FEEDBACK-HELPER-BUG`). v1 modules aren't scanned. **Hints, not findings** — the compliance reviewer verifies each `file:line`; always exits 0. Run automatically by `module-facts.ps1`. |
 | **`update-templates.ps1 [-DryRun] [-Yes] [-Json]`** | **The only thing that ever moves a template.** Fast-forwards the two v2 clones to `origin/main` (`--ff-only`; refuses a dirty work tree or a diverged clone) and asserts the pinned `-v1` clones haven't drifted. Warns when reviews look in flight. Never run by the pipeline — refresh between review sessions, not during one. |
 | **`cleanup-modules.ps1`** | Remove cloned `companion-module-*` directories from `companion-modules-reviewing/` to reclaim disk. |
+| **`archive-reviewed-clones.ps1 [-Destination <path>] [-Apply]`** | Move clones of fully signed-off modules — at least one `TRACKER.md` row and **every** row ✅ — into `companion-modules-reviewing/_removed/` for a final look before deleting by hand. A single ⬜ row keeps the clone; modules with no row are left alone. Dry run unless `-Apply`; nothing is deleted. |
 
 ### The review process, mapped to the tooling
 
@@ -91,10 +94,10 @@ All scripts are read-only against GitHub/BitFocus except `git clone` (setup) and
 |------|---------|
 | Find the next module | `bitfocus-queue.ps1` (skips already-reviewed) |
 | Set it up | `bitfocus-setup-module.ps1` (clone + previous-tag lookup) |
-| Gather shared context | `module-facts.ps1` → fact sheet (also establishes template freshness) |
+| Gather shared context | `module-facts.ps1` → fact sheet (also establishes template freshness, the API level + reference files, and the `api-scan.ps1` hints) |
 | Template up to date? | if not, the review **stops** — `update-templates.ps1`, then start over |
 | Deterministic compliance | `validate-template.ps1 -RunBuild` |
-| Judgment review | the review subagents (protocol, QA/logic, compliance/tests) read the fact sheet + the one applicable api skill |
+| Judgment review | the review subagents (protocol, QA/logic, compliance/tests) read the fact sheet + the one applicable api skill (and, for v2, only the `apiReferences` up to the module's API level) |
 | Assemble + record | single review file under `reviews/{module}/` + a ⬜ row in `reviews/TRACKER.md` |
 | Deliver feedback | send the maintainer the review via the developer portal, then mark the row ✅ in `TRACKER.md` |
 
