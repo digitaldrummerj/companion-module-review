@@ -378,6 +378,181 @@ function Test-TsconfigDevScope {
     return $res
 }
 
+function Remove-JsComments {
+    # Strip // and /* */ comments from JS source while leaving string contents alone, so the
+    # eslint-config comparison below isn't thrown by explanatory comments in an override.
+    param([string]$Text)
+    $sb = [System.Text.StringBuilder]::new()
+    $i = 0; $n = $Text.Length; $quote = $null
+    while ($i -lt $n) {
+        $c = $Text[$i]
+        if ($quote) {
+            [void]$sb.Append($c)
+            if ($c -eq '\' -and $i + 1 -lt $n) { [void]$sb.Append($Text[$i + 1]); $i += 2; continue }
+            if ($c -eq $quote) { $quote = $null }
+            $i++; continue
+        }
+        if ($c -eq "'" -or $c -eq '"' -or $c -eq '`') { $quote = $c; [void]$sb.Append($c); $i++; continue }
+        if ($c -eq '/' -and $i + 1 -lt $n -and $Text[$i + 1] -eq '/') {
+            while ($i -lt $n -and $Text[$i] -ne "`n") { $i++ }
+            continue
+        }
+        if ($c -eq '/' -and $i + 1 -lt $n -and $Text[$i + 1] -eq '*') {
+            $end = $Text.IndexOf('*/', $i + 2)
+            $i = if ($end -lt 0) { $n } else { $end + 2 }
+            continue
+        }
+        [void]$sb.Append($c); $i++
+    }
+    return $sb.ToString()
+}
+
+function Split-JsTopLevel {
+    # Split the inside of a JS array/object literal on commas at nesting depth 0.
+    param([string]$Text)
+    $parts = [System.Collections.Generic.List[string]]::new()
+    $depth = 0; $quote = $null; $start = 0
+    for ($i = 0; $i -lt $Text.Length; $i++) {
+        $c = $Text[$i]
+        if ($quote) {
+            if ($c -eq '\') { $i++; continue }
+            if ($c -eq $quote) { $quote = $null }
+            continue
+        }
+        if ($c -eq "'" -or $c -eq '"' -or $c -eq '`') { $quote = $c; continue }
+        if ('([{'.Contains($c)) { $depth++; continue }
+        if (')]}'.Contains($c)) { $depth--; continue }
+        if ($c -eq ',' -and $depth -eq 0) { $parts.Add($Text.Substring($start, $i - $start).Trim()); $start = $i + 1 }
+    }
+    $last = $Text.Substring($start).Trim()
+    if ($last) { $parts.Add($last) }
+    return @($parts | Where-Object { $_ })
+}
+
+function Get-JsBracketBody {
+    # Given text and the index of an opening bracket, return what lies between it and its
+    # matching close (string-aware), or $null if unbalanced.
+    param([string]$Text, [int]$OpenIndex)
+    $open = $Text[$OpenIndex]
+    $close = switch ($open) { '[' { ']' } '{' { '}' } '(' { ')' } }
+    $depth = 0; $quote = $null
+    for ($i = $OpenIndex; $i -lt $Text.Length; $i++) {
+        $c = $Text[$i]
+        if ($quote) {
+            if ($c -eq '\') { $i++; continue }
+            if ($c -eq $quote) { $quote = $null }
+            continue
+        }
+        if ($c -eq "'" -or $c -eq '"' -or $c -eq '`') { $quote = $c; continue }
+        if ($c -eq $open) { $depth++ }
+        elseif ($c -eq $close) { $depth--; if ($depth -eq 0) { return $Text.Substring($OpenIndex + 1, $i - $OpenIndex - 1) } }
+    }
+    return $null
+}
+
+function Test-EslintTestScope {
+    <# Is eslint.config.mjs's divergence from the template ONLY test-scoped overrides?
+
+       Modules that ship tests usually relax a couple of rules for test files (e.g.
+       n/no-unpublished-import for vitest imports, unbound-method for vi.fn() assertions).
+       Doing that requires turning the template's
+
+           export default generateEslintConfig({ …options… })
+
+       into
+
+           const baseConfig = await generateEslintConfig({ …same options… })
+           export default [ ...baseConfig, { files: ['tests/**/*.ts'], rules: { … } } ]
+
+       Accepted ONLY when: the template's import lines are all present and no others are added;
+       the generateEslintConfig options are identical; the base config is spread first; and every
+       extra entry is an object whose `files` globs are all test/tooling paths, using only the
+       keys files / rules / languageOptions / name. So nothing can change how the module's own
+       src/ code is linted. Anything else stays a CONFIG-DIFF. #>
+    param([Parameter(Mandatory)][string]$ModuleFile, [Parameter(Mandatory)][string]$TemplateFile)
+
+    $res = [pscustomobject]@{ Acceptable = $false; Extras = @(); Reason = $null }
+    $mod = Remove-JsComments (Get-Content -Raw -LiteralPath $ModuleFile)
+    $tpl = Remove-JsComments (Get-Content -Raw -LiteralPath $TemplateFile)
+    $squash = { param($s) ($s -replace '\s+', ' ').Trim() -replace ',\s*([}\]])', '$1' }
+
+    # Template must be the plain `export default generateEslintConfig({...})` shape.
+    $tplCall = [regex]::Match($tpl, 'export\s+default\s+generateEslintConfig\s*\(')
+    if (-not $tplCall.Success) { $res.Reason = 'template eslint config has an unexpected shape'; return $res }
+    $tplOpts = Get-JsBracketBody $tpl ($tplCall.Index + $tplCall.Length - 1)
+
+    # Imports: exactly the template's.
+    $importsOf = { param($s) @([regex]::Matches($s, '(?m)^\s*import\s[^\n]*') | ForEach-Object { & $squash $_.Value } | Sort-Object) }
+    $tplImports = & $importsOf $tpl
+    $modImports = & $importsOf $mod
+    if (($tplImports -join "`n") -ne ($modImports -join "`n")) { $res.Reason = 'imports differ from the template'; return $res }
+
+    # const <name> = await generateEslintConfig({ same options })
+    $modCall = [regex]::Match($mod, '(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:await\s+)?generateEslintConfig\s*\(')
+    if (-not $modCall.Success) { $res.Reason = 'generateEslintConfig result is not assigned to a variable'; return $res }
+    $baseVar = $modCall.Groups[1].Value
+    $modOpts = Get-JsBracketBody $mod ($modCall.Index + $modCall.Length - 1)
+    if ($null -eq $modOpts -or (& $squash $modOpts) -ne (& $squash $tplOpts)) { $res.Reason = 'generateEslintConfig options differ from the template'; return $res }
+
+    # export default [ ...<name>, {test-scoped override}, … ]  — or the equivalent
+    # `const <cfg> = [ … ]` + `export default <cfg>`.
+    $spans = [System.Collections.Generic.List[object]]::new()
+    $constOpen = $modCall.Index + $modCall.Length - 1
+    $spans.Add(@($modCall.Index, ($constOpen + $modOpts.Length + 2)))
+    $exp = [regex]::Match($mod, 'export\s+default\s*\[')
+    if ($exp.Success) {
+        $arrOpen = $exp.Index + $exp.Length - 1
+        $arr = Get-JsBracketBody $mod $arrOpen
+        if ($null -eq $arr) { $res.Reason = 'unbalanced export default array'; return $res }
+        $spans.Add(@($exp.Index, ($arrOpen + $arr.Length + 2)))
+    } else {
+        $expId = [regex]::Match($mod, 'export\s+default\s+([A-Za-z_$][\w$]*)\s*;?')
+        if (-not $expId.Success) { $res.Reason = 'export default is not an array'; return $res }
+        $decl = [regex]::Match($mod, "(?:const|let)\s+$([regex]::Escape($expId.Groups[1].Value))\s*=\s*\[")
+        if (-not $decl.Success) { $res.Reason = "export default $($expId.Groups[1].Value) is not an array literal"; return $res }
+        $arrOpen = $decl.Index + $decl.Length - 1
+        $arr = Get-JsBracketBody $mod $arrOpen
+        if ($null -eq $arr) { $res.Reason = 'unbalanced exported array'; return $res }
+        $spans.Add(@($decl.Index, ($arrOpen + $arr.Length + 2)))
+        $spans.Add(@($expId.Index, ($expId.Index + $expId.Length)))
+    }
+
+    # Nothing else may sit at the top level besides the imports, the base config and the
+    # exported array: cut those spans out by position (later first) and require only
+    # whitespace/';' to remain.
+    $rest = $mod
+    foreach ($span in @($spans | Sort-Object { $_[0] } -Descending)) {
+        $rest = $rest.Substring(0, $span[0]) + $rest.Substring([math]::Min($span[1], $rest.Length))
+    }
+    $rest = [regex]::Replace($rest, '(?m)^\s*import\s[^\n]*', '')
+    if (($rest -replace '[\s;]', '') -ne '') { $res.Reason = 'extra top-level code besides the base config and overrides'; return $res }
+
+    $items = @(Split-JsTopLevel $arr)
+    if ($items.Count -lt 1 -or $items[0] -ne "...$baseVar") { $res.Reason = "the base config (...$baseVar) is not spread first"; return $res }
+
+    $testGlob = '^(\./)?((tests?|__tests__|__mocks__|spec|specs|scripts)/|[^/]*\.config\.(c|m)?(js|ts)$)|\.(test|spec)\.(c|m)?(js|ts)x?$'
+    $allowedKeys = @('files', 'rules', 'languageOptions', 'name')
+    $extras = [System.Collections.Generic.List[string]]::new()
+    foreach ($item in @($items | Select-Object -Skip 1)) {
+        if (-not $item.StartsWith('{')) { $res.Reason = "override '$((& $squash $item))' is not an object literal"; return $res }
+        $body = Get-JsBracketBody $item 0
+        $props = @(Split-JsTopLevel $body)
+        $keys = @($props | ForEach-Object { if ($_ -match '^[''"]?([A-Za-z_$][\w$]*)[''"]?\s*:') { $Matches[1] } else { '<' + (& $squash $_) + '>' } })
+        $bad = @($keys | Where-Object { $allowedKeys -notcontains $_ })
+        if ($bad.Count -gt 0) { $res.Reason = "override uses non-test-scoped key(s): $($bad -join ', ')"; return $res }
+        $filesProp = @($props | Where-Object { $_ -match '^[''"]?files[''"]?\s*:' }) | Select-Object -First 1
+        if (-not $filesProp) { $res.Reason = 'override has no files: scope, so it would apply to src/'; return $res }
+        $globs = @([regex]::Matches($filesProp, '''([^'']*)''|"([^"]*)"') | ForEach-Object { if ($_.Groups[1].Success) { $_.Groups[1].Value } else { $_.Groups[2].Value } })
+        if ($globs.Count -eq 0) { $res.Reason = 'override files: has no string globs'; return $res }
+        $notTest = @($globs | Where-Object { $_ -notmatch $testGlob })
+        if ($notTest.Count -gt 0) { $res.Reason = "override targets non-test files: $($notTest -join ', ')"; return $res }
+        $extras.Add("files [$($globs -join ', ')]")
+    }
+    $res.Acceptable = $true
+    $res.Extras = @($extras)
+    return $res
+}
+
 function Read-YarnrcMap {
     # .yarnrc.yml is a flat, two-level file in practice (scalars plus the occasional
     # block sequence such as npmPreapprovedPackages), so a small hand-rolled parser is
@@ -575,6 +750,21 @@ foreach ($rel in (Get-TemplateTrackedFiles -Dir $TemplateDir)) {
                 continue
             }
             Add-Finding 'CONFIG-DIFF' $rule.Severity $rel "Differs from template ($($dev.Reason); $(Get-FirstLineDiff $modLines $tplLines))"
+            continue
+        }
+        # Accepted deviation: eslint.config.mjs may add rule overrides scoped to test/tooling
+        # files only (the base config and its options unchanged). See Test-EslintTestScope.
+        if ($rel -eq 'eslint.config.mjs') {
+            $es = Test-EslintTestScope -ModuleFile $modFile -TemplateFile $tplFile
+            if ($es.Acceptable) {
+                if ($es.Extras.Count -gt 0) {
+                    Add-Finding 'ESLINT-TEST-SCOPE' 'Info' $rel (
+                        "Adds lint overrides scoped to test/tooling files only ($($es.Extras -join '; ')) — " +
+                        "an accepted deviation; the template's base config and options are unchanged.")
+                }
+                continue
+            }
+            Add-Finding 'CONFIG-DIFF' $rule.Severity $rel "Differs from template ($($es.Reason); $(Get-FirstLineDiff $modLines $tplLines))"
             continue
         }
         # API 2.1 allowance: the v2 templates still extend tools' node22 preset, but a 2.1

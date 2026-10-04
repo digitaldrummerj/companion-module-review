@@ -400,6 +400,62 @@ try {
     $rootHits = @($rcfg2.findings | Where-Object { $_.id -eq 'SRC-AT-ROOT' } | ForEach-Object { $_.file } | Sort-Object)
     Ok (($rootHits -join ',') -eq 'config.ts,helpers.ts') "real root source (helpers.ts, config.ts) is still flagged (got $($rootHits -join ','))"
 
+    # ── eslint.config.mjs may add test-scoped overrides (accepted deviation) ──
+    $esTpl = Join-Path $root 'companion-module-template-ts-eslint'
+    Copy-Item -Recurse -Force $tsTpl $esTpl
+    $esTplText = "import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs'`n`nexport default generateEslintConfig({`n`tenableTypescript: true,`n})"
+    Set-File (Join-Path $esTpl 'eslint.config.mjs') $esTplText
+    $esHead = "import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs'`n`nconst baseConfig = await generateEslintConfig({`n`tenableTypescript: true,`n})`n`n"
+    function New-EslintModule($name, $eslintText) {
+        $dir = New-TsModule $name '"types": ["node"]'
+        Set-File (Join-Path $dir 'eslint.config.mjs') $eslintText
+        return $dir
+    }
+    function Get-EslintFindings($result, $id) { @($result.findings | Where-Object { $_.id -eq $id -and $_.file -eq 'eslint.config.mjs' }) }
+
+    Write-Host "eslint.config.mjs with a test-only override (the migrated-module shape)"
+    $esGood = New-EslintModule 'esgood' ($esHead + "export default [`n`t...baseConfig,`n`t{`n`t`t// tests import devDependencies`n`t`tfiles: ['tests/**/*.ts', 'vitest.config.ts'],`n`t`trules: {`n`t`t`t'n/no-unpublished-import': 'off',`n`t`t`t'@typescript-eslint/unbound-method': 'off',`n`t`t},`n`t},`n]")
+    $res = Invoke-Validator $esGood $esTpl
+    Ok ((Get-EslintFindings $res 'CONFIG-DIFF').Count -eq 0)              "a test-scoped override is not a CONFIG-DIFF"
+    $esInfo = Get-EslintFindings $res 'ESLINT-TEST-SCOPE'
+    Ok ($esInfo.Count -eq 1 -and $esInfo[0].severity -eq 'Info' -and $esInfo[0].message -match 'tests/\*\*/\*\.ts') "…it is one Info ESLINT-TEST-SCOPE naming the globs"
+
+    Write-Host "eslint.config.mjs via const + export default identifier"
+    $esConst = New-EslintModule 'esconst' ($esHead + "const customConfig = [`n`t...baseConfig,`n`t{ files: ['src/**/*.test.ts', '__mocks__/**/*.ts'], rules: { 'n/no-unpublished-import': 'off' } },`n]`n`nexport default customConfig")
+    $rconst = Invoke-Validator $esConst $esTpl
+    Ok ((Get-EslintFindings $rconst 'CONFIG-DIFF').Count -eq 0 -and (Get-EslintFindings $rconst 'ESLINT-TEST-SCOPE').Count -eq 1) "the const + export default form with test-file globs is accepted"
+
+    Write-Host "eslint.config.mjs with an override that reaches src/"
+    $esSrc = New-EslintModule 'essrc' ($esHead + "export default [`n`t...baseConfig,`n`t{ files: ['src/**/*.ts'], rules: { 'no-unused-vars': 'off' } },`n]")
+    $rsrc = Invoke-Validator $esSrc $esTpl
+    $srcDiff = Get-EslintFindings $rsrc 'CONFIG-DIFF'
+    Ok ($srcDiff.Count -eq 1 -and $srcDiff[0].severity -eq 'Critical' -and $srcDiff[0].message -match 'non-test files: src/') "an override on src/** is still a Critical CONFIG-DIFF naming it"
+
+    Write-Host "eslint.config.mjs with an unscoped (global) rule override"
+    $esGlobal = New-EslintModule 'esglobal' ($esHead + "export default [`n`t...baseConfig,`n`t{ rules: { 'prettier/prettier': 'off' } },`n]")
+    $rglobal = Invoke-Validator $esGlobal $esTpl
+    Ok (@(Get-EslintFindings $rglobal 'CONFIG-DIFF' | Where-Object { $_.message -match 'no files: scope' }).Count -eq 1) "a rule block without files: is still a CONFIG-DIFF"
+
+    Write-Host "eslint.config.mjs with changed generateEslintConfig options"
+    $esOpts = New-EslintModule 'esopts' ("import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs'`n`nconst baseConfig = await generateEslintConfig({`n`tenableTypescript: true,`n`tignores: ['dist/**'],`n})`n`nexport default [`n`t...baseConfig,`n`t{ files: ['tests/**/*.ts'], rules: {} },`n]")
+    $ropts = Invoke-Validator $esOpts $esTpl
+    Ok (@(Get-EslintFindings $ropts 'CONFIG-DIFF' | Where-Object { $_.message -match 'options differ' }).Count -eq 1) "changed generateEslintConfig options are still a CONFIG-DIFF"
+
+    Write-Host "eslint.config.mjs with an extra plugin import"
+    $esImp = New-EslintModule 'esimport' ("import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs'`nimport vitest from '@vitest/eslint-plugin'`n`nconst baseConfig = await generateEslintConfig({`n`tenableTypescript: true,`n})`n`nexport default [`n`t...baseConfig,`n`t{ files: ['tests/**/*.ts'], rules: {} },`n]")
+    $rimp = Invoke-Validator $esImp $esTpl
+    Ok (@(Get-EslintFindings $rimp 'CONFIG-DIFF' | Where-Object { $_.message -match 'imports differ' }).Count -eq 1) "an extra import is still a CONFIG-DIFF"
+
+    Write-Host "eslint.config.mjs with a config placed before the base"
+    $esFirst = New-EslintModule 'esfirst' ($esHead + "export default [`n`t{ ignores: ['.squad/**'] },`n`t...baseConfig,`n]")
+    $rfirst = Invoke-Validator $esFirst $esTpl
+    Ok (@(Get-EslintFindings $rfirst 'CONFIG-DIFF' | Where-Object { $_.message -match 'not spread first' }).Count -eq 1) "anything before the base config is still a CONFIG-DIFF"
+
+    Write-Host "eslint.config.mjs identical to the template"
+    $esSame = New-EslintModule 'essame' $esTplText
+    $rsame2 = Invoke-Validator $esSame $esTpl
+    Ok ((Get-EslintFindings $rsame2 'CONFIG-DIFF').Count -eq 0 -and (Get-EslintFindings $rsame2 'ESLINT-TEST-SCOPE').Count -eq 0) "an unchanged eslint config has no finding at all"
+
     # ── .yarnrc.yml divergences ──────────────────────────────────────────────
     # Compared by parsed key against the *main* template (never the pinned -v1 one),
     # so cosmetics pass but a missing key, conflicting value, or extra key is Critical.
