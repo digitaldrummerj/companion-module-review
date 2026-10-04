@@ -286,6 +286,98 @@ function Normalize-TsconfigLine {
     return $l.TrimEnd()
 }
 
+function ConvertTo-CanonicalJson {
+    # Key-order-independent JSON text for deep comparison of parsed tsconfig values.
+    param($Value)
+    if ($Value -is [System.Collections.IDictionary]) {
+        $sorted = [ordered]@{}
+        foreach ($k in @($Value.Keys | Sort-Object)) { $sorted[$k] = ConvertTo-CanonicalJson $Value[$k] }
+        return ($sorted | ConvertTo-Json -Compress -Depth 20)
+    }
+    if ($Value -is [System.Collections.IList]) {
+        return '[' + ((@($Value) | ForEach-Object { ConvertTo-CanonicalJson $_ }) -join ',') + ']'
+    }
+    return ($Value | ConvertTo-Json -Compress -Depth 20)
+}
+
+function Test-TsconfigDevScope {
+    <# Is tsconfig.json's divergence from the template ONLY the accepted dev-scope widening?
+
+       tsconfig.json is the editor/typecheck config; the build uses tsconfig.build.json, which
+       stays an exact match. Modules that ship tests (vitest/jest) legitimately widen
+       tsconfig.json so the tests and the test-runner config are type-checked too:
+         - extra `include` entries (tests/**/*.ts, scripts/**/*.ts, vitest.config.ts, …)
+         - extra `exclude` entries
+         - extra `compilerOptions.types` entries (vitest/globals, jest, …)
+         - `compilerOptions.rootDir` (widened to ./ so tests/ sit inside it) and `noEmit`
+       Everything the template sets must still be present with the same value. Anything else
+       — a different `extends`, a changed or new compiler option, an extra top-level key — is
+       a real divergence and stays a CONFIG-DIFF.
+
+       Returns Acceptable, Extras (what was widened, for the Info note), Reason (why not). #>
+    param([Parameter(Mandatory)][string]$ModuleFile, [Parameter(Mandatory)][string]$TemplateFile)
+
+    $res = [pscustomobject]@{ Acceptable = $false; Extras = @(); Reason = $null }
+    try {
+        $mod = Get-Content -Raw -LiteralPath $ModuleFile | ConvertFrom-Json -AsHashtable
+        $tpl = Get-Content -Raw -LiteralPath $TemplateFile | ConvertFrom-Json -AsHashtable
+    } catch {
+        $res.Reason = "could not parse as JSON ($($_.Exception.Message))"
+        return $res
+    }
+    if ($mod -isnot [System.Collections.IDictionary] -or $tpl -isnot [System.Collections.IDictionary]) {
+        $res.Reason = 'not a JSON object'
+        return $res
+    }
+
+    $extras = [System.Collections.Generic.List[string]]::new()
+    $listKeys = @('include', 'exclude')
+    $allowedExtraCompilerOptions = @('rootDir', 'noEmit')
+
+    foreach ($k in @($mod.Keys)) {
+        if (-not $tpl.Contains($k)) { $res.Reason = "extra top-level key '$k'"; return $res }
+    }
+    foreach ($k in @($tpl.Keys)) {
+        if (-not $mod.Contains($k)) { $res.Reason = "missing template key '$k'"; return $res }
+        if ($listKeys -contains $k) {
+            $have = @($mod[$k] | ForEach-Object { "$_" })
+            $want = @($tpl[$k] | ForEach-Object { "$_" })
+            $missing = @($want | Where-Object { $have -notcontains $_ })
+            if ($missing.Count -gt 0) { $res.Reason = "$k is missing template entries: $($missing -join ', ')"; return $res }
+            foreach ($e in @($have | Where-Object { $want -notcontains $_ })) { $extras.Add("$k += $e") }
+            continue
+        }
+        if ($k -eq 'compilerOptions' -and $mod[$k] -is [System.Collections.IDictionary] -and $tpl[$k] -is [System.Collections.IDictionary]) {
+            $mco = $mod[$k]; $tco = $tpl[$k]
+            foreach ($ok in @($tco.Keys)) {
+                if (-not $mco.Contains($ok)) { $res.Reason = "compilerOptions.$ok is missing"; return $res }
+                if ($ok -eq 'types') {
+                    $have = @($mco[$ok] | ForEach-Object { "$_" })
+                    $want = @($tco[$ok] | ForEach-Object { "$_" })
+                    $missing = @($want | Where-Object { $have -notcontains $_ })
+                    if ($missing.Count -gt 0) { $res.Reason = "compilerOptions.types is missing: $($missing -join ', ')"; return $res }
+                    foreach ($e in @($have | Where-Object { $want -notcontains $_ })) { $extras.Add("types += $e") }
+                    continue
+                }
+                if ((ConvertTo-CanonicalJson $mco[$ok]) -ne (ConvertTo-CanonicalJson $tco[$ok])) {
+                    $res.Reason = "compilerOptions.$ok differs"; return $res
+                }
+            }
+            foreach ($ok in @($mco.Keys | Where-Object { -not $tco.Contains($_) })) {
+                if ($allowedExtraCompilerOptions -notcontains $ok) { $res.Reason = "extra compilerOptions.$ok"; return $res }
+                $extras.Add("compilerOptions.$ok = $(ConvertTo-CanonicalJson $mco[$ok])")
+            }
+            continue
+        }
+        if ((ConvertTo-CanonicalJson $mod[$k]) -ne (ConvertTo-CanonicalJson $tpl[$k])) {
+            $res.Reason = "'$k' differs"; return $res
+        }
+    }
+    $res.Acceptable = $true
+    $res.Extras = @($extras)
+    return $res
+}
+
 function Read-YarnrcMap {
     # .yarnrc.yml is a flat, two-level file in practice (scalars plus the occasional
     # block sequence such as npmPreapprovedPackages), so a small hand-rolled parser is
@@ -469,6 +561,22 @@ foreach ($rel in (Get-TemplateTrackedFiles -Dir $TemplateDir)) {
         continue
     }
     if (($modLines -join "`n") -ne ($tplLines -join "`n")) {
+        # Accepted deviation: tsconfig.json (NOT tsconfig.build.json, which drives the build)
+        # may be widened so tests and the test-runner config are type-checked — extra
+        # include/exclude/types entries plus rootDir/noEmit. See Test-TsconfigDevScope.
+        if ($rule.Kind -eq 'tsconfig' -and $rel -eq 'tsconfig.json') {
+            $dev = Test-TsconfigDevScope -ModuleFile $modFile -TemplateFile $tplFile
+            if ($dev.Acceptable) {
+                if ($dev.Extras.Count -gt 0) {
+                    Add-Finding 'TSCONFIG-DEV-SCOPE' 'Info' $rel (
+                        "Widens the editor/typecheck config beyond the template ($($dev.Extras -join '; ')) — " +
+                        "an accepted deviation for type-checking tests; the build config is compared separately.")
+                }
+                continue
+            }
+            Add-Finding 'CONFIG-DIFF' $rule.Severity $rel "Differs from template ($($dev.Reason); $(Get-FirstLineDiff $modLines $tplLines))"
+            continue
+        }
         # API 2.1 allowance: the v2 templates still extend tools' node22 preset, but a 2.1
         # module that moved its manifest runtime to node26 is expected to extend the node26
         # preset instead. If swapping that ONE preset reference makes the file identical, it
@@ -538,8 +646,11 @@ if ((Test-Path $modLicense) -and (Test-Path $tplLicense)) {
 }
 
 # ── 3c. Source files must live in src/ (none at the module root) ──────────────
+# Tool config files (vitest.config.ts, vite.config.ts, jest.config.js, prettier.config.js, …)
+# are not module source: the tools look for them at the repo root, so that is where they must
+# live. Anything named <tool>.config.<js|ts> is exempt; every other root .js/.ts is flagged.
 $rootSrc = @(Get-ChildItem -LiteralPath $ModuleDir -File -ErrorAction SilentlyContinue |
-    Where-Object { $_.Extension -in @('.js', '.ts') })
+    Where-Object { $_.Extension -in @('.js', '.ts') -and $_.Name -notmatch '^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*\.config\.(js|ts)$' })
 foreach ($f in $rootSrc) {
     Add-Finding 'SRC-AT-ROOT' 'Critical' $f.Name "Source file at module root — all source must be under src/"
 }

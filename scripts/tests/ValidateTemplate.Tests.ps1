@@ -334,6 +334,72 @@ try {
     $tbConfigDiffs = @($tb.findings | Where-Object { $_.id -eq 'CONFIG-DIFF' -and $_.file -eq 'tsconfig.json' })
     Ok ($tbConfigDiffs.Count -gt 0) "still flags a real tsconfig.json divergence (node16)"
 
+    # ── tsconfig.json may be widened to type-check tests (accepted deviation) ──
+    # Real-template shape. tsconfig.json is the editor/typecheck config; widening it with test
+    # globs, extra types, rootDir and noEmit is accepted (Info). tsconfig.build.json is the
+    # build config and stays exact. Anything else in tsconfig.json is still a CONFIG-DIFF.
+    $devTpl = Join-Path $root 'companion-module-template-ts-devscope'
+    Copy-Item -Recurse -Force $tsTpl $devTpl
+    $devTplTsconfig = "{`n`t`"extends`": `"./tsconfig.build.json`",`n`t`"include`": [`"src/**/*.ts`"],`n`t`"exclude`": [`"node_modules/**`"],`n`t`"compilerOptions`": {`n`t`t`"types`": [`"node`" /* , `"jest`" ] // uncomment this if using jest */]`n`t}`n}"
+    Set-File (Join-Path $devTpl 'tsconfig.json') $devTplTsconfig
+
+    function New-DevScopeModule($name, $tsconfigJson) {
+        $dir = New-TsModule $name '"types": ["node"]'
+        Set-File (Join-Path $dir 'tsconfig.json') $tsconfigJson
+        return $dir
+    }
+    function Get-TsconfigJsonFindings($result, $id) { @($result.findings | Where-Object { $_.id -eq $id -and $_.file -eq 'tsconfig.json' }) }
+
+    Write-Host "tsconfig.json widened for tests (the migrated-module shape)"
+    $dsGood = New-DevScopeModule 'dsgood' "{`n`t`"extends`": `"./tsconfig.build.json`",`n`t`"include`": [`"src/**/*.ts`", `"scripts/**/*.ts`", `"tests/**/*.ts`", `"vitest.config.ts`"],`n`t`"exclude`": [`"node_modules/**`"],`n`t`"compilerOptions`": {`n`t`t`"rootDir`": `"./`",`n`t`t`"noEmit`": true,`n`t`t`"types`": [`"node`", `"vitest/globals`"]`n`t}`n}"
+    $rds = Invoke-Validator $dsGood $devTpl
+    Ok ((Get-TsconfigJsonFindings $rds 'CONFIG-DIFF').Count -eq 0)          "test include globs + rootDir/noEmit + extra types are not a CONFIG-DIFF"
+    $dsInfo = Get-TsconfigJsonFindings $rds 'TSCONFIG-DEV-SCOPE'
+    Ok ($dsInfo.Count -eq 1 -and $dsInfo[0].severity -eq 'Info')            "…they are one Info TSCONFIG-DEV-SCOPE note"
+    Ok ($dsInfo.Count -eq 1 -and $dsInfo[0].message -match 'tests/\*\*/\*\.ts' -and $dsInfo[0].message -match 'rootDir') "…which lists what was widened"
+
+    Write-Host "tsconfig.json identical apart from the jest hint"
+    $dsSame = New-DevScopeModule 'dssame' "{`n`t`"extends`": `"./tsconfig.build.json`",`n`t`"include`": [`"src/**/*.ts`"],`n`t`"exclude`": [`"node_modules/**`"],`n`t`"compilerOptions`": {`n`t`t`"types`": [`"node`"]`n`t}`n}"
+    $rsame = Invoke-Validator $dsSame $devTpl
+    Ok ((Get-TsconfigJsonFindings $rsame 'CONFIG-DIFF').Count -eq 0 -and (Get-TsconfigJsonFindings $rsame 'TSCONFIG-DEV-SCOPE').Count -eq 0) "no finding at all when nothing was widened"
+
+    Write-Host "tsconfig.json with a real compiler-option change"
+    $dsStrict = New-DevScopeModule 'dsstrict' "{`n`t`"extends`": `"./tsconfig.build.json`",`n`t`"include`": [`"src/**/*.ts`", `"tests/**/*.ts`"],`n`t`"exclude`": [`"node_modules/**`"],`n`t`"compilerOptions`": {`n`t`t`"strict`": false,`n`t`t`"types`": [`"node`"]`n`t}`n}"
+    $rstrict = Invoke-Validator $dsStrict $devTpl
+    $sd = Get-TsconfigJsonFindings $rstrict 'CONFIG-DIFF'
+    Ok ($sd.Count -eq 1 -and $sd[0].severity -eq 'Critical' -and $sd[0].message -match 'compilerOptions\.strict') "an extra compiler option (strict) is still a Critical CONFIG-DIFF naming it"
+
+    Write-Host "tsconfig.json that drops the template's src include"
+    $dsDrop = New-DevScopeModule 'dsdrop' "{`n`t`"extends`": `"./tsconfig.build.json`",`n`t`"include`": [`"tests/**/*.ts`"],`n`t`"exclude`": [`"node_modules/**`"],`n`t`"compilerOptions`": { `"types`": [`"node`"] }`n}"
+    $rdrop = Invoke-Validator $dsDrop $devTpl
+    Ok ((Get-TsconfigJsonFindings $rdrop 'CONFIG-DIFF').Count -eq 1)        "removing a template include entry is still a CONFIG-DIFF"
+
+    Write-Host "tsconfig.json that changes extends"
+    $dsExt = New-DevScopeModule 'dsext' "{`n`t`"extends`": `"@tsconfig/node22/tsconfig.json`",`n`t`"include`": [`"src/**/*.ts`", `"tests/**/*.ts`"],`n`t`"exclude`": [`"node_modules/**`"],`n`t`"compilerOptions`": { `"types`": [`"node`"] }`n}"
+    $rext = Invoke-Validator $dsExt $devTpl
+    Ok ((Get-TsconfigJsonFindings $rext 'CONFIG-DIFF').Count -eq 1)         "a different extends is still a CONFIG-DIFF"
+
+    Write-Host "tsconfig.build.json is never widened"
+    $dsBuild = New-DevScopeModule 'dsbuild' $devTplTsconfig
+    Set-File (Join-Path $dsBuild 'tsconfig.build.json') "{ `"extends`": `"./tsconfig.json`", `"include`": [`"tests/**/*.ts`"] }"
+    $rbuild = Invoke-Validator $dsBuild $devTpl
+    Ok (@($rbuild.findings | Where-Object { $_.id -eq 'CONFIG-DIFF' -and $_.file -eq 'tsconfig.build.json' }).Count -eq 1) "the same widening in tsconfig.build.json is still a CONFIG-DIFF"
+
+    # ── Root tool config files are not misplaced source ───────────────────────
+    Write-Host "root tool config files (vitest.config.ts etc.)"
+    $cfgMod = New-DevScopeModule 'rootcfg' $devTplTsconfig
+    Set-File (Join-Path $cfgMod 'vitest.config.ts')  "export default {}"
+    Set-File (Join-Path $cfgMod 'vite.config.js')    "export default {}"
+    Set-File (Join-Path $cfgMod 'jest.config.ts')    "export default {}"
+    Set-File (Join-Path $cfgMod 'vitest.workspace.config.ts') "export default []"
+    $rcfg = Invoke-Validator $cfgMod $devTpl
+    Ok (@($rcfg.findings | Where-Object { $_.id -eq 'SRC-AT-ROOT' }).Count -eq 0) "vitest/vite/jest *.config.(ts|js) at the root are not SRC-AT-ROOT"
+    Set-File (Join-Path $cfgMod 'helpers.ts')        "export const x = 1"
+    Set-File (Join-Path $cfgMod 'config.ts')         "export const y = 2"
+    $rcfg2 = Invoke-Validator $cfgMod $devTpl
+    $rootHits = @($rcfg2.findings | Where-Object { $_.id -eq 'SRC-AT-ROOT' } | ForEach-Object { $_.file } | Sort-Object)
+    Ok (($rootHits -join ',') -eq 'config.ts,helpers.ts') "real root source (helpers.ts, config.ts) is still flagged (got $($rootHits -join ','))"
+
     # ── .yarnrc.yml divergences ──────────────────────────────────────────────
     # Compared by parsed key against the *main* template (never the pinned -v1 one),
     # so cosmetics pass but a missing key, conflicting value, or extra key is Critical.
