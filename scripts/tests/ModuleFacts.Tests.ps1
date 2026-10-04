@@ -106,6 +106,18 @@ try {
     Set-File (Join-Path $amb 'src/main.js') 'export default {}'
     $f6 = Facts $amb
     Ok ($f6.apiLevel -eq '2.0' -and $f6.apiAmbiguous -eq $true) "^2.0.0 without a lockfile => 2.0, ambiguous"
+
+    # ── API scan hints are included (and can be skipped) ─────────────────────
+    $scanMod = Join-Path $root 'companion-module-scanme'
+    Set-File (Join-Path $scanMod 'package.json') '{"name":"scanme","version":"1.0.0","dependencies":{"@companion-module/base":"~2.1.3"}}'
+    Set-File (Join-Path $scanMod 'src/main.js') "runEntrypoint(ModuleInstance, [])`nthis.checkFeedbacks()"
+    $f7 = Facts $scanMod
+    Ok ($null -ne $f7.apiScan -and $f7.apiScan.count -eq 2)  "apiScan included with its hint count"
+    Ok ($f7.apiScan.byId.'V1-RUNENTRYPOINT' -eq 1)          "apiScan.byId groups hints by rule id"
+    Ok (@($f7.apiScan.hints).Count -eq 2 -and -not $f7.apiScan.truncated) "apiScan.hints carries the hints"
+    Ok (@($f.apiScan.hints).Count -eq 0)                     "v1 module => no api-scan hints"
+    $f8 = (& pwsh -NoProfile -File $facts -ModuleDir $scanMod -SkipTemplateCheck -SkipApiScan -Json 2>$null) | ConvertFrom-Json
+    Ok ($null -eq $f8.apiScan)                               "-SkipApiScan omits apiScan"
 }
 finally {
     if (Test-Path $root) { Remove-Item -Recurse -Force $root }

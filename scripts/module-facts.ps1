@@ -6,10 +6,12 @@
     shared with every reviewer agent so they don't each re-read package.json / manifest / tree.
 .DESCRIPTION
     Produces the shared context for a review in one cheap pass: language (JS/TS), API version
-    (v1/v2) and therefore which single api-compliance skill applies, package.json + manifest
-    essentials, detected protocols, a source-tree summary, and a template-compliance summary
-    (by invoking validate-template.ps1). The coordinator runs this at review start and hands
-    the result to the reviewers instead of having five agents re-derive the basics.
+    (v1/v2) and therefore which single api-compliance skill applies, the exact API level
+    (1 / 2.0 / 2.1 …, from the lockfile) and which of that skill's per-version reference files
+    to load, package.json + manifest essentials, detected protocols, a source-tree summary, a
+    template-compliance summary (by invoking validate-template.ps1), and the API-usage hints
+    from api-scan.ps1. The coordinator runs this at review start and hands the result to the
+    reviewers instead of having five agents re-derive the basics.
 .PARAMETER ModuleDir
     Path to the cloned module under review.
 .PARAMETER GitTag
@@ -19,6 +21,8 @@
 .PARAMETER SkipTemplateFreshness
     Passed through to validate-template.ps1: don't verify the template clone against
     upstream. For deliberate offline runs only.
+.PARAMETER SkipApiScan
+    Don't invoke api-scan.ps1 (omits the apiScan hints).
 .PARAMETER Json
     Emit JSON instead of the human-readable fact sheet.
 .EXAMPLE
@@ -31,6 +35,7 @@ param(
     [string]$GitTag,
     [switch]$SkipTemplateCheck,
     [switch]$SkipTemplateFreshness,
+    [switch]$SkipApiScan,
     [switch]$Json
 )
 
@@ -146,6 +151,34 @@ if (-not $SkipTemplateCheck) {
     }
 }
 
+# API-usage hints (api-scan.ps1). Leads for the compliance reviewer, keyed to apiLevel — never
+# findings on their own. Run as a child process like validate-template so a crash shows up as
+# an error in the fact sheet instead of an empty-looking "no hints". The hint list is capped:
+# the fact sheet is handed to every reviewer, and the full list is one api-scan run away.
+$apiScan = $null
+if (-not $SkipApiScan) {
+    $maxHints = 50
+    $as = Join-Path $PSScriptRoot 'api-scan.ps1'
+    try {
+        $raw = & pwsh -NoProfile -File $as -ModuleDir $ModuleDir -Json 2>$null
+        $parsed = if ($raw) { $raw | ConvertFrom-Json } else { $null }
+        if ($parsed) {
+            $all = @($parsed.hints)
+            $apiScan = [pscustomobject]@{
+                count     = $parsed.counts.total
+                byId      = $parsed.counts.byId
+                hints     = @($all | Select-Object -First $maxHints)
+                truncated = $all.Count -gt $maxHints
+                error     = $null
+            }
+        } else {
+            $apiScan = [pscustomobject]@{ count = $null; byId = $null; hints = @(); truncated = $false; error = 'api-scan.ps1 produced no output' }
+        }
+    } catch {
+        $apiScan = [pscustomobject]@{ count = $null; byId = $null; hints = @(); truncated = $false; error = $_.Exception.Message }
+    }
+}
+
 $facts = [pscustomobject]@{
     module        = (Split-Path $ModuleDir -Leaf) -replace '^companion-module-', ''
     moduleDir     = $ModuleDir
@@ -175,6 +208,7 @@ $facts = [pscustomobject]@{
     # other than 'fresh' / 'pinned' / 'skipped' means stop, refresh, and re-run.
     templateFreshness = $templateFreshness
     templateCheck = $templateCheck
+    apiScan       = $apiScan
 }
 
 if ($Json) {
@@ -217,6 +251,15 @@ if ($templateCheck -and $templateCheck.error) {
     }
 } else {
     Write-Host "  Template check:  (skipped)"
+}
+if ($apiScan -and $apiScan.error) {
+    Write-Host ("  API scan:        FAILED TO RUN — {0}" -f $apiScan.error) -ForegroundColor Red
+} elseif ($apiScan) {
+    $ids = @($apiScan.byId.PSObject.Properties | ForEach-Object { "$($_.Name)×$($_.Value)" })
+    $col = if ($apiScan.count -gt 0) { 'DarkYellow' } else { 'Green' }
+    Write-Host ("  API scan:        {0} hints{1}  (leads to verify, not findings)" -f $apiScan.count, $(if ($ids) { " — $($ids -join ', ')" } else { '' })) -ForegroundColor $col
+} else {
+    Write-Host "  API scan:        (skipped)"
 }
 Write-Host ("─" * 64)
 Write-Host "Reviewers: read this instead of re-deriving package.json / manifest / tree." -ForegroundColor DarkGray
