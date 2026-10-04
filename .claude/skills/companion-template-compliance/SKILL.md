@@ -92,6 +92,17 @@ meta table.
 
 Every value the template sets must still be present and unchanged. If that holds, the validator reports an Info `TSCONFIG-DEV-SCOPE` listing what was widened, instead of a `CONFIG-DIFF`. Anything else in `tsconfig.json` (a different `extends`, another compiler option, a removed template `include`) is still a Critical `CONFIG-DIFF`. `TSCONFIG-DEV-SCOPE` does not go into the review markdown either.
 
+**Accepted deviation: `eslint.config.mjs` with test-only overrides.** Modules that ship tests usually relax a couple of rules for test files (e.g. `n/no-unpublished-import` for vitest imports, `@typescript-eslint/unbound-method` for `vi.fn()` assertions). That needs the template's `export default generateEslintConfig({…})` turned into `const baseConfig = await generateEslintConfig({…})` plus `export default [...baseConfig, { files: [...], rules: {...} }]`. The const + `export default <name>` form is accepted too.
+
+The validator accepts it, reporting an Info `ESLINT-TEST-SCOPE` instead of a `CONFIG-DIFF`, only when all of these hold:
+- The imports are exactly the template's.
+- The `generateEslintConfig` options are identical.
+- `...baseConfig` comes first.
+- Every extra entry is an object using only `files` / `rules` / `languageOptions` / `name`.
+- Every `files` glob is a test or tooling path: `tests/**`, `__tests__/**`, `__mocks__/**`, `scripts/**`, `*.test.*`, `*.spec.*`, or a root `*.config.*` file.
+
+Anything that can change how `src/` is linted is still a Critical `CONFIG-DIFF`, and the message says why: an override on `src/**`, a rule block with no `files:`, changed options, extra imports or plugins, an entry placed before the base config. `ESLINT-TEST-SCOPE` does not go into the review markdown.
+
 Expectations are derived from the matched template, so v1 modules are checked against the
 v1 template and are not flagged for v2-only differences (e.g. v1 manifests correctly have
 no `type` field).
@@ -153,7 +164,7 @@ manifest.json maintainers[0].name = "Your name"  ← placeholder, must be replac
 ```
 
 Findings addressed to *you* rather than the maintainer — `TEMPLATE-STALE`,
-`TEMPLATE-UNVERIFIED`, `TEMPLATE-COVERAGE`, `TSCONFIG-NODE26`, `TSCONFIG-DEV-SCOPE` — never appear in the review markdown.
+`TEMPLATE-UNVERIFIED`, `TEMPLATE-COVERAGE`, `TSCONFIG-NODE26`, `TSCONFIG-DEV-SCOPE`, `ESLINT-TEST-SCOPE` — never appear in the review markdown.
 
 If the script cannot run (templates unavailable), fall back to comparing the module directly
 against the matching template repo in `companion-module-templates/` (run `setup.ps1` to clone
