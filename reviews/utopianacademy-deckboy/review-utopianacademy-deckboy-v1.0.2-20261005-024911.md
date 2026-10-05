@@ -12,22 +12,12 @@
 | **Protocol** | TCP, newline-terminated plain-text commands, polled `STATUS` reply (`TCPHelper`) |
 | **Review date** | 2026-10-05 |
 
-## 📊 Scorecard
-
-| Severity | 🆕 New | ⚠️ Existing | Total |
-|----------|--------|-------------|-------|
-| 🔴 Critical | 8 | 0 | 8 |
-| 🟠 High | 2 | 0 | 2 |
-| 🟡 Medium | 4 | 0 | 4 |
-| 🟢 Low | 9 | 0 | 9 |
-| 💡 Nice to Have | 3 | 0 | 3 |
-| **Total** | **26** | **0** | **26** |
-
 ## Verdict: ❌ Changes Required
 
 ## 📋 Issues
 
 **Blocking**
+
 - [ ] [C1: Source file main.js sits at the module root](#c1-source-file-mainjs-sits-at-the-module-root)
 - [ ] [C2: yarn.lock is out of sync with package.json](#c2-yarnlock-is-out-of-sync-with-packagejson)
 - [ ] [C3: package.json repository url points to the app repo](#c3-packagejson-repository-url-points-to-the-app-repo)
@@ -36,12 +26,12 @@
 - [ ] [C6: package.json is missing the prettier devDependency](#c6-packagejson-is-missing-the-prettier-devdependency)
 - [ ] [C7: package.json is missing the format script](#c7-packagejson-is-missing-the-format-script)
 - [ ] [C8: Placeholder maintainer in the manifest](#c8-placeholder-maintainer-in-the-manifest)
-- [ ] [H1: A STATUS reply split across TCP chunks is half-published and the rest dropped](#h1-a-status-reply-split-across-tcp-chunks-is-half-published-and-the-rest-dropped)
+- [ ] [H2: LICENSE differs from the template](#h2-license-differs-from-the-template)
 
 **Non-blocking**
-- [ ] [H2: LICENSE differs from the template](#h2-license-differs-from-the-template)
-- [ ] [M1: No end handler, so a clean close leaves the module marked connected](#m1-no-end-handler-so-a-clean-close-leaves-the-module-marked-connected)
-- [ ] [M2: Take cue by number sends TAKE even when the cue number is empty](#m2-take-cue-by-number-sends-take-even-when-the-cue-number-is-empty)
+
+- [ ] [M1: No end handler, so a clean close leaves the module marked connected]
+(#m1-no-end-handler-so-a-clean-close-leaves-the-module-marked-connected)
 - [ ] [M3: Naming a deck on a button moves the global deck focus](#m3-naming-a-deck-on-a-button-moves-the-global-deck-focus)
 - [ ] [M4: A dead link is never detected, so the surface shows stale state](#m4-a-dead-link-is-never-detected-so-the-surface-shows-stale-state)
 - [ ] [L1: Polling keeps running while disconnected and floods the log](#l1-polling-keeps-running-while-disconnected-and-floods-the-log)
