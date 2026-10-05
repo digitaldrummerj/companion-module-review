@@ -1,7 +1,35 @@
 {
+  "extraKnownMarketplaces": {
+    "bitfocus-companion-skills": {
+      "source": {
+        "source": "github",
+        "repo": "digitaldrummerj/bitfocus-companion-skills"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "companion-module-review@bitfocus-companion-skills": true,
+    "companion-v1-api-compliance@bitfocus-companion-skills": true,
+    "companion-v2-api-compliance@bitfocus-companion-skills": true,
+    "companion-template-compliance@bitfocus-companion-skills": true,
+    "companion-actions@bitfocus-companion-skills": true,
+    "companion-feedbacks@bitfocus-companion-skills": true,
+    "companion-config@bitfocus-companion-skills": true,
+    "companion-variable-definition@bitfocus-companion-skills": true,
+    "companion-variable-set-value@bitfocus-companion-skills": true,
+    "companion-upgrades@bitfocus-companion-skills": true,
+    "companion-v2-actions@bitfocus-companion-skills": true,
+    "companion-v2-feedbacks@bitfocus-companion-skills": true,
+    "companion-v2-config@bitfocus-companion-skills": true,
+    "companion-v2-variable-definition@bitfocus-companion-skills": true,
+    "companion-v2-variable-set-value@bitfocus-companion-skills": true,
+    "companion-v2-upgrades@bitfocus-companion-skills": true,
+    "companion-osc-integration@bitfocus-companion-skills": true
+  },
   "permissions": {
     "allow": [
-      "Bash(pwsh scripts/:*)",
+      "Bash(pwsh */companion-module-review/scripts/*)",
+      "Bash(pwsh */companion-module-review/*/scripts/*)",
       "Bash(git -C:*)",
       "Bash(mkdir -p reviews/:*)",
       "Bash(date -u:*)"
