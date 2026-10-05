@@ -1,12 +1,14 @@
 # companion-module-review — guide for Claude Code
 
-This repo reviews Bitfocus Companion modules for release approval and produces a **ranked review report** for the maintainer. Deterministic checks run as PowerShell scripts in `scripts/`; judgment review runs via review subagents.
+This repo is the **workspace** for reviewing Bitfocus Companion modules for release approval: it produces a **ranked review report** for the maintainer. The review system itself — the orchestrator and review skills, the three review subagents, `/review-module`, and the PowerShell pipeline scripts — ships as the **`companion-module-review`** plugin in the [`bitfocus-companion-skills`](https://github.com/digitaldrummerj/bitfocus-companion-skills) marketplace, together with the companion knowledge plugins the reviewers consult. `.claude/settings.json` declares the marketplace and every plugin this workspace needs; `pwsh setup.ps1` installs any that are missing.
 
 ## Run a review
 
-Say **"review the next module"** or **"review companion-module-X"**, or use **`/review-module [name] [tag|module|both]`**. Both invoke the `review-companion-module` skill, which runs the pipeline in order:
+Say **"review the next module"** or **"review companion-module-X"**, or use **`/review-module [name] [tag|module|both]`**. Both invoke the plugin's `review-companion-module` skill, which runs the pipeline in order:
 
-`bitfocus-queue.ps1` → `bitfocus-setup-module.ps1` → `module-facts.ps1` → `validate-template.ps1 -RunBuild` → dispatch the `companion-protocol-reviewer`, `companion-qa-reviewer`, and `companion-compliance-reviewer` subagents → assemble one review under `reviews/{module}/` + a ⬜ `TRACKER.md` row.
+`bitfocus-queue.ps1` → `bitfocus-setup-module.ps1` → `module-facts.ps1` (runs `api-scan.ps1`; reports the API level — 1 / 2.0 / 2.1 — and which v2 reference files apply) → `validate-template.ps1 -RunBuild` → dispatch the `companion-protocol-reviewer`, `companion-qa-reviewer`, and `companion-compliance-reviewer` subagents → assemble one review under `reviews/{module}/` + a ⬜ `TRACKER.md` row.
+
+The scripts live in the plugin (`<plugin>/scripts/`); the skill invokes them from there. Run from this repo's root — the scripts locate the workspace from `COMPANION_REVIEW_ROOT` or the git toplevel of the current directory.
 
 **Scope** (default `tag`): `tag` = only this release's changes (`previousTag..reviewTag` diff); `module` = the whole current module, flat by severity; `both` = whole module classified new vs pre-existing.
 
@@ -21,14 +23,19 @@ The **only** output of a review is the markdown file under `reviews/`. The maint
 
 ## Workspace layout
 
-- `scripts/` — the review pipeline (PowerShell; `scripts/lib/ReviewState.ps1` holds shared path/state helpers). Tests in `scripts/tests/` (no Pester).
-- `companion-modules-reviewing/` — cloned modules under review (gitignored; each is its own git repo). **Never commit these.**
-- `companion-module-templates/` — official JS/TS, v1/v2 templates the validator diffs against (gitignored; cloned by `setup.ps1`). Override with `COMPANION_TEMPLATES_DIR`.
 - `reviews/` — completed reviews + `TRACKER.md` (the ✅/⬜ feedback-submitted ledger; ⬜ + a local review = "don't re-review yet").
-- `.claude/` — the review system: `skills/` (the `review-companion-module` orchestrator + the companion/review knowledge skills it reads by path), `agents/` (the three review subagents), `commands/` (`/review-module`), and `settings.json`.
+- `companion-modules-reviewing/` — cloned modules under review (gitignored; each is its own git repo). **Never commit these.** Override with `COMPANION_MODULES_DIR`.
+- `companion-module-templates/` — official JS/TS, v1/v2 templates the validator diffs against (gitignored; cloned by `setup.ps1`). Override with `COMPANION_TEMPLATES_DIR`. **Never auto-updated:** concurrent review sessions share these clones, so an automatic pull would move the reference mid-review. Refresh explicitly with the plugin's `update-templates.ps1` *between* sessions — it is the only thing that ever moves a template.
+- `.claude/settings.json` — the marketplace, the enabled plugins, and the script permissions.
+- `setup.ps1` — workspace bootstrap: git hooks, plugin install, module/template directories.
+
+## Changing the review system
+
+Edit it in the skills repo, not here: `bitfocus-companion-skills/plugins/companion-module-review/` (skills, agents, command, scripts) and the shared companion plugins next to it. To try changes before they're published, run `claude --plugin-dir ~/Development/bitfocus-companion-skills/plugins/companion-module-review` from this repo, and set `COMPANION_REVIEW_PLUGIN_DIR` to the same path for `setup.ps1`. The script tests live there too: `pwsh plugins/companion-module-review/scripts/tests/run-all.ps1` (no network needed).
 
 ## Conventions
 
-- Run scripts with `pwsh`. They honor `COMPANION_MODULES_DIR` / `COMPANION_TEMPLATES_DIR`.
+- Run scripts with `pwsh`. They honor `COMPANION_REVIEW_ROOT` / `COMPANION_MODULES_DIR` / `COMPANION_TEMPLATES_DIR`.
+- A review **aborts** if the template clone is behind upstream — a stale reference produces false findings against a correct module. Refresh with `update-templates.ps1`, then re-run.
 - Reviews run one module at a time.
 - Don't auto-commit the review file — write it and let the user review before they push it to this repo and deliver it.

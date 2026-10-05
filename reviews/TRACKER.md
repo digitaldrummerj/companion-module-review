@@ -29,7 +29,6 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | behringer-wing | v2.3.0 | 2026-04-10 | [review](behringer-wing/review-behringer-wing-v2.3.0-20260410-031841.md) |
 | ✅ | noctavoxfilms-tallycomm | v1.0.0 | 2026-04-09 | [review](noctavoxfilms-tallycomm/review-noctavoxfilms-tallycomm-v1.0.0-20260409-203312.md) |
 | ✅ | wearefalcon-falconplay | v1.0.0 | 2026-04-09 | [review](wearefalcon-falconplay/review-wearefalcon-falconplay-v1.0.0-20260409-205111.md) |
-| ⬜ | talktome-intercom | v0.1.7 | 2026-04-09 | [review](talktome-intercom/review-talktome-intercom-v0.1.7-20260409-210416.md) |
 | ✅ | rode-rcv | v1.8.0 | 2026-04-09 | [review](rode-rcv/review-rode-rcv-v1.8.0-20260409-211811.md) |
 | ✅ | soundcraft-ui | v4.0.0 | 2026-04-09 | [review](soundcraft-ui/review-soundcraft-ui-v4.0.0-20260409-213611.md) |
 | ✅ | generic-snmp | v3.0.1 | 2026-04-09 | [review](generic-snmp/review-generic-snmp-v3.0.1-20260409-214750.md) |
@@ -66,10 +65,8 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | waves-lv1 | v1.0.1 | 2026-06-08 | [review](waves-lv1/review-waves-lv1-v1.0.1-20260608-181452.md) |
 | ✅ | meyersound-galaxy | v1.4.2 | 2026-06-08 | [review](meyersound-galaxy/review-meyersound-galaxy-v1.4.2-20260608-172444.md) |
 | ✅ | disguise-track-notes | v1.0.0 | 2026-06-09 | [review](disguise-track-notes/review-disguise-track-notes-v1.0.0-20260609-033803.md) |
-| ⬜ | cuevacontrol-relo-io8 | v1.0.2 | 2026-06-09 | [review](cuevacontrol-relo-io8/review-cuevacontrol-relo-io8-v1.0.2-20260609-033844.md) |
 | ✅ | ezcastpro-kvm | v0.1.2 | 2026-06-09 | [review](ezcastpro-kvm/review-ezcastpro-kvm-v0.1.2-20260609-033856.md) |
 | ✅ | biamp-qtx | v0.1.1 | 2026-06-09 | [review](biamp-qtx/review-biamp-qtx-v0.1.1-20260609-033900.md) |
-| ⬜ | telycam-ptz-ip-camera | v1.0.0 | 2026-06-09 | [review](telycam-ptz-ip-camera/review-telycam-ptz-ip-camera-v1.0.0-20260609-034006.md) |
 | ✅ | 1stpass-1stpass | v1.1.1 | 2026-06-09 | [review](1stpass-1stpass/review-1stpass-1stpass-v1.1.1-20260609-034134.md) |
 | ✅ | renewedvision-propresenter-api | v1.1.1 | 2026-06-09 | [review](renewedvision-propresenter-api/review-renewedvision-propresenter-api-v1.1.1-20260609-034136.md) |
 | ✅ | osmako-liveapppro | v1.0.0 | 2026-06-09 | [review](osmako-liveapppro/review-osmako-liveapppro-v1.0.0-20260609-034213.md) |
@@ -102,14 +99,6 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | stype-realline | v2.0.0 | 2026-08-03 | [review](stype-realline/review-stype-realline-v2.0.0-20260803-185522.md) |
 | ✅ | lindy-38359-matrix | v1.0.1 | 2026-08-03 | [review](lindy-38359-matrix/review-lindy-38359-matrix-v1.0.1-20260803-185623.md) |
 | ✅ | fblab-bpm2osc | v1.0.1 | 2026-08-03 | [review](fblab-bpm2osc/review-fblab-bpm2osc-v1.0.1-20260803-185925.md) |
-| ⬜ | roland-v1-4k | v0.1.2 | 2026-08-03 | [review](roland-v1-4k/review-roland-v1-4k-v0.1.2-20260803-190044.md) |
 | ✅ | panasonic-cameras | v1.3.0 | 2026-08-03 | [review](panasonic-cameras/review-panasonic-cameras-v1.3.0-20260803-190513.md) |
 | ✅ | easyprompter-remote | v1.2.1 | 2026-08-06 | [review](easyprompter-remote/review-easyprompter-remote-v1.2.1-20260806-211216.md) |
 | ✅ | panasonic-cameras | v2.0.0 | 2026-08-06 | [review](panasonic-cameras/review-panasonic-cameras-v2.0.0-20260806-212257.md) |
-| ⬜ | biamp-qtx | v0.1.3 | 2026-08-06 | [review](biamp-qtx/review-biamp-qtx-v0.1.3-20260806-234248.md) |
-| ⬜ | cvmeventi-countdown | v3.0.2 | 2026-08-06 | [review](cvmeventi-countdown/review-cvmeventi-countdown-v3.0.2-20260806-234339.md) |
-| ⬜ | waves-lv1 | v1.1.0 | 2026-08-06 | [review](waves-lv1/review-waves-lv1-v1.1.0-20260806-234519.md) |
-| ⬜ | riedel-smartpanel | v1.2.0-beta.1 | 2026-08-06 | [review](riedel-smartpanel/review-riedel-smartpanel-v1.2.0-beta.1-20260806-234425.md) |
-| ⬜ | streamlabs-desktop | v1.0.1 | 2026-08-06 | [review](streamlabs-desktop/review-streamlabs-desktop-v1.0.1-20260806-234554.md) |
-| ⬜ | aja-helo | v2.5.0 | 2026-08-06 | [review](aja-helo/review-aja-helo-v2.5.0-20260806-235022.md) |
-| ⬜ | panasonic-ak-hrp1000 | v1.0.2 | 2026-08-06 | [review](panasonic-ak-hrp1000/review-panasonic-ak-hrp1000-v1.0.2-20260807-000907.md) |
