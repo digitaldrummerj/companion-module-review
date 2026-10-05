@@ -104,7 +104,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | panasonic-cameras | v2.0.0 | 2026-08-06 | [review](panasonic-cameras/review-panasonic-cameras-v2.0.0-20260806-212257.md) |
 | ✅ | utopianacademy-deckboy | v1.0.2 | 2026-10-05 | [review](utopianacademy-deckboy/review-utopianacademy-deckboy-v1.0.2-20261005-024911.md) |
 | ✅ | generic-midi | v2.1.1 | 2026-10-05 | [review](generic-midi/review-generic-midi-v2.1.1-20261005-024911.md) |
-| ⬜ | behringer-wing | v2.4.0-alpha.1 | 2026-10-05 | [review](behringer-wing/review-behringer-wing-v2.4.0-alpha.1-20261005-024911.md) |
+| ✅ | behringer-wing | v2.4.0-alpha.1 | 2026-10-05 | [review](behringer-wing/review-behringer-wing-v2.4.0-alpha.1-20261005-024911.md) |
 | ⬜ | breeze-overlay | v1.1.0 | 2026-10-05 | [review](breeze-overlay/review-breeze-overlay-v1.1.0-20261005-024911.md) |
 | ⬜ | 1stpass-1stpass | v1.2.1 | 2026-10-05 | [review](1stpass-1stpass/review-1stpass-1stpass-v1.2.1-20261005-024911.md) |
 | ⬜ | biamp-tesira | v4.0.0 | 2026-10-05 | [review](biamp-tesira/review-biamp-tesira-v4.0.0-20261005-024911.md) |
