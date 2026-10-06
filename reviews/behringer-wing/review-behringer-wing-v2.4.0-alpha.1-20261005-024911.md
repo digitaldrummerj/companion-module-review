@@ -33,7 +33,6 @@ This release moves the module from API v1 (`~1.13`) to API v2.1. The v2.3.1 revi
 - [ ] [M2: Main/Alt status variable definition removed but still set](#m2-mainalt-status-variable-definition-removed-but-still-set)
 - [ ] [M3: isVisibleExpression references fields that can become expressions](#m3-isvisibleexpression-references-fields-that-can-become-expressions)
 - [ ] [M4: Set Delay Mode amount fields pass the visibility rule as the tooltip](#m4-set-delay-mode-amount-fields-pass-the-visibility-rule-as-the-tooltip)
-- [ ] [M5: GitHub issue templates and node workflow differ from template](#m5-github-issue-templates-and-node-workflow-differ-from-template)
 - [ ] [L1: Debug Mode config option no longer does anything](#l1-debug-mode-config-option-no-longer-does-anything)
 - [ ] [L2: Set SOF now honours Toggle, changing existing buttons](#l2-set-sof-now-honours-toggle-changing-existing-buttons)
 - [ ] [L3: getStringWithVariables casts instead of converting](#l3-getstringwithvariables-casts-instead-of-converting)
@@ -130,17 +129,6 @@ GetNumberField('Amount (meters)', 'amount_m', 0, 150, 0.1, 0, undefined, `$(opti
 `GetNumberField`'s signature is `(label, id, min, max, step, defaultValue, range, tooltip)`, so the 8th argument becomes the **tooltip**. In v2.3.1, `GetNumberFieldWithVariables` took `isVisibleExpression` as its 8th argument. Now all four amount fields are always visible, and each tooltip shows the raw expression text.
 
 **Fix:** `{ ...GetNumberField('Amount (meters)', 'amount_m', 0, 150, 0.1, 0), isVisibleExpression: \`$(options:mode) == 'M'\` }`. Do the same for`ft`,`ms` and `samples`, together with`disableAutoExpression` on `mode` (M3).
-
-### M5: GitHub issue templates and node workflow differ from template
-
-**Classification:** Template compliance, `.github/**` parity (non-blocking; these files did not change in this release) · `CONFIG-DIFF`
-
-- `.github/ISSUE_TEMPLATE/bug_report.yml:5`: `title: '[BUG] '` (template: `'[BUG]'`)
-- `.github/ISSUE_TEMPLATE/config.yml:3`: `Bug or Feature for Companion itself` (template: `BUG OR FEATURE REQUEST FOR COMPANION ITSELF`)
-- `.github/ISSUE_TEMPLATE/feature_request.yml:9`: `Make sure you've checked the latest beta build` (template: `Make sure you have updated to the latest version of the module`)
-- `.github/workflows/node.yaml:18`: `actions/checkout@v4` (template: `@v7`)
-
-The wording differences are cosmetic. **Fix:** copy the template's issue templates and bump `actions/checkout` to `@v7`. The enabled `with: upload-artifact: true` block in `companion-module-checks.yaml` is a deliberate customization and is fine.
 
 ---
 
