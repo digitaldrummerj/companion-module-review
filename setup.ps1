@@ -161,8 +161,9 @@ if (Test-Path $modulesDir) {
 }
 
 # 6. Clone the official module templates into companion-module-templates/ (gitignored).
-#    validate-template.ps1 / module-facts.ps1 diff each module against these. v2 from
-#    GitHub; v1 cloned from the v2 clone and checked out at the last v1.x commit.
+#    validate-template.ps1 / module-facts.ps1 diff each module against these. main (API 2.1+)
+#    from GitHub; the pinned "-v1" (API 1.x) and "-v2.0.4" (API 2.0) folders are cloned from
+#    the main clone and checked out at their pinned commits (Get-TemplatePins).
 #
 #    This step CLONES but never PULLS. Existing clones are only reported on, because several
 #    review sessions share them and a pull here would move the reference underneath a review
@@ -175,7 +176,8 @@ if (-not $libLoaded) {
     Write-Host "[!!] Skipping template clones/freshness checks — they need the $reviewPlugin plugin's scripts." -ForegroundColor Red
 } else {
     $updateTemplates = Join-Path $pluginDir 'scripts/update-templates.ps1'
-    $v1Commits = Get-TemplateV1Pins
+    # Older installed plugins only know the -v1 pins.
+    $templatePins = if (Get-Command Get-TemplatePins -ErrorAction SilentlyContinue) { Get-TemplatePins } else { [ordered]@{ '-v1' = Get-TemplateV1Pins } }
     foreach ($lang in 'js', 'ts') {
         $v2 = Join-Path $templatesDir "companion-module-template-$lang"
         if (Test-Path $v2) {
@@ -205,31 +207,37 @@ if (-not $libLoaded) {
             Write-Host "[OK] Cloned companion-module-template-$lang" -ForegroundColor Green
         }
 
-        # The v1 clone is pinned in detached HEAD at the last v1.x commit, so v1 modules are
-        # judged against the API surface of their own era rather than against main. It is never
-        # fetched; setup only creates it, and update-templates.ps1 only asserts it hasn't moved.
-        $v1 = Join-Path $templatesDir "companion-module-template-$lang-v1"
-        if (Test-Path $v1) {
-            $info = Get-GitRepoInfo -Dir $v1
-            if ($info.Sha -eq $v1Commits[$lang] -and $info.Detached) {
-                Write-Host "[OK] companion-module-template-$lang-v1 - pinned at $($info.ShortSha) (detached, intentional)" -ForegroundColor Green
-            } else {
-                Write-Host "[!!] companion-module-template-$lang-v1 - HEAD $($info.ShortSha) is not the pinned v1.x commit" -ForegroundColor Red
-                Write-Host "     Re-pin:  git -C `"$v1`" checkout --detach $($v1Commits[$lang])" -ForegroundColor Red
+        # Each pinned clone ("-v1" = last v1.x commit, "-v2.0.4" = the 2026-08-28 base 2.0.4
+        # commit) sits in detached HEAD, so modules on an older API level are judged against the
+        # template of their own era rather than against main. Pinned clones are never fetched;
+        # setup only creates them (cloned from the main clone), and update-templates.ps1 only
+        # asserts they haven't moved.
+        foreach ($suffix in $templatePins.Keys) {
+            $name = "companion-module-template-$lang$suffix"
+            $pin = $templatePins[$suffix][$lang]
+            $pinned = Join-Path $templatesDir $name
+            if (Test-Path $pinned) {
+                $info = Get-GitRepoInfo -Dir $pinned
+                if ($info.Sha -eq $pin -and $info.Detached) {
+                    Write-Host "[OK] $name - pinned at $($info.ShortSha) (detached, intentional)" -ForegroundColor Green
+                } else {
+                    Write-Host "[!!] $name - HEAD $($info.ShortSha) is not the pinned commit $($pin.Substring(0,7))" -ForegroundColor Red
+                    Write-Host "     Re-pin:  git -C `"$pinned`" checkout --detach $pin" -ForegroundColor Red
+                }
+            } elseif (Test-Path $v2) {
+                Write-Host "[..] Creating $name (pinned at $($pin.Substring(0,7))) ..." -ForegroundColor DarkGray
+                git clone --quiet $v2 $pinned
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Host "[!!] Clone FAILED for $name" -ForegroundColor Red
+                    continue
+                }
+                git -C $pinned checkout --quiet --detach $pin
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Host "[!!] Could not check out the pinned commit in $name" -ForegroundColor Red
+                    continue
+                }
+                Write-Host "[OK] Created $name" -ForegroundColor Green
             }
-        } elseif (Test-Path $v2) {
-            Write-Host "[..] Creating companion-module-template-$lang-v1 (pinned to last v1.x commit) ..." -ForegroundColor DarkGray
-            git clone --quiet $v2 $v1
-            if ($LASTEXITCODE -ne 0) {
-                Write-Host "[!!] Clone FAILED for companion-module-template-$lang-v1" -ForegroundColor Red
-                continue
-            }
-            git -C $v1 checkout --quiet $v1Commits[$lang]
-            if ($LASTEXITCODE -ne 0) {
-                Write-Host "[!!] Could not check out the pinned v1.x commit in companion-module-template-$lang-v1" -ForegroundColor Red
-                continue
-            }
-            Write-Host "[OK] Created companion-module-template-$lang-v1" -ForegroundColor Green
         }
     }
 }
@@ -239,7 +247,7 @@ Write-Host "Workspace structure:" -ForegroundColor Cyan
 Write-Host "  companion-module-review/              <- this repo (the workspace)"
 Write-Host "  ├── reviews/                          <- review reports + TRACKER.md"
 Write-Host "  ├── companion-modules-reviewing/      <- module checkouts go here (gitignored)"
-Write-Host "  └── companion-module-templates/       <- official templates, v1/v2 js/ts (gitignored)"
+Write-Host "  └── companion-module-templates/       <- official js/ts templates: main (2.1), -v2.0.4, -v1 (gitignored)"
 Write-Host ""
 Write-Host "Run a review in Claude Code: /review-module" -ForegroundColor Cyan
 if ($pluginDir) {
