@@ -108,7 +108,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | breeze-overlay | v1.1.0 | 2026-10-05 | [review](breeze-overlay/review-breeze-overlay-v1.1.0-20261005-024911.md) |
 | ✅ | 1stpass-1stpass | v1.2.1 | 2026-10-05 | [review](1stpass-1stpass/review-1stpass-1stpass-v1.2.1-20261005-024911.md) |
 | ✅ | biamp-tesira | v4.0.0 | 2026-10-06 | [review](biamp-tesira/review-biamp-tesira-v4.0.0-20261006-202001.md) |
-| ⬜ | analogway-eks500 | v1.0.1 | 2026-10-05 | [review](analogway-eks500/review-analogway-eks500-v1.0.1-20261005-024911.md) |
+| ✅ | analogway-eks500 | v2.0.0 | 2026-10-05 | [review](analogway-eks500/review-analogway-eks500-v2.0.0-20261005-024911.md) |
 | ⬜ | autodirector-mirusuite | v1.1.0 | 2026-10-05 | [review](autodirector-mirusuite/review-autodirector-mirusuite-v1.1.0-20261005-024911.md) |
 | ⬜ | sony-pxw | v1.0.1 | 2026-10-05 | [review](sony-pxw/review-sony-pxw-v1.0.1-20261005-024911.md) |
 | ⬜ | presentationtools-aps | v2.10.0 | 2026-10-05 | [review](presentationtools-aps/review-presentationtools-aps-v2.10.0-20261005-024911.md) |
@@ -121,4 +121,3 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | stagetimerio-api | v2.7.0 | 2026-10-05 | [review](stagetimerio-api/review-stagetimerio-api-v2.7.0-20261005-024911.md) |
 | ⬜ | devcore-mixingstation | v2.0.0 | 2026-10-05 | [review](devcore-mixingstation/review-devcore-mixingstation-v2.0.0-20261005-024911.md) |
 | ⬜ | touchpoint-meetings | v0.2.1 | 2026-10-05 | [review](touchpoint-meetings/review-touchpoint-meetings-v0.2.1-20261005-024911.md) |
-| ⬜ | analogway-eks500 | v2.0.0 | 2026-10-05 | [review](analogway-eks500/review-analogway-eks500-v2.0.0-20261005-024911.md) |
