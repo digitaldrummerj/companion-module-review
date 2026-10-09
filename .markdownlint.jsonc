@@ -1,0 +1,15 @@
+// markdownlint rules for assembled module reviews (reviews/**/*.md).
+// Mirrors the companion-module-review plugin's config/.markdownlint.jsonc, which the review
+// orchestrator lints every review with (Step 7a). Keep the rules in both identical.
+{
+  "default": true,
+
+  // Reviews are prose: one paragraph per line reads and diffs better than hard-wrapped text.
+  "MD013": false,
+
+  // Evidence blocks quote module source verbatim, and most Companion modules indent with tabs.
+  "MD010": { "code_blocks": false },
+
+  // Every table uses the same pipe style: "| a | b |" with a "| --- | --- |" divider.
+  "MD060": { "style": "compact" }
+}
