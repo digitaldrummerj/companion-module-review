@@ -107,7 +107,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | behringer-wing | v2.4.0-alpha.1 | 2026-10-05 | [review](behringer-wing/review-behringer-wing-v2.4.0-alpha.1-20261005-024911.md) |
 | ✅ | breeze-overlay | v1.1.0 | 2026-10-05 | [review](breeze-overlay/review-breeze-overlay-v1.1.0-20261005-024911.md) |
 | ✅ | 1stpass-1stpass | v1.2.1 | 2026-10-05 | [review](1stpass-1stpass/review-1stpass-1stpass-v1.2.1-20261005-024911.md) |
-| ⬜ | biamp-tesira | v4.0.0 | 2026-10-05 | [review](biamp-tesira/review-biamp-tesira-v4.0.0-20261005-024911.md) |
+| ✅ | biamp-tesira | v4.0.0 | 2026-10-06 | [review](biamp-tesira/review-biamp-tesira-v4.0.0-20261006-202001.md) |
 | ⬜ | analogway-eks500 | v1.0.1 | 2026-10-05 | [review](analogway-eks500/review-analogway-eks500-v1.0.1-20261005-024911.md) |
 | ⬜ | autodirector-mirusuite | v1.1.0 | 2026-10-05 | [review](autodirector-mirusuite/review-autodirector-mirusuite-v1.1.0-20261005-024911.md) |
 | ⬜ | sony-pxw | v1.0.1 | 2026-10-05 | [review](sony-pxw/review-sony-pxw-v1.0.1-20261005-024911.md) |
