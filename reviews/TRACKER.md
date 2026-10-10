@@ -116,7 +116,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | integ-jnior | v1.0.0 | 2026-10-05 | [review](integ-jnior/review-integ-jnior-v1.0.0-20261005-024911.md) |
 | ✅ | thenoteslist-thenoteslist | v1.0.0 | 2026-10-05 | [review](thenoteslist-thenoteslist/review-thenoteslist-thenoteslist-v1.0.0-20261005-024911.md) |
 | ✅ | chamsys-magicq-osc | v3.2.1 | 2026-10-05 | [review](chamsys-magicq-osc/review-chamsys-magicq-osc-v3.2.1-20261005-024911.md) |
-| ⬜ | goalake-switch | v1.0.0 | 2026-10-05 | [review](goalake-switch/review-goalake-switch-v1.0.0-20261005-024911.md) |
+| ✅ | goalake-switch | v1.0.0 | 2026-10-05 | [review](goalake-switch/review-goalake-switch-v1.0.0-20261005-024911.md) |
 | ⬜ | syncthingfoundation-syncthing | v1.0.0 | 2026-10-05 | [review](syncthingfoundation-syncthing/review-syncthingfoundation-syncthing-v1.0.0-20261005-024911.md) |
 | ⬜ | stagetimerio-api | v2.7.0 | 2026-10-05 | [review](stagetimerio-api/review-stagetimerio-api-v2.7.0-20261005-024911.md) |
 | ⬜ | devcore-mixingstation | v2.0.0 | 2026-10-05 | [review](devcore-mixingstation/review-devcore-mixingstation-v2.0.0-20261005-024911.md) |
