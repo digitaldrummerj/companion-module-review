@@ -110,7 +110,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | biamp-tesira | v4.0.0 | 2026-10-06 | [review](biamp-tesira/review-biamp-tesira-v4.0.0-20261006-202001.md) |
 | ✅ | analogway-eks500 | v2.0.0 | 2026-10-05 | [review](analogway-eks500/review-analogway-eks500-v2.0.0-20261005-024911.md) |
 | ✅ | autodirector-mirusuite | v1.1.0 | 2026-10-05 | [review](autodirector-mirusuite/review-autodirector-mirusuite-v1.1.0-20261005-024911.md) |
-| ⬜ | sony-pxw | v1.0.1 | 2026-10-05 | [review](sony-pxw/review-sony-pxw-v1.0.1-20261005-024911.md) |
+| ✅ | sony-pxw | v1.0.1 | 2026-10-05 | [review](sony-pxw/review-sony-pxw-v1.0.1-20261005-024911.md) |
 | ⬜ | presentationtools-aps | v2.10.0 | 2026-10-05 | [review](presentationtools-aps/review-presentationtools-aps-v2.10.0-20261005-024911.md) |
 | ⬜ | chromaq-vista | v1.0.0 | 2026-10-05 | [review](chromaq-vista/review-chromaq-vista-v1.0.0-20261005-024911.md) |
 | ⬜ | integ-jnior | v1.0.0 | 2026-10-05 | [review](integ-jnior/review-integ-jnior-v1.0.0-20261005-024911.md) |
