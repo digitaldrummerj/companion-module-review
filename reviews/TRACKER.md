@@ -111,7 +111,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | analogway-eks500 | v2.0.0 | 2026-10-05 | [review](analogway-eks500/review-analogway-eks500-v2.0.0-20261005-024911.md) |
 | ✅ | autodirector-mirusuite | v1.1.0 | 2026-10-05 | [review](autodirector-mirusuite/review-autodirector-mirusuite-v1.1.0-20261005-024911.md) |
 | ✅ | sony-pxw | v1.0.1 | 2026-10-05 | [review](sony-pxw/review-sony-pxw-v1.0.1-20261005-024911.md) |
-| ⬜ | presentationtools-aps | v2.10.0 | 2026-10-05 | [review](presentationtools-aps/review-presentationtools-aps-v2.10.0-20261005-024911.md) |
+| ✅ | presentationtools-aps | v2.10.0 | 2026-10-05 | [review](presentationtools-aps/review-presentationtools-aps-v2.10.0-20261005-024911.md) |
 | ⬜ | chromaq-vista | v1.0.0 | 2026-10-05 | [review](chromaq-vista/review-chromaq-vista-v1.0.0-20261005-024911.md) |
 | ⬜ | integ-jnior | v1.0.0 | 2026-10-05 | [review](integ-jnior/review-integ-jnior-v1.0.0-20261005-024911.md) |
 | ⬜ | thenoteslist-thenoteslist | v1.0.0 | 2026-10-05 | [review](thenoteslist-thenoteslist/review-thenoteslist-thenoteslist-v1.0.0-20261005-024911.md) |
