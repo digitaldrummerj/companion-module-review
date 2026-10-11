@@ -14,3 +14,5 @@ companion-module-*/
 
 diff*
 release*
+# Headless Playwright output (screenshots, snapshots, console logs) from the review-live-test skill
+/.playwright-mcp/

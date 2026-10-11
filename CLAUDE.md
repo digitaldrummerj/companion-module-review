@@ -25,7 +25,7 @@ The **only** output of a review is the markdown file under `reviews/`. The maint
 
 - `reviews/` — completed reviews + `TRACKER.md` (the ✅/⬜ feedback-submitted ledger; ⬜ + a local review = "don't re-review yet").
 - `companion-modules-reviewing/` — cloned modules under review (gitignored; each is its own git repo). **Never commit these.** Override with `COMPANION_MODULES_DIR`.
-- `companion-module-templates/` — official JS/TS, v1/v2 templates the validator diffs against (gitignored; cloned by `setup.ps1`). Override with `COMPANION_TEMPLATES_DIR`. **Never auto-updated:** concurrent review sessions share these clones, so an automatic pull would move the reference mid-review. Refresh explicitly with the plugin's `update-templates.ps1` *between* sessions — it is the only thing that ever moves a template.
+- `companion-module-templates/` — official JS/TS templates the validator diffs against, chosen by the module's base API level: `companion-module-template-{js,ts}` (`main`, API 2.1+), `…-v2.0.4` (API 2.0, pinned at the 2026-08-28 commits) and `…-v1` (API 1.x, pinned) (gitignored; cloned by `setup.ps1`). Override with `COMPANION_TEMPLATES_DIR`. **Never auto-updated:** concurrent review sessions share these clones, so an automatic pull would move the reference mid-review. Refresh explicitly with the plugin's `update-templates.ps1` *between* sessions — it is the only thing that ever moves a template.
 - `.claude/settings.json` — the marketplace, the enabled plugins, and the script permissions.
 - `setup.ps1` — workspace bootstrap: git hooks, plugin install, module/template directories.
 
@@ -38,4 +38,5 @@ Edit it in the skills repo, not here: `bitfocus-companion-skills/plugins/compani
 - Run scripts with `pwsh`. They honor `COMPANION_REVIEW_ROOT` / `COMPANION_MODULES_DIR` / `COMPANION_TEMPLATES_DIR`.
 - A review **aborts** if the template clone is behind upstream — a stale reference produces false findings against a correct module. Refresh with `update-templates.ps1`, then re-run.
 - Reviews run one module at a time.
+- Every review must pass markdownlint with `.markdownlint.jsonc` (the plugin's Step 7a runs `scripts/lint-review.ps1`, which uses a pinned markdownlint-cli2 and refuses any file outside `reviews/`; it's covered by the existing `pwsh …/companion-module-review/scripts/*` permission, so there's no separate `npx` allow rule). Line length is off; everything else is the default rule set.
 - Don't auto-commit the review file — write it and let the user review before they push it to this repo and deliver it.
