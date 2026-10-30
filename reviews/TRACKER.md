@@ -176,7 +176,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | tow-mixeffect | v2.1.0 | 2026-10-30 | [review](tow-mixeffect/review-tow-mixeffect-v2.1.0-20261030-090507.md) |
 | ✅ | magewell-ultrastream | v1.1.0 | 2026-10-30 | [review](magewell-ultrastream/review-magewell-ultrastream-v1.1.0-20261030-090507.md) |
 | ✅ | cisco-cbs-350 | v1.0.0 | 2026-10-30 | [review](cisco-cbs-350/review-cisco-cbs-350-v1.0.0-20261030-090507.md) |
-| ⬜ | cuetone-cueplayer | v1.0.0 | 2026-10-30 | [review](cuetone-cueplayer/review-cuetone-cueplayer-v1.0.0-20261030-090507.md) |
+| ✅ | cuetone-cueplayer | v1.0.0 | 2026-10-30 | [review](cuetone-cueplayer/review-cuetone-cueplayer-v1.0.0-20261030-090507.md) |
 | ⬜ | fritz-fritzbox | v1.0.0-beta.2 | 2026-10-30 | [review](fritz-fritzbox/review-fritz-fritzbox-v1.0.0-beta.2-20261030-090507.md) |
 | ⬜ | aimp-audioplayer | v2.0.2 | 2026-10-30 | [review](aimp-audioplayer/review-aimp-audioplayer-v2.0.2-20261030-090507.md) |
 | ⬜ | warecotech-warecue | v1.1.1 | 2026-10-30 | [review](warecotech-warecue/review-warecotech-warecue-v1.1.1-20261030-090507.md) |
