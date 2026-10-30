@@ -6,7 +6,7 @@ This repo is the **workspace** for reviewing Bitfocus Companion modules for rele
 
 Say **"review the next module"** or **"review companion-module-X"**, or use **`/review-module [name] [tag|module|both]`**. Both invoke the plugin's `review-companion-module` skill, which runs the pipeline in order:
 
-`bitfocus-queue.ps1` → `bitfocus-setup-module.ps1` → `module-facts.ps1` (runs `api-scan.ps1`; reports the API level — 1 / 2.0 / 2.1 — and which v2 reference files apply) → `validate-template.ps1 -RunBuild` → dispatch the `companion-protocol-reviewer`, `companion-qa-reviewer`, and `companion-compliance-reviewer` subagents → assemble one review under `reviews/{module}/` + a ⬜ `TRACKER.md` row.
+delivery-mode question → `bitfocus-queue.ps1` (marks never-published modules `new module`) → `bitfocus-setup-module.ps1` → assign you as reviewer in the portal → `module-facts.ps1` (runs `api-scan.ps1`; reports the API level — 1 / 2.0 / 2.1 — and which v2 reference files apply) → `validate-template.ps1 -RunBuild` → dispatch the `companion-protocol-reviewer`, `companion-qa-reviewer`, and `companion-compliance-reviewer` subagents → assemble one review under `reviews/{module}/` + a ⬜ `TRACKER.md` row → deliver it (auto mode) or wait for "submit".
 
 The scripts live in the plugin (`<plugin>/scripts/`); the skill invokes them from there. Run from this repo's root — the scripts locate the workspace from `COMPANION_REVIEW_ROOT` or the git toplevel of the current directory.
 
@@ -20,6 +20,16 @@ Reviews **report only**. NEVER:
 - commit or push anything to a module's repo.
 
 The **only** output of a review is the markdown file under `reviews/`. The maintainer applies the fixes themselves; a resubmission gets a re-review that *verifies* their changes.
+
+## The developer portal
+
+The review touches the Bitfocus developer portal only through the plugin's skills, in your logged-in Chrome:
+
+- **`review-assign-reviewer`** assigns you as reviewer when a review starts. A batch assigns every module up front. It never takes over a module someone else holds.
+- **`review-submit`** delivers the review:
+  1. It commits and pushes the review, with its TRACKER row set to ✅.
+  2. It clicks **Request changes** with the standard findings message and link, or **Approve**. The approval gets a link comment when there are non-blocking findings.
+  3. After an approval it watches the build with `bitfocus-watch-build.ps1`, and flags a failed or stuck build for you.
 
 ## Workspace layout
 
@@ -39,4 +49,8 @@ Edit it in the skills repo, not here: `bitfocus-companion-skills/plugins/compani
 - A review **aborts** if the template clone is behind upstream — a stale reference produces false findings against a correct module. Refresh with `update-templates.ps1`, then re-run.
 - Reviews run one module at a time.
 - Every review must pass markdownlint with `.markdownlint.jsonc` (the plugin's Step 7a runs `scripts/lint-review.ps1`, which uses a pinned markdownlint-cli2 and refuses any file outside `reviews/`; it's covered by the existing `pwsh …/companion-module-review/scripts/*` permission, so there's no separate `npx` allow rule). Line length is off; everything else is the default rule set.
-- Don't auto-commit the review file — write it and let the user review before they push it to this repo and deliver it.
+- **Delivery mode is asked once per review cycle** (one review or a batch):
+  - **Hold for my review** (the default): write the review and stop. The user reads it, then says "submit", which runs `review-submit`.
+  - **Deliver automatically**: run `review-submit` as soon as the review is lint-clean.
+
+  Never commit, push or act in the portal outside these two paths. Batches deliver one module at a time, in queue order, from the main session.
