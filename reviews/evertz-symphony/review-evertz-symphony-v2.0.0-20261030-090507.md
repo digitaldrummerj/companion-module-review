@@ -18,7 +18,6 @@
 ### Blocking
 
 - [ ] [C1: Yarn is allowed to install dependencies from any Git repository](#c1-yarn-is-allowed-to-install-dependencies-from-any-git-repository)
-- [ ] [C2: The module lists its maintainer without a contact email](#c2-the-module-lists-its-maintainer-without-a-contact-email)
 - [ ] [H1: The CI workflow differs from the template](#h1-the-ci-workflow-differs-from-the-template)
 - [ ] [H2: Releases are packaged by a custom workflow instead of the shared Bitfocus one](#h2-releases-are-packaged-by-a-custom-workflow-instead-of-the-shared-bitfocus-one)
 
@@ -59,37 +58,6 @@ npmMinimalAgeGate: 3d
 
 npmPreapprovedPackages:
   - '@companion-module/*'
-```
-
-### C2: The module lists its maintainer without a contact email
-
-- **Source:** 🤖 validate-template (MAN-PLACEHOLDER)
-- **Classification:** 🆕 NEW (flagged by the template check; the maintainers block itself is unchanged since v1.0.4)
-- **File:** [`companion/manifest.json:13-16`](https://github.com/bitfocus/companion-module-evertz-symphony/blob/722c5524563a35ad15e1fb612f211d4c30b317eb/companion/manifest.json#L13-L16)
-
-**What goes wrong:** Users and the Bitfocus team who need to reach the maintainer about this module (a bug report, a device question) find a name but no email address in the module's details.
-
-**Why it happens:** The manifest's `maintainers` entry has the maintainer's name, but its `email` field is an empty string, which the template check treats as an unfilled placeholder.
-
-**Evidence:** validator: "Placeholder maintainer: name='Phillip Ivan Pietruschka' email=''".
-
-```json
-// companion/manifest.json:13-16
-{
-	"name": "Phillip Ivan Pietruschka",
-	"email": ""
-}
-```
-
-**Confirm by:** open [`companion/manifest.json:15`](https://github.com/bitfocus/companion-module-evertz-symphony/blob/722c5524563a35ad15e1fb612f211d4c30b317eb/companion/manifest.json#L15). `maintainers[0].email` is empty.
-
-**Fix:** fill in a contact email for the maintainer.
-
-```json
-{
-	"name": "Phillip Ivan Pietruschka",
-	"email": "you@example.com"
-}
 ```
 
 ## 🟠 High
