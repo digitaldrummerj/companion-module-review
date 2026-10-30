@@ -127,7 +127,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | microfilms-gpio | v1.0.1 | 2026-10-30 | [review](microfilms-gpio/review-microfilms-gpio-v1.0.1-20261030-003407.md) |
 | ✅ | behringer-wing | v2.4.0-alpha.2 | 2026-10-30 | [review](behringer-wing/review-behringer-wing-v2.4.0-alpha.2-20261030-003407.md) |
 | ✅ | tlof-neoluma-midi-control | v1.0.0 | 2026-10-30 | [review](tlof-neoluma-midi-control/review-tlof-neoluma-midi-control-v1.0.0-20261030-003407.md) |
-| ⬜ | pltech-kumatimer | v2.5.0 | 2026-10-30 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.5.0-20261030-003407.md) |
+| ✅ | pltech-kumatimer | v2.5.0 | 2026-10-30 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.5.0-20261030-003407.md) |
 | ⬜ | mds-otobako-pro | v1.1.0 | 2026-10-30 | [review](mds-otobako-pro/review-mds-otobako-pro-v1.1.0-20261030-003407.md) |
 | ⬜ | liveplay-liveplay | v1.0.0 | 2026-10-30 | [review](liveplay-liveplay/review-liveplay-liveplay-v1.0.0-20261030-003407.md) |
 | ✅ | clearcom-freespeakii | v0.1.0 | 2026-10-30 | [review](clearcom-freespeakii/review-clearcom-freespeakii-v0.1.0-20261030-003407.md) |
