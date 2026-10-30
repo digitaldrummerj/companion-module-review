@@ -177,3 +177,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | magewell-ultrastream | v1.1.0 | 2026-10-30 | [review](magewell-ultrastream/review-magewell-ultrastream-v1.1.0-20261030-090507.md) |
 | ⬜ | cisco-cbs-350 | v1.0.0 | 2026-10-30 | [review](cisco-cbs-350/review-cisco-cbs-350-v1.0.0-20261030-090507.md) |
 | ⬜ | cuetone-cueplayer | v1.0.0 | 2026-10-30 | [review](cuetone-cueplayer/review-cuetone-cueplayer-v1.0.0-20261030-090507.md) |
+| ⬜ | fritz-fritzbox | v1.0.0-beta.2 | 2026-10-30 | [review](fritz-fritzbox/review-fritz-fritzbox-v1.0.0-beta.2-20261030-090507.md) |
