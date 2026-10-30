@@ -152,3 +152,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | zanus-pt | v1.0.2 | 2026-10-30 | [review](zanus-pt/review-zanus-pt-v1.0.2-20261030-003407.md) |
 | ✅ | getontime-ontime | v5.4.2-beta.2 | 2026-10-30 | [review](getontime-ontime/review-getontime-ontime-v5.4.2-beta.2-20261030-003407.md) |
 | ✅ | luminex-luminode | v2.0.0 | 2026-10-30 | [review](luminex-luminode/review-luminex-luminode-v2.0.0-20261030-003407.md) |
+| ⬜ | qsys-remote-control | v4.0.1 | 2026-10-30 | [review](qsys-remote-control/review-qsys-remote-control-v4.0.1-20261030-090507.md) |
