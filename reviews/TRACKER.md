@@ -122,3 +122,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | devcore-mixingstation | v2.0.0 | 2026-10-05 | [review](devcore-mixingstation/review-devcore-mixingstation-v2.0.0-20261005-024911.md) |
 | ✅ | touchpoint-meetings | v0.2.1 | 2026-10-05 | [review](touchpoint-meetings/review-touchpoint-meetings-v0.2.1-20261005-024911.md) |
 | ✅ | utopianacademy-deckboy | v1.0.3 | 2026-10-11 | [review](utopianacademy-deckboy/review-utopianacademy-deckboy-v1.0.3-20261011-120624.md) |
+| ⬜ | stageaudioworks-obs-multisite | v0.5.0 | 2026-10-30 | [review](stageaudioworks-obs-multisite/review-stageaudioworks-obs-multisite-v0.5.0-20261030-003407.md) |
