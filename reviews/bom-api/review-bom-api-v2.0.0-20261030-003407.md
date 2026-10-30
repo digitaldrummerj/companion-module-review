@@ -27,14 +27,12 @@
 
 - [ ] [C1: Required `.gitattributes` file is missing](#c1-required-gitattributes-file-is-missing)
 - [ ] [C2: `.gitignore` is missing the template's `/*.tgz` and `/.vscode` entries](#c2-gitignore-is-missing-the-templates-tgz-and-vscode-entries)
-- [ ] [C3: ESLint config adds a `typescript-eslint` import the template does not have](#c3-eslint-config-adds-a-typescript-eslint-import-the-template-does-not-have)
-- [ ] [C4: Maintainer email is empty in the manifest](#c4-maintainer-email-is-empty-in-the-manifest)
+- [ ] [H1: Release workflow builds its own package instead of using the shared Bitfocus module workflow](#h1-release-workflow-builds-its-own-package-instead-of-using-the-shared-bitfocus-module-workflow)
+- [ ] [H2: Node CI workflow differs from the template](#h2-node-ci-workflow-differs-from-the-template)
+- [ ] [H3: Module checks workflow drops the template-repo guard](#h3-module-checks-workflow-drops-the-template-repo-guard)
 
 ### Non-blocking
 
-- [ ] [M1: Release workflow builds its own package instead of using the shared Bitfocus module workflow](#m1-release-workflow-builds-its-own-package-instead-of-using-the-shared-bitfocus-module-workflow)
-- [ ] [M2: Node CI workflow differs from the template](#m2-node-ci-workflow-differs-from-the-template)
-- [ ] [M3: Module checks workflow drops the template-repo guard](#m3-module-checks-workflow-drops-the-template-repo-guard)
 - [ ] [L1: Aborting a running Select Location action logs misleading request failed warnings](#l1-aborting-a-running-select-location-action-logs-misleading-request-failed-warnings)
 - [ ] [L2: Aborting Select Location mid-update leaves variables mixing the new and old location until the next poll](#l2-aborting-select-location-mid-update-leaves-variables-mixing-the-new-and-old-location-until-the-next-poll)
 - [ ] [N1: Get Data fails with an unclear error if the Geohash option evaluates to a non-string](#n1-get-data-fails-with-an-unclear-error-if-the-geohash-option-evaluates-to-a-non-string)
@@ -86,56 +84,9 @@
 /.vscode
 ```
 
-### C3: ESLint config adds a `typescript-eslint` import the template does not have
+## 🟠 High
 
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`eslint.config.mjs:2`](https://github.com/bitfocus/companion-module-bom-api/blob/7c83cc861c4be1ad8c4dbb3ddc6e4d0a640f99bc/eslint.config.mjs#L2), [`eslint.config.mjs:10-14`](https://github.com/bitfocus/companion-module-bom-api/blob/7c83cc861c4be1ad8c4dbb3ddc6e4d0a640f99bc/eslint.config.mjs#L10-L14)
-
-**What goes wrong:** The ESLint setup no longer matches the template, so it depends on a package the template doesn't use. A later change to the shared `@companion-module/tools` config can break linting in ways that are hard to trace back to this file.
-
-**Why it happens:** The file keeps the template's `baseConfig` spread and adds a test-scoped override, which is an accepted change. But it also imports `typescript-eslint` to apply `tseslint.configs.disableTypeChecked` to `vitest.config.ts`, because `tsconfig.json` only includes `src/**/*.ts`. That extra import takes it outside the accepted form.
-
-**Evidence:** validator line 2: found `import tseslint from 'typescript-eslint'`, template has no such line.
-
-```js
-// eslint.config.mjs:2
-import tseslint from 'typescript-eslint'
-// eslint.config.mjs:10-14
-	{
-		// Not covered by tsconfig.json (which only includes src/**/*.ts), so parse it without type info
-		files: ['vitest.config.ts'],
-		...tseslint.configs.disableTypeChecked,
-	},
-```
-
-**Confirm by:** open [`eslint.config.mjs:1-22`](https://github.com/bitfocus/companion-module-bom-api/blob/7c83cc861c4be1ad8c4dbb3ddc6e4d0a640f99bc/eslint.config.mjs#L1-L22).
-
-**Fix:** drop the import and the `disableTypeChecked` block, and add `vitest.config.ts` to the `include` of `tsconfig.json` instead (widening `tsconfig.json` for test files is an accepted change). Keep the `n/no-unpublished-import` override.
-
-```json
-"include": ["src/**/*.ts", "vitest.config.ts"]
-```
-
-### C4: Maintainer email is empty in the manifest
-
-- **Source:** 🤖 validate-template (MAN-PLACEHOLDER)
-- **Classification:** 🆕 NEW (this release moves the module onto the API 2.x template)
-- **File:** [`companion/manifest.json:12-17`](https://github.com/bitfocus/companion-module-bom-api/blob/7c83cc861c4be1ad8c4dbb3ddc6e4d0a640f99bc/companion/manifest.json#L12-L17)
-
-**What goes wrong:** Users and the Bitfocus team have no way to contact the maintainer from the module's listing.
-
-**Why it happens:** The maintainer entry has a name but `"email": ""`.
-
-**Evidence:** placeholder maintainer: name='Phillip Ivan Pietruschka' email=''.
-
-**Confirm by:** open [`companion/manifest.json:12-17`](https://github.com/bitfocus/companion-module-bom-api/blob/7c83cc861c4be1ad8c4dbb3ddc6e4d0a640f99bc/companion/manifest.json#L12-L17).
-
-**Fix:** fill in the maintainer's email address.
-
-## 🟡 Medium
-
-### M1: Release workflow builds its own package instead of using the shared Bitfocus module workflow
+### H1: Release workflow builds its own package instead of using the shared Bitfocus module workflow
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -145,9 +96,13 @@ import tseslint from 'typescript-eslint'
 
 **Why it happens:** The workflow is fully rewritten. It no longer calls the shared `bitfocus/actions/.github/workflows/module-checks.yaml@main` job; it runs `yarn package --dev [--prerelease]` itself and uploads the result with `gh release upload`.
 
+**Evidence:** `.github/workflows/release.yaml` lines 51 and 53 run `yarn package --dev --prerelease` / `yarn package --dev`, and line 63 uploads `./*.tgz` with `gh release upload`. There is no call to `bitfocus/actions/.github/workflows/module-checks.yaml@main`.
+
+**Confirm by:** open [`.github/workflows/release.yaml:51-63`](https://github.com/bitfocus/companion-module-bom-api/blob/7c83cc861c4be1ad8c4dbb3ddc6e4d0a640f99bc/.github/workflows/release.yaml#L51-L63) and compare it with the template's `.github/workflows/release.yaml`.
+
 **Fix:** use the template's `release.yaml` unchanged, so the release asset comes from the shared Bitfocus workflow.
 
-### M2: Node CI workflow differs from the template
+### H2: Node CI workflow differs from the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -157,9 +112,13 @@ import tseslint from 'typescript-eslint'
 
 **Why it happens:** The file adds `permissions: contents: read`, uses `actions/setup-node@v7` instead of v6, drops `persist-credentials: false` and the template-only step, and enables the test job with `yarn test:coverage` plus a Codecov upload. The CI Node version (26.x) matches the `node26` runtime.
 
+**Evidence:** `.github/workflows/node.yaml` line 11 `permissions:` (not in the template), lines 24 and 55 `uses: actions/setup-node@v7` (template: `@v6`), line 68 `yarn test:coverage` and line 72 `uses: codecov/codecov-action@v7`.
+
+**Confirm by:** compare [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-bom-api/blob/7c83cc861c4be1ad8c4dbb3ddc6e4d0a640f99bc/.github/workflows/node.yaml) with the template's `.github/workflows/node.yaml`.
+
 **Fix:** start from the template's `node.yaml` and keep only the test job as the module's addition; restore `persist-credentials: false`.
 
-### M3: Module checks workflow drops the template-repo guard
+### H3: Module checks workflow drops the template-repo guard
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -167,7 +126,11 @@ import tseslint from 'typescript-eslint'
 
 **What goes wrong:** Nothing visible; the workflow behaves the same in this repository. It just no longer matches the template.
 
-**Why it happens:** The template's `if: ${{ !contains(github.repository, 'companion-module-template-') }}` line was removed. That guard only matters in the template repository itself, so the change is harmless.
+**Why it happens:** The template's `if: ${{ !contains(github.repository, 'companion-module-template-') }}` line was removed. That guard only matters in the template repository itself, so the module still works, but the file no longer matches the template.
+
+**Evidence:** the `check` job at `.github/workflows/companion-module-checks.yaml` lines 7-13 goes straight from `name: Check module` to `permissions:`, with no `if: ${{ !contains(github.repository, 'companion-module-template-') }}` line.
+
+**Confirm by:** open [`.github/workflows/companion-module-checks.yaml:7-13`](https://github.com/bitfocus/companion-module-bom-api/blob/7c83cc861c4be1ad8c4dbb3ddc6e4d0a640f99bc/.github/workflows/companion-module-checks.yaml#L7-L13) and compare it with the template's file.
 
 **Fix:** restore the template's `if:` line so the file matches the template.
 
