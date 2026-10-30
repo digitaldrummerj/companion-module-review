@@ -24,9 +24,7 @@
 
 ### Blocking
 
-- [ ] [H1: CI workflow `.github/workflows/node.yaml` differs from the template](#h1-ci-workflow-githubworkflowsnodeyaml-differs-from-the-template)
-- [ ] [H2: Release workflow `.github/workflows/release.yaml` differs from the template](#h2-release-workflow-githubworkflowsreleaseyaml-differs-from-the-template)
-- [ ] [H3: No feedbacks, so buttons can't show the DVA's state](#h3-no-feedbacks-so-buttons-cant-show-the-dvas-state)
+- [ ] [H1: No feedbacks, so buttons can't show the DVA's state](#h1-no-feedbacks-so-buttons-cant-show-the-dvas-state)
 
 ### Non-blocking
 
@@ -45,73 +43,7 @@
 
 ## 🟠 High
 
-### H1: CI workflow `.github/workflows/node.yaml` differs from the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF). Raised to High by the review maintainer: a `.github` file the module has that differs from the template.
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/node.yaml)
-
-**What goes wrong:** The module's CI workflow no longer matches the one every module built from `companion-module-template-ts` ships with. When a CI run behaves differently from other modules, whoever troubleshoots it has to work out the module's own variant first.
-
-**Why it happens:** The workflow was edited by hand. It adds a top-level permissions block, drops the template's `persist-credentials: false` on checkout, moves `actions/setup-node` to `@v7`, adds a `yarn test:types` step, and turns the template's commented-out `test` job into a different live job that uploads coverage to Codecov.
-
-**Evidence:**
-
-- [`.github/workflows/node.yaml:11-12`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/node.yaml#L11-L12) adds `permissions: contents: read`.
-- [`.github/workflows/node.yaml:21`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/node.yaml#L21) drops the template's `with: persist-credentials: false` on `actions/checkout@v7` (template lines 18-20).
-- [`.github/workflows/node.yaml:24`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/node.yaml#L24) and [`:56`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/node.yaml#L56) use `actions/setup-node@v7` where the template has `@v6` (template line 23).
-- [`.github/workflows/node.yaml:38`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/node.yaml#L38) adds `yarn test:types`.
-- [`.github/workflows/node.yaml:47-81`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/node.yaml#L47-L81) replaces the template's commented-out `test` job with a live job that runs `yarn test:coverage` and uploads coverage with `codecov/codecov-action@v7`.
-- The template's "Prepare Environment (For template repository)" step is removed. That removal is expected in a module.
-
-```diff
-+permissions:
-+  contents: read
-+
-       - uses: actions/checkout@v7
--        with:
--          persist-credentials: false
--        uses: actions/setup-node@v6
-+        uses: actions/setup-node@v7
-           yarn build
-+          yarn test:types
-```
-
-**Confirm by:** `diff companion-module-template-ts/.github/workflows/node.yaml .github/workflows/node.yaml` prints nothing, apart from the template-repository-only step and the template's own commented test job being uncommented.
-
-**Fix:** Copy `.github/workflows/node.yaml` from `companion-module-template-ts`. If you want to run unit tests, uncomment the template's `test` job as it ships.
-
-### H2: Release workflow `.github/workflows/release.yaml` differs from the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF). Raised to High by the review maintainer: a `.github` file the module has that differs from the template.
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/release.yaml`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/release.yaml)
-
-**What goes wrong:** When a GitHub release is published, this module builds and attaches its package with its own script instead of the shared Bitfocus module-checks workflow. The attached package is a `--dev` build, and it is named differently from what every other module's release produces.
-
-**Why it happens:** The template's two jobs were replaced with one hand-rolled job. The template's `package` job calls `bitfocus/actions/.github/workflows/module-checks.yaml@main` (with `git-ref`, `prerelease` and `upload-artifact: true`), and its `attach` job downloads that artifact and renames `pkg.tgz` to a standard asset name. The module's job checks out the tag, runs `yarn install` and `yarn package --dev [--prerelease]`, and uploads `./*.tgz` itself.
-
-**Evidence:**
-
-- [`.github/workflows/release.yaml:10-13`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/release.yaml#L10-L13) adds a comment block.
-- [`.github/workflows/release.yaml:15-65`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/release.yaml#L15-L65) replaces the template's `package` and `attach` jobs (template lines 10-53) with one `package` job; `timeout-minutes` is 15 against the template's 5.
-- [`.github/workflows/release.yaml:41-57`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/release.yaml#L41-L57) runs `yarn package --dev [--prerelease]`.
-- [`.github/workflows/release.yaml:63`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/.github/workflows/release.yaml#L63) uploads with `gh release upload "${{ github.event.release.tag_name }}" ./*.tgz --clobber`, dropping the template's asset-naming logic and its `--repo "$GITHUB_REPOSITORY"` / `TAG` env.
-
-```yaml
-# template release.yaml:20-25
-    uses: bitfocus/actions/.github/workflows/module-checks.yaml@main
-    with:
-      git-ref: ${{ github.event.release.tag_name }}
-      prerelease: ${{ github.event.release.prerelease }}
-      upload-artifact: true
-```
-
-**Confirm by:** `diff companion-module-template-ts/.github/workflows/release.yaml .github/workflows/release.yaml` prints nothing.
-
-**Fix:** Copy `.github/workflows/release.yaml` from `companion-module-template-ts` unchanged.
-
-### H3: No feedbacks, so buttons can't show the DVA's state
+### H1: No feedbacks, so buttons can't show the DVA's state
 
 - **Source:** 🔎 compliance reviewer — verified
 - **Classification:** 🆕 NEW
