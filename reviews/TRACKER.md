@@ -169,7 +169,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | integ-jnior | v1.1.0 | 2026-10-30 | [review](integ-jnior/review-integ-jnior-v1.1.0-20261030-090507.md) |
 | ✅ | evertz-symphony | v2.0.0 | 2026-10-30 | [review](evertz-symphony/review-evertz-symphony-v2.0.0-20261030-090507.md) |
 | ✅ | generic-swp02 | v2.0.0 | 2026-10-30 | [review](generic-swp02/review-generic-swp02-v2.0.0-20261030-090507.md) |
-| ⬜ | vhd-vx90 | v1.2.1 | 2026-10-30 | [review](vhd-vx90/review-vhd-vx90-v1.2.1-20261030-090507.md) |
+| ✅ | vhd-vx90 | v1.2.1 | 2026-10-30 | [review](vhd-vx90/review-vhd-vx90-v1.2.1-20261030-090507.md) |
 | ⬜ | vhd-vx61xl | v1.0.1 | 2026-10-30 | [review](vhd-vx61xl/review-vhd-vx61xl-v1.0.1-20261030-090507.md) |
 | ⬜ | astrastudio-onairscreen | v1.1.0 | 2026-10-30 | [review](astrastudio-onairscreen/review-astrastudio-onairscreen-v1.1.0-20261030-090507.md) |
 | ⬜ | waves-lv1 | v1.2.0 | 2026-10-30 | [review](waves-lv1/review-waves-lv1-v1.2.0-20261030-090507.md) |
