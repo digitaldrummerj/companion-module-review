@@ -207,7 +207,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | twoloox-pandorasbox | v3.1.4 | 2026-10-30 | [review](twoloox-pandorasbox/review-twoloox-pandorasbox-v3.1.4-20261030-192328.md) |
 | ✅ | ltn-schedule | v2.7.3 | 2026-10-30 | [review](ltn-schedule/review-ltn-schedule-v2.7.3-20261030-192328.md) |
 | ⬜ | videopathe-qplayer | v1.0.1 | 2026-10-30 | [review](videopathe-qplayer/review-videopathe-qplayer-v1.0.1-20261030-192328.md) |
-| ⬜ | auri-tx2n | v2.0.1 | 2026-10-30 | [review](auri-tx2n/review-auri-tx2n-v2.0.1-20261030-192328.md) |
+| ✅ | auri-tx2n | v2.0.1 | 2026-10-30 | [review](auri-tx2n/review-auri-tx2n-v2.0.1-20261030-192328.md) |
 | ⬜ | cedar-dns8d | v2.0.1 | 2026-10-30 | [review](cedar-dns8d/review-cedar-dns8d-v2.0.1-20261030-192328.md) |
 | ⬜ | bom-api | v2.0.1 | 2026-10-30 | [review](bom-api/review-bom-api-v2.0.1-20261030-192328.md) |
 | ⬜ | mds-otobako-pro | v1.1.1 | 2026-10-30 | [review](mds-otobako-pro/review-mds-otobako-pro-v1.1.1-20261030-192328.md) |
