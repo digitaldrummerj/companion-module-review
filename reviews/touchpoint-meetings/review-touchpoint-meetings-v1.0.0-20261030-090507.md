@@ -27,46 +27,13 @@ This is a follow-up to the [v0.2.1 review](review-touchpoint-meetings-v0.2.1-202
 
 The findings below are new in this review.
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [C1: The Prettier ignore list differs from the template](#c1-the-prettier-ignore-list-differs-from-the-template)
 
 ### Non-blocking
 
 - [ ] [L1: Pressing Refresh with incomplete settings hides the settings error and can start retrying every 30 seconds](#l1-pressing-refresh-with-incomplete-settings-hides-the-settings-error-and-can-start-retrying-every-30-seconds)
-
----
-
-## 🔴 Critical
-
-### C1: The Prettier ignore list differs from the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW (not raised in the v0.2.1 review; the file itself has not changed since v0.2.1)
-- **File:** [`.prettierignore:3`](https://github.com/bitfocus/companion-module-touchpoint-meetings/blob/bb0975968524677800ded2a227d68351344660bd/.prettierignore#L3)
-- **Template:** [API 2.0 TypeScript template](https://github.com/bitfocus/companion-module-template-ts/tree/d62230e88bf8aec4ea6db407106bff2a96c0fdb9) (`companion-module-template-ts-v2.0.4` @ `d62230e`): `.prettierignore`
-
-**What goes wrong:** No effect for users. Bitfocus modules keep the template's tool configuration files unchanged, and this module's `.prettierignore` has an extra line that tells Prettier to skip `src/scriptSource.ts`.
-
-**Why it happens:** `src/scriptSource.ts` is a generated file, written by `scripts/embed-script.mjs` from the TouchPoint script, and the module excludes it from formatting by adding it to the template's ignore list.
-
-**Evidence:**
-
-```text
-template .prettierignore   package.json
-                           /LICENSE.md
-module   .prettierignore   package.json
-                           /LICENSE.md
-                           src/scriptSource.ts      <- line 3, not in the template
-```
-
-**Confirm by:** open [`.prettierignore:3`](https://github.com/bitfocus/companion-module-touchpoint-meetings/blob/bb0975968524677800ded2a227d68351344660bd/.prettierignore#L3) and compare it with the template's `.prettierignore`.
-
-**Fix:** restore the template's `.prettierignore` exactly (remove line 3). If the generated file must not be reformatted, have `embed-script.mjs` write it in Prettier's format instead.
 
 ---
 
