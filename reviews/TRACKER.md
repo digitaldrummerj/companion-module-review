@@ -154,7 +154,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | luminex-luminode | v2.0.0 | 2026-10-30 | [review](luminex-luminode/review-luminex-luminode-v2.0.0-20261030-003407.md) |
 | ✅ | qsys-remote-control | v4.0.1 | 2026-10-30 | [review](qsys-remote-control/review-qsys-remote-control-v4.0.1-20261030-090507.md) |
 | ✅ | livelogix-cadence | v1.4.0 | 2026-10-30 | [review](livelogix-cadence/review-livelogix-cadence-v1.4.0-20261030-090507.md) |
-| ⬜ | generic-ptpv2-client | v2.1.0 | 2026-10-30 | [review](generic-ptpv2-client/review-generic-ptpv2-client-v2.1.0-20261030-090507.md) |
+| ✅ | generic-ptpv2-client | v2.1.0 | 2026-10-30 | [review](generic-ptpv2-client/review-generic-ptpv2-client-v2.1.0-20261030-090507.md) |
 | ⬜ | avproedge-mxnet | v1.1.3 | 2026-10-30 | [review](avproedge-mxnet/review-avproedge-mxnet-v1.1.3-20261030-090507.md) |
 | ✅ | breeze-overlay | v1.1.1 | 2026-10-30 | [review](breeze-overlay/review-breeze-overlay-v1.1.1-20261030-090507.md) |
 | ⬜ | touchpoint-meetings | v1.0.0 | 2026-10-30 | [review](touchpoint-meetings/review-touchpoint-meetings-v1.0.0-20261030-090507.md) |

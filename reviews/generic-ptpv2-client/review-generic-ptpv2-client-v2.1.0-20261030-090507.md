@@ -27,7 +27,6 @@
 - [ ] [C1: Repository has no `.gitattributes`, so line endings are not pinned to LF](#c1-repository-has-no-gitattributes-so-line-endings-are-not-pinned-to-lf)
 - [ ] [C2: Editor settings folder `/.vscode` is not ignored by git](#c2-editor-settings-folder-vscode-is-not-ignored-by-git)
 - [ ] [C3: Yarn config adds a setting the template does not have](#c3-yarn-config-adds-a-setting-the-template-does-not-have)
-- [ ] [C4: Module listing shows no contact email for the maintainer](#c4-module-listing-shows-no-contact-email-for-the-maintainer)
 - [ ] [H1: Node CI workflow (`node.yaml`) differs from the template](#h1-node-ci-workflow-nodeyaml-differs-from-the-template)
 - [ ] [H2: Release workflow (`release.yaml`) builds its own package instead of using the shared Bitfocus build](#h2-release-workflow-releaseyaml-builds-its-own-package-instead-of-using-the-shared-bitfocus-build)
 
@@ -119,28 +118,6 @@ approvedGitRepositories:
 **Confirm by:** `sed -n '1,3p' .yarnrc.yml`.
 
 **Fix:** remove the `approvedGitRepositories` block so the file matches the template.
-
-### C4: Module listing shows no contact email for the maintainer
-
-- **Source:** 🤖 validate-template (MAN-PLACEHOLDER)
-- **Classification:** 🆕 NEW (template requirement; the value is unchanged since v2.0.0)
-- **File:** [`companion/manifest.json:15`](https://github.com/bitfocus/companion-module-generic-ptpv2-client/blob/93d86ee086598ed4adb2fc889c1f28ac48f0ef85/companion/manifest.json#L15)
-
-**What goes wrong:** Users and Bitfocus have no way to reach the maintainer from the module's listing; the maintainer entry has a name but an empty email.
-
-**Why it happens:** The manifest's `maintainers` entry still has the template's empty `email` placeholder.
-
-**Evidence:**
-
-```json
-// companion/manifest.json:14-15
-"name": "Phillip Ivan Pietruschka",
-"email": ""
-```
-
-**Confirm by:** `grep -n email companion/manifest.json`.
-
-**Fix:** fill in the maintainer's email address.
 
 ## 🟠 High
 
