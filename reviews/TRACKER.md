@@ -125,7 +125,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | stageaudioworks-obs-multisite | v0.5.0 | 2026-10-30 | [review](stageaudioworks-obs-multisite/review-stageaudioworks-obs-multisite-v0.5.0-20261030-003407.md) |
 | ✅ | testbildmedia-stgtime | v1.0.3 | 2026-10-30 | [review](testbildmedia-stgtime/review-testbildmedia-stgtime-v1.0.3-20261030-003407.md) |
 | ✅ | microfilms-gpio | v1.0.1 | 2026-10-30 | [review](microfilms-gpio/review-microfilms-gpio-v1.0.1-20261030-003407.md) |
-| ⬜ | behringer-wing | v2.4.0-alpha.2 | 2026-10-30 | [review](behringer-wing/review-behringer-wing-v2.4.0-alpha.2-20261030-003407.md) |
+| ✅ | behringer-wing | v2.4.0-alpha.2 | 2026-10-30 | [review](behringer-wing/review-behringer-wing-v2.4.0-alpha.2-20261030-003407.md) |
 | ⬜ | tlof-neoluma-midi-control | v1.0.0 | 2026-10-30 | [review](tlof-neoluma-midi-control/review-tlof-neoluma-midi-control-v1.0.0-20261030-003407.md) |
 | ⬜ | pltech-kumatimer | v2.5.0 | 2026-10-30 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.5.0-20261030-003407.md) |
 | ⬜ | mds-otobako-pro | v1.1.0 | 2026-10-30 | [review](mds-otobako-pro/review-mds-otobako-pro-v1.1.0-20261030-003407.md) |
