@@ -159,3 +159,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | breeze-overlay | v1.1.1 | 2026-10-30 | [review](breeze-overlay/review-breeze-overlay-v1.1.1-20261030-090507.md) |
 | ⬜ | touchpoint-meetings | v1.0.0 | 2026-10-30 | [review](touchpoint-meetings/review-touchpoint-meetings-v1.0.0-20261030-090507.md) |
 | ⬜ | avmatrix-switcher | v1.0.0 | 2026-10-30 | [review](avmatrix-switcher/review-avmatrix-switcher-v1.0.0-20261030-090507.md) |
+| ⬜ | biamp-tesira | v4.0.1 | 2026-10-30 | [review](biamp-tesira/review-biamp-tesira-v4.0.1-20261030-090507.md) |
