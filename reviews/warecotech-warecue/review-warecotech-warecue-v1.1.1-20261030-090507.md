@@ -18,9 +18,7 @@
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | Companion restarts a module process that exits on an uncaught exception, so the user sees a crashed or restarting connection rather than a permanently dead one. Either way, the settings save does not take effect cleanly | `@companion-module/base` 1.13.6 and the module install no `uncaughtException` handler (checked); Companion's host restart behaviour not checked | [H1](#h1-saving-the-connection-settings-while-warecue-is-unreachable-crashes-the-module) |
-| A2 | When the WareCue host does not answer (wrong or switched-off address), the connection attempt stays open for several seconds up to tens of seconds, so most saves made in that state land while an attempt is in progress | general OS TCP connect behaviour; not tested against a real WareCue machine | [H1](#h1-saving-the-connection-settings-while-warecue-is-unreachable-crashes-the-module) |
-| A3 | Companion does not rewrite a hard-coded connection label inside preset button text when a preset is dragged onto a button | recommended practice of building preset text from `self.label`; Companion's preset import code not checked | [M7](#m7-pgm-and-pvw-display-presets-show-the-wrong-connections-scene-when-the-connection-is-not-named-warecue) |
+| A1 | Companion does not rewrite a hard-coded connection label inside preset button text when a preset is dragged onto a button | recommended practice of building preset text from `self.label`; Companion's preset import code not checked | [M7](#m7-pgm-and-pvw-display-presets-show-the-wrong-connections-scene-when-the-connection-is-not-named-warecue) |
 
 ## 📋 Issues
 
@@ -43,8 +41,7 @@
 - [ ] [C15: `package.json` is missing the `lint-staged` section](#c15-packagejson-is-missing-the-lint-staged-section)
 - [ ] [C16: Manifest uses the banned keyword "stream deck"](#c16-manifest-uses-the-banned-keyword-stream-deck)
 - [ ] [C17: Manifest entrypoint and `package.json` `main` point at different files](#c17-manifest-entrypoint-and-packagejson-main-point-at-different-files)
-- [ ] [H1: Saving the connection settings while WareCue is unreachable crashes the module](#h1-saving-the-connection-settings-while-warecue-is-unreachable-crashes-the-module)
-- [ ] [H2: `.github/workflows/companion-module-checks.yaml` differs from the template](#h2-githubworkflowscompanion-module-checksyaml-differs-from-the-template)
+- [ ] [H1: `.github/workflows/companion-module-checks.yaml` differs from the template](#h1-githubworkflowscompanion-module-checksyaml-differs-from-the-template)
 
 ### Non-blocking
 
@@ -241,114 +238,13 @@ Banned/low-value keyword `stream deck` (keywords: `["playout", "video", "show co
 
 ## 🟠 High
 
-### H1: Saving the connection settings while WareCue is unreachable crashes the module
-
-- **Source:** 🔎 protocol reviewer, QA reviewer, compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/connection.ts:163-177`](https://github.com/bitfocus/companion-module-warecotech-warecue/blob/f8dd45e701ccb826f3b4b9c445d9332a809927e8/src/connection.ts#L163-L177)
-
-**What goes wrong:** A user has the WareCue connection pointed at a machine that is off, on another subnet, or at a wrong address (for example host 192.168.1.50 with nothing there). The status shows Connecting and the module keeps retrying. The user opens the connection settings, corrects the host to 192.168.1.60 (or changes the port or Auth token) and clicks Save. If a connection attempt is still in progress at that moment, the module process crashes with an uncaught "WebSocket was closed before the connection was established" error. The connection shows as crashed or restarting, and the log shows a Node stack trace instead of a clean reconnect to the new address. Disabling the connection in that state hits the same error. Users whose WareCue is reachable when they save are not affected.
-
-**Why it happens:** Saving the settings makes the module throw away its old connection and open a new one. To throw the old one away, the module first removes every event handler from the WebSocket, including its error handler, and then closes it. Closing a WebSocket that is still connecting makes the `ws` library raise an error event a moment later. With no error handler left, Node treats that as an unhandled error and stops the process. The surrounding `try/catch` can't catch it because the error is raised after the function has returned, and `@companion-module/base` 1.13.6 installs no global handler. The verifier reproduced the crash with the module's own `ws` 8.22.0 (exit code 1, "Unhandled 'error' event").
-
-**Evidence:**
-
-```ts
-// src/connection.ts:163-177
-	destroy(): void {
-		this.#closed = true
-		if (this.#reconnect) {
-			clearTimeout(this.#reconnect)
-			this.#reconnect = null
-		}
-		this.#failAllPending('module shutting down')
-		try {
-			this.#ws?.removeAllListeners()
-			this.#ws?.close()
-		} catch {
-			// ignore
-		}
-		this.#ws = null
-	}
-```
-
-```ts
-// src/main.ts:31-39
-	async destroy(): Promise<void> {
-		this.connection?.destroy()
-		this.connection = null
-	}
-
-	async configUpdated(config: ModuleConfig): Promise<void> {
-		this.config = config
-		this.#connect()
-	}
-// src/main.ts:58-59
-	#connect(): void {
-		this.connection?.destroy()
-```
-
-```js
-// node_modules/ws/lib/websocket.js:315-321 (ws 8.22.0)
-  close(code, data) {
-    if (this.readyState === WebSocket.CLOSED) return;
-    if (this.readyState === WebSocket.CONNECTING) {
-      const msg = 'WebSocket was closed before the connection was established';
-      abortHandshake(this, this._req, msg);
-      return;
-    }
-// node_modules/ws/lib/websocket.js:1067-1075
-function emitErrorAndClose(websocket, err) {
-  websocket._readyState = WebSocket.CLOSING;
-  ...
-  websocket._errorEmitted = true;
-  websocket.emit('error', err);
-  websocket.emitClose();
-}
-```
-
-Local repro (a loopback TCP server that accepts the connection but never answers the upgrade; `removeAllListeners()` then `close()` while still connecting):
-
-```text
-readyState before 0
-node:events:497
-      throw er; // Unhandled 'error' event
-Error: WebSocket was closed before the connection was established
-    at WebSocket.close (.../node_modules/ws/lib/websocket.js:319:7)
-Emitted 'error' event on WebSocket instance at:
-    at emitErrorAndClose (.../node_modules/ws/lib/websocket.js:1074:13)
-exit=1
-```
-
-**Confirm by:** open [`src/connection.ts:171-172`](https://github.com/bitfocus/companion-module-warecotech-warecue/blob/f8dd45e701ccb826f3b4b9c445d9332a809927e8/src/connection.ts#L171-L172): `removeAllListeners()` runs right before `close()`, and no `'error'` listener is added back. Then open `node_modules/ws/lib/websocket.js:315-321` and `1067-1075`: `close()` on a connecting socket emits `'error'` on the next tick.
-
-**Fix:** keep a do-nothing error handler on the old socket after removing the other listeners, so the late error has somewhere to go. (`terminate()` on a connecting socket takes the same path, so the no-op handler is the part that prevents the crash.)
-
-```ts
-destroy(): void {
-	this.#closed = true
-	if (this.#reconnect) {
-		clearTimeout(this.#reconnect)
-		this.#reconnect = null
-	}
-	this.#failAllPending('module shutting down')
-	const ws = this.#ws
-	this.#ws = null
-	if (ws) {
-		ws.removeAllListeners()
-		ws.on('error', () => {})
-		ws.terminate()
-	}
-}
-```
-
-### H2: `.github/workflows/companion-module-checks.yaml` differs from the template
+### H1: `.github/workflows/companion-module-checks.yaml` differs from the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
 - **File:** [`.github/workflows/companion-module-checks.yaml:10-12`](https://github.com/bitfocus/companion-module-warecotech-warecue/blob/f8dd45e701ccb826f3b4b9c445d9332a809927e8/.github/workflows/companion-module-checks.yaml#L10-L12)
 
-The file exists and differs from the template, so it is High under the review's `.github` rule. The only other difference is the trailing newline, which is whitespace and ignored.
+The job's `if:` condition is changed: it adds `github.repository_owner == 'bitfocus' &&`, so the check no longer runs on forks or private mirrors. That changes when the template's job runs, so it is High under the review's `.github` rule. The two comment lines above it are fine on their own.
 
 **Evidence:**
 
