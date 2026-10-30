@@ -14,7 +14,7 @@
 | **Build** | `yarn install --immutable` and `yarn package` pass (`stagetimerio-api-2.7.1.tgz` produced) |
 | **Review date** | 2026-10-30 |
 
-This is a follow-up review. v2.7.1 is a fix release on top of v2.7.0: it contains no new features, only the changes asked for in the v2.7.0 review (template files, `package.json` fields and scripts, manifest keywords and version, and the API-key logging fix). All twelve findings from that review are fixed, and the fixes introduce no new issues. One template difference remains: the validator now compares `.yarnrc.yml` against the current template, and that file has an extra setting that the v2.7.0 review did not check (C1 below).
+This is a follow-up review. v2.7.1 is a fix release on top of v2.7.0: it contains no new features, only the changes asked for in the v2.7.0 review (template files, `package.json` fields and scripts, manifest keywords and version, and the API-key logging fix). All twelve findings from that review are fixed, and the fixes introduce no new issues. One template difference remains: the validator now compares `.yarnrc.yml` against the current template, and that file has an extra setting that the v2.7.0 review did not check. It does not block this release; please fix it in the next release (NR1 below).
 
 | Prior finding | Status in v2.7.1 |
 | --- | --- |
@@ -31,7 +31,7 @@ This is a follow-up review. v2.7.1 is a fix release on top of v2.7.0: it contain
 | C11: module cannot be packaged | Fixed: `yarn package` builds the `.tgz` |
 | C12: API key written to the logs | Fixed: [`src/api.js:65`](https://github.com/bitfocus/companion-module-stagetimerio-api/blob/a3b44c79d599b225f28fba4f747deb311784d6b2/src/api.js#L65) and [`src/socket.js:64`](https://github.com/bitfocus/companion-module-stagetimerio-api/blob/a3b44c79d599b225f28fba4f747deb311784d6b2/src/socket.js#L64) now log only whether a key is set; the CHANGELOG tells users to rotate a key they may have shared in older logs |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -41,17 +41,17 @@ This is a follow-up review. v2.7.1 is a fix release on top of v2.7.0: it contain
 
 ## 📋 Issues
 
-### Blocking
+### Non-blocking
 
-- [ ] [C1: Yarn config adds an unused GitHub Packages registry for the stagetimerio scope](#c1-yarn-config-adds-an-unused-github-packages-registry-for-the-stagetimerio-scope)
+- [ ] [NR1: Yarn config adds an unused GitHub Packages registry for the stagetimerio scope](#nr1-yarn-config-adds-an-unused-github-packages-registry-for-the-stagetimerio-scope)
 
 ---
 
-## 🔴 Critical
+## 🔮 Next Release
 
-### C1: Yarn config adds an unused GitHub Packages registry for the stagetimerio scope
+### NR1: Yarn config adds an unused GitHub Packages registry for the stagetimerio scope
 
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Source:** 🤖 validate-template (CONFIG-DIFF) · moved from Critical by the reviewer: not blocking for this release, fix it in the next one
 - **Classification:** ⚠️ PRE-EXISTING (the file is unchanged since v2.6.1; the v2.7.0 review did not compare `.yarnrc.yml`, the validator now checks it against the current template)
 - **File:** [`.yarnrc.yml:3-5`](https://github.com/bitfocus/companion-module-stagetimerio-api/blob/a3b44c79d599b225f28fba4f747deb311784d6b2/.yarnrc.yml#L3-L5)
 - **Template:** `companion-module-template-js` main @ `76d25b2`: [`.yarnrc.yml`](https://github.com/bitfocus/companion-module-template-js/blob/76d25b2fe21b492096be05678680b71bdb7ac052/.yarnrc.yml)
@@ -77,7 +77,7 @@ npmScopes:
 
 **Confirm by:** open [`.yarnrc.yml:3-5`](https://github.com/bitfocus/companion-module-stagetimerio-api/blob/a3b44c79d599b225f28fba4f747deb311784d6b2/.yarnrc.yml#L3-L5) and check that [`package.json`](https://github.com/bitfocus/companion-module-stagetimerio-api/blob/a3b44c79d599b225f28fba4f747deb311784d6b2/package.json) lists no `@stagetimerio/*` package.
 
-**Fix:** remove the `npmScopes` block so the file has only the template's settings.
+**Fix (next release):** remove the `npmScopes` block so the file has only the template's settings.
 
 ```yaml
 enableScripts: false

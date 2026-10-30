@@ -138,7 +138,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | highpass-pptimer | v1.1.1 | 2026-10-30 | [review](highpass-pptimer/review-highpass-pptimer-v1.1.1-20261030-003407.md) |
 | ✅ | jozeemedia-jcounter | v3.0.0 | 2026-10-30 | [review](jozeemedia-jcounter/review-jozeemedia-jcounter-v3.0.0-20261030-003407.md) |
 | ✅ | syncthingfoundation-syncthing | v1.0.1 | 2026-10-30 | [review](syncthingfoundation-syncthing/review-syncthingfoundation-syncthing-v1.0.1-20261030-003407.md) |
-| ⬜ | stagetimerio-api | v2.7.1 | 2026-10-30 | [review](stagetimerio-api/review-stagetimerio-api-v2.7.1-20261030-003407.md) |
+| ✅ | stagetimerio-api | v2.7.1 | 2026-10-30 | [review](stagetimerio-api/review-stagetimerio-api-v2.7.1-20261030-003407.md) |
 | ⬜ | bom-api | v2.0.0 | 2026-10-30 | [review](bom-api/review-bom-api-v2.0.0-20261030-003407.md) |
 | ✅ | utopianacademy-deckboy | v1.0.4 | 2026-10-30 | [review](utopianacademy-deckboy/review-utopianacademy-deckboy-v1.0.4-20261030-003407.md) |
 | ✅ | devcore-mixingstation | v2.0.2 | 2026-10-30 | [review](devcore-mixingstation/review-devcore-mixingstation-v2.0.2-20261030-003407.md) |
