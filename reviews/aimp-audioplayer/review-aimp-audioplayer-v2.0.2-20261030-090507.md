@@ -16,21 +16,16 @@
 
 This is a follow-up to the v1.0.2 review. Every finding from that review is fixed in v2.0.2 (see [📝 Additional Notes](#-additional-notes)). The module also moved from HTTP polling to a WebSocket push connection, so this release was reviewed in full. The portal has never published a release of this module, so there is no earlier published tag to diff against.
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | When a module process throws an uncaught exception, Companion logs it as a crash and restarts the module process; it does not catch the exception and carry on with the new settings | how Companion runs modules as child processes; `@companion-module/base` 2.0.4 registers no `uncaughtException` handler (grep of its `dist` found none). The crash was reproduced only in a standalone Node run of the module's `AimpWsClient`, not inside Companion | [H1](#h1-module-crashes-when-settings-are-saved-or-the-connection-is-disabled-while-aimp-is-still-connecting) |
-| A2 | Companion renders a preset text size given as an unlisted numeric string (for example `'40'`) at that point size, rather than rejecting it or falling back to auto | the base typings only show that `'40'` is outside the `CompanionTextSize` union; Companion's renderer was not checked | [L5](#l5-preset-text-sizes-40-10-and-12-are-strings-the-api-does-not-allow) |
-| A3 | Companion does not re-run feedbacks or reset variable values by itself when a connection's settings change; only the module's own `setVariableValues` and `checkFeedbacks` calls update them | general Companion host behaviour; the module code confirms it never pushes its reset state itself | [L6](#l6-buttons-keep-showing-the-old-players-state-after-the-connection-settings-change) |
+| A1 | Companion renders a preset text size given as an unlisted numeric string (for example `'40'`) at that point size, rather than rejecting it or falling back to auto | the base typings only show that `'40'` is outside the `CompanionTextSize` union; Companion's renderer was not checked | [L5](#l5-preset-text-sizes-40-10-and-12-are-strings-the-api-does-not-allow) |
+| A2 | Companion does not re-run feedbacks or reset variable values by itself when a connection's settings change; only the module's own `setVariableValues` and `checkFeedbacks` calls update them | general Companion host behaviour; the module code confirms it never pushes its reset state itself | [L6](#l6-buttons-keep-showing-the-old-players-state-after-the-connection-settings-change) |
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: Module crashes when settings are saved, or the connection is disabled, while AIMP is still connecting](#h1-module-crashes-when-settings-are-saved-or-the-connection-is-disabled-while-aimp-is-still-connecting)
 
 ### Non-blocking
 
@@ -47,110 +42,6 @@ This is a follow-up to the v1.0.2 review. Every finding from that review is fixe
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: Module crashes when settings are saved, or the connection is disabled, while AIMP is still connecting
-
-- **Source:** 🔎 protocol reviewer, QA reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/ws-client.js:52-71`](https://github.com/bitfocus/companion-module-aimp-audioplayer/blob/26ece0ca6c08960f138aa3b10955e8ca1b657175/src/ws-client.js#L52-L71), [`src/main.js:71-83`](https://github.com/bitfocus/companion-module-aimp-audioplayer/blob/26ece0ca6c08960f138aa3b10955e8ca1b657175/src/main.js#L71-L83), [`src/main.js:118-124`](https://github.com/bitfocus/companion-module-aimp-audioplayer/blob/26ece0ca6c08960f138aa3b10955e8ca1b657175/src/main.js#L118-L124)
-
-**What goes wrong:** Say the AIMP Host is set to a PC that is off or unreachable (for example 192.168.1.50), or the user typed the wrong IP. The connection shows Connecting / Connection Failure and keeps retrying, and each attempt can wait up to 8 seconds for the handshake. If the user corrects the AIMP Host or WebSocket Port and clicks Save during one of those attempts, the module process crashes with "Unhandled 'error' event: WebSocket was closed before the connection was established". Companion then has to restart the module, and the log shows a crash instead of a clean reconnect to the new address. Disabling or deleting the connection during an attempt leaves the same crash in the log. Both reviewers reproduced this outside Companion with the module's own `AimpWsClient` and its bundled ws 8.21.0: connect to a host that never answers, call `close()` 200–500 ms later, and Node exits with code 1.
-
-**Why it happens:** When the settings are saved or the connection is removed, the module tears down its WebSocket client: `configUpdated()` and `destroy()` both call `_teardown()`, which calls the client's `close()`. `close()` first removes every listener from the socket, including its error handler, and then calls `terminate()`. In ws 8.x, terminating a socket that is still connecting emits an `error` event on the next tick. No listener is left to receive it, so Node treats it as an uncaught exception and the process exits. The base package installs no handler that would catch it.
-
-**Evidence:**
-
-```js
-// src/ws-client.js:52-71
-	close() {
-		this._stopped = true
-		clearTimeout(this._reconnectTimer)
-		clearTimeout(this._connectTimer)
-		this._reconnectTimer = null
-		this._connectTimer = null
-
-		const ws = this._ws
-		this._ws = null
-		this._open = false
-		if (ws) {
-			ws.removeAllListeners()
-			try {
-				ws.terminate()
-			} catch {
-				// socket already gone
-			}
-		}
-		this._settlePending()
-	}
-```
-
-```js
-// src/main.js:71-83
-	async configUpdated(config) {
-		this.config = config
-		this._destroyed = false
-		this._teardown()
-		...
-	async destroy() {
-		this._destroyed = true
-		this._teardown()
-	}
-// src/main.js:118-124
-	_teardown() {
-		this._stopInventoryTimer()
-		if (this._ws) {
-			this._ws.close()
-			this._ws = null
-		}
-	}
-```
-
-```js
-// node_modules/ws/lib/websocket.js:492-497, 1121, 1060 (ws 8.21.0)
-  terminate() {
-    if (this.readyState === WebSocket.CLOSED) return;
-    if (this.readyState === WebSocket.CONNECTING) {
-      const msg = 'WebSocket was closed before the connection was established';
-      abortHandshake(this, this._req, msg);
-      return;
-...
-    process.nextTick(emitErrorAndClose, websocket, err);
-...
-  websocket.emit('error', err);
-```
-
-Local loopback repro (a TCP server that accepts but never answers the handshake; `AimpWsClient.connect()`, then `close()` shortly after):
-
-```text
-node:events:497
-      throw er; // Unhandled 'error' event
-Error: WebSocket was closed before the connection was established
-    at WebSocket.terminate (.../node_modules/ws/lib/websocket.js:496:7)
-    at AimpWsClient.close (.../src/ws-client.js:65:8)
-Emitted 'error' event on WebSocket instance at:
-    at emitErrorAndClose (.../node_modules/ws/lib/websocket.js:1060:13)
-exit=1
-```
-
-**Confirm by:** open [`src/ws-client.js:63-65`](https://github.com/bitfocus/companion-module-aimp-audioplayer/blob/26ece0ca6c08960f138aa3b10955e8ca1b657175/src/ws-client.js#L63-L65). `ws.removeAllListeners()` runs before `ws.terminate()`, and no `error` listener is added back. Then open `node_modules/ws/lib/websocket.js:494-497` and `1121`: `terminate()` on a connecting socket emits `error` on the next tick.
-
-**Fix:** keep a do-nothing error listener on the old socket while it is torn down.
-
-```js
-if (ws) {
-	ws.removeAllListeners()
-	ws.on('error', () => {})
-	try {
-		ws.terminate()
-	} catch {
-		// socket already gone
-	}
-}
-```
-
-Another option is to remove only the `open` / `message` / `close` listeners and keep the existing `error` handler, which already ignores stale sockets through `if (this._ws !== ws) return`.
 
 ## 🟢 Low
 
