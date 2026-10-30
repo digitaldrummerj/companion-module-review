@@ -160,7 +160,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | touchpoint-meetings | v1.0.0 | 2026-10-30 | [review](touchpoint-meetings/review-touchpoint-meetings-v1.0.0-20261030-090507.md) |
 | ✅ | avmatrix-switcher | v1.0.0 | 2026-10-30 | [review](avmatrix-switcher/review-avmatrix-switcher-v1.0.0-20261030-090507.md) |
 | ✅ | biamp-tesira | v4.0.1 | 2026-10-30 | [review](biamp-tesira/review-biamp-tesira-v4.0.1-20261030-090507.md) |
-| ⬜ | analogway-eks500 | v2.0.1 | 2026-10-30 | [review](analogway-eks500/review-analogway-eks500-v2.0.1-20261030-090507.md) |
+| ✅ | analogway-eks500 | v2.0.1 | 2026-10-30 | [review](analogway-eks500/review-analogway-eks500-v2.0.1-20261030-090507.md) |
 | ⬜ | panasonic-av-hsw10 | v2.0.0 | 2026-10-30 | [review](panasonic-av-hsw10/review-panasonic-av-hsw10-v2.0.0-20261030-090507.md) |
 | ⬜ | outline-et | v1.0.0 | 2026-10-30 | [review](outline-et/review-outline-et-v1.0.0-20261030-090507.md) |
 | ⬜ | chromaq-vista | v1.0.1 | 2026-10-30 | [review](chromaq-vista/review-chromaq-vista-v1.0.1-20261030-090507.md) |
