@@ -135,7 +135,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | showsign-signage | v1.0.0 | 2026-10-30 | [review](showsign-signage/review-showsign-signage-v1.0.0-20261030-003407.md) |
 | ✅ | ltn-schedule | v2.7.2 | 2026-10-30 | [review](ltn-schedule/review-ltn-schedule-v2.7.2-20261030-003407.md) |
 | ⬜ | auri-tx2n | v2.0.0 | 2026-10-30 | [review](auri-tx2n/review-auri-tx2n-v2.0.0-20261030-003407.md) |
-| ⬜ | highpass-pptimer | v1.1.1 | 2026-10-30 | [review](highpass-pptimer/review-highpass-pptimer-v1.1.1-20261030-003407.md) |
+| ✅ | highpass-pptimer | v1.1.1 | 2026-10-30 | [review](highpass-pptimer/review-highpass-pptimer-v1.1.1-20261030-003407.md) |
 | ⬜ | jozeemedia-jcounter | v3.0.0 | 2026-10-30 | [review](jozeemedia-jcounter/review-jozeemedia-jcounter-v3.0.0-20261030-003407.md) |
 | ✅ | syncthingfoundation-syncthing | v1.0.1 | 2026-10-30 | [review](syncthingfoundation-syncthing/review-syncthingfoundation-syncthing-v1.0.1-20261030-003407.md) |
 | ⬜ | stagetimerio-api | v2.7.1 | 2026-10-30 | [review](stagetimerio-api/review-stagetimerio-api-v2.7.1-20261030-003407.md) |
