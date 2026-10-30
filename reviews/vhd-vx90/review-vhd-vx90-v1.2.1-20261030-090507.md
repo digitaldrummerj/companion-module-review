@@ -40,7 +40,6 @@
 - [ ] [C15: `package.json` has no `package` script, so the module cannot be packaged](#c15-packagejson-has-no-package-script-so-the-module-cannot-be-packaged)
 - [ ] [C16: `prettier` is not a devDependency](#c16-prettier-is-not-a-devdependency)
 - [ ] [C17: Packaging the module fails](#c17-packaging-the-module-fails)
-- [ ] [H1: The LICENSE copyright line differs from the template](#h1-the-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
 
@@ -352,24 +351,6 @@ error Command "package" not found.
 ```
 
 **Fix:** add the `package` script from [C15](#c15-packagejson-has-no-package-script-so-the-module-cannot-be-packaged), then run `yarn package` and confirm it produces a `.tgz`.
-
-## 🟠 High
-
-### H1: The LICENSE copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-vhd-vx90/blob/07f04db2360b03bd6ba8856e3e9f3b5c0c2333d5/LICENSE#L3)
-
-**What goes wrong:** The module's licence text doesn't match the one every Bitfocus-hosted module ships with.
-
-**Why it happens:** Line 3 of `LICENSE` was changed from the template's copyright holder to the maintainer's company.
-
-**Evidence:** expected (template) `Copyright (c) 2022 Bitfocus AS - Open Source`; found `Copyright (c) 2026 AP Audiovisuele Producties`.
-
-**Confirm by:** open [`LICENSE:3`](https://github.com/bitfocus/companion-module-vhd-vx90/blob/07f04db2360b03bd6ba8856e3e9f3b5c0c2333d5/LICENSE#L3).
-
-**Fix:** use the template's `LICENSE` unchanged.
 
 ## 🟢 Low
 

@@ -38,7 +38,6 @@ This is the module's first release. The repo has tags `v1.0.0` and `v1.0.1`, but
 - [ ] [C8: .prettierignore differs from the template](#c8-prettierignore-differs-from-the-template)
 - [ ] [H1: Preset Motion Between Two Presets cannot be stopped and can loop forever](#h1-preset-motion-between-two-presets-cannot-be-stopped-and-can-loop-forever)
 - [ ] [H2: Custom Trace in Pendulum mode with 2 presets gets stuck on the second preset](#h2-custom-trace-in-pendulum-mode-with-2-presets-gets-stuck-on-the-second-preset)
-- [ ] [H3: LICENSE differs from the template](#h3-license-differs-from-the-template)
 
 ### Non-blocking
 
@@ -344,18 +343,6 @@ if (position >= self.customTracePresetArray.length - 1) {
 	position = Math.min(1, self.customTracePresetArray.length - 1)
 }
 ```
-
-### H3: LICENSE differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-zanus-pt/blob/d8a4edd761bb34c7077c937111462b8213d91570/LICENSE#L3)
-
-**What goes wrong:** The module's licence notice doesn't match the one every Bitfocus module ships with.
-
-**Why it happens:** Line 3 is `Copyright (c) 2026 Nikola Todorovic`; the template's line 3 is `Copyright (c) 2022 Bitfocus AS - Open Source`.
-
-**Fix:** use the template's `LICENSE` file unchanged.
 
 ## 🟡 Medium
 

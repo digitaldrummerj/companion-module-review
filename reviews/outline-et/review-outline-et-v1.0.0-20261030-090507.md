@@ -21,7 +21,6 @@ This is the module's first release, so there is no previous tag to diff against:
 
 - [ ] [C1: Prettier ignore file differs from the template](#c1-prettier-ignore-file-differs-from-the-template)
 - [ ] [H1: CI workflow differs from the template](#h1-ci-workflow-differs-from-the-template)
-- [ ] [H2: LICENSE copyright line differs from the template](#h2-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
 
@@ -93,27 +92,6 @@ package.json
 **Confirm by:** `diff companion-module-template-ts-v2.0.4/.github/workflows/node.yaml .github/workflows/node.yaml` returns no output.
 
 **Fix:** replace `.github/workflows/node.yaml` with the template's copy from `companion-module-template-ts-v2.0.4`. To run the tests in CI, uncomment the template's own `test` job rather than adding steps to the `lint` job.
-
-### H2: LICENSE copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-outline-et/blob/cae99808de355b33abbe15f7175840a05f2de1b0/LICENSE#L3)
-
-**What goes wrong:** The module's licence names a different copyright holder than the template's licence file.
-
-**Why it happens:** Line 3 of `LICENSE` was changed from the template's copyright line.
-
-**Evidence:**
-
-```text
-module   LICENSE:3   Copyright (c) 2026 Outline
-template LICENSE:3   Copyright (c) 2022 Bitfocus AS - Open Source
-```
-
-**Confirm by:** [`LICENSE`](https://github.com/bitfocus/companion-module-outline-et/blob/cae99808de355b33abbe15f7175840a05f2de1b0/LICENSE) matches the template byte-for-byte.
-
-**Fix:** restore the template's `LICENSE` file unchanged.
 
 ## 🟢 Low
 

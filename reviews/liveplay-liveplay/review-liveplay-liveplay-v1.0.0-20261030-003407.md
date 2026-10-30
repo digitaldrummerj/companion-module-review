@@ -28,7 +28,6 @@ This is the module's first release, so there is no previous tag to diff against:
 
 - [ ] [C1: Module targets Node 22 instead of the Node 26 runtime the API 2.1 template uses](#c1-module-targets-node-22-instead-of-the-node-26-runtime-the-api-21-template-uses)
 - [ ] [C2: Pre-commit hook does not match the template](#c2-pre-commit-hook-does-not-match-the-template)
-- [ ] [H1: LICENSE does not match the template's copyright line](#h1-license-does-not-match-the-templates-copyright-line)
 
 ### Non-blocking
 
@@ -95,26 +94,6 @@ This is the module's first release, so there is no previous tag to diff against:
 ```text
 lint-staged
 ```
-
-## 🟠 High
-
-### H1: LICENSE does not match the template's copyright line
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-liveplay-liveplay/blob/a05d600141f415c6a796f7418be8fb473370b0fa/LICENSE#L3)
-
-**What goes wrong:** Modules distributed through Companion must carry the template's MIT license unchanged. This one names a different copyright holder.
-
-**Why it happens:** The copyright line was replaced.
-
-**Evidence:**
-
-| Template expects | Found |
-| --- | --- |
-| `Copyright (c) 2022 Bitfocus AS - Open Source` | `Copyright (c) 2026 DI Aspinwall` |
-
-**Fix:** copy the template's `LICENSE` file as-is.
 
 ## 🟡 Medium
 

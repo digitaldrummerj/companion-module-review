@@ -16,7 +16,7 @@
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | For a module on API 1 (`@companion-module/base` 1.x), Companion does **not** resolve `$(...)` variables in `textinput` options marked `useVariables: true` before calling the action or feedback callback. The module must call `context.parseVariablesInString()` itself; automatic parsing arrived with API 2.0 | The base 1.13.6 typings describe `useVariables` only as "Whether to suggest variables to the user", and the base passes options through unchanged. The base CHANGELOG has no auto-parse entry for 1.x. The Companion host source was not checked, and the compliance reviewer assumed the opposite for 1.13 | [H2](#h2-variables-typed-into-the-seconds-and-slot-fields-are-never-resolved-so-those-buttons-and-feedbacks-stop-working) |
+| A1 | For a module on API 1 (`@companion-module/base` 1.x), Companion does **not** resolve `$(...)` variables in `textinput` options marked `useVariables: true` before calling the action or feedback callback. The module must call `context.parseVariablesInString()` itself; automatic parsing arrived with API 2.0 | The base 1.13.6 typings describe `useVariables` only as "Whether to suggest variables to the user", and the base passes options through unchanged. The base CHANGELOG has no auto-parse entry for 1.x. The Companion host source was not checked, and the compliance reviewer assumed the opposite for 1.13 | [H1](#h1-variables-typed-into-the-seconds-and-slot-fields-are-never-resolved-so-those-buttons-and-feedbacks-stop-working) |
 
 ## 📋 Issues
 
@@ -27,8 +27,7 @@
 - [ ] [C3: Yarn settings file is missing, so installs can use a different Yarn setup than the template](#c3-yarn-settings-file-is-missing-so-installs-can-use-a-different-yarn-setup-than-the-template)
 - [ ] [C4: Module entry file sits at the repository root instead of under src](#c4-module-entry-file-sits-at-the-repository-root-instead-of-under-src)
 - [ ] [C5: package.json does not pin the Yarn version](#c5-packagejson-does-not-pin-the-yarn-version)
-- [ ] [H1: LICENSE file does not match the template](#h1-license-file-does-not-match-the-template)
-- [ ] [H2: Variables typed into the Seconds and Slot fields are never resolved, so those buttons and feedbacks stop working](#h2-variables-typed-into-the-seconds-and-slot-fields-are-never-resolved-so-those-buttons-and-feedbacks-stop-working)
+- [ ] [H1: Variables typed into the Seconds and Slot fields are never resolved, so those buttons and feedbacks stop working](#h1-variables-typed-into-the-seconds-and-slot-fields-are-never-resolved-so-those-buttons-and-feedbacks-stop-working)
 
 ### Non-blocking
 
@@ -143,25 +142,7 @@ Missing required field 'packageManager' (template: "packageManager": "yarn@4.12.
 
 ## 🟠 High
 
-### H1: LICENSE file does not match the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-middleman-breaktime/blob/3e58c9f80ba33b507d2067fa52ae9713852fe019/LICENSE#L3)
-
-**What goes wrong:** The copyright line differs from the template's licence, which every Companion module is expected to carry unchanged.
-
-**Why it happens:** This release replaced the copyright line with `Copyright (c) 2026 Middleman Software, Inc.`.
-
-**Evidence:**
-
-```text
-line 3: found 'Copyright (c) 2026 Middleman Software, Inc.', template 'Copyright (c) 2022 Bitfocus AS - Open Source'
-```
-
-**Fix:** use the template's `LICENSE` file as-is.
-
-### H2: Variables typed into the Seconds and Slot fields are never resolved, so those buttons and feedbacks stop working
+### H1: Variables typed into the Seconds and Slot fields are never resolved, so those buttons and feedbacks stop working
 
 - **Source:** 🔎 QA reviewer — verified
 - **Classification:** 🆕 NEW

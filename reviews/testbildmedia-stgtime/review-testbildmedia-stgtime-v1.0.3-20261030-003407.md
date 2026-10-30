@@ -37,7 +37,6 @@
 - [ ] [C10: lint-staged devDependency is missing](#c10-lint-staged-devdependency-is-missing)
 - [ ] [C11: lint-staged section is missing from package.json](#c11-lint-staged-section-is-missing-from-packagejson)
 - [ ] [C12: Module runs on Node 22 instead of the Node 26 runtime of the API 2.1 template](#c12-module-runs-on-node-22-instead-of-the-node-26-runtime-of-the-api-21-template)
-- [ ] [H1: LICENSE copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
 
@@ -205,20 +204,6 @@
 **Expected vs found:** `runtime.type` is `node22`; the API 2.1 template uses `node26`. `tsconfig.build.json` extends `@companion-module/tools/tsconfig/node22/recommended-esm.json`; the template extends `@companion-module/tools/tsconfig/node26/recommended.json`.
 
 **Fix:** set `runtime.type` to `node26` in `companion/manifest.json`, and make `tsconfig.build.json` extend `@companion-module/tools/tsconfig/node26/recommended.json`, as the template does.
-
-## 🟠 High
-
-### H1: LICENSE copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-testbildmedia-stgtime/blob/e2c361ef1412fc354842d698a8a5f830b7e0e154/LICENSE#L3)
-
-**What goes wrong:** The LICENSE must match the template byte for byte, and its copyright line does not.
-
-**Expected vs found:** line 3 is `Copyright (c) 2025-2026 testbild.media - Jason Kuhr`; the template has `Copyright (c) 2022 Bitfocus AS - Open Source`.
-
-**Fix:** replace `LICENSE` with the template's copy.
 
 ## 🟡 Medium
 

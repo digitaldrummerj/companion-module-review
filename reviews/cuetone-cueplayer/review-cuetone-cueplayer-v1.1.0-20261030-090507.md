@@ -13,7 +13,7 @@
 
 This module has never been published, so there is no previous release to diff against. Every file was reviewed, and every finding is classified 🆕 NEW.
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -24,10 +24,6 @@ This module has never been published, so there is no previous release to diff ag
 | A3 | An expression-mode value that doesn't match one of a dropdown's choices makes Companion skip the action | the v2.0 compliance reference ("Expression validation") and the `allowInvalidValues` typing comment in `input.d.ts:45-51` | [L2](#l2-voice-over-stop-after-current-and-repeat-one-actions-can-be-switched-to-expression-mode) |
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: LICENSE file does not match the template](#h1-license-file-does-not-match-the-template)
 
 ### Non-blocking
 
@@ -40,30 +36,6 @@ This module has never been published, so there is no previous release to diff ag
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: LICENSE file does not match the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-cuetone-cueplayer/blob/c6e222162a126c5b17a76f9d2e2ead7533b3c57e/LICENSE#L3)
-
-**What goes wrong:** The module's `LICENSE` is not the template's license text. Modules in the Bitfocus repository ship the template's LICENSE unchanged, so this one has to be replaced before release.
-
-**Why it happens:** Line 3 of `LICENSE` was changed from the template's copyright line to the module author's own.
-
-**Evidence:**
-
-```text
-LICENSE:3
-found:    Copyright (c) 2026 CueTone
-template: Copyright (c) 2022 Bitfocus AS - Open Source
-```
-
-**Confirm by:** `diff LICENSE <template>/LICENSE` against `companion-module-template-ts` shows no differences.
-
-**Fix:** replace [`LICENSE`](https://github.com/bitfocus/companion-module-cuetone-cueplayer/blob/c6e222162a126c5b17a76f9d2e2ead7533b3c57e/LICENSE) with the template's LICENSE text exactly.
 
 ## 🟡 Medium
 

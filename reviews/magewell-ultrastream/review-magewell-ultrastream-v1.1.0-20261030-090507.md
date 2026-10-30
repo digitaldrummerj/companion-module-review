@@ -26,7 +26,6 @@
 
 - [ ] [C1: Missing `.gitattributes` lets Windows contributors commit CRLF line endings](#c1-missing-gitattributes-lets-windows-contributors-commit-crlf-line-endings)
 - [ ] [C2: VS Code workspace settings can be committed because `.gitignore` lacks `/.vscode`](#c2-vs-code-workspace-settings-can-be-committed-because-gitignore-lacks-vscode)
-- [ ] [H1: LICENSE copyright year differs from the template (2020 instead of 2022)](#h1-license-copyright-year-differs-from-the-template-2020-instead-of-2022)
 
 ### Non-blocking
 
@@ -80,29 +79,6 @@
 **Confirm by:** open [`.gitignore`](https://github.com/bitfocus/companion-module-magewell-ultrastream/blob/a088e65c195a2232301729375f8b158f80d04244/.gitignore). There is no `/.vscode` line.
 
 **Fix:** add `/.vscode` to `.gitignore`.
-
-## 🟠 High
-
-### H1: LICENSE copyright year differs from the template (2020 instead of 2022)
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW (template check on this release; the same text was already there at v1.0.1)
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-magewell-ultrastream/blob/a088e65c195a2232301729375f8b158f80d04244/LICENSE#L3)
-
-**What goes wrong:** The module's LICENSE doesn't match the template's standard Bitfocus MIT license text.
-
-**Why it happens:** The copyright line still carries the year 2020, where the template has 2022.
-
-**Evidence:**
-
-```diff
-- Copyright (c) 2022 Bitfocus AS - Open Source
-+ Copyright (c) 2020 Bitfocus AS - Open Source
-```
-
-**Confirm by:** open [`LICENSE:3`](https://github.com/bitfocus/companion-module-magewell-ultrastream/blob/a088e65c195a2232301729375f8b158f80d04244/LICENSE#L3).
-
-**Fix:** replace the LICENSE with the template's file (copyright line `Copyright (c) 2022 Bitfocus AS - Open Source`).
 
 ## 🟢 Low
 

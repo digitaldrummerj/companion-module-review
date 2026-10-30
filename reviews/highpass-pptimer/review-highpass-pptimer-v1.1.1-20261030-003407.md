@@ -13,13 +13,9 @@
 
 This is the module's first release, so there is no previous tag to diff against. The tag scope therefore covers the whole module, and every finding is classified 🆕 NEW.
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: LICENSE does not match the template](#h1-license-does-not-match-the-template)
 
 ### Non-blocking
 
@@ -30,29 +26,6 @@ This is the module's first release, so there is no previous tag to diff against.
 - [ ] [N1: Every timer tick re-checks every feedback on every button](#n1-every-timer-tick-re-checks-every-feedback-on-every-button)
 - [ ] [N2: Some preset names show raw variable text instead of a readable name](#n2-some-preset-names-show-raw-variable-text-instead-of-a-readable-name)
 - [ ] [N3: Module appears as lower-case pptimer in the connection list](#n3-module-appears-as-lower-case-pptimer-in-the-connection-list)
-
-## 🟠 High
-
-### H1: LICENSE does not match the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-highpass-pptimer/blob/eb37adefff5f9fa3b42206e62ec286c4ce21300c/LICENSE#L3)
-
-**What goes wrong:** The module's LICENSE file is not the one every Companion module ships with. The copyright line names a different holder and year, so the module's licensing doesn't match the rest of the Companion module catalogue.
-
-**Why it happens:** Every module must use the template's LICENSE text exactly, including its copyright line. This module replaced the copyright line with its own.
-
-**Evidence:**
-
-```text
-Template expects (line 3): Copyright (c) 2022 Bitfocus AS - Open Source
-Found (line 3):            Copyright (c) 2026 Marcin
-```
-
-**Confirm by:** compare [`LICENSE:3`](https://github.com/bitfocus/companion-module-highpass-pptimer/blob/eb37adefff5f9fa3b42206e62ec286c4ce21300c/LICENSE#L3) with `companion-module-template-js-v2.0.4/LICENSE`.
-
-**Fix:** replace `LICENSE` with the template's LICENSE file, unchanged.
 
 ## 🟢 Low
 

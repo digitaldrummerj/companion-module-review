@@ -11,7 +11,7 @@
 | **Commit** | [`7c44935`](https://github.com/bitfocus/companion-module-cuetone-cueplayer/tree/7c44935537498596bc5f6cc98507638a428d1871) |
 | **Date** | 2026-10-30 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -20,10 +20,6 @@
 | A1 | When an option is switched to expression mode, Companion can't evaluate another field's `isVisibleExpression` that references it, so the dependent fields show or hide wrongly. Whether they end up hidden or shown depends on the Companion host | The base 2.1.3 `input.d.ts` note ("you can only reference fields which are set to `disableAutoExpression`"); not observed in a running Companion | [M1](#m1-go-action-the-list-id-and-song-id-fields-show-or-hide-wrongly-when-the-song-option-is-in-expression-mode) |
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: LICENSE differs from the template](#h1-license-differs-from-the-template)
 
 ### Non-blocking
 
@@ -35,29 +31,6 @@
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: LICENSE differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-cuetone-cueplayer/blob/7c44935537498596bc5f6cc98507638a428d1871/LICENSE#L3)
-
-**What goes wrong:** The module ships a personalised copyright line instead of the licence Bitfocus ships with every module.
-
-**Why it happens:** The template's `LICENSE` is the licence text Bitfocus uses for all modules, not a scaffold to fill in. The module changed its copyright line.
-
-**Evidence:**
-
-```text
-Template expects: Copyright (c) 2022 Bitfocus AS - Open Source
-Found:            Copyright (c) 2026 CueTone
-```
-
-**Confirm by:** `diff LICENSE <companion-module-template-ts>/LICENSE` shows no output.
-
-**Fix:** replace [`LICENSE`](https://github.com/bitfocus/companion-module-cuetone-cueplayer/blob/7c44935537498596bc5f6cc98507638a428d1871/LICENSE) with the template's `LICENSE`, verbatim.
 
 ## 🟡 Medium
 

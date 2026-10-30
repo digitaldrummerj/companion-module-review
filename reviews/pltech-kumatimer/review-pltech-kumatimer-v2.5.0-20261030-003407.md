@@ -14,13 +14,9 @@
 
 This is a follow-up to the v2.1.0 review. Every finding from that review is fixed (see [📝 Additional Notes](#-additional-notes)). The build, `yarn package` and `yarn lint` all pass. The remaining blocking item is one template difference that came in with v2.1.1 and was not covered by the last review.
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: LICENSE copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
 
@@ -32,30 +28,6 @@ This is a follow-up to the v2.1.0 review. Every finding from that review is fixe
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: LICENSE copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW (not in the last review: changed in v2.1.1, unchanged in v2.5.0)
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/6f9a8f9678543770d2845a547a49ee80a278929a/LICENSE#L3)
-
-**What goes wrong:** The module's `LICENSE` file does not match the template's license text, which Companion modules are expected to ship unchanged.
-
-**Why it happens:** The copyright line was rewritten to name the module's author instead of keeping the template's line.
-
-**Evidence:**
-
-```text
-LICENSE line 3
-  found:    Copyright (c) 2026 PL TECH Ltd
-  template: Copyright (c) 2022 Bitfocus AS - Open Source
-```
-
-**Confirm by:** open [`LICENSE:3`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/6f9a8f9678543770d2845a547a49ee80a278929a/LICENSE#L3) and compare it with the template's `LICENSE`.
-
-**Fix:** restore the template's `LICENSE` file as it is.
 
 ## 🟡 Medium
 

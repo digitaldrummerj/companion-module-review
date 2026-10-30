@@ -24,8 +24,7 @@
 ### Blocking
 
 - [ ] [C1: Module source files are at the repository root instead of in src](#c1-module-source-files-are-at-the-repository-root-instead-of-in-src)
-- [ ] [H1: LICENSE copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
-- [ ] [H2: Module checks workflow is missing the templates job guard](#h2-module-checks-workflow-is-missing-the-templates-job-guard)
+- [ ] [H1: Module checks workflow is missing the templates job guard](#h1-module-checks-workflow-is-missing-the-templates-job-guard)
 
 ### Non-blocking
 
@@ -73,28 +72,7 @@ Move the root test and smoke scripts (`roundtrip-test.js`, `test-harness.js`) un
 
 ## 🟠 High
 
-### H1: LICENSE copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-livelogix-cadence/blob/b2f8c4951f15d72cf0e9d67fd0a597ed561827e5/LICENSE#L3)
-
-**What goes wrong:** The module's LICENSE file is not the template's license text, so it does not match the license every Bitfocus module repository ships with.
-
-**Why it happens:** Line 3 was changed to the maintainer's own copyright holder.
-
-**Evidence:**
-
-```text
-LICENSE:3   found:    Copyright (c) 2026 LiveLogix
-            template: Copyright (c) 2022 Bitfocus AS - Open Source
-```
-
-**Confirm by:** open [`LICENSE:3`](https://github.com/bitfocus/companion-module-livelogix-cadence/blob/b2f8c4951f15d72cf0e9d67fd0a597ed561827e5/LICENSE#L3) and compare it with the template's `LICENSE`.
-
-**Fix:** replace `LICENSE` with the template's text exactly.
-
-### H2: Module checks workflow is missing the templates job guard
+### H1: Module checks workflow is missing the templates job guard
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW

@@ -30,8 +30,7 @@
 - [ ] [C6: `lint-staged` is missing from devDependencies](#c6-lint-staged-is-missing-from-devdependencies)
 - [ ] [C7: `package.json` has no `lint-staged` section](#c7-packagejson-has-no-lint-staged-section)
 - [ ] [C8: Module runs on Node 22 instead of the Node 26 runtime API 2.1 expects](#c8-module-runs-on-node-22-instead-of-the-node-26-runtime-api-21-expects)
-- [ ] [H1: `LICENSE` copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
-- [ ] [H2: CI workflow builds on Node 22 and keeps checkout credentials](#h2-ci-workflow-builds-on-node-22-and-keeps-checkout-credentials)
+- [ ] [H1: CI workflow builds on Node 22 and keeps checkout credentials](#h1-ci-workflow-builds-on-node-22-and-keeps-checkout-credentials)
 
 ### Non-blocking
 
@@ -246,7 +245,7 @@ Found: none
 
 **Confirm by:** `runtime.type` in [`companion/manifest.json:19`](https://github.com/bitfocus/companion-module-dylanmaudio-apps/blob/99f4e7274ba8050781cf295cb3c0d3b117d739a2/companion/manifest.json#L19) and `extends` in [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-dylanmaudio-apps/blob/99f4e7274ba8050781cf295cb3c0d3b117d739a2/tsconfig.build.json#L2).
 
-**Fix:** move all three to Node 26 together (and the CI Node version in H2).
+**Fix:** move all three to Node 26 together (and the CI Node version in H1).
 
 ```json
 // companion/manifest.json
@@ -259,32 +258,7 @@ Found: none
 
 ## 🟠 High
 
-### H1: `LICENSE` copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-dylanmaudio-apps/blob/99f4e7274ba8050781cf295cb3c0d3b117d739a2/LICENSE#L3)
-
-**What goes wrong:** The license names a different copyright holder from the one the Companion template uses for modules.
-
-**Why it happens:** The copyright line was changed from the template's Bitfocus line.
-
-**Evidence:**
-
-```text
-Template: Copyright (c) 2022 Bitfocus AS - Open Source
-Module (LICENSE:3): Copyright (c) 2026 Dylan Mitrovich (dylanmaudio)
-```
-
-**Confirm by:** `diff companion-module-template-ts/LICENSE LICENSE`.
-
-**Fix:** restore the template's copyright line.
-
-```text
-Copyright (c) 2022 Bitfocus AS - Open Source
-```
-
-### H2: CI workflow builds on Node 22 and keeps checkout credentials
+### H1: CI workflow builds on Node 22 and keeps checkout credentials
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)

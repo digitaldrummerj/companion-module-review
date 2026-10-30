@@ -42,7 +42,6 @@
 - [ ] [C15: Missing .gitattributes file](#c15-missing-gitattributes-file)
 - [ ] [C16: Missing .prettierignore file](#c16-missing-prettierignore-file)
 - [ ] [C17: The .gitignore file misses the template's Yarn and debug entries](#c17-the-gitignore-file-misses-the-templates-yarn-and-debug-entries)
-- [ ] [H1: LICENSE copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
 
@@ -301,20 +300,6 @@ package-lock.json
 DEBUG-*
 /.yarn
 ```
-
-## 🟠 High
-
-### H1: LICENSE copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-vhd-vx61xl/blob/29ebd57ab71aeacabbe34e8339e898676bd3d494/LICENSE#L3)
-
-**What goes wrong:** The license file does not match the one Bitfocus modules ship with.
-
-**Evidence:** line 3 found `Copyright (c) 2026 AP Audiovisuele Producties`; template `Copyright (c) 2022 Bitfocus AS - Open Source`.
-
-**Fix:** use the template's `LICENSE` file unchanged.
 
 ## 🟡 Medium
 

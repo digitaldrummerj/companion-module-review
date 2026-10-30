@@ -32,7 +32,6 @@ This is a follow-up to the v1.0.3 review. v1.2.0 adds eMotion LV1 v17 support: M
 - [ ] [H1: Turning off Read I/O patch or changing the LV1 IP while the desk is unreachable crashes the module](#h1-turning-off-read-io-patch-or-changing-the-lv1-ip-while-the-desk-is-unreachable-crashes-the-module)
 - [ ] [H2: `.github/workflows/companion-module-checks.yaml` differs from the template](#h2-githubworkflowscompanion-module-checksyaml-differs-from-the-template)
 - [ ] [H3: `.github/workflows/node.yaml` differs from the template](#h3-githubworkflowsnodeyaml-differs-from-the-template)
-- [ ] [H4: `LICENSE` differs from the template](#h4-license-differs-from-the-template)
 
 ### Non-blocking
 
@@ -215,30 +214,6 @@ template lines 52-76               commented-out test: job, missing from the mod
 **Confirm by:** `diff companion-module-template-ts-v1/.github/workflows/node.yaml .github/workflows/node.yaml`
 
 **Fix:** copy the template file exactly.
-
-### H4: `LICENSE` differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW to this review — the file is unchanged since v1.0.0; the prior reviews did not check it
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-waves-lv1/blob/7711f3a5dec1971ecadd0e87c44b05d8a17f7274/LICENSE#L3)
-
-**What goes wrong:** The module's licence file is not the template's licence. Bitfocus modules ship the template `LICENSE` unchanged.
-
-**Why it happens:** Line 3 replaces the template's copyright holder with the module author.
-
-**Evidence:**
-
-```diff
-# diff companion-module-template-ts-v1/LICENSE LICENSE
-3c3
-< Copyright (c) 2022 Bitfocus AS - Open Source
----
-> Copyright (c) 2026 Miguel Lourenço
-```
-
-**Confirm by:** `diff companion-module-template-ts-v1/LICENSE LICENSE`
-
-**Fix:** use the template `LICENSE` byte-for-byte.
 
 ## 🟢 Low
 

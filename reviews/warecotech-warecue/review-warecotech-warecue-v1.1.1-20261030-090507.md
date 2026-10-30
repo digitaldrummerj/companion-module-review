@@ -45,7 +45,6 @@
 - [ ] [C17: Manifest entrypoint and `package.json` `main` point at different files](#c17-manifest-entrypoint-and-packagejson-main-point-at-different-files)
 - [ ] [H1: Saving the connection settings while WareCue is unreachable crashes the module](#h1-saving-the-connection-settings-while-warecue-is-unreachable-crashes-the-module)
 - [ ] [H2: `.github/workflows/companion-module-checks.yaml` differs from the template](#h2-githubworkflowscompanion-module-checksyaml-differs-from-the-template)
-- [ ] [H3: `LICENSE` differs from the template](#h3-license-differs-from-the-template)
 
 ### Non-blocking
 
@@ -368,16 +367,6 @@ The file exists and differs from the template, so it is High under the review's 
 **Confirm by:** `diff companion-module-templates/companion-module-template-ts-v1/.github/workflows/companion-module-checks.yaml .github/workflows/companion-module-checks.yaml`
 
 **Fix:** replace the file with the template's copy.
-
-### H3: `LICENSE` differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-warecotech-warecue/blob/f8dd45e701ccb826f3b4b9c445d9332a809927e8/LICENSE#L3)
-
-Differs from template (line 3: found `Copyright (c) 2026 WareCo Tech Ltd`, template `Copyright (c) 2022 Bitfocus AS - Open Source`).
-
-**Fix:** replace `LICENSE` with the template's copy.
 
 ## 🟡 Medium
 

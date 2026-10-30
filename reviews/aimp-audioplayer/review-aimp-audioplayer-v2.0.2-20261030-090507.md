@@ -31,7 +31,6 @@ This is a follow-up to the v1.0.2 review. Every finding from that review is fixe
 ### Blocking
 
 - [ ] [H1: Module crashes when settings are saved, or the connection is disabled, while AIMP is still connecting](#h1-module-crashes-when-settings-are-saved-or-the-connection-is-disabled-while-aimp-is-still-connecting)
-- [ ] [H2: LICENSE differs from the template](#h2-license-differs-from-the-template)
 
 ### Non-blocking
 
@@ -152,27 +151,6 @@ if (ws) {
 ```
 
 Another option is to remove only the `open` / `message` / `close` listeners and keep the existing `error` handler, which already ignores stale sockets through `if (this._ws !== ws) return`.
-
-### H2: LICENSE differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-aimp-audioplayer/blob/26ece0ca6c08960f138aa3b10955e8ca1b657175/LICENSE#L3)
-
-**What goes wrong:** The copyright line in `LICENSE` has been changed from the template's. Every Bitfocus module ships the template's LICENSE unchanged.
-
-**Why it happens:** Line 3 was edited to the current year.
-
-**Evidence:**
-
-```diff
-- Copyright (c) 2022 Bitfocus AS - Open Source
-+ Copyright (c) 2026 Bitfocus AS - Open Source
-```
-
-**Confirm by:** diff [`LICENSE`](https://github.com/bitfocus/companion-module-aimp-audioplayer/blob/26ece0ca6c08960f138aa3b10955e8ca1b657175/LICENSE#L3) against `companion-module-template-js-v2.0.4/LICENSE`; they should be identical.
-
-**Fix:** copy `LICENSE` from the JS template unchanged (line 3 reads `Copyright (c) 2022 Bitfocus AS - Open Source`).
 
 ## 🟢 Low
 

@@ -28,7 +28,6 @@
 - [ ] [C10: package.json has no prettier field](#c10-packagejson-has-no-prettier-field)
 - [ ] [C11: package.json has no format script](#c11-packagejson-has-no-format-script)
 - [ ] [H1: The module checks workflow adds a Node 18 test job the template does not have](#h1-the-module-checks-workflow-adds-a-node-18-test-job-the-template-does-not-have)
-- [ ] [H2: The LICENSE copyright year differs from the template](#h2-the-license-copyright-year-differs-from-the-template)
 
 ## 🔴 Critical
 
@@ -326,28 +325,3 @@ package.json
 **Confirm by:** `diff` [`.github/workflows/companion-module-checks.yaml`](https://github.com/bitfocus/companion-module-tow-mixeffect/blob/0d4e47df61e2b5f2e65f528e962914b46069d242/.github/workflows/companion-module-checks.yaml) against `companion-module-template-js-v1/.github/workflows/companion-module-checks.yaml` shows no differences other than the accepted `upload-artifact` lines.
 
 **Fix:** remove the `test:` job so the file matches the template. If you want the tests in CI, run them in a separate workflow file on Node 22 with Yarn 4.
-
-### H2: The LICENSE copyright year differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-tow-mixeffect/blob/0d4e47df61e2b5f2e65f528e962914b46069d242/LICENSE#L3)
-
-**What goes wrong:** The license text does not match the standard Bitfocus license used by the template.
-
-**Why it happens:** The copyright line says 2021 where the template says 2022.
-
-**Evidence:**
-
-```text
-# LICENSE:3
-Copyright (c) 2021 Bitfocus AS - Open Source
-```
-
-**Confirm by:** open [`LICENSE:3`](https://github.com/bitfocus/companion-module-tow-mixeffect/blob/0d4e47df61e2b5f2e65f528e962914b46069d242/LICENSE#L3); the template has `Copyright (c) 2022 Bitfocus AS - Open Source`.
-
-**Fix:** replace `LICENSE` with the template's file.
-
-```text
-Copyright (c) 2022 Bitfocus AS - Open Source
-```

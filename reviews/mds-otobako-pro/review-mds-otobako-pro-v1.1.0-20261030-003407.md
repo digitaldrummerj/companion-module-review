@@ -28,7 +28,6 @@ This is the module's first release, so there is no diff: every finding below is 
 
 - [ ] [C1: Module runs on Node 22 instead of the Node 26 runtime of the API 2.1 template](#c1-module-runs-on-node-22-instead-of-the-node-26-runtime-of-the-api-21-template)
 - [ ] [C2: `test.js` sits at the repository root instead of under `src/`](#c2-testjs-sits-at-the-repository-root-instead-of-under-src)
-- [ ] [H1: LICENSE does not match the template](#h1-license-does-not-match-the-template)
 
 ### Non-blocking
 
@@ -100,30 +99,6 @@ test.js: source file at module root. All source must be under src/.
 import validate from '../node_modules/@companion-module/base/generated/validate_manifest.js'
 import Instance from './main.js'
 ```
-
-## 🟠 High
-
-### H1: LICENSE does not match the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-mds-otobako-pro/blob/a41ab6571d9535cd05c9d87816b58f14b9c89c7f/LICENSE#L3)
-
-**What goes wrong:** The module's license text differs from the one every Companion module ships with.
-
-**Why it happens:** Line 3 of `LICENSE` was changed from the template's copyright line.
-
-**Evidence:**
-
-```text
-LICENSE line 3
-  Template expects: Copyright (c) 2022 Bitfocus AS - Open Source
-  Found:            Copyright (c) 2026 MDS, Inc.
-```
-
-**Confirm by:** open [`LICENSE:3`](https://github.com/bitfocus/companion-module-mds-otobako-pro/blob/a41ab6571d9535cd05c9d87816b58f14b9c89c7f/LICENSE#L3).
-
-**Fix:** replace `LICENSE` with the template's `LICENSE` verbatim.
 
 ## 🟡 Medium
 

@@ -26,8 +26,7 @@
 
 - [ ] [C1: `.prettierignore` does not match the template](#c1-prettierignore-does-not-match-the-template)
 - [ ] [C2: Module is declared to run on Node 22 instead of the Node 26 runtime API 2.1 expects](#c2-module-is-declared-to-run-on-node-22-instead-of-the-node-26-runtime-api-21-expects)
-- [ ] [H1: LICENSE file does not match the template](#h1-license-file-does-not-match-the-template)
-- [ ] [H2: Module checks workflow differs from the template](#h2-module-checks-workflow-differs-from-the-template)
+- [ ] [H1: Module checks workflow differs from the template](#h1-module-checks-workflow-differs-from-the-template)
 
 ### Non-blocking
 
@@ -108,28 +107,7 @@ Found:             "runtime": { "type": "node22", ... }
 
 ## 🟠 High
 
-### H1: LICENSE file does not match the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-churchtranslator-api/blob/0692b6d1abfc3bc8ee8a542fd65e1f84f1c6a3ac/LICENSE#L3)
-
-**What goes wrong:** The module's LICENSE is not the template's MIT license text that Companion modules ship with.
-
-**Why it happens:** The copyright line was changed from the template's.
-
-**Evidence:**
-
-```text
-Template expects:  Copyright (c) 2022 Bitfocus AS - Open Source
-Found:             Copyright (c) 2026 ChurchTranslator.AI
-```
-
-**Confirm by:** open [`LICENSE:3`](https://github.com/bitfocus/companion-module-churchtranslator-api/blob/0692b6d1abfc3bc8ee8a542fd65e1f84f1c6a3ac/LICENSE#L3).
-
-**Fix:** replace `LICENSE` with the template's file, unchanged.
-
-### H2: Module checks workflow differs from the template
+### H1: Module checks workflow differs from the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW

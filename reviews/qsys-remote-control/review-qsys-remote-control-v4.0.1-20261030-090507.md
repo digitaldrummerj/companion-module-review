@@ -29,8 +29,7 @@
 - [ ] [C2: Yarn settings allow install scripts and packages from any Git repository](#c2-yarn-settings-allow-install-scripts-and-packages-from-any-git-repository)
 - [ ] [C3: Git ignore rules miss the templates lockfile, package and Yarn entries](#c3-git-ignore-rules-miss-the-templates-lockfile-package-and-yarn-entries)
 - [ ] [C4: Two template files are missing (gitattributes and prettierignore)](#c4-two-template-files-are-missing-gitattributes-and-prettierignore)
-- [ ] [H1: LICENSE file does not match the template](#h1-license-file-does-not-match-the-template)
-- [ ] [H2: Release workflow does not match the template](#h2-release-workflow-does-not-match-the-template)
+- [ ] [H1: Release workflow does not match the template](#h1-release-workflow-does-not-match-the-template)
 
 ### Non-blocking
 
@@ -149,30 +148,7 @@ package-lock.json
 
 ## 🟠 High
 
-### H1: LICENSE file does not match the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW (template check; the file is unchanged since v3.2.6)
-- **File:** [`LICENSE:1-3`](https://github.com/bitfocus/companion-module-qsys-remote-control/blob/0b2c8ce9fc78463ba21d462f453eaf2df7f18ca1/LICENSE#L1-L3)
-
-**What goes wrong:** The module's licence text and copyright holder differ from the standard Bitfocus licence every module ships with.
-
-**Why it happens:** The file starts with `The MIT License` and `Copyright (c) 2019 Andreas H. Thomsen`; the template's starts with `MIT License` and `Copyright (c) 2022 Bitfocus AS - Open Source`.
-
-**Evidence (expected vs found):**
-
-```text
-Found:    The MIT License
-          Copyright (c) 2019 Andreas H. Thomsen
-Template: MIT License
-          Copyright (c) 2022 Bitfocus AS - Open Source
-```
-
-**Confirm by:** open [`LICENSE:1-3`](https://github.com/bitfocus/companion-module-qsys-remote-control/blob/0b2c8ce9fc78463ba21d462f453eaf2df7f18ca1/LICENSE#L1-L3) and compare it with the template's `LICENSE`.
-
-**Fix:** replace `LICENSE` with the template's file verbatim.
-
-### H2: Release workflow does not match the template
+### H1: Release workflow does not match the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW (this tag only changed Node 22.x to 26.x here; the structural difference pre-dates v4.0.1)

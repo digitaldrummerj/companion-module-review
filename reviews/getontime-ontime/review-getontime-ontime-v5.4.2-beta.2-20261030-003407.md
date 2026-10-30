@@ -31,7 +31,6 @@
 - [ ] [C6: package.json has no postinstall script to install the git hooks](#c6-packagejson-has-no-postinstall-script-to-install-the-git-hooks)
 - [ ] [C7: The module's search keywords include the banned word companion](#c7-the-modules-search-keywords-include-the-banned-word-companion)
 - [ ] [C8: The module runs on Node 22 where the API 2.1 template uses Node 26](#c8-the-module-runs-on-node-22-where-the-api-21-template-uses-node-26)
-- [ ] [H1: The LICENSE copyright year differs from the template](#h1-the-license-copyright-year-differs-from-the-template)
 
 ### Non-blocking
 
@@ -199,26 +198,6 @@ npmPreapprovedPackages:
 ```json
 // tsconfig.build.json
 "extends": "@companion-module/tools/tsconfig/node26/recommended.json",
-```
-
-## 🟠 High
-
-### H1: The LICENSE copyright year differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** Template check — applies to every release (unchanged since v5.4.1)
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-getontime-ontime/blob/2578aee183f4a43f8368f9ca85a43e0e8b4efb2c/LICENSE#L3)
-
-**What goes wrong:** The license text does not match the standard Bitfocus MIT license that every template-based module carries.
-
-**Why it happens:** Line 3 says 2021; the template says 2022.
-
-**Evidence:** validator reports "Differs from template (line 3: found `Copyright (c) 2021 Bitfocus AS - Open Source`, template `Copyright (c) 2022 Bitfocus AS - Open Source`)".
-
-**Fix:** copy the template's `LICENSE` file over the module's.
-
-```text
-Copyright (c) 2022 Bitfocus AS - Open Source
 ```
 
 ## 🟡 Medium

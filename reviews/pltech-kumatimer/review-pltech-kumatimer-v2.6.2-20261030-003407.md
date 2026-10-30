@@ -14,7 +14,7 @@
 
 This release adds Time Glide / Time Jump actions, source-neutral TCR (QLab, Mitti, Millumin, KumaPoint) feedbacks and variables, PowerPoint variables, display-mode and layout feedbacks, and a new `src/tcr.ts`. `yarn install --immutable`, `yarn package` and `yarn lint` all pass. The blocking items are template-compliance checks on files this release did not touch.
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -23,10 +23,6 @@ This release adds Time Glide / Time Jump actions, source-neutral TCR (QLab, Mitt
 | A1 | KUMA Timer answers HTTP 400 to "Time Glide: finish in a set duration" with a zero duration, and possibly to "Time Glide: cancel" / "Time Jump: cancel" when nothing is running | the module's own comment at [`src/actions.ts:290-294`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/c51c0b6cdb5fa81404c08779497e5453d7c87f76/src/actions.ts#L290-L294); the host itself was not tested | [L2](#l2-a-zero-length-time-glide-turns-the-connection-red) |
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: LICENSE copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
 
@@ -40,27 +36,6 @@ This release adds Time Glide / Time Jump actions, source-neutral TCR (QLab, Mitt
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: LICENSE copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** ⚠️ Pre-existing — not in this release's diff (changed in v2.1.1)
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/c51c0b6cdb5fa81404c08779497e5453d7c87f76/LICENSE#L3)
-
-**What goes wrong:** Users see no effect. The module's `LICENSE` no longer matches the template that every Companion module ships with.
-
-**Why it happens:** v2.1.1 replaced the template's copyright line with the maintainer's company.
-
-**Evidence:**
-
-```text
-line 3: found    'Copyright (c) 2026 PL TECH Ltd'
-        template 'Copyright (c) 2022 Bitfocus AS - Open Source'
-```
-
-**Fix:** restore the template's `LICENSE` file unchanged.
 
 ## 🟡 Medium
 

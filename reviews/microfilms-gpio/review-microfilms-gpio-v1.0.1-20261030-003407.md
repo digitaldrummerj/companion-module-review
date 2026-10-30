@@ -35,7 +35,6 @@
 - [ ] [C8: The module targets Node 22 instead of the Node 26 runtime used by API 2.1](#c8-the-module-targets-node-22-instead-of-the-node-26-runtime-used-by-api-21)
 - [ ] [H1: After saving the connection settings, status, variables and GPIO feedbacks stop updating](#h1-after-saving-the-connection-settings-status-variables-and-gpio-feedbacks-stop-updating)
 - [ ] [H2: The module's GPIO variables always stay empty](#h2-the-modules-gpio-variables-always-stay-empty)
-- [ ] [H3: LICENSE copyright line differs from the template](#h3-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
 
@@ -289,18 +288,6 @@ this.setVariableValues({ Full: this.gpioBytes.readUInt32LE(0) })
 // inside the loop
 this.setVariableValues({ [String(i + 1).padStart(2, '0')]: bitValue })
 ```
-
-### H3: LICENSE copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-microfilms-gpio/blob/4bf83a4ac720760474f72c025907999f1e180331/LICENSE#L3)
-
-**What goes wrong:** The LICENSE does not match the template's text.
-
-**Expected:** `Copyright (c) 2022 Bitfocus AS - Open Source`. **Found:** `Copyright (c) 2024-2026 Microfilms`.
-
-**Fix:** use the template's LICENSE verbatim.
 
 ## 🟡 Medium
 

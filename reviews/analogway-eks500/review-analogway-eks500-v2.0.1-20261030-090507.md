@@ -30,7 +30,6 @@ This is a follow-up to the v2.0.0 review. Every finding from that review is fixe
 ### Blocking
 
 - [ ] [H1: CI workflow node.yaml differs from the template](#h1-ci-workflow-nodeyaml-differs-from-the-template)
-- [ ] [H2: LICENSE differs from the template](#h2-license-differs-from-the-template)
 
 ### Non-blocking
 
@@ -72,35 +71,6 @@ Validator message: `Differs from template (line 19: found '        with:', templ
 **Confirm by:** `diff companion-module-templates/companion-module-template-ts-v2.0.4/.github/workflows/node.yaml .github/workflows/node.yaml` should show only template-sanctioned changes. The `persist-credentials: false` additions are the divergences the template does not invite.
 
 **Fix:** copy the template's `node.yaml`, then apply only the changes the template invites: remove the template-repository step and uncomment the test job. Drop the extra `persist-credentials: false` blocks, or raise the change with Bitfocus upstream.
-
-### H2: LICENSE differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW to this review (the `LICENSE` file itself is unchanged since 2019, commit `60da3d8`, and is not in the v1.0.2..v2.0.1 diff; it was not raised in the v2.0.0 review)
-- **File:** [`LICENSE:1-3`](https://github.com/bitfocus/companion-module-analogway-eks500/blob/5146f532a259cdc7bcbc9a82d4fa089c9222fbcc/LICENSE#L1-L3)
-
-**What goes wrong:** No user-visible effect. The module's license text doesn't match the standard Bitfocus MIT license the template ships, so it carries a different heading, copyright line and wrapping from every other module built on the template.
-
-**Why it happens:** The module still has the original 2018 license file from before the template existed. The v2 rewrite updated the rest of the repo to the template but left `LICENSE` as it was.
-
-**Evidence:**
-
-Validator message: `Differs from template (line 1: found 'The MIT License', template 'MIT License')`
-
-```text
-Template:  MIT License
-           Copyright (c) 2022 Bitfocus AS - Open Source
-Module:    The MIT License
-           Copyright (c) 2018 Bitfocus AS, William Viker & Håkon Nessjøen
-```
-
-The line wrapping of the remaining paragraphs also differs.
-
-**Confirm by:** `diff companion-module-templates/companion-module-template-ts-v2.0.4/LICENSE LICENSE` should print nothing.
-
-**Fix:** replace `LICENSE` with the template's LICENSE byte-for-byte.
-
----
 
 ## 🟡 Medium
 

@@ -32,7 +32,6 @@
 - [ ] [C3: The Husky pre-commit hook file is missing](#c3-the-husky-pre-commit-hook-file-is-missing)
 - [ ] [C4: The Yarn install state file is committed to the repo](#c4-the-yarn-install-state-file-is-committed-to-the-repo)
 - [ ] [C5: package.json has no engines field](#c5-packagejson-has-no-engines-field)
-- [ ] [H1: LICENSE copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
 
@@ -122,20 +121,6 @@
 	"yarn": "^4"
 },
 ```
-
-## 🟠 High
-
-### H1: LICENSE copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW (template check; unchanged since v1.0.1)
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-allenheath-dlive/blob/165fb4c56e480981cc26bedf4a60a32fea725d40/LICENSE#L3)
-
-**What goes wrong:** Line 3 reads `Copyright (c) 2019 Bitfocus AS`; the template has `Copyright (c) 2022 Bitfocus AS - Open Source`.
-
-**Why it happens:** The LICENSE predates the current template.
-
-**Fix:** replace `LICENSE` with the template's copy.
 
 ## 🟡 Medium
 

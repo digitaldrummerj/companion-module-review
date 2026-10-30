@@ -28,7 +28,6 @@
 - [ ] [C2: Prettier ignore file differs from the template](#c2-prettier-ignore-file-differs-from-the-template)
 - [ ] [C3: Lint rule for unpublished imports is switched off for the whole module, not just the tests](#c3-lint-rule-for-unpublished-imports-is-switched-off-for-the-whole-module-not-just-the-tests)
 - [ ] [C4: Pre-commit formatting hook is never installed (husky and lint-staged missing)](#c4-pre-commit-formatting-hook-is-never-installed-husky-and-lint-staged-missing)
-- [ ] [H1: LICENSE copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
 
@@ -145,22 +144,6 @@ export default [
 "scripts": {
 	"postinstall": "husky",
 ```
-
-## 🟠 High
-
-### H1: LICENSE copyright line differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW (template check; unchanged since v0.3.2)
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-stageaudioworks-obs-multisite/blob/b0fff6ed2a7cba1e35778eb90d451776efc082b3/LICENSE#L3)
-
-**What goes wrong:** The module's LICENSE doesn't match the template's MIT licence text.
-
-**Why it happens:** Line 3 carries the maintainer's own copyright holder instead of the template's.
-
-**Evidence:** line 3: found `Copyright (c) 2026 Stage Audio Works`, template `Copyright (c) 2022 Bitfocus AS - Open Source`.
-
-**Fix:** use the template's LICENSE file unchanged.
 
 ## 🟡 Medium
 

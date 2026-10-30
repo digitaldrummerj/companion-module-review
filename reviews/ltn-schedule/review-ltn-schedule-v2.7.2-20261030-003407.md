@@ -28,7 +28,6 @@
 - [ ] [C3: .gitignore is missing the template's build-artifact entries](#c3-gitignore-is-missing-the-templates-build-artifact-entries)
 - [ ] [C4: .gitattributes is missing](#c4-gitattributes-is-missing)
 - [ ] [H1: Clear graphics engine and the new Start/Stop/Clear all GFX layers buttons do nothing](#h1-clear-graphics-engine-and-the-new-startstopclear-all-gfx-layers-buttons-do-nothing)
-- [ ] [H2: LICENSE copyright year differs from the template](#h2-license-copyright-year-differs-from-the-template)
 
 ### Non-blocking
 
@@ -204,25 +203,6 @@ function sendAction(apiEndpoint, cmd, callback, errorCallback, requestType) {
 ```js
 let cmd = ''
 ```
-
-### H2: LICENSE copyright year differs from the template
-
-- **Source:** 🤖 validate-template (LICENSE-DIFF)
-- **Classification:** 🆕 NEW (already the case in v2.6.0)
-- **File:** [`LICENSE:3`](https://github.com/bitfocus/companion-module-ltn-schedule/blob/a50faa550beb49433452add80b9363780a3e9829/LICENSE#L3)
-
-**What goes wrong:** The LICENSE file doesn't match the template's, so the module fails the template check.
-
-**Why it happens:** The copyright line still has the year 2021.
-
-**Evidence:**
-
-```text
-Expected (line 3): Copyright (c) 2022 Bitfocus AS - Open Source
-Found    (line 3): Copyright (c) 2021 Bitfocus AS - Open Source
-```
-
-**Fix:** replace `LICENSE` with the template's copy.
 
 ## 🟡 Medium
 
