@@ -28,14 +28,13 @@
 - [ ] [C2: Packaged .tgz files and the .yarn and .vscode folders are not git-ignored](#c2-packaged-tgz-files-and-the-yarn-and-vscode-folders-are-not-git-ignored)
 - [ ] [C3: Pre-commit hook runs yarn lint-staged instead of the template's lint-staged](#c3-pre-commit-hook-runs-yarn-lint-staged-instead-of-the-templates-lint-staged)
 - [ ] [C4: Yarn config lets dependencies install from any git repository](#c4-yarn-config-lets-dependencies-install-from-any-git-repository)
-- [ ] [C5: ESLint config adds a typescript-eslint import the template does not have](#c5-eslint-config-adds-a-typescript-eslint-import-the-template-does-not-have)
-- [ ] [C6: An unused Yarn patch for companion-module-utils 0.5.0 is committed](#c6-an-unused-yarn-patch-for-companion-module-utils-050-is-committed)
+- [ ] [C5: An unused Yarn patch for companion-module-utils 0.5.0 is committed](#c5-an-unused-yarn-patch-for-companion-module-utils-050-is-committed)
+- [ ] [H1: Pull-request CI workflow differs from the template](#h1-pull-request-ci-workflow-differs-from-the-template)
+- [ ] [H2: Release workflow no longer uses the shared Bitfocus module checks](#h2-release-workflow-no-longer-uses-the-shared-bitfocus-module-checks)
 
 ### Non-blocking
 
 - [ ] [M1: On and Learn options expect 0, 1 or 2 when switched to expression mode](#m1-on-and-learn-options-expect-0-1-or-2-when-switched-to-expression-mode)
-- [ ] [M2: Pull-request CI workflow differs from the template](#m2-pull-request-ci-workflow-differs-from-the-template)
-- [ ] [M3: Release workflow no longer uses the shared Bitfocus module checks](#m3-release-workflow-no-longer-uses-the-shared-bitfocus-module-checks)
 - [ ] [L1: Connection stays green while every device message fails to parse](#l1-connection-stays-green-while-every-device-message-fails-to-parse)
 - [ ] [L2: Channel or band set from a text variable may be rejected as Invalid channel](#l2-channel-or-band-set-from-a-text-variable-may-be-rejected-as-invalid-channel)
 - [ ] [N1: A bad attenuation or bias value is reported as Invalid channel](#n1-a-bad-attenuation-or-bias-value-is-reported-as-invalid-channel)
@@ -73,7 +72,7 @@
 
 **What goes wrong:** A package built with `yarn package` under a name other than `cedar-dns8d-*.tgz`, Yarn's local `.yarn` folder and editor settings in `.vscode` can be committed by accident.
 
-**Why it happens:** The `.gitignore` is missing three of the template's entries. It ignores `cedar-dns8d-*.tgz` and selected `.yarn/*` paths instead (and un-ignores `.yarn/patches`, see [C6](#c6-an-unused-yarn-patch-for-companion-module-utils-050-is-committed)).
+**Why it happens:** The `.gitignore` is missing three of the template's entries. It ignores `cedar-dns8d-*.tgz` and selected `.yarn/*` paths instead (and un-ignores `.yarn/patches`, see [C5](#c5-an-unused-yarn-patch-for-companion-module-utils-050-is-committed)).
 
 **Evidence:** missing template `.gitignore` entries: `/*.tgz`, `/.yarn`, `/.vscode`.
 
@@ -130,21 +129,7 @@ approvedGitRepositories:
 
 **Fix:** delete the `approvedGitRepositories` key so `.yarnrc.yml` matches the template.
 
-### C5: ESLint config adds a typescript-eslint import the template does not have
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`eslint.config.mjs:1-22`](https://github.com/bitfocus/companion-module-cedar-dns8d/blob/39e4193abd64925846ae34f5522caba7d4948ba9/eslint.config.mjs#L1-L22)
-
-**What goes wrong:** The lint setup differs from the template, so lint results for this module can't be compared directly with other modules.
-
-**Why it happens:** The config imports `typescript-eslint` to switch off type-checked rules for `vitest.config.ts`. The template's config only calls `generateEslintConfig`. Test-scoped rule overrides (the `n/no-unpublished-import` block for `src/__tests__/**`) are an accepted deviation; the extra import is not.
-
-**Evidence:** imports differ from the template; line 2: found `import tseslint from 'typescript-eslint'`, template has no such line.
-
-**Fix:** remove the `typescript-eslint` import and its `disableTypeChecked` block. If `vitest.config.ts` needs type information, include it in `tsconfig.json` instead, and keep only the test-scoped `rules` override.
-
-### C6: An unused Yarn patch for companion-module-utils 0.5.0 is committed
+### C5: An unused Yarn patch for companion-module-utils 0.5.0 is committed
 
 - **Source:** 🤖 validate-template (GITIGNORED-COMMITTED)
 - **Classification:** 🆕 NEW
@@ -157,6 +142,40 @@ approvedGitRepositories:
 **Evidence:** committed, but the template `.gitignore` excludes it (pattern `/.yarn`).
 
 **Fix:** delete the `.yarn/patches` folder from the repository (`git rm -r .yarn/patches`) and use the template `.gitignore` from [C2](#c2-packaged-tgz-files-and-the-yarn-and-vscode-folders-are-not-git-ignored).
+
+## 🟠 High
+
+### H1: Pull-request CI workflow differs from the template
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** 🆕 NEW
+- **File:** [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-cedar-dns8d/blob/39e4193abd64925846ae34f5522caba7d4948ba9/.github/workflows/node.yaml)
+
+**What goes wrong:** The CI workflow no longer matches the template, so a template update can't be applied to it as-is.
+
+**Why it happens:** The workflow adds `permissions: contents: read`, drops `persist-credentials: false` on checkout, moves `actions/setup-node` from `@v6` to `@v7`, and enables the test job (`yarn test:coverage` plus a Codecov upload). Node 26.x matches the module's node26 runtime.
+
+**Evidence:** line 11: found `permissions:`, template `jobs:`.
+
+**Confirm by:** compare [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-cedar-dns8d/blob/39e4193abd64925846ae34f5522caba7d4948ba9/.github/workflows/node.yaml) with the template's: line 11 `permissions:`, lines 24 and 55 `actions/setup-node@v7` (template `@v6`), line 68 `yarn test:coverage` and line 72 `codecov/codecov-action@v7`.
+
+**Fix:** start from the template's `node.yaml` and keep only the additions you need (enabling the test job is fine); restore `persist-credentials: false` on the checkout step.
+
+### H2: Release workflow no longer uses the shared Bitfocus module checks
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** 🆕 NEW
+- **File:** [`.github/workflows/release.yaml:10-40`](https://github.com/bitfocus/companion-module-cedar-dns8d/blob/39e4193abd64925846ae34f5522caba7d4948ba9/.github/workflows/release.yaml#L10-L40)
+
+**What goes wrong:** A published release is packaged without the checks the rest of the Bitfocus modules run, so a release can carry a package that the shared checks would have rejected.
+
+**Why it happens:** The template's `package` job calls `bitfocus/actions/.github/workflows/module-checks.yaml@main`, and an `attach` job downloads its `pkg` artifact. This module replaces both with one hand-written job that runs `yarn package --dev [--prerelease]` and uploads `./*.tgz`.
+
+**Evidence:** line 10: found `# Deliberately does not run lint or tests. ...`, template `jobs:`.
+
+**Confirm by:** open [`.github/workflows/release.yaml:51-63`](https://github.com/bitfocus/companion-module-cedar-dns8d/blob/39e4193abd64925846ae34f5522caba7d4948ba9/.github/workflows/release.yaml#L51-L63): lines 51 and 53 run `yarn package --dev --prerelease` / `yarn package --dev`, line 63 uploads `./*.tgz`, and nothing calls `bitfocus/actions/.github/workflows/module-checks.yaml@main`.
+
+**Fix:** use the template's `release.yaml`, which calls the shared `module-checks.yaml` workflow and attaches its package.
 
 ## 🟡 Medium
 
@@ -205,34 +224,6 @@ const onOffToggle: CompanionInputFieldDropdown<'value', ToggleValue> = {
 ```
 
 Alternatively keep expression mode and add `expressionDescription: "Return '1' (on), '0' (off) or '2' (toggle)"`. If you prefer readable ids (`'on'` / `'off'` / `'toggle'`), add a new upgrade script (`UpgradeScripts[1]`) that maps saved `'0'`/`'1'`/`'2'` values to the new ids, keeping the wrapped `{ isExpression, value }` shape, and update `calcBooleanVal`, the learn callbacks and `actionRecorder.ts`, which write these ids.
-
-### M2: Pull-request CI workflow differs from the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-cedar-dns8d/blob/39e4193abd64925846ae34f5522caba7d4948ba9/.github/workflows/node.yaml)
-
-**What goes wrong:** The CI workflow no longer matches the template, so a template update can't be applied to it as-is.
-
-**Why it happens:** The workflow adds `permissions: contents: read`, drops `persist-credentials: false` on checkout, moves `actions/setup-node` from `@v6` to `@v7`, and enables the test job (`yarn test:coverage` plus a Codecov upload). Node 26.x matches the module's node26 runtime.
-
-**Evidence:** line 11: found `permissions:`, template `jobs:`.
-
-**Fix:** start from the template's `node.yaml` and keep only the additions you need (enabling the test job is fine); restore `persist-credentials: false` on the checkout step.
-
-### M3: Release workflow no longer uses the shared Bitfocus module checks
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/release.yaml:10-40`](https://github.com/bitfocus/companion-module-cedar-dns8d/blob/39e4193abd64925846ae34f5522caba7d4948ba9/.github/workflows/release.yaml#L10-L40)
-
-**What goes wrong:** A published release is packaged without the checks the rest of the Bitfocus modules run, so a release can carry a package that the shared checks would have rejected.
-
-**Why it happens:** The template's `package` job calls `bitfocus/actions/.github/workflows/module-checks.yaml@main`, and an `attach` job downloads its `pkg` artifact. This module replaces both with one hand-written job that runs `yarn package --dev [--prerelease]` and uploads `./*.tgz`.
-
-**Evidence:** line 10: found `# Deliberately does not run lint or tests. ...`, template `jobs:`.
-
-**Fix:** use the template's `release.yaml`, which calls the shared `module-checks.yaml` workflow and attaches its package.
 
 ## 🟢 Low
 
