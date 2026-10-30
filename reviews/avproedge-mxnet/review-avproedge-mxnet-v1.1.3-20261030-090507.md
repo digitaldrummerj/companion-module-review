@@ -11,7 +11,7 @@
 | **Commit** | [`faa013e`](https://github.com/bitfocus/companion-module-avproedge-mxnet/tree/faa013ecba8fd63c0e7618510e268e3fd0f685f3) |
 | **Reviewed** | 2026-10-30 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -22,41 +22,11 @@
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [C1: The mock device helper's npm lockfile is committed even though the template ignores it](#c1-the-mock-device-helpers-npm-lockfile-is-committed-even-though-the-template-ignores-it)
-
 ### Non-blocking
 
 - [ ] [M1: Leftover polling timers can crash the module after the IP Address is cleared](#m1-leftover-polling-timers-can-crash-the-module-after-the-ip-address-is-cleared)
 - [ ] [L1: The connection state variable never stays on disconnected](#l1-the-connection-state-variable-never-stays-on-disconnected)
-
-## 🔴 Critical
-
-### C1: The mock device helper's npm lockfile is committed even though the template ignores it
-
-- **Source:** 🤖 validate-template (GITIGNORED-COMMITTED)
-- **Classification:** 🆕 NEW
-- **File:** [`mock_control_box/package-lock.json`](https://github.com/bitfocus/companion-module-avproedge-mxnet/blob/faa013ecba8fd63c0e7618510e268e3fd0f685f3/mock_control_box/package-lock.json)
-
-**What goes wrong:** The repository tracks an npm lockfile, `mock_control_box/package-lock.json`, that the template's `.gitignore` excludes. Companion modules use Yarn, and a stray npm lockfile in the repo is exactly what the template's ignore rule exists to keep out.
-
-**Why it happens:** The file belongs to the module's local mock Control Box helper (`mock_control_box/package.json` depends on `telnetlib`). It has been tracked since the first release (commit `486ba90`), so it is still committed even though the module's own `.gitignore` now lists `package-lock.json` too. A `.gitignore` rule only stops new files from being added; it doesn't untrack files that are already committed.
-
-**Evidence:**
-
-```text
-Expected: no file matching template .gitignore pattern 'package-lock.json' is committed
-Found:    mock_control_box/package-lock.json (tracked)
-```
-
-**Confirm by:** run `git ls-files mock_control_box` in the module repo at v1.1.3. [`mock_control_box/package-lock.json`](https://github.com/bitfocus/companion-module-avproedge-mxnet/blob/faa013ecba8fd63c0e7618510e268e3fd0f685f3/mock_control_box/package-lock.json) is listed.
-
-**Fix:** stop tracking the lockfile and let the existing `.gitignore` rule keep it out.
-
-```bash
-git rm --cached mock_control_box/package-lock.json
-```
+- [ ] [NR1: The mock Control Box helper uses npm instead of Yarn](#nr1-the-mock-control-box-helper-uses-npm-instead-of-yarn)
 
 ## 🟡 Medium
 
@@ -137,3 +107,34 @@ pollMxnetInfo() {
 **Why it happens:** New in this release, the socket's close handler calls the disconnect handler, which sets `disconnected` / Disconnected ([`src/instance.js:95-100`](https://github.com/bitfocus/companion-module-avproedge-mxnet/blob/faa013ecba8fd63c0e7618510e268e3fd0f685f3/src/instance.js#L95-L100)), and then immediately reconnects, which overwrites both with `connecting` / Connecting ([`src/instance.js:83-87`](https://github.com/bitfocus/companion-module-avproedge-mxnet/blob/faa013ecba8fd63c0e7618510e268e3fd0f685f3/src/instance.js#L83-L87)) in the same tick.
 
 **Fix:** either drop `disconnected` from the documented values in HELP.md (and the comment at [`src/instance.js:58`](https://github.com/bitfocus/companion-module-avproedge-mxnet/blob/faa013ecba8fd63c0e7618510e268e3fd0f685f3/src/instance.js#L58)), or reconnect after a short delay instead of calling `init()` straight from the close handler, so the disconnected state can be seen. If you add a delay, clear that timer in `close()`.
+
+## 🔮 Next Release
+
+### NR1: The mock Control Box helper uses npm instead of Yarn
+
+- **Source:** 🤖 validate-template (GITIGNORED-COMMITTED) · moved from Critical by the reviewer: not blocking for this release, fix it in the next one
+- **Classification:** ⚠️ PRE-EXISTING (the lockfile has been tracked since the first release, commit `486ba90`)
+- **File:** [`mock_control_box/package-lock.json`](https://github.com/bitfocus/companion-module-avproedge-mxnet/blob/faa013ecba8fd63c0e7618510e268e3fd0f685f3/mock_control_box/package-lock.json)
+
+**What goes wrong:** No direct user-visible effect. The repository tracks an npm lockfile, `mock_control_box/package-lock.json`, for the local mock Control Box helper. Companion modules use Yarn, and the template's `.gitignore` excludes `package-lock.json` to keep npm lockfiles out of module repositories.
+
+**Why it happens:** The helper (`mock_control_box/package.json`, which depends on `telnetlib`) was set up with npm, and its lockfile was committed in the first release. The module's own `.gitignore` now lists `package-lock.json` too, but a `.gitignore` rule only stops new files from being added; it doesn't untrack files that are already committed.
+
+**Evidence:**
+
+```text
+Expected: no file matching template .gitignore pattern 'package-lock.json' is committed
+Found:    mock_control_box/package-lock.json (tracked)
+```
+
+**Confirm by:** run `git ls-files mock_control_box` in the module repo at v1.1.3. [`mock_control_box/package-lock.json`](https://github.com/bitfocus/companion-module-avproedge-mxnet/blob/faa013ecba8fd63c0e7618510e268e3fd0f685f3/mock_control_box/package-lock.json) is listed.
+
+**Fix:** switch the mock Control Box helper to Yarn, like the module itself. Remove the npm lockfile from the repository and install the helper's dependencies with Yarn from now on. The module uses Yarn 4, which only installs a nested folder as its own project when that folder has a `yarn.lock`, so create an empty one first and commit the `yarn.lock` Yarn writes.
+
+```bash
+git rm mock_control_box/package-lock.json
+cd mock_control_box
+touch yarn.lock
+yarn install
+git add yarn.lock
+```
