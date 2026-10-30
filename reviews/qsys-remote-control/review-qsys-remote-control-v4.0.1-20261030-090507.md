@@ -29,7 +29,6 @@
 - [ ] [C2: Yarn settings allow install scripts and packages from any Git repository](#c2-yarn-settings-allow-install-scripts-and-packages-from-any-git-repository)
 - [ ] [C3: Git ignore rules miss the templates lockfile, package and Yarn entries](#c3-git-ignore-rules-miss-the-templates-lockfile-package-and-yarn-entries)
 - [ ] [C4: Two template files are missing (gitattributes and prettierignore)](#c4-two-template-files-are-missing-gitattributes-and-prettierignore)
-- [ ] [C5: Second maintainer in the manifest has no contact email](#c5-second-maintainer-in-the-manifest-has-no-contact-email)
 - [ ] [H1: LICENSE file does not match the template](#h1-license-file-does-not-match-the-template)
 - [ ] [H2: Release workflow does not match the template](#h2-release-workflow-does-not-match-the-template)
 
@@ -147,30 +146,6 @@ package-lock.json
 **Confirm by:** list the repository root at [`0b2c8ce`](https://github.com/bitfocus/companion-module-qsys-remote-control/tree/0b2c8ce9fc78463ba21d462f453eaf2df7f18ca1). Neither file exists.
 
 **Fix:** copy `.gitattributes` and `.prettierignore` from `companion-module-template-js` unchanged.
-
-### C5: Second maintainer in the manifest has no contact email
-
-- **Source:** 🤖 validate-template (MAN-PLACEHOLDER)
-- **Classification:** 🆕 NEW (template check; the entry is unchanged since v3.2.6)
-- **File:** [`companion/manifest.json:17-20`](https://github.com/bitfocus/companion-module-qsys-remote-control/blob/0b2c8ce9fc78463ba21d462f453eaf2df7f18ca1/companion/manifest.json#L17-L20)
-
-**What goes wrong:** Bitfocus and users have no way to contact the second listed maintainer about the module.
-
-**Why it happens:** The second entry in `maintainers` has an empty `email`.
-
-**Evidence (expected vs found):**
-
-```json
-// companion/manifest.json:17-20
-{
-	"name": "Phillip Ivan Pietruschka",
-	"email": ""
-}
-```
-
-**Confirm by:** open [`companion/manifest.json:17-20`](https://github.com/bitfocus/companion-module-qsys-remote-control/blob/0b2c8ce9fc78463ba21d462f453eaf2df7f18ca1/companion/manifest.json#L17-L20).
-
-**Fix:** add a real contact email for this maintainer, or remove the entry.
 
 ## 🟠 High
 
