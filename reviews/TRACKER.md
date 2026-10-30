@@ -156,3 +156,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | livelogix-cadence | v1.4.0 | 2026-10-30 | [review](livelogix-cadence/review-livelogix-cadence-v1.4.0-20261030-090507.md) |
 | ⬜ | generic-ptpv2-client | v2.1.0 | 2026-10-30 | [review](generic-ptpv2-client/review-generic-ptpv2-client-v2.1.0-20261030-090507.md) |
 | ⬜ | avproedge-mxnet | v1.1.3 | 2026-10-30 | [review](avproedge-mxnet/review-avproedge-mxnet-v1.1.3-20261030-090507.md) |
+| ⬜ | breeze-overlay | v1.1.1 | 2026-10-30 | [review](breeze-overlay/review-breeze-overlay-v1.1.1-20261030-090507.md) |
