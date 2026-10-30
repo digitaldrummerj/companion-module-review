@@ -30,9 +30,8 @@
 - [ ] [C1: Git attributes file adds a rule the template does not have](#c1-git-attributes-file-adds-a-rule-the-template-does-not-have)
 - [ ] [C2: Git ignore file is missing the template's Yarn folder entry](#c2-git-ignore-file-is-missing-the-templates-yarn-folder-entry)
 - [ ] [C3: The Husky pre-commit hook file is missing](#c3-the-husky-pre-commit-hook-file-is-missing)
-- [ ] [C4: ESLint config imports a plugin the template does not use](#c4-eslint-config-imports-a-plugin-the-template-does-not-use)
-- [ ] [C5: The Yarn install state file is committed to the repo](#c5-the-yarn-install-state-file-is-committed-to-the-repo)
-- [ ] [C6: package.json has no engines field](#c6-packagejson-has-no-engines-field)
+- [ ] [C4: The Yarn install state file is committed to the repo](#c4-the-yarn-install-state-file-is-committed-to-the-repo)
+- [ ] [C5: package.json has no engines field](#c5-packagejson-has-no-engines-field)
 - [ ] [H1: LICENSE copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
@@ -75,7 +74,7 @@
 - **Classification:** 🆕 NEW (template check; the file was the same at v1.0.1)
 - **File:** [`.gitignore`](https://github.com/bitfocus/companion-module-allenheath-dlive/blob/165fb4c56e480981cc26bedf4a60a32fea725d40/.gitignore)
 
-**What goes wrong:** `.gitignore` lacks the template's `/.yarn` entry, so Yarn's local state gets committed (see [C5](#c5-the-yarn-install-state-file-is-committed-to-the-repo)).
+**What goes wrong:** `.gitignore` lacks the template's `/.yarn` entry, so Yarn's local state gets committed (see [C4](#c4-the-yarn-install-state-file-is-committed-to-the-repo)).
 
 **Why it happens:** Missing template `.gitignore` entries: `/.yarn`.
 
@@ -93,19 +92,7 @@
 
 **Fix:** add `.husky/pre-commit` from the v1 template (it runs `lint-staged`).
 
-### C4: ESLint config imports a plugin the template does not use
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW (the file changed in this release)
-- **File:** [`eslint.config.mjs:2`](https://github.com/bitfocus/companion-module-allenheath-dlive/blob/165fb4c56e480981cc26bedf4a60a32fea725d40/eslint.config.mjs#L2)
-
-**What goes wrong:** `eslint.config.mjs` differs from the template's imports. Line 2 is `import simpleImportSort from 'eslint-plugin-simple-import-sort'`, where the template imports only `generateEslintConfig`.
-
-**Why it happens:** The module layers its own plugin and rules on top of the template's generated config. (The test-scoped `unbound-method` override added in this release is an accepted deviation; the extra import is what the check flags.)
-
-**Fix:** remove the `simple-import-sort` import and its configuration so the file matches the template; a test-scoped override for `test/**/*.ts` may stay.
-
-### C5: The Yarn install state file is committed to the repo
+### C4: The Yarn install state file is committed to the repo
 
 - **Source:** 🤖 validate-template (GITIGNORED-COMMITTED)
 - **Classification:** 🆕 NEW (template check; committed before v1.0.1 and modified again in this release)
@@ -117,7 +104,7 @@
 
 **Fix:** `git rm --cached .yarn/install-state.gz` and add `/.yarn` to `.gitignore`.
 
-### C6: package.json has no engines field
+### C5: package.json has no engines field
 
 - **Source:** 🤖 validate-template (PKG-FIELD)
 - **Classification:** 🆕 NEW (template check; also absent at v1.0.1)

@@ -26,7 +26,6 @@
 - [ ] [C1: .gitattributes has extra comment lines not in the template](#c1-gitattributes-has-extra-comment-lines-not-in-the-template)
 - [ ] [C2: .gitignore is missing template entries, so packaged .tgz files show up as untracked](#c2-gitignore-is-missing-template-entries-so-packaged-tgz-files-show-up-as-untracked)
 - [ ] [C3: The pre-commit hook runs a full build on every commit](#c3-the-pre-commit-hook-runs-a-full-build-on-every-commit)
-- [ ] [C4: eslint.config.mjs adds an ignores option the template doesn't have](#c4-eslintconfigmjs-adds-an-ignores-option-the-template-doesnt-have)
 - [ ] [H1: CI workflow uses an older checkout action than the template](#h1-ci-workflow-uses-an-older-checkout-action-than-the-template)
 
 ### Non-blocking
@@ -101,27 +100,6 @@ DEBUG-*
 
 ```bash
 lint-staged
-```
-
-### C4: eslint.config.mjs adds an ignores option the template doesn't have
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`eslint.config.mjs:5`](https://github.com/bitfocus/companion-module-luminex-luminode/blob/8595c95a7dceac74abbb02a0d176d268f2240251/eslint.config.mjs#L5)
-
-**What goes wrong:** The lint setup differs from the template, so it no longer matches what other modules at this API level use.
-
-**Why it happens:** An extra `ignores` option is passed to `generateEslintConfig`. It changes the shared config's options, so it is not the accepted test-scope deviation.
-
-- **Template expects:** `export default generateEslintConfig({ enableTypescript: true, })`.
-- **Found:** an extra `ignores: ['dist/**', 'node_modules/**', '.yarn/**', '.pnp.cjs', '.pnp.loader.mjs']` option.
-
-**Fix:** remove the `ignores` option.
-
-```js
-export default generateEslintConfig({
-	enableTypescript: true,
-})
 ```
 
 ## 🟠 High
