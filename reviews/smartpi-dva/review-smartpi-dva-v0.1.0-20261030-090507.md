@@ -11,7 +11,7 @@
 | **Previous tag** | none — first release, so there is no diff and the whole module was reviewed |
 | **Reviewed** | 2026-10-30 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -21,10 +21,6 @@
 | A2 | Companion ignores a status update that arrives shortly after `destroy()`, so the late "Destroyed" status has no visible effect | base 2.2.1 `updateStatus` only forwards to the host; what the host does after teardown not checked | [L5](#l5-final-destroyed-status-is-sent-by-a-timer-up-to-2-s-after-the-module-is-destroyed) |
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: No feedbacks, so buttons can't show the DVA's state](#h1-no-feedbacks-so-buttons-cant-show-the-dvas-state)
 
 ### Non-blocking
 
@@ -36,53 +32,11 @@
 - [ ] [L5: Final Destroyed status is sent by a timer up to 2 s after the module is destroyed](#l5-final-destroyed-status-is-sent-by-a-timer-up-to-2-s-after-the-module-is-destroyed)
 - [ ] [L6: Status messages after teardown go to `console.log` instead of the connection log](#l6-status-messages-after-teardown-go-to-consolelog-instead-of-the-connection-log)
 - [ ] [N1: No presets, so users must build every DVA button by hand](#n1-no-presets-so-users-must-build-every-dva-button-by-hand)
+- [ ] [NR1: Add feedbacks before 1.0.0, so buttons can show the DVA's state](#nr1-add-feedbacks-before-100-so-buttons-can-show-the-dvas-state)
 
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: No feedbacks, so buttons can't show the DVA's state
-
-- **Source:** 🔎 compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/feedbacks.ts:3-8`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/src/feedbacks.ts#L3-L8)
-
-**What goes wrong:** A user who adds a SmartPi DVA button in Companion gets only the "Add to Queue" action. The Feedbacks list for this connection is empty, so a button can't turn red while an announcement plays, show that a Node is offline, or show that a queue entry is Waiting. The module already polls the DVA's queue and status every "Update Interval (S)" (60 s by default), so it has this state; none of it can reach a button's look. A first release needs at least one feedback.
-
-**Why it happens:** The feedback registration passes an empty list to Companion, and the feedback type is declared as "no feedbacks". The state the module polls (the queue, the status of all Nodes, the device status) is stored but never exposed as a feedback.
-
-**Evidence:**
-
-```ts
-// src/feedbacks.ts:1-8
-import type ModuleInstance from './main.js'
-
-/** None yet. */
-export type FeedbackSchema = Record<string, never>
-
-export function UpdateFeedbacks(self: ModuleInstance): void {
-	self.setFeedbackDefinitions({})
-}
-```
-
-```ts
-// src/main.ts:366-367
-	#updateFeedbacks(): void {
-		UpdateFeedbacks(this)
-```
-
-```ts
-// src/main.ts:169
-		this.#pollTimer = setInterval(() => void this.#poll(), this.config.interval * 1000)
-```
-
-A grep of `src/` for "eedback" turns up only `feedbacks.ts`, the call site in `main.ts`, a commented-out line in `upgrades.ts`, and test mocks. `git tag` lists only `v0.1.0`, so this is the first release.
-
-**Confirm by:** open [`src/feedbacks.ts:3-8`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/src/feedbacks.ts#L3-L8). `setFeedbackDefinitions({})` is called with an empty object, and grepping `src/` for "eedback" finds no other definitions.
-
-**Fix:** Add at least one boolean feedback built from the state the module already polls. For example, "Announcement playing/queued" (an announcement dropdown from `getAnnouncementChoices`, an optional Waiting/Playing status, checked against `self.state.getQueue`), and/or "Node online" (a node from `getStatusAll`, true when `onlineStatus === 'Online'`). Type it in `FeedbackSchema`, then call `self.checkFeedbacks(...)` from `#poll` when `getQueue` or `getStatusAll` changes. The companion-v2-feedbacks and companion-v2-feedback-file-pattern skills show the pattern.
 
 ## 🟡 Medium
 
@@ -185,6 +139,49 @@ A grep of `src/` for "eedback" turns up only `feedbacks.ts`, the call site in `m
 **Why it happens:** `UpdatePresets` registers an empty preset list.
 
 **Fix:** Once feedbacks exist, generate one preset per announcement (and/or per group) from the polled state, in a v2 structure section such as "Announcements" with a template group, using `presetDefaults` from `consts.ts` for the style. The companion-v2-preset-category-file skill shows the pattern.
+
+## 🔮 Next Release
+
+### NR1: Add feedbacks before 1.0.0, so buttons can show the DVA's state
+
+- **Source:** 🔎 compliance reviewer — verified
+- **Classification:** 🆕 NEW
+- **File:** [`src/feedbacks.ts:3-8`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/src/feedbacks.ts#L3-L8)
+
+**What goes wrong:** A user who adds a SmartPi DVA button in Companion gets only the "Add to Queue" action. The Feedbacks list for this connection is empty, so a button can't turn red while an announcement plays, show that a Node is offline, or show that a queue entry is Waiting. The module already polls the DVA's queue and status every "Update Interval (S)" (60 s by default), so it has this state; none of it can reach a button's look. This is fine for a 0.x pre-release, but please add feedbacks before 1.0.0.
+
+**Why it happens:** The feedback registration passes an empty list to Companion, and the feedback type is declared as "no feedbacks". The state the module polls (the queue, the status of all Nodes, the device status) is stored but never exposed as a feedback.
+
+**Evidence:**
+
+```ts
+// src/feedbacks.ts:1-8
+import type ModuleInstance from './main.js'
+
+/** None yet. */
+export type FeedbackSchema = Record<string, never>
+
+export function UpdateFeedbacks(self: ModuleInstance): void {
+	self.setFeedbackDefinitions({})
+}
+```
+
+```ts
+// src/main.ts:366-367
+	#updateFeedbacks(): void {
+		UpdateFeedbacks(this)
+```
+
+```ts
+// src/main.ts:169
+		this.#pollTimer = setInterval(() => void this.#poll(), this.config.interval * 1000)
+```
+
+A grep of `src/` for "eedback" turns up only `feedbacks.ts`, the call site in `main.ts`, a commented-out line in `upgrades.ts`, and test mocks. `git tag` lists only `v0.1.0`, so this is the first release.
+
+**Confirm by:** open [`src/feedbacks.ts:3-8`](https://github.com/bitfocus/companion-module-smartpi-dva/blob/18073b4d4ab9d7d449b02d46b00afebc0b8e60e8/src/feedbacks.ts#L3-L8). `setFeedbackDefinitions({})` is called with an empty object, and grepping `src/` for "eedback" finds no other definitions.
+
+**Fix:** Before 1.0.0, add at least one boolean feedback built from the state the module already polls. For example, "Announcement playing/queued" (an announcement dropdown from `getAnnouncementChoices`, an optional Waiting/Playing status, checked against `self.state.getQueue`), and/or "Node online" (a node from `getStatusAll`, true when `onlineStatus === 'Online'`). Type it in `FeedbackSchema`, then call `self.checkFeedbacks(...)` from `#poll` when `getQueue` or `getStatusAll` changes. The companion-v2-feedbacks and companion-v2-feedback-file-pattern skills show the pattern.
 
 ## 📝 Additional Notes
 
