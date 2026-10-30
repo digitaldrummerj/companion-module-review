@@ -12,7 +12,7 @@
 | **Previous review** | [v2.1.0 (2026-06-14)](review-pltech-kumatimer-v2.1.0-20260614-220611.md) |
 | **Reviewed** | 2026-10-30 |
 
-This is a follow-up to the v2.1.0 review. Every finding from that review is fixed (see [📝 Additional Notes](#-additional-notes)). The build, `yarn package` and `yarn lint` all pass. The remaining blocking items are two template differences that came in with v2.1.1 and were not covered by the last review.
+This is a follow-up to the v2.1.0 review. Every finding from that review is fixed (see [📝 Additional Notes](#-additional-notes)). The build, `yarn package` and `yarn lint` all pass. The remaining blocking item is one template difference that came in with v2.1.1 and was not covered by the last review.
 
 ## Verdict: ❌ Changes Required
 
@@ -20,7 +20,6 @@ This is a follow-up to the v2.1.0 review. Every finding from that review is fixe
 
 ### Blocking
 
-- [ ] [C1: Lint runs with a custom setup instead of the template's ESLint config](#c1-lint-runs-with-a-custom-setup-instead-of-the-templates-eslint-config)
 - [ ] [H1: LICENSE copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
@@ -33,52 +32,6 @@ This is a follow-up to the v2.1.0 review. Every finding from that review is fixe
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🔴 Critical
-
-### C1: Lint runs with a custom setup instead of the template's ESLint config
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW (not in the last review: introduced in v2.1.1, unchanged in v2.5.0)
-- **File:** [`eslint.config.mjs:3-33`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/6f9a8f9678543770d2845a547a49ee80a278929a/eslint.config.mjs#L3-L33)
-
-**What goes wrong:** `yarn lint` checks the module's own `src/` code with different settings from every other module built on the template. Anyone who later maintains or troubleshoots the module (including the Bitfocus build) gets lint results that don't match what the template would report.
-
-**Why it happens:** The template's `eslint.config.mjs` is a single `export default generateEslintConfig({ enableTypescript: true })`. This module stores that result in a variable and appends its own entries. A block that only relaxes rules for `tests/**/*.ts` and `vitest.config.ts` is an accepted deviation. But the first extra entry also targets `src/**/*.ts` and points the parser at a separate `./tsconfig.eslint.json`, which changes how the module's source is linted.
-
-**Evidence:**
-
-```text
-eslint.config.mjs line 3
-  found:    const baseConfig = await generateEslintConfig({
-  template: export default generateEslintConfig({
-first extra entry: files ['src/**/*.ts', 'tests/**/*.ts', 'vitest.config.ts']
-                   languageOptions.parserOptions.project: './tsconfig.eslint.json'
-```
-
-**Confirm by:** compare [`eslint.config.mjs`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/6f9a8f9678543770d2845a547a49ee80a278929a/eslint.config.mjs#L9-L21) with the template's `eslint.config.mjs`.
-
-**Fix:** go back to the template's config. If the tests need relaxed rules, keep only the test-scoped override block, so `src/` is linted exactly as the template does.
-
-```js
-import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs'
-
-const baseConfig = await generateEslintConfig({
-	enableTypescript: true,
-})
-
-export default [
-	...baseConfig,
-	{
-		files: ['tests/**/*.ts', 'vitest.config.ts'],
-		rules: {
-			'@typescript-eslint/explicit-module-boundary-types': 'off',
-			'@typescript-eslint/no-floating-promises': 'off',
-			'n/no-unpublished-import': 'off',
-		},
-	},
-]
-```
 
 ## 🟠 High
 
