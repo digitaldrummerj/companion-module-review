@@ -164,7 +164,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | panasonic-av-hsw10 | v2.0.0 | 2026-10-30 | [review](panasonic-av-hsw10/review-panasonic-av-hsw10-v2.0.0-20261030-090507.md) |
 | ✅ | outline-et | v1.0.0 | 2026-10-30 | [review](outline-et/review-outline-et-v1.0.0-20261030-090507.md) |
 | ✅ | chromaq-vista | v1.0.1 | 2026-10-30 | [review](chromaq-vista/review-chromaq-vista-v1.0.1-20261030-090507.md) |
-| ⬜ | dylanmaudio-apps | v1.1.1 | 2026-10-30 | [review](dylanmaudio-apps/review-dylanmaudio-apps-v1.1.1-20261030-090507.md) |
+| ✅ | dylanmaudio-apps | v1.1.1 | 2026-10-30 | [review](dylanmaudio-apps/review-dylanmaudio-apps-v1.1.1-20261030-090507.md) |
 | ⬜ | google-nest | v1.0.1 | 2026-10-30 | [review](google-nest/review-google-nest-v1.0.1-20261030-090507.md) |
 | ✅ | integ-jnior | v1.1.0 | 2026-10-30 | [review](integ-jnior/review-integ-jnior-v1.1.0-20261030-090507.md) |
 | ⬜ | evertz-symphony | v2.0.0 | 2026-10-30 | [review](evertz-symphony/review-evertz-symphony-v2.0.0-20261030-090507.md) |
