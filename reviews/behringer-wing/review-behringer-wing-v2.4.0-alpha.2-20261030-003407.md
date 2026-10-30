@@ -33,7 +33,7 @@ This is a follow-up to the v2.4.0-alpha.1 review. Every finding from that review
 
 - [ ] [C1: Module runs on Node 22 although API 2.1 modules must use Node 26](#c1-module-runs-on-node-22-although-api-21-modules-must-use-node-26)
 - [ ] [C2: Git pre-commit hook differs from the template](#c2-git-pre-commit-hook-differs-from-the-template)
-- [ ] [H1: Send actions and the Send Mute feedback that used variables stop working after the upgrade](#h1-send-actions-and-the-send-mute-feedback-that-used-variables-stop-working-after-the-upgrade)
+- [ ] [H1: Send actions and the Send Mute feedback that used variables stop working after the upgrade](#h1-send-actions-and-the-send-mute-feedback-that-used-variables-stop-working-after-the-upgrade) — ⚠️ please validate first; we are not sure it is valid
 
 ### Non-blocking
 
@@ -155,9 +155,11 @@ lint-staged
 
 ### H1: Send actions and the Send Mute feedback that used variables stop working after the upgrade
 
-- **Source:** 🔎 compliance reviewer — verified
+- **Source:** 🔎 compliance reviewer — verified · ⚠️ needs maintainer validation
 - **Classification:** 🆕 NEW (the upgrade script that fixes alpha.1 C3)
 - **File:** [`src/upgrades.ts:76-82`](https://github.com/bitfocus/companion-module-behringer-wing/blob/cc16453a8e83e16c3d34fc765dbc6ba1b64b8ef4/src/upgrades.ts#L76-L82)
+
+> **⚠️ Please validate before changing code.** We are not sure this finding is valid. It depends on how Companion handles a dropdown whose expression value is not in its choices (assumptions [A1](#-assumptions-to-confirm) and [A2](#-assumptions-to-confirm)), which we could not confirm from the module code alone. Please run the live check under **Confirm by** below. If the upgraded button still works, tell us in Slack and we will drop H1. If it does nothing, apply the fix.
 
 **What goes wrong:** Take a user on v2.3.1 with a "Set Send Level" button that has "Use Variables for Source and Destination" ticked, From = `$(custom:src)` (resolving to `/ch/1`) and To = `$(custom:dest)` (resolving to `/bus/3`). After updating to 2.4.0, the upgrade writes the same `$(custom:dest)` expression into both "To" fields. The second "To" only lists Matrices, so `/bus/3` is not one of its choices, and Companion skips the whole action: the button does nothing. The same happens to every send action that used variables (Set/Store/Restore/Adjust/Undo Send Level, Set Send Mute) whenever the source is a Channel, Aux or Bus and the destination is a Bus or Main. A "Send Mute" feedback converted the same way never lights up. Users have to re-enter the option by hand. Send actions that never used variables are not affected.
 
