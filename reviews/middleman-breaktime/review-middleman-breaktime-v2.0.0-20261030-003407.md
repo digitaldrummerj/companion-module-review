@@ -29,10 +29,10 @@
 - [ ] [C5: package.json does not pin the Yarn version](#c5-packagejson-does-not-pin-the-yarn-version)
 - [ ] [H1: LICENSE file does not match the template](#h1-license-file-does-not-match-the-template)
 - [ ] [H2: Variables typed into the Seconds and Slot fields are never resolved, so those buttons and feedbacks stop working](#h2-variables-typed-into-the-seconds-and-slot-fields-are-never-resolved-so-those-buttons-and-feedbacks-stop-working)
+- [ ] [H3: GitHub checks workflow is indented differently from the template](#h3-github-checks-workflow-is-indented-differently-from-the-template)
 
 ### Non-blocking
 
-- [ ] [M1: GitHub checks workflow is indented differently from the template](#m1-github-checks-workflow-is-indented-differently-from-the-template)
 - [ ] [NR1: Module stays on Companion API 1.13; consider 1.14 or v2 next](#nr1-module-stays-on-companion-api-113-consider-114-or-v2-next)
 
 ## 🔴 Critical
@@ -250,9 +250,7 @@ callback: async (feedback, context) => {
 
 Companion then also re-checks those feedbacks when a referenced variable changes. Update the JSDoc comments that say the values are already parsed. The alternative is to move to API 2.x, where Companion parses them for you.
 
-## 🟡 Medium
-
-### M1: GitHub checks workflow is indented differently from the template
+### H3: GitHub checks workflow is indented differently from the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -261,6 +259,8 @@ Companion then also re-checks those feedbacks when a referenced variable changes
 **What goes wrong:** The workflow file no longer matches the template byte for byte, which makes it harder to spot real changes when the template's workflow is updated.
 
 **Why it happens:** The file indents `push:` (line 4) and the rest of the YAML with 4 spaces where the template uses 2. The content is otherwise the same.
+
+**Confirm by:** compare [`.github/workflows/companion-module-checks.yaml`](https://github.com/bitfocus/companion-module-middleman-breaktime/blob/3e58c9f80ba33b507d2067fa52ae9713852fe019/.github/workflows/companion-module-checks.yaml) with the template's file: line 4 `push:` is indented 4 spaces, the template uses 2.
 
 **Fix:** copy the template's `.github/workflows/companion-module-checks.yaml` over the module's file (and exclude `.github` from the formatter if it re-indents it).
 

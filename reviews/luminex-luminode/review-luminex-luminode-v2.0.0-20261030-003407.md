@@ -27,11 +27,11 @@
 - [ ] [C2: .gitignore is missing template entries, so packaged .tgz files show up as untracked](#c2-gitignore-is-missing-template-entries-so-packaged-tgz-files-show-up-as-untracked)
 - [ ] [C3: The pre-commit hook runs a full build on every commit](#c3-the-pre-commit-hook-runs-a-full-build-on-every-commit)
 - [ ] [C4: eslint.config.mjs adds an ignores option the template doesn't have](#c4-eslintconfigmjs-adds-an-ignores-option-the-template-doesnt-have)
+- [ ] [H1: CI workflow uses an older checkout action than the template](#h1-ci-workflow-uses-an-older-checkout-action-than-the-template)
 
 ### Non-blocking
 
 - [ ] [M1: Snapshot actions may refuse to run because the Snapshot ID check rejects every real id](#m1-snapshot-actions-may-refuse-to-run-because-the-snapshot-id-check-rejects-every-real-id)
-- [ ] [M2: CI workflow uses an older checkout action than the template](#m2-ci-workflow-uses-an-older-checkout-action-than-the-template)
 - [ ] [L1: Save current configuration to profile can send a non-text profile name](#l1-save-current-configuration-to-profile-can-send-a-non-text-profile-name)
 - [ ] [N1: Action and feedback definitions are not typed against the module schema](#n1-action-and-feedback-definitions-are-not-typed-against-the-module-schema)
 - [ ] [N2: On/off and fixed-choice options offer an expression toggle they don't need](#n2-onoff-and-fixed-choice-options-offer-an-expression-toggle-they-dont-need)
@@ -124,6 +124,22 @@ export default generateEslintConfig({
 })
 ```
 
+## 🟠 High
+
+### H1: CI workflow uses an older checkout action than the template
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** 🆕 NEW
+- **File:** [`.github/workflows/node.yaml:18`](https://github.com/bitfocus/companion-module-luminex-luminode/blob/8595c95a7dceac74abbb02a0d176d268f2240251/.github/workflows/node.yaml#L18)
+
+**What goes wrong:** The CI workflow differs from the template only in the checkout action's version.
+
+**Why it happens:** Line 18 uses `actions/checkout@v4`; the template uses `actions/checkout@v7`.
+
+**Confirm by:** open [`.github/workflows/node.yaml:18`](https://github.com/bitfocus/companion-module-luminex-luminode/blob/8595c95a7dceac74abbb02a0d176d268f2240251/.github/workflows/node.yaml#L18): `actions/checkout@v4`, where the template has `actions/checkout@v7`.
+
+**Fix:** copy the template's workflow file.
+
 ## 🟡 Medium
 
 ### M1: Snapshot actions may refuse to run because the Snapshot ID check rejects every real id
@@ -157,18 +173,6 @@ export default generateEslintConfig({
 ```ts
 regex: '^\\d+(\\.\\d{1,2})?$',
 ```
-
-### M2: CI workflow uses an older checkout action than the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml:18`](https://github.com/bitfocus/companion-module-luminex-luminode/blob/8595c95a7dceac74abbb02a0d176d268f2240251/.github/workflows/node.yaml#L18)
-
-**What goes wrong:** The CI workflow differs from the template only in the checkout action's version.
-
-**Why it happens:** Line 18 uses `actions/checkout@v4`; the template uses `actions/checkout@v7`.
-
-**Fix:** copy the template's workflow file.
 
 ## 🟢 Low
 

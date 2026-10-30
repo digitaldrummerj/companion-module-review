@@ -17,7 +17,7 @@
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | When the user aborts a button's running actions, Companion aborts `context.signal` for those action callbacks, so a module that honours the signal would cancel its HTTP request | The `signal` doc comment in `@companion-module/base` 2.1.3 `action.d.ts` ("aborts when the result of this execution is no longer needed (eg the user aborted the running actions)"); the Companion host side was not checked | [M2](#m2-cancelled-button-actions-still-start-or-stop-the-service) |
+| A1 | When the user aborts a button's running actions, Companion aborts `context.signal` for those action callbacks, so a module that honours the signal would cancel its HTTP request | The `signal` doc comment in `@companion-module/base` 2.1.3 `action.d.ts` ("aborts when the result of this execution is no longer needed (eg the user aborted the running actions)"); the Companion host side was not checked | [M1](#m1-cancelled-button-actions-still-start-or-stop-the-service) |
 | A2 | Companion passes a checkbox's expression-mode result to the callback without coercing it, so an expression that returns `1` or `"true"` does not arrive as the boolean `true` | The general 2.x expression rules; checkbox coercion was not confirmed in the Companion host source | [L5](#l5-checkbox-and-fixed-choice-options-accept-expressions-they-do-not-need) |
 
 ## 📋 Issues
@@ -27,13 +27,13 @@
 - [ ] [C1: `.prettierignore` does not match the template](#c1-prettierignore-does-not-match-the-template)
 - [ ] [C2: Module is declared to run on Node 22 instead of the Node 26 runtime API 2.1 expects](#c2-module-is-declared-to-run-on-node-22-instead-of-the-node-26-runtime-api-21-expects)
 - [ ] [H1: LICENSE file does not match the template](#h1-license-file-does-not-match-the-template)
+- [ ] [H2: Module checks workflow differs from the template](#h2-module-checks-workflow-differs-from-the-template)
 
 ### Non-blocking
 
-- [ ] [M1: Module checks workflow differs from the template](#m1-module-checks-workflow-differs-from-the-template)
-- [ ] [M2: Cancelled button actions still start or stop the service](#m2-cancelled-button-actions-still-start-or-stop-the-service)
-- [ ] [M3: Input level meter is drawn with the discouraged bitmap feedback type](#m3-input-level-meter-is-drawn-with-the-discouraged-bitmap-feedback-type)
-- [ ] [M4: Release workflow is missing, so published releases are not packaged by CI](#m4-release-workflow-is-missing-so-published-releases-are-not-packaged-by-ci)
+- [ ] [M1: Cancelled button actions still start or stop the service](#m1-cancelled-button-actions-still-start-or-stop-the-service)
+- [ ] [M2: Input level meter is drawn with the discouraged bitmap feedback type](#m2-input-level-meter-is-drawn-with-the-discouraged-bitmap-feedback-type)
+- [ ] [M3: Release workflow is missing, so published releases are not packaged by CI](#m3-release-workflow-is-missing-so-published-releases-are-not-packaged-by-ci)
 - [ ] [L1: Disabling the connection while it is still starting can leave the status poll running](#l1-disabling-the-connection-while-it-is-still-starting-can-leave-the-status-poll-running)
 - [ ] [L2: Speaker language lamp and variable can stay on the old language for up to 5 minutes on older servers](#l2-speaker-language-lamp-and-variable-can-stay-on-the-old-language-for-up-to-5-minutes-on-older-servers)
 - [ ] [L3: When the language list cannot be loaded, every status refresh fetches it again and waits for it](#l3-when-the-language-list-cannot-be-loaded-every-status-refresh-fetches-it-again-and-waits-for-it)
@@ -129,9 +129,7 @@ Found:             Copyright (c) 2026 ChurchTranslator.AI
 
 **Fix:** replace `LICENSE` with the template's file, unchanged.
 
-## 🟡 Medium
-
-### M1: Module checks workflow differs from the template
+### H2: Module checks workflow differs from the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -141,9 +139,13 @@ Found:             Copyright (c) 2026 ChurchTranslator.AI
 
 **Why it happens:** The file was rewritten by hand: a 5-line comment header was added, the trigger became `on: [push, pull_request]` (template: `on: push:`), the job was renamed `module-checks` (template: `check` with `name: Check module`), and the `if: ${{ !contains(github.repository, 'companion-module-template-') }}` guard and `permissions: packages: read` were dropped.
 
+**Confirm by:** compare [`.github/workflows/companion-module-checks.yaml`](https://github.com/bitfocus/companion-module-churchtranslator-api/blob/0692b6d1abfc3bc8ee8a542fd65e1f84f1c6a3ac/.github/workflows/companion-module-checks.yaml) with the template's file.
+
 **Fix:** replace the file with the template's `.github/workflows/companion-module-checks.yaml`. Uncommenting `upload-artifact: true` there is fine.
 
-### M2: Cancelled button actions still start or stop the service
+## 🟡 Medium
+
+### M1: Cancelled button actions still start or stop the service
 
 - **Source:** 🔎 compliance reviewer
 - **Classification:** 🆕 NEW
@@ -163,7 +165,7 @@ callback: async (_action, context) =>
 signal: AbortSignal.any([AbortSignal.timeout(this.timeoutMs), signal].filter(Boolean)),
 ```
 
-### M3: Input level meter is drawn with the discouraged bitmap feedback type
+### M2: Input level meter is drawn with the discouraged bitmap feedback type
 
 - **Source:** 🔎 compliance reviewer
 - **Classification:** 🆕 NEW
@@ -175,7 +177,7 @@ signal: AbortSignal.any([AbortSignal.timeout(this.timeoutMs), signal].filter(Boo
 
 **Fix:** plan a move to a value feedback that returns the level (or segment count and mode) and render it with a composite element or layered preset. Keeping the advanced feedback for this release is fine.
 
-### M4: Release workflow is missing, so published releases are not packaged by CI
+### M3: Release workflow is missing, so published releases are not packaged by CI
 
 - **Source:** 🤖 validate-template (FILE-MISSING)
 - **Classification:** 🆕 NEW
