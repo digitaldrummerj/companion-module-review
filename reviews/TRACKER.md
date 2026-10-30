@@ -142,3 +142,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | bom-api | v2.0.0 | 2026-10-30 | [review](bom-api/review-bom-api-v2.0.0-20261030-003407.md) |
 | ✅ | utopianacademy-deckboy | v1.0.4 | 2026-10-30 | [review](utopianacademy-deckboy/review-utopianacademy-deckboy-v1.0.4-20261030-003407.md) |
 | ✅ | devcore-mixingstation | v2.0.2 | 2026-10-30 | [review](devcore-mixingstation/review-devcore-mixingstation-v2.0.2-20261030-003407.md) |
+| ⬜ | cedar-dns8d | v2.0.0 | 2026-10-30 | [review](cedar-dns8d/review-cedar-dns8d-v2.0.0-20261030-003407.md) |
