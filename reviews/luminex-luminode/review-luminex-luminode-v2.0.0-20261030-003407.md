@@ -23,17 +23,16 @@
 
 ### Blocking
 
-- [ ] [C1: .gitattributes has extra comment lines not in the template](#c1-gitattributes-has-extra-comment-lines-not-in-the-template)
-- [ ] [C2: .gitignore is missing template entries, so packaged .tgz files show up as untracked](#c2-gitignore-is-missing-template-entries-so-packaged-tgz-files-show-up-as-untracked)
-- [ ] [C3: The pre-commit hook runs a full build on every commit](#c3-the-pre-commit-hook-runs-a-full-build-on-every-commit)
+- [ ] [C1: .gitignore is missing template entries, so packaged .tgz files show up as untracked](#c1-gitignore-is-missing-template-entries-so-packaged-tgz-files-show-up-as-untracked)
+- [ ] [C2: The pre-commit hook runs a full build on every commit](#c2-the-pre-commit-hook-runs-a-full-build-on-every-commit)
 - [ ] [H1: CI workflow uses an older checkout action than the template](#h1-ci-workflow-uses-an-older-checkout-action-than-the-template)
+- [ ] [H2: Action and feedback definitions are not typed against the module schema](#h2-action-and-feedback-definitions-are-not-typed-against-the-module-schema)
 
 ### Non-blocking
 
 - [ ] [M1: Snapshot actions may refuse to run because the Snapshot ID check rejects every real id](#m1-snapshot-actions-may-refuse-to-run-because-the-snapshot-id-check-rejects-every-real-id)
 - [ ] [L1: Save current configuration to profile can send a non-text profile name](#l1-save-current-configuration-to-profile-can-send-a-non-text-profile-name)
-- [ ] [N1: Action and feedback definitions are not typed against the module schema](#n1-action-and-feedback-definitions-are-not-typed-against-the-module-schema)
-- [ ] [N2: On/off and fixed-choice options offer an expression toggle they don't need](#n2-onoff-and-fixed-choice-options-offer-an-expression-toggle-they-dont-need)
+- [ ] [N1: On/off and fixed-choice options offer an expression toggle they don't need](#n1-onoff-and-fixed-choice-options-offer-an-expression-toggle-they-dont-need)
 
 ### Notes
 
@@ -41,26 +40,7 @@
 
 ## 🔴 Critical
 
-### C1: .gitattributes has extra comment lines not in the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.gitattributes:1-3`](https://github.com/bitfocus/companion-module-luminex-luminode/blob/8595c95a7dceac74abbb02a0d176d268f2240251/.gitattributes#L1-L3)
-
-**What goes wrong:** The module's config files must match its API level's template so that later troubleshooting can assume the standard setup. `.gitattributes` is new in this release and differs from the template.
-
-**Why it happens:** Two comment lines were added above the template's single rule.
-
-- **Template expects:** a single line, `* text=auto eol=lf`.
-- **Found:** `# Normalize line endings: store as LF in the repo, check out LF on all platforms.` and `# Keeps prettier (endOfLine: lf) from flagging CRLF on Windows checkouts.`, then `* text=auto eol=lf`.
-
-**Fix:** delete the two comment lines so the file matches the template exactly.
-
-```text
-* text=auto eol=lf
-```
-
-### C2: .gitignore is missing template entries, so packaged .tgz files show up as untracked
+### C1: .gitignore is missing template entries, so packaged .tgz files show up as untracked
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -83,7 +63,7 @@ DEBUG-*
 /.vscode
 ```
 
-### C3: The pre-commit hook runs a full build on every commit
+### C2: The pre-commit hook runs a full build on every commit
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -117,6 +97,32 @@ lint-staged
 **Confirm by:** open [`.github/workflows/node.yaml:18`](https://github.com/bitfocus/companion-module-luminex-luminode/blob/8595c95a7dceac74abbb02a0d176d268f2240251/.github/workflows/node.yaml#L18): `actions/checkout@v4`, where the template has `actions/checkout@v7`.
 
 **Fix:** copy the template's workflow file.
+
+### H2: Action and feedback definitions are not typed against the module schema
+
+- **Source:** 🔎 compliance reviewer
+- **Classification:** 🆕 NEW
+- **File:** [`src/main.ts:10-13`](https://github.com/bitfocus/companion-module-luminex-luminode/blob/8595c95a7dceac74abbb02a0d176d268f2240251/src/main.ts#L10-L13)
+
+**What goes wrong:** Users see no difference. For the maintainer, a typo in an action option id or a preset's options (for example `snapshot_id` or `pb_id`) is not caught at build time.
+
+**Why it happens:** The module's type declaration (`ModuleInstanceTypes`) lists only `config` and `secrets`. It has no action, feedback or variable schemas, and the action and feedback files still use the untyped `CompanionActionDefinition` / `CompanionFeedbackDefinition`.
+
+**Evidence:**
+
+```ts
+// src/main.ts:10-13
+export interface ModuleInstanceTypes extends InstanceTypes {
+	config: config
+	secrets: secrets
+}
+// src/actions.ts:20
+export function getActions(device: Device): { [id in ActionId]: CompanionActionDefinition } {
+```
+
+**Confirm by:** open [`src/main.ts:10-13`](https://github.com/bitfocus/companion-module-luminex-luminode/blob/8595c95a7dceac74abbb02a0d176d268f2240251/src/main.ts#L10-L13) and [`src/actions.ts:20`](https://github.com/bitfocus/companion-module-luminex-luminode/blob/8595c95a7dceac74abbb02a0d176d268f2240251/src/actions.ts#L20); `ModuleInstanceTypes` has no `actions`, `feedbacks` or `variables` entries, and the action and feedback lists use the untyped definitions.
+
+**Fix:** add action, feedback and variable schemas to `ModuleInstanceTypes`, and type `getActions` / `getFeedbacks` / `getPresets` with `CompanionActionDefinitions<ModuleInstanceTypes>` and the matching feedback and preset types.
 
 ## 🟡 Medium
 
@@ -172,19 +178,7 @@ const name = String(action.options.name ?? '')
 
 ## 💡 Nice to Have
 
-### N1: Action and feedback definitions are not typed against the module schema
-
-- **Source:** 🔎 compliance reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`src/main.ts:10-13`](https://github.com/bitfocus/companion-module-luminex-luminode/blob/8595c95a7dceac74abbb02a0d176d268f2240251/src/main.ts#L10-L13)
-
-**What goes wrong:** Users see no difference. For the maintainer, a typo in an action option id or a preset's options (for example `snapshot_id` or `pb_id`) is not caught at build time.
-
-**Why it happens:** The module's type declaration (`ModuleInstanceTypes`) lists only `config` and `secrets`. It has no action, feedback or variable schemas, and the action and feedback files still use the untyped `CompanionActionDefinition` / `CompanionFeedbackDefinition`.
-
-**Fix:** add action, feedback and variable schemas to `ModuleInstanceTypes`, and type `getActions` / `getFeedbacks` / `getPresets` with `CompanionActionDefinitions<ModuleInstanceTypes>` and the matching feedback and preset types.
-
-### N2: On/off and fixed-choice options offer an expression toggle they don't need
+### N1: On/off and fixed-choice options offer an expression toggle they don't need
 
 - **Source:** 🔎 compliance reviewer
 - **Classification:** 🆕 NEW
