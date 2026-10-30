@@ -137,3 +137,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | auri-tx2n | v2.0.0 | 2026-10-30 | [review](auri-tx2n/review-auri-tx2n-v2.0.0-20261030-003407.md) |
 | ⬜ | highpass-pptimer | v1.1.1 | 2026-10-30 | [review](highpass-pptimer/review-highpass-pptimer-v1.1.1-20261030-003407.md) |
 | ⬜ | jozeemedia-jcounter | v3.0.0 | 2026-10-30 | [review](jozeemedia-jcounter/review-jozeemedia-jcounter-v3.0.0-20261030-003407.md) |
+| ✅ | syncthingfoundation-syncthing | v1.0.1 | 2026-10-30 | [review](syncthingfoundation-syncthing/review-syncthingfoundation-syncthing-v1.0.1-20261030-003407.md) |
