@@ -168,3 +168,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | google-nest | v1.0.1 | 2026-10-30 | [review](google-nest/review-google-nest-v1.0.1-20261030-090507.md) |
 | ⬜ | integ-jnior | v1.1.0 | 2026-10-30 | [review](integ-jnior/review-integ-jnior-v1.1.0-20261030-090507.md) |
 | ⬜ | evertz-symphony | v2.0.0 | 2026-10-30 | [review](evertz-symphony/review-evertz-symphony-v2.0.0-20261030-090507.md) |
+| ⬜ | generic-swp02 | v2.0.0 | 2026-10-30 | [review](generic-swp02/review-generic-swp02-v2.0.0-20261030-090507.md) |
