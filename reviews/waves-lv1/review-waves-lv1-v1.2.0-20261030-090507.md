@@ -19,19 +19,16 @@ This is a follow-up to the v1.0.3 review. v1.2.0 adds eMotion LV1 v17 support: M
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | Companion restarts a crashed module process, so after the crash the user sees the connection go to an error/restarting state rather than Companion itself going down | General knowledge of Companion's process-per-connection supervision; `@companion-module/base` 1.12.1 installs no `uncaughtException`/`unhandledRejection` handler (checked). Companion's host code not checked | [H1](#h1-turning-off-read-io-patch-or-changing-the-lv1-ip-while-the-desk-is-unreachable-crashes-the-module) |
-| A2 | The module's Node runtime uses the default `--unhandled-rejections=throw`, so an unhandled promise rejection (the handshake-window variant of H1) also ends the module process | Node 22 default; base 1.12.1 registers no `unhandledRejection` handler. How Companion launches the module process not checked | [H1](#h1-turning-off-read-io-patch-or-changing-the-lv1-ip-while-the-desk-is-unreachable-crashes-the-module) |
-| A3 | Companion does not redraw a connection's feedbacks when the module clears its internal state; only `checkFeedbacks()` (or possibly a later `setFeedbackDefinitions`) re-runs the feedback callbacks | How v1 feedback re-evaluation is generally triggered; not confirmed from the base package whether the host rechecks feedbacks after `setFeedbackDefinitions` | [L1](#l1-phantom-polarity-route-and-io-patch-buttons-can-keep-showing-the-previous-desks-state-after-switching-lv1) |
-| A4 | When the LV1 restarts on a new TCP port after a mixer-configuration change, the old port stops accepting connections | The module's own comment on `rediscoverPort()` ("the LV1 restarts and gets a fresh port") | [L2](#l2-io-patch-variables-freeze-after-the-lv1-comes-back-on-a-new-port) |
+| A1 | Companion does not redraw a connection's feedbacks when the module clears its internal state; only `checkFeedbacks()` (or possibly a later `setFeedbackDefinitions`) re-runs the feedback callbacks | How v1 feedback re-evaluation is generally triggered; not confirmed from the base package whether the host rechecks feedbacks after `setFeedbackDefinitions` | [L1](#l1-phantom-polarity-route-and-io-patch-buttons-can-keep-showing-the-previous-desks-state-after-switching-lv1) |
+| A2 | When the LV1 restarts on a new TCP port after a mixer-configuration change, the old port stops accepting connections | The module's own comment on `rediscoverPort()` ("the LV1 restarts and gets a fresh port") | [L2](#l2-io-patch-variables-freeze-after-the-lv1-comes-back-on-a-new-port) |
 
 ## 📋 Issues
 
 ### Blocking
 
 - [ ] [C1: `.prettierignore` differs from the template (`/LICENSE` instead of `/LICENSE.md`)](#c1-prettierignore-differs-from-the-template-license-instead-of-licensemd)
-- [ ] [H1: Turning off Read I/O patch or changing the LV1 IP while the desk is unreachable crashes the module](#h1-turning-off-read-io-patch-or-changing-the-lv1-ip-while-the-desk-is-unreachable-crashes-the-module)
-- [ ] [H2: `.github/workflows/companion-module-checks.yaml` differs from the template](#h2-githubworkflowscompanion-module-checksyaml-differs-from-the-template)
-- [ ] [H3: `.github/workflows/node.yaml` differs from the template](#h3-githubworkflowsnodeyaml-differs-from-the-template)
+- [ ] [H1: `.github/workflows/companion-module-checks.yaml` differs from the template](#h1-githubworkflowscompanion-module-checksyaml-differs-from-the-template)
+- [ ] [H2: `.github/workflows/node.yaml` differs from the template](#h2-githubworkflowsnodeyaml-differs-from-the-template)
 
 ### Non-blocking
 
@@ -73,98 +70,7 @@ This is a follow-up to the v1.0.3 review. v1.2.0 adds eMotion LV1 v17 support: M
 
 ## 🟠 High
 
-### H1: Turning off Read I/O patch or changing the LV1 IP while the desk is unreachable crashes the module
-
-- **Source:** 🔎 protocol reviewer + QA reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/main.ts:361-366`](https://github.com/bitfocus/companion-module-waves-lv1/blob/7711f3a5dec1971ecadd0e87c44b05d8a17f7274/src/main.ts#L361-L366), [`src/main.ts:190-207`](https://github.com/bitfocus/companion-module-waves-lv1/blob/7711f3a5dec1971ecadd0e87c44b05d8a17f7274/src/main.ts#L190-L207), [`src/osc-tcp.ts:69-71`](https://github.com/bitfocus/companion-module-waves-lv1/blob/7711f3a5dec1971ecadd0e87c44b05d8a17f7274/src/osc-tcp.ts#L69-L71), [`src/osc-tcp.ts:101-118`](https://github.com/bitfocus/companion-module-waves-lv1/blob/7711f3a5dec1971ecadd0e87c44b05d8a17f7274/src/osc-tcp.ts#L101-L118)
-
-**What goes wrong:** A user ticks the new "Read I/O patch (experimental, eMotion LV1 v17+)" checkbox. The LV1 is then off, rebooting or on the wrong IP, so both connections keep retrying. The user saves the connection settings, for example correcting "LV1 IP (override)" from 192.168.1.50 to 192.168.1.60, or unticking "Read I/O patch". About 3 s later the module process dies with "Unhandled 'error' event", and the connection goes to a crashed/restarting state instead of using the new settings. If the old address does answer, the stray I/O client stays connected instead: the LV1 shows an extra "Companion I/O" recorder connection that nothing can close until the module restarts. The same crash happens if the settings are saved during the I/O client's 3 s handshake wait. Users who never tick "Read I/O patch" are not affected by the crash.
-
-**Why it happens:** When the settings change, the module stops the old I/O client by removing all of its event listeners (including its only `'error'` listener) and then disconnecting it. Disconnecting destroys the current socket, but it does not cancel the "reconnect in 3 s" timer queued by the previous failed attempt, and `connect()` resets the "destroyed" flag. When that timer fires, the old client opens a new socket to the old address. When that connect fails, the client emits `'error'` with no listener attached, and Node treats that as an uncaught exception. The reconnect timer was already there; the second client and the listener removal are new in this release, and together they turn it into a crash.
-
-**Evidence:**
-
-```ts
-// src/main.ts:361-366
-	private stopIoPatchClient(): void {
-		if (!this.ioOsc) return
-		this.ioOsc.removeAllListeners()
-		this.ioOsc.disconnect()
-		this.ioOsc = null
-	}
-// src/main.ts:190-207 (configUpdated)
-		const restart =
-			this.config.selected !== config.selected ||
-			this.config.host !== config.host ||
-			this.config.port !== config.port ||
-			!!this.config.readIoPatch !== !!config.readIoPatch
-		...
-		if (restart) {
-			if (this.osc) {
-				this.osc.disconnect()
-				this.osc = null
-			}
-			this.stopIoPatchClient()
-```
-
-```ts
-// src/osc-tcp.ts:69-71, 89, 101-118
-	connect(): void {
-		if (this.socket) return
-		this.destroyed = false
-...
-		sock.on('error', (err) => this.emit('error', err))
-...
-		sock.on('close', (hadError) => {
-			this.connected = false
-			this.socket = null
-			this.rxBuf = Buffer.alloc(0)
-			this.emit('close', { hadError })
-			if (this.autoReconnect && !this.destroyed) {
-				setTimeout(() => this.connect(), this.reconnectMs)
-			}
-		})
-...
-	disconnect(): void {
-		this.destroyed = true
-		this.autoReconnect = false
-		if (this.socket) this.socket.destroy()
-	}
-```
-
-```text
-// verifier repro against the built dist/osc-tcp.js (127.0.0.1:1, reconnectMs 300; stop called while the reconnect timer is pending)
-err ECONNREFUSED
-stopping during reconnect wait
-node:events:497
-      throw er; // Unhandled 'error' event
-Error: connect ECONNREFUSED 127.0.0.1:1
-```
-
-**Confirm by:** open [`src/osc-tcp.ts:107`](https://github.com/bitfocus/companion-module-waves-lv1/blob/7711f3a5dec1971ecadd0e87c44b05d8a17f7274/src/osc-tcp.ts#L107): the reconnect `setTimeout` is never stored or cleared, and `connect()` at [`src/osc-tcp.ts:71`](https://github.com/bitfocus/companion-module-waves-lv1/blob/7711f3a5dec1971ecadd0e87c44b05d8a17f7274/src/osc-tcp.ts#L71) sets `destroyed` back to `false`. Then open [`src/main.ts:363`](https://github.com/bitfocus/companion-module-waves-lv1/blob/7711f3a5dec1971ecadd0e87c44b05d8a17f7274/src/main.ts#L363), where `removeAllListeners()` drops the only `'error'` listener before `disconnect()`.
-
-**Fix:** make `disconnect()` cancel every pending timer, and never leave a discarded client without an `'error'` listener. Store the reconnect timer and clear it in `disconnect()`, have the timer callback return early once the client is destroyed, and clear the handshake wait timer too. The same fix also stops the main connection from reconnecting to the old address after a settings change.
-
-```ts
-// osc-tcp.ts
-private reconnectTimer: NodeJS.Timeout | null = null
-// in the 'close' handler
-this.reconnectTimer = setTimeout(() => {
-	this.reconnectTimer = null
-	if (!this.destroyed) this.connect()
-}, this.reconnectMs)
-// in disconnect()
-if (this.reconnectTimer) clearTimeout(this.reconnectTimer)
-this.reconnectTimer = null
-
-// main.ts stopIoPatchClient()
-this.ioOsc.removeAllListeners()
-this.ioOsc.on('error', () => {}) // a late socket error must never become an unhandled 'error'
-this.ioOsc.disconnect()
-```
-
-### H2: `.github/workflows/companion-module-checks.yaml` differs from the template
+### H1: `.github/workflows/companion-module-checks.yaml` differs from the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW to this review — the file is unchanged since v1.0.0; the prior reviews did not check it
@@ -187,7 +93,7 @@ this.ioOsc.disconnect()
 
 **Fix:** copy the template file exactly.
 
-### H3: `.github/workflows/node.yaml` differs from the template
+### H2: `.github/workflows/node.yaml` differs from the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW to this review — the file is unchanged since v1.0.0; the prior reviews did not check it
