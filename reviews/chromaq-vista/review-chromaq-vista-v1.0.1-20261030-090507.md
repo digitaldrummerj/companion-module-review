@@ -54,7 +54,7 @@
 - **Classification:** 🆕 NEW
 - **File:** [`src/feedbacks.ts:4-9`](https://github.com/bitfocus/companion-module-chromaq-vista/blob/9a423738cbcb75c9b4ff8a0519546c7259fdc424/src/feedbacks.ts#L4-L9), [`src/core/client.ts:36-38`](https://github.com/bitfocus/companion-module-chromaq-vista/blob/9a423738cbcb75c9b4ff8a0519546c7259fdc424/src/core/client.ts#L36-L38)
 
-**What goes wrong:** This is the module's first release. When a user adds a Chroma-Q Vista connection and opens the Feedbacks list on a button, the list is empty. A button such as the **Play** preset (Console > Playback Keys) or a **Console: Playback button** action can't change colour to show whether a cuelist is playing, a fader is up, or the connection is OK. The module only sends commands, so users get no state on their buttons at all. A first release needs at least one feedback.
+**What goes wrong:** This is the module's first release. When a user adds a Chroma-Q Vista connection and opens the Feedbacks list on a button, the list is empty. A button such as the **Play** preset (Console > Playback Keys) or a **Console: Playback button** action can't change colour to show whether a cuelist is playing or a fader is up. The module only sends commands, so users get no state on their buttons at all. A first release needs at least one feedback.
 
 **Why it happens:** The feedback list is declared as an empty schema and registered as an empty set of definitions. The module does receive OSC messages from Vista on its **Listen Port**, but it only writes them to the log (when verbose logging is on) and never stores them as state that a feedback could show. The v1.0.0 review did not raise this.
 
@@ -81,10 +81,7 @@ export function UpdateFeedbacks(self: ModuleInstance): void {
 
 **Confirm by:** open [`src/feedbacks.ts:7`](https://github.com/bitfocus/companion-module-chromaq-vista/blob/9a423738cbcb75c9b4ff8a0519546c7259fdc424/src/feedbacks.ts#L7), where the definitions object is `{}`. Then search `src/` for `setFeedbackDefinitions` / `checkFeedbacks`: the only hit is `feedbacks.ts:8`.
 
-**Fix:** add at least one boolean feedback before the first release.
-
-- The simplest is state the module already has, for example a "Connection OK" feedback driven by the `VistaClient` status events.
-- Better: keep the incoming Vista OSC messages (playback and fader state) in a small state store, expose boolean feedbacks for them, and call `self.checkFeedbacks('<id>')` when that state changes. Then attach those feedbacks to the Playback Keys presets.
+**Fix:** add at least one boolean feedback for device state before the first release. Keep the incoming Vista OSC messages (playback and fader state) in a small state store, expose boolean feedbacks for them, and call `self.checkFeedbacks('<id>')` when that state changes. Then attach those feedbacks to the Playback Keys presets.
 
 ---
 
