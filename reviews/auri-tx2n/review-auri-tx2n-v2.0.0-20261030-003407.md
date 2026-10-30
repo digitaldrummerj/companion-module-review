@@ -16,72 +16,16 @@
 
 ### Blocking
 
-- [ ] [C1: ESLint config adds a typescript-eslint import and type-check override the template does not have](#c1-eslint-config-adds-a-typescript-eslint-import-and-type-check-override-the-template-does-not-have)
-
-### Non-blocking
-
-- [ ] [M1: CI workflow drifts from the template](#m1-ci-workflow-drifts-from-the-template)
-- [ ] [M2: Release packages skip the shared Bitfocus module checks](#m2-release-packages-skip-the-shared-bitfocus-module-checks)
+- [ ] [H1: CI workflow drifts from the template](#h1-ci-workflow-drifts-from-the-template)
+- [ ] [H2: Release packages skip the shared Bitfocus module checks](#h2-release-packages-skip-the-shared-bitfocus-module-checks)
 
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
 
-## 🔴 Critical
+## 🟠 High
 
-### C1: ESLint config adds a typescript-eslint import and type-check override the template does not have
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`eslint.config.mjs:1-22`](https://github.com/bitfocus/companion-module-auri-tx2n/blob/7332232c6f5c1ea199d182abd403b7b276e2b3b5/eslint.config.mjs#L1-L22)
-
-**What goes wrong:** The module's lint setup no longer matches the official TypeScript template. Anyone troubleshooting lint or build problems later (Bitfocus maintainers, other contributors) has to work out why this module behaves differently from every other module on the same template.
-
-**Why it happens:** This release imports `typescript-eslint` directly and adds a config block that spreads `tseslint.configs.disableTypeChecked` over `vitest.config.ts`, because that file is not covered by `tsconfig.json`. The template's ESLint config is only the shared `generateEslintConfig` call. A test-scoped override that only sets `files` and `rules` (like the second block here, which turns off `n/no-unpublished-import` for the tests) is an accepted deviation; the extra import and the `disableTypeChecked` block are not.
-
-**Evidence:** found at `eslint.config.mjs` line 2 `import tseslint from 'typescript-eslint'`, where the template has nothing. The template expects:
-
-```js
-import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs'
-export default generateEslintConfig({ enableTypescript: true })
-```
-
-**Confirm by:** open [`eslint.config.mjs:2`](https://github.com/bitfocus/companion-module-auri-tx2n/blob/7332232c6f5c1ea199d182abd403b7b276e2b3b5/eslint.config.mjs#L2) and [`eslint.config.mjs:10-14`](https://github.com/bitfocus/companion-module-auri-tx2n/blob/7332232c6f5c1ea199d182abd403b7b276e2b3b5/eslint.config.mjs#L10-L14).
-
-**Fix:** remove the `typescript-eslint` import and the `disableTypeChecked` block. Keep only the test-scoped `files` / `rules` override. To lint `vitest.config.ts` with type information, add it to `tsconfig.json`'s `include` instead (widening `tsconfig.json` for tests is an accepted deviation).
-
-```js
-import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs'
-
-const baseConfig = await generateEslintConfig({
-	enableTypescript: true,
-})
-
-export default [
-	...baseConfig,
-	{
-		files: ['src/__tests__/**/*.ts', 'vitest.config.ts'],
-		rules: {
-			'n/no-unpublished-import': 'off',
-		},
-	},
-]
-```
-
-```json
-{
-	"extends": "./tsconfig.build.json",
-	"include": ["src/**/*.ts", "vitest.config.ts"],
-	"exclude": ["node_modules/**"],
-	"compilerOptions": {
-		"types": ["node"]
-	}
-}
-```
-
-## 🟡 Medium
-
-### M1: CI workflow drifts from the template
+### H1: CI workflow drifts from the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -91,9 +35,13 @@ export default [
 
 **Why it happens:** Compared with the template, this release adds a top-level `permissions: contents: read`, drops `persist-credentials: false` from the checkout step, uses `actions/setup-node@v7` where the template pins `@v6`, removes the template-repository prepare step, and enables a test job that runs `yarn test:coverage` and uploads to `codecov/codecov-action@v7`. CI still runs on Node 26.x, which matches the `node26` runtime.
 
+**Evidence:** `.github/workflows/node.yaml` line 11 `permissions:` (not in the template), lines 24 and 55 `uses: actions/setup-node@v7` (template: `@v6`), line 68 `yarn test:coverage` and line 72 `uses: codecov/codecov-action@v7`.
+
+**Confirm by:** compare [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-auri-tx2n/blob/7332232c6f5c1ea199d182abd403b7b276e2b3b5/.github/workflows/node.yaml) with the template's `.github/workflows/node.yaml`.
+
 **Fix:** start from the template's `node.yaml`, keep `persist-credentials: false` and the template's action versions, and enable the template's commented-out `test` job if you want tests in CI.
 
-### M2: Release packages skip the shared Bitfocus module checks
+### H2: Release packages skip the shared Bitfocus module checks
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -102,6 +50,10 @@ export default [
 **What goes wrong:** When a GitHub release is published, the package attached to it is built by the module's own steps instead of Bitfocus's shared module-checks workflow, so it skips the checks every other module's release goes through and is a `--dev` (unminified) build.
 
 **Why it happens:** The template's `release.yaml` calls `bitfocus/actions/.github/workflows/module-checks.yaml@main` to build and check the package, then an `attach` job downloads that artifact and uploads it to the release. This release rewrites the workflow into one job that checks out the tag, runs `yarn package --dev` (or `--dev --prerelease`) itself and uploads `./*.tgz`.
+
+**Evidence:** `.github/workflows/release.yaml` lines 51 and 53 run `yarn package --dev --prerelease` / `yarn package --dev`, and line 63 uploads `./*.tgz`. There is no call to `bitfocus/actions/.github/workflows/module-checks.yaml@main`.
+
+**Confirm by:** open [`.github/workflows/release.yaml:51-63`](https://github.com/bitfocus/companion-module-auri-tx2n/blob/7332232c6f5c1ea199d182abd403b7b276e2b3b5/.github/workflows/release.yaml#L51-L63) and compare it with the template's `.github/workflows/release.yaml`.
 
 **Fix:** replace `.github/workflows/release.yaml` with the template's version.
 
