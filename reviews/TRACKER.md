@@ -148,3 +148,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | philips-sicp | v2.0.0 | 2026-10-30 | [review](philips-sicp/review-philips-sicp-v2.0.0-20261030-003407.md) |
 | ⬜ | allenheath-dlive | v1.1.0 | 2026-10-30 | [review](allenheath-dlive/review-allenheath-dlive-v1.1.0-20261030-003407.md) |
 | ⬜ | middleman-breaktime | v2.0.0 | 2026-10-30 | [review](middleman-breaktime/review-middleman-breaktime-v2.0.0-20261030-003407.md) |
+| ✅ | presentationtools-aps | v2.11.0 | 2026-10-30 | [review](presentationtools-aps/review-presentationtools-aps-v2.11.0-20261030-003407.md) |
