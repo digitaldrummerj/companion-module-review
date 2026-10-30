@@ -154,3 +154,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | luminex-luminode | v2.0.0 | 2026-10-30 | [review](luminex-luminode/review-luminex-luminode-v2.0.0-20261030-003407.md) |
 | ⬜ | qsys-remote-control | v4.0.1 | 2026-10-30 | [review](qsys-remote-control/review-qsys-remote-control-v4.0.1-20261030-090507.md) |
 | ⬜ | livelogix-cadence | v1.4.0 | 2026-10-30 | [review](livelogix-cadence/review-livelogix-cadence-v1.4.0-20261030-090507.md) |
+| ⬜ | generic-ptpv2-client | v2.1.0 | 2026-10-30 | [review](generic-ptpv2-client/review-generic-ptpv2-client-v2.1.0-20261030-090507.md) |
