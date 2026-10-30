@@ -26,7 +26,6 @@ This release adds Time Glide / Time Jump actions, source-neutral TCR (QLab, Mitt
 
 ### Blocking
 
-- [ ] [C1: ESLint config changes how src is linted, unlike the template](#c1-eslint-config-changes-how-src-is-linted-unlike-the-template)
 - [ ] [H1: LICENSE copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
 
 ### Non-blocking
@@ -41,49 +40,6 @@ This release adds Time Glide / Time Jump actions, source-neutral TCR (QLab, Mitt
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🔴 Critical
-
-### C1: ESLint config changes how src is linted, unlike the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** ⚠️ Pre-existing — not in this release's diff (the file was last changed in v2.1.1, `a542418`)
-- **File:** [`eslint.config.mjs:3`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/c51c0b6cdb5fa81404c08779497e5453d7c87f76/eslint.config.mjs#L3)
-
-**What goes wrong:** Users see no effect. The module's lint setup is not the template's, so a Bitfocus maintainer who runs `yarn lint` on this module gets different rules for `src/` than on every other TypeScript module. That makes later troubleshooting harder.
-
-**Why it happens:** The template's `eslint.config.mjs` is a single `export default generateEslintConfig({ enableTypescript: true })`. Overrides scoped to test files are accepted on top of it. This module also adds a block that points the TypeScript parser at `./tsconfig.eslint.json` for `src/**/*.ts`, so it changes how the shipped source is linted, not just the tests.
-
-**Evidence:**
-
-```text
-line 3: found 'const baseConfig = await generateEslintConfig({'
-        template 'export default generateEslintConfig({'
-extra entry: files ['src/**/*.ts', 'tests/**/*.ts', 'vitest.config.ts'] → languageOptions.parserOptions.project: './tsconfig.eslint.json'
-```
-
-**Fix:** go back to the template's form for `src/` and keep only overrides that are scoped to the tests. The test-only rule block that is already there is fine.
-
-```js
-import { generateEslintConfig } from '@companion-module/tools/eslint/config.mjs'
-
-const baseConfig = await generateEslintConfig({
-	enableTypescript: true,
-})
-
-export default [
-	...baseConfig,
-	{
-		files: ['tests/**/*.ts', 'vitest.config.ts'],
-		languageOptions: { parserOptions: { project: './tsconfig.eslint.json' } },
-		rules: {
-			'@typescript-eslint/explicit-module-boundary-types': 'off',
-			'@typescript-eslint/no-floating-promises': 'off',
-			'n/no-unpublished-import': 'off',
-		},
-	},
-]
-```
 
 ## 🟠 High
 
@@ -196,4 +152,4 @@ Do the same for `tcr_source`.
 ## 📝 Additional Notes
 
 - Follow-up to the [v2.1.0 review](review-pltech-kumatimer-v2.1.0-20260614-220611.md): all of its findings are fixed in v2.6.2. C1–C14 (template files, `.gitignore`, `.prettierignore`, `package.json` fields, scripts, devDependencies and `lint-staged`) no longer show up in the template check. H1 is fixed by the `backfillPassword` upgrade script in [`src/upgrades.ts`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/c51c0b6cdb5fa81404c08779497e5453d7c87f76/src/upgrades.ts). H2 is fixed (`yarn lint` passes). M1 is fixed (cue presets are capped at `CUE_SLOTS` in [`src/presets.ts:249`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/c51c0b6cdb5fa81404c08779497e5453d7c87f76/src/presets.ts#L249)). M2 is fixed (a failed command now sets Connection Failure, with "Auth failed — check the password" for a 401, in [`src/main.ts:133-142`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/c51c0b6cdb5fa81404c08779497e5453d7c87f76/src/main.ts#L133-L142)).
-- The three template findings (C1, H1, M1) are in files this release did not change. The ESLint override already existed at v2.1.0 but was not flagged then, and the checkout version only differs because the template moved to v7.
+- The two template findings (H1, M1) are in files this release did not change. The checkout version only differs because the template moved to v7.
