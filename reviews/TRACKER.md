@@ -194,7 +194,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | uniliga-cg | v1.3.0 | 2026-10-30 | [review](uniliga-cg/review-uniliga-cg-v1.3.0-20261030-192328.md) |
 | ⬜ | sennheiser-ewdx | v1.1.1 | 2026-10-30 | [review](sennheiser-ewdx/review-sennheiser-ewdx-v1.1.1-20261030-192328.md) |
 | ✅ | ecclesialab-worshiplive | v1.0.0 | 2026-10-30 | [review](ecclesialab-worshiplive/review-ecclesialab-worshiplive-v1.0.0-20261030-192328.md) |
-| ⬜ | holboxdesign-rio | v1.0.0 | 2026-10-30 | [review](holboxdesign-rio/review-holboxdesign-rio-v1.0.0-20261030-192328.md) |
+| ✅ | holboxdesign-rio | v1.0.0 | 2026-10-30 | [review](holboxdesign-rio/review-holboxdesign-rio-v1.0.0-20261030-192328.md) |
 | ⬜ | chamsys-magicq-osc | v3.3.0 | 2026-10-30 | [review](chamsys-magicq-osc/review-chamsys-magicq-osc-v3.3.0-20261030-192328.md) |
 | ⬜ | nextkon-screen | v1.0.0 | 2026-10-30 | [review](nextkon-screen/review-nextkon-screen-v1.0.0-20261030-192328.md) |
 | ⬜ | crewlan-connect | v2.0.3 | 2026-10-30 | [review](crewlan-connect/review-crewlan-connect-v2.0.3-20261030-192328.md) |
