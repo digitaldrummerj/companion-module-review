@@ -39,7 +39,6 @@
 - [ ] [M2: The template's CI and release workflows are missing](#m2-the-templates-ci-and-release-workflows-are-missing)
 - [ ] [M3: Message buttons broken by an earlier upgrade stay broken, because the fix edits upgrade scripts that already ran](#m3-message-buttons-broken-by-an-earlier-upgrade-stay-broken-because-the-fix-edits-upgrade-scripts-that-already-ran)
 - [ ] [L1: After a version mismatch or a missed version reply, the connection never retries, even once Ontime is fixed](#l1-after-a-version-mismatch-or-a-missed-version-reply-the-connection-never-retries-even-once-ontime-is-fixed)
-- [ ] [L2: Help text says 5.4.0 uses Module API 2.0, but the module needs API 2.1 and Companion 5.0](#l2-help-text-says-540-uses-module-api-20-but-the-module-needs-api-21-and-companion-50)
 
 ## 🔴 Critical
 
@@ -287,15 +286,3 @@ Copyright (c) 2022 Bitfocus AS - Open Source
 **Why it happens:** The new version-failure handler (`badVersion()`) closes the socket and clears the reconnect timer. With no socket left, the reconnect logic deliberately does nothing, so no further attempt is ever scheduled.
 
 **Fix:** keep reporting "Bad configuration", but schedule a slow retry (for example every 30 seconds) after a version mismatch or a missed version reply. Alternatively, add a line to HELP.md telling users to disable and re-enable the connection after upgrading Ontime.
-
-### L2: Help text says 5.4.0 uses Module API 2.0, but the module needs API 2.1 and Companion 5.0
-
-- **Source:** 🔎 compliance reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`companion/HELP.md:53-55`](https://github.com/bitfocus/companion-module-getontime-ontime/blob/2578aee183f4a43f8368f9ca85a43e0e8b4efb2c/companion/HELP.md#L53-L55)
-
-**What goes wrong:** Users who open the module help in Companion read "New for module version 5.4.0 - Upgraded to Module API 2.0 (Node 22 runtime)", and the entry just below says 5.3.1 "Targets Companion 4.3+". Someone on Companion 4.3 may expect 5.4.x to work for them, but since v5.4.1 the module uses `@companion-module/base` 2.1, which needs Companion 5.0 or later.
-
-**Why it happens:** The 5.4.0 entry added to HELP.md in this release names Module API 2.0, but `package.json` pins `@companion-module/base` at `~2.1.3`, which is API 2.1.
-
-**Fix:** change the 5.4.0 entry to "Upgraded to Module API 2.1 (requires Companion 5.0+)". If 5.4.0 really was API 2.0 and 5.4.1 moved to 2.1, put that in the 5.4.1 entry instead.
