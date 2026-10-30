@@ -172,7 +172,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | vhd-vx90 | v1.2.1 | 2026-10-30 | [review](vhd-vx90/review-vhd-vx90-v1.2.1-20261030-090507.md) |
 | ✅ | vhd-vx61xl | v1.0.1 | 2026-10-30 | [review](vhd-vx61xl/review-vhd-vx61xl-v1.0.1-20261030-090507.md) |
 | ✅ | astrastudio-onairscreen | v1.1.0 | 2026-10-30 | [review](astrastudio-onairscreen/review-astrastudio-onairscreen-v1.1.0-20261030-090507.md) |
-| ⬜ | waves-lv1 | v1.2.0 | 2026-10-30 | [review](waves-lv1/review-waves-lv1-v1.2.0-20261030-090507.md) |
+| ✅ | waves-lv1 | v1.2.0 | 2026-10-30 | [review](waves-lv1/review-waves-lv1-v1.2.0-20261030-090507.md) |
 | ⬜ | tow-mixeffect | v2.1.0 | 2026-10-30 | [review](tow-mixeffect/review-tow-mixeffect-v2.1.0-20261030-090507.md) |
 | ⬜ | magewell-ultrastream | v1.1.0 | 2026-10-30 | [review](magewell-ultrastream/review-magewell-ultrastream-v1.1.0-20261030-090507.md) |
 | ⬜ | cisco-cbs-350 | v1.0.0 | 2026-10-30 | [review](cisco-cbs-350/review-cisco-cbs-350-v1.0.0-20261030-090507.md) |
