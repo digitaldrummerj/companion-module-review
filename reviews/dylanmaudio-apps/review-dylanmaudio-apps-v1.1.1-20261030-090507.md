@@ -22,15 +22,14 @@
 
 ### Blocking
 
-- [ ] [C1: `.gitattributes` adds rules the template does not have](#c1-gitattributes-adds-rules-the-template-does-not-have)
-- [ ] [C2: `.gitignore` is missing template entries](#c2-gitignore-is-missing-template-entries)
-- [ ] [C3: Pre-commit hook `.husky/pre-commit` is missing](#c3-pre-commit-hook-huskypre-commit-is-missing)
-- [ ] [C4: `.prettierignore` adds entries the template does not have](#c4-prettierignore-adds-entries-the-template-does-not-have)
-- [ ] [C5: `package.json` has no `postinstall` script to install the commit hook](#c5-packagejson-has-no-postinstall-script-to-install-the-commit-hook)
-- [ ] [C6: `husky` is missing from devDependencies](#c6-husky-is-missing-from-devdependencies)
-- [ ] [C7: `lint-staged` is missing from devDependencies](#c7-lint-staged-is-missing-from-devdependencies)
-- [ ] [C8: `package.json` has no `lint-staged` section](#c8-packagejson-has-no-lint-staged-section)
-- [ ] [C9: Module runs on Node 22 instead of the Node 26 runtime API 2.1 expects](#c9-module-runs-on-node-22-instead-of-the-node-26-runtime-api-21-expects)
+- [ ] [C1: `.gitignore` is missing template entries](#c1-gitignore-is-missing-template-entries)
+- [ ] [C2: Pre-commit hook `.husky/pre-commit` is missing](#c2-pre-commit-hook-huskypre-commit-is-missing)
+- [ ] [C3: `.prettierignore` adds entries the template does not have](#c3-prettierignore-adds-entries-the-template-does-not-have)
+- [ ] [C4: `package.json` has no `postinstall` script to install the commit hook](#c4-packagejson-has-no-postinstall-script-to-install-the-commit-hook)
+- [ ] [C5: `husky` is missing from devDependencies](#c5-husky-is-missing-from-devdependencies)
+- [ ] [C6: `lint-staged` is missing from devDependencies](#c6-lint-staged-is-missing-from-devdependencies)
+- [ ] [C7: `package.json` has no `lint-staged` section](#c7-packagejson-has-no-lint-staged-section)
+- [ ] [C8: Module runs on Node 22 instead of the Node 26 runtime API 2.1 expects](#c8-module-runs-on-node-22-instead-of-the-node-26-runtime-api-21-expects)
 - [ ] [H1: `LICENSE` copyright line differs from the template](#h1-license-copyright-line-differs-from-the-template)
 - [ ] [H2: CI workflow builds on Node 22 and keeps checkout credentials](#h2-ci-workflow-builds-on-node-22-and-keeps-checkout-credentials)
 
@@ -46,33 +45,7 @@
 
 ## 🔴 Critical
 
-### C1: `.gitattributes` adds rules the template does not have
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)
-- **File:** [`.gitattributes:2-3`](https://github.com/bitfocus/companion-module-dylanmaudio-apps/blob/99f4e7274ba8050781cf295cb3c0d3b117d739a2/.gitattributes#L2-L3)
-
-**What goes wrong:** The repo's Git attributes no longer match the official TypeScript template, so anyone comparing the module against the template (or troubleshooting line-ending behaviour later) sees rules that the template does not define.
-
-**Why it happens:** The template has one line, `* text=auto eol=lf`. The module keeps that line and adds two rules of its own. These are real rules, not comments.
-
-**Evidence:**
-
-```text
-# .gitattributes:2-3 (not in template)
-*.png binary
-*.companionconfig binary
-```
-
-**Confirm by:** `diff companion-module-template-ts/.gitattributes .gitattributes`, or open [`.gitattributes:2-3`](https://github.com/bitfocus/companion-module-dylanmaudio-apps/blob/99f4e7274ba8050781cf295cb3c0d3b117d739a2/.gitattributes#L2-L3).
-
-**Fix:** make `.gitattributes` match the template exactly.
-
-```text
-* text=auto eol=lf
-```
-
-### C2: `.gitignore` is missing template entries
+### C1: `.gitignore` is missing template entries
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)
@@ -103,7 +76,7 @@ DEBUG-*
 /.vscode
 ```
 
-### C3: Pre-commit hook `.husky/pre-commit` is missing
+### C2: Pre-commit hook `.husky/pre-commit` is missing
 
 - **Source:** 🤖 validate-template (FILE-MISSING)
 - **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)
@@ -122,9 +95,9 @@ Found: no .husky/ directory
 
 **Confirm by:** `ls .husky` in the module repo.
 
-**Fix:** copy `.husky/pre-commit` from the template (together with C5–C8).
+**Fix:** copy `.husky/pre-commit` from the template (together with C4–C7).
 
-### C4: `.prettierignore` adds entries the template does not have
+### C3: `.prettierignore` adds entries the template does not have
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)
@@ -157,7 +130,7 @@ package.json
 /LICENSE.md
 ```
 
-### C5: `package.json` has no `postinstall` script to install the commit hook
+### C4: `package.json` has no `postinstall` script to install the commit hook
 
 - **Source:** 🤖 validate-template (PKG-SCRIPT)
 - **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)
@@ -182,7 +155,7 @@ Found: no postinstall script
 "postinstall": "husky"
 ```
 
-### C6: `husky` is missing from devDependencies
+### C5: `husky` is missing from devDependencies
 
 - **Source:** 🤖 validate-template (PKG-DEVDEP)
 - **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)
@@ -203,7 +176,7 @@ Found: not in devDependencies
 
 **Fix:** `yarn add -D husky@^9.1.7`.
 
-### C7: `lint-staged` is missing from devDependencies
+### C6: `lint-staged` is missing from devDependencies
 
 - **Source:** 🤖 validate-template (PKG-DEVDEP)
 - **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)
@@ -224,7 +197,7 @@ Found: not in devDependencies
 
 **Fix:** `yarn add -D lint-staged@^17.6.0`.
 
-### C8: `package.json` has no `lint-staged` section
+### C7: `package.json` has no `lint-staged` section
 
 - **Source:** 🤖 validate-template (PKG-LINTSTAGED)
 - **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)
@@ -252,7 +225,7 @@ Found: none
 }
 ```
 
-### C9: Module runs on Node 22 instead of the Node 26 runtime API 2.1 expects
+### C8: Module runs on Node 22 instead of the Node 26 runtime API 2.1 expects
 
 - **Source:** 🤖 validate-template (MAN-RUNTIME)
 - **Classification:** 🆕 NEW (template compliance; unchanged since v1.0.3)
@@ -411,4 +384,4 @@ signal: context?.signal
 
 ## 📝 Additional Notes
 
-- `tsconfig.build.json`: besides the Node 22 `extends` (covered in [C9](#c9-module-runs-on-node-22-instead-of-the-node-26-runtime-api-21-expects)), `exclude` replaces the template's `src/**/*spec.ts` / `src/**/__mocks__/*` with `src/**/*.test.ts`, `src/link.ts` and `src/transport/**`, and `compilerOptions` adds `resolveJsonModule: true` ([`tsconfig.build.json:4-10`](https://github.com/bitfocus/companion-module-dylanmaudio-apps/blob/99f4e7274ba8050781cf295cb3c0d3b117d739a2/tsconfig.build.json#L4-L10)). Not blocking; the module builds.
+- `tsconfig.build.json`: besides the Node 22 `extends` (covered in [C8](#c8-module-runs-on-node-22-instead-of-the-node-26-runtime-api-21-expects)), `exclude` replaces the template's `src/**/*spec.ts` / `src/**/__mocks__/*` with `src/**/*.test.ts`, `src/link.ts` and `src/transport/**`, and `compilerOptions` adds `resolveJsonModule: true` ([`tsconfig.build.json:4-10`](https://github.com/bitfocus/companion-module-dylanmaudio-apps/blob/99f4e7274ba8050781cf295cb3c0d3b117d739a2/tsconfig.build.json#L4-L10)). Not blocking; the module builds.
