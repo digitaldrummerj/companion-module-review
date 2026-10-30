@@ -131,7 +131,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | mds-otobako-pro | v1.1.0 | 2026-10-30 | [review](mds-otobako-pro/review-mds-otobako-pro-v1.1.0-20261030-003407.md) |
 | ✅ | liveplay-liveplay | v1.0.0 | 2026-10-30 | [review](liveplay-liveplay/review-liveplay-liveplay-v1.0.0-20261030-003407.md) |
 | ✅ | clearcom-freespeakii | v0.1.0 | 2026-10-30 | [review](clearcom-freespeakii/review-clearcom-freespeakii-v0.1.0-20261030-003407.md) |
-| ⬜ | videopathe-qplayer | v1.0.0 | 2026-10-30 | [review](videopathe-qplayer/review-videopathe-qplayer-v1.0.0-20261030-003407.md) |
+| ✅ | videopathe-qplayer | v1.0.0 | 2026-10-30 | [review](videopathe-qplayer/review-videopathe-qplayer-v1.0.0-20261030-003407.md) |
 | ✅ | showsign-signage | v1.0.0 | 2026-10-30 | [review](showsign-signage/review-showsign-signage-v1.0.0-20261030-003407.md) |
 | ⬜ | ltn-schedule | v2.7.2 | 2026-10-30 | [review](ltn-schedule/review-ltn-schedule-v2.7.2-20261030-003407.md) |
 | ⬜ | auri-tx2n | v2.0.0 | 2026-10-30 | [review](auri-tx2n/review-auri-tx2n-v2.0.0-20261030-003407.md) |
