@@ -144,3 +144,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | devcore-mixingstation | v2.0.2 | 2026-10-30 | [review](devcore-mixingstation/review-devcore-mixingstation-v2.0.2-20261030-003407.md) |
 | ⬜ | cedar-dns8d | v2.0.0 | 2026-10-30 | [review](cedar-dns8d/review-cedar-dns8d-v2.0.0-20261030-003407.md) |
 | ⬜ | pltech-kumatimer | v2.6.2 | 2026-10-30 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.6.2-20261030-003407.md) |
+| ⬜ | churchtranslator-api | v1.3.1 | 2026-10-30 | [review](churchtranslator-api/review-churchtranslator-api-v1.3.1-20261030-003407.md) |
