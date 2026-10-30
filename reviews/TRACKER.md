@@ -146,7 +146,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | pltech-kumatimer | v2.6.2 | 2026-10-30 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.6.2-20261030-003407.md) |
 | ✅ | churchtranslator-api | v1.3.1 | 2026-10-30 | [review](churchtranslator-api/review-churchtranslator-api-v1.3.1-20261030-003407.md) |
 | ✅ | philips-sicp | v2.0.0 | 2026-10-30 | [review](philips-sicp/review-philips-sicp-v2.0.0-20261030-003407.md) |
-| ⬜ | allenheath-dlive | v1.1.0 | 2026-10-30 | [review](allenheath-dlive/review-allenheath-dlive-v1.1.0-20261030-003407.md) |
+| ✅ | allenheath-dlive | v1.1.0 | 2026-10-30 | [review](allenheath-dlive/review-allenheath-dlive-v1.1.0-20261030-003407.md) |
 | ⬜ | middleman-breaktime | v2.0.0 | 2026-10-30 | [review](middleman-breaktime/review-middleman-breaktime-v2.0.0-20261030-003407.md) |
 | ✅ | presentationtools-aps | v2.11.0 | 2026-10-30 | [review](presentationtools-aps/review-presentationtools-aps-v2.11.0-20261030-003407.md) |
 | ⬜ | zanus-pt | v1.0.2 | 2026-10-30 | [review](zanus-pt/review-zanus-pt-v1.0.2-20261030-003407.md) |
