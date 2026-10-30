@@ -129,7 +129,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | tlof-neoluma-midi-control | v1.0.0 | 2026-10-30 | [review](tlof-neoluma-midi-control/review-tlof-neoluma-midi-control-v1.0.0-20261030-003407.md) |
 | ✅ | pltech-kumatimer | v2.5.0 | 2026-10-30 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.5.0-20261030-003407.md) |
 | ✅ | mds-otobako-pro | v1.1.0 | 2026-10-30 | [review](mds-otobako-pro/review-mds-otobako-pro-v1.1.0-20261030-003407.md) |
-| ⬜ | liveplay-liveplay | v1.0.0 | 2026-10-30 | [review](liveplay-liveplay/review-liveplay-liveplay-v1.0.0-20261030-003407.md) |
+| ✅ | liveplay-liveplay | v1.0.0 | 2026-10-30 | [review](liveplay-liveplay/review-liveplay-liveplay-v1.0.0-20261030-003407.md) |
 | ✅ | clearcom-freespeakii | v0.1.0 | 2026-10-30 | [review](clearcom-freespeakii/review-clearcom-freespeakii-v0.1.0-20261030-003407.md) |
 | ⬜ | videopathe-qplayer | v1.0.0 | 2026-10-30 | [review](videopathe-qplayer/review-videopathe-qplayer-v1.0.0-20261030-003407.md) |
 | ✅ | showsign-signage | v1.0.0 | 2026-10-30 | [review](showsign-signage/review-showsign-signage-v1.0.0-20261030-003407.md) |
