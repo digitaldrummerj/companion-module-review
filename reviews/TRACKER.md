@@ -180,3 +180,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | fritz-fritzbox | v1.0.0-beta.2 | 2026-10-30 | [review](fritz-fritzbox/review-fritz-fritzbox-v1.0.0-beta.2-20261030-090507.md) |
 | ⬜ | aimp-audioplayer | v2.0.2 | 2026-10-30 | [review](aimp-audioplayer/review-aimp-audioplayer-v2.0.2-20261030-090507.md) |
 | ⬜ | warecotech-warecue | v1.1.1 | 2026-10-30 | [review](warecotech-warecue/review-warecotech-warecue-v1.1.1-20261030-090507.md) |
+| ⬜ | smartpi-dva | v0.1.0 | 2026-10-30 | [review](smartpi-dva/review-smartpi-dva-v0.1.0-20261030-090507.md) |
