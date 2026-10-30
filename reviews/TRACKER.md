@@ -210,7 +210,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | auri-tx2n | v2.0.1 | 2026-10-30 | [review](auri-tx2n/review-auri-tx2n-v2.0.1-20261030-192328.md) |
 | ⬜ | cedar-dns8d | v2.0.1 | 2026-10-30 | [review](cedar-dns8d/review-cedar-dns8d-v2.0.1-20261030-192328.md) |
 | ✅ | bom-api | v2.0.1 | 2026-10-30 | [review](bom-api/review-bom-api-v2.0.1-20261030-192328.md) |
-| ⬜ | mds-otobako-pro | v1.1.1 | 2026-10-30 | [review](mds-otobako-pro/review-mds-otobako-pro-v1.1.1-20261030-192328.md) |
+| ✅ | mds-otobako-pro | v1.1.1 | 2026-10-30 | [review](mds-otobako-pro/review-mds-otobako-pro-v1.1.1-20261030-192328.md) |
 | ⬜ | utopianacademy-deckboy | v1.0.7 | 2026-10-30 | [review](utopianacademy-deckboy/review-utopianacademy-deckboy-v1.0.7-20261030-192328.md) |
 | ⬜ | showsign-signage | v1.0.1 | 2026-10-30 | [review](showsign-signage/review-showsign-signage-v1.0.1-20261030-192328.md) |
 | ✅ | thenoteslist-thenoteslist | v1.2.5 | 2026-10-30 | [review](thenoteslist-thenoteslist/review-thenoteslist-thenoteslist-v1.2.5-20261030-192328.md) |
