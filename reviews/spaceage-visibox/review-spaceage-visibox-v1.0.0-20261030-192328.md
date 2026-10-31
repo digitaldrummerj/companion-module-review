@@ -46,6 +46,7 @@
 - [ ] [H1: `yarn lint` crashes before checking any code, because `prettier` is not installed](#h1-yarn-lint-crashes-before-checking-any-code-because-prettier-is-not-installed)
 - [ ] [H2: The module bundles itself with esbuild, which Companion's build tooling already does](#h2-the-module-bundles-itself-with-esbuild-which-companions-build-tooling-already-does)
 - [ ] [H3: The Visibox client library is a devDependency, although the module loads it at runtime](#h3-the-visibox-client-library-is-a-devdependency-although-the-module-loads-it-at-runtime)
+- [ ] [H4: Every Visibox state update refreshes all feedbacks and variables two or three times](#h4-every-visibox-state-update-refreshes-all-feedbacks-and-variables-two-or-three-times)
 
 ### Non-blocking
 
@@ -59,7 +60,6 @@
 - [ ] [L2: Set Control "Adjust by amount" counts presses that never reached Visibox, so the next press jumps](#l2-set-control-adjust-by-amount-counts-presses-that-never-reached-visibox-so-the-next-press-jumps)
 - [ ] [L3: Preset button text keeps the old connection name after the connection is renamed](#l3-preset-button-text-keeps-the-old-connection-name-after-the-connection-is-renamed)
 - [ ] [L4: The starter page needs Companion 5, but the module also runs on Companion 4.2](#l4-the-starter-page-needs-companion-5-but-the-module-also-runs-on-companion-42)
-- [ ] [L5: Every Visibox state update refreshes all feedbacks and variables two or three times](#l5-every-visibox-state-update-refreshes-all-feedbacks-and-variables-two-or-three-times)
 - [ ] [N1: Song ID, Control and Target ID fields do not accept variables](#n1-song-id-control-and-target-id-fields-do-not-accept-variables)
 
 ### Notes
@@ -620,6 +620,52 @@ import { summarizePlayback } from '@visibox/api-client'
 
 **Fix:** move `@visibox/api-client` to `dependencies` (`yarn add @visibox/api-client`, which also removes it from `devDependencies`), and keep it pinned with `~1.1.0` like the other dependencies.
 
+### H4: Every Visibox state update refreshes all feedbacks and variables two or three times
+
+- **Source:** 🔎 QA reviewer — raised to High by the human reviewer
+- **Classification:** 🆕 NEW
+- **File:** [`src/main.ts:80-89`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/src/main.ts#L80-L89), [`src/feedbacks.ts:27-140`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/src/feedbacks.ts#L27-L140)
+
+**What goes wrong:** Every mute, fullscreen, output-level, song or clip update from Visibox makes Companion re-run **every** feedback on every button that uses this connection, and rewrite all 29 variables, at least twice, plus once more when the project re-fetch triggered by the same update finishes. During a show, Visibox sends these updates constantly (clips starting and stopping, songs changing), so on pages full of clip and song buttons Companion does several times the feedback and variable work it needs to, for changes that mostly affect one or two feedbacks. That load adds up across a busy Companion install and can slow button updates for every connection.
+
+**Why it happens:** Two separate problems:
+
+1. **The same refresh is wired twice.** With `manageState: true`, the Visibox client library calls `onStateChanged` **and** emits `app-state-changed` for the same update, and the module runs the full refresh from both. The code comment saying the initial fetch "only emits the event" does not match the library, which does both.
+2. **Every refresh checks every feedback.** `checkFeedbacks()` with no arguments tells Companion to re-run all of the module's feedbacks. The module's feedbacks read different parts of the state, so most updates only affect some of them:
+
+   | State that changed | Feedbacks that read it |
+   | --- | --- |
+   | App state (mute, fullscreen) | `output_muted`, `output_fullscreen` |
+   | Playstate (clips, active song) | `clip_playing`, `clip_paused`, `specific_clip_active`, `song_active` |
+   | Project (songs, clips) | `clip_playing`, `clip_paused`, `specific_clip_active`, `song_active` |
+
+**Evidence:**
+
+```ts
+// src/main.ts:83-88
+const refresh = () => {
+  this.checkFeedbacks()
+  RefreshVariables(this)
+}
+this.apiClient.onStateChanged = refresh
+this.apiClient.on('app-state-changed', refresh)
+```
+
+**Confirm by:** open [`src/main.ts:80-89`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/src/main.ts#L80-L89); both handlers run the same `refresh`, which calls `checkFeedbacks()` with no feedback IDs. The client library's own docs (`fetchInitialAppState`: "Emits 'app-state-changed' (and onStateChanged for managed clients)") confirm both fire for one update.
+
+**Fix:**
+
+- Remove the `this.apiClient.on('app-state-changed', refresh)` line, so each update is handled once (or use only `app-state-changed` for the app-state feedbacks, below).
+- Check only the feedbacks the change affects, by passing their IDs to `checkFeedbacks()`. It is preferable to refresh the individual feedbacks that are relevant to the update than to re-run every feedback. For example, keep the last app state, project and playstate, compare them in the handler, and call:
+
+  ```ts
+  if (appStateChanged) this.checkFeedbacks('output_muted', 'output_fullscreen')
+  if (playstateChanged || projectChanged)
+    this.checkFeedbacks('clip_playing', 'clip_paused', 'specific_clip_active', 'song_active')
+  ```
+
+- Update only the variables whose values changed in the same way, rather than rewriting all 29 on every update.
+
 ## 🟡 Medium
 
 ### M1: Trigger Clip with a Song Offset past the first or last song plays the clip in the current song
@@ -769,18 +815,6 @@ if (result.success) {
 **Why it happens:** The starter page was exported from a newer Companion than the oldest one the module supports, and the help text does not say which version it needs.
 
 **Fix:** re-export the starter page from Companion 4.2, or add a note to `companion/HELP.md` that it needs Companion 5.0 or later and point 4.x users to the presets.
-
-### L5: Every Visibox state update refreshes all feedbacks and variables two or three times
-
-- **Source:** 🔎 QA reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`src/main.ts:80-89`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/src/main.ts#L80-L89)
-
-**What goes wrong:** Nothing visible to users. Each mute, fullscreen or output-level update from Visibox rechecks every feedback and rewrites all 29 variables at least twice, plus once more when the project re-fetch triggered by the same update finishes. That is wasted work on busy pages, not a functional bug.
-
-**Why it happens:** With `manageState: true`, the Visibox client library calls `onStateChanged` **and** emits `app-state-changed` for the same update. The module wires the same refresh to both. The code comment saying the initial fetch "only emits the event" does not match the library, which does both.
-
-**Fix:** remove the `this.apiClient.on('app-state-changed', refresh)` line; `onStateChanged` already covers every update.
 
 ## 💡 Nice to Have
 
