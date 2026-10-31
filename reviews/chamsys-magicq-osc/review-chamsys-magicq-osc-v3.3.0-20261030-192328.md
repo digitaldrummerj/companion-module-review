@@ -31,104 +31,22 @@ This is a follow-up to the v3.2.1 review. All 13 findings from that review are f
 | L6: execute pages limited differently per path | ✅ Fixed: one rule (page 1-10, number 1-1000) on all four paths |
 | N1: empty RPC Command still sent | ✅ Fixed: trimmed and rejected when empty |
 
-The findings below are new to this review. The three High findings are about the GitHub issue forms, which this release doesn't change (see [A2](#-assumptions-to-confirm)).
+The findings below are new to this review.
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
 | A1 | When a module adds a new connection setting, Companion doesn't write that setting's default into an existing connection's saved settings at startup. The value stays missing until the user opens and saves the connection's settings | `@companion-module/base` 2.0.4 has no default fill-in for config (only an upgrade script's `updatedConfig` can add a value); Companion's host code not checked | [M1](#m1-connections-created-on-v310-or-earlier-silently-lose-console-feedback-after-upgrading-to-v330) |
-| A2 | The empty `.github/.companion-manual-issue-templates` file (added by the Companion Module Bot in commit `1ab9866`, 2025-12-31) is not an accepted opt-out from the template's issue forms | the template check doesn't recognise the file; what the bot uses it for was not checked. If it marks the issue forms as deliberately maintained by hand, H1-H3 should be dropped | [H1](#h1-the-github-bug-report-form-differs-from-the-template), [H2](#h2-the-github-issue-chooser-links-differ-from-the-template), [H3](#h3-the-github-feature-request-form-differs-from-the-template) |
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: The GitHub bug report form differs from the template](#h1-the-github-bug-report-form-differs-from-the-template)
-- [ ] [H2: The GitHub issue chooser links differ from the template](#h2-the-github-issue-chooser-links-differ-from-the-template)
-- [ ] [H3: The GitHub feature request form differs from the template](#h3-the-github-feature-request-form-differs-from-the-template)
 
 ### Non-blocking
 
 - [ ] [M1: Connections created on v3.1.0 or earlier silently lose console feedback after upgrading to v3.3.0](#m1-connections-created-on-v310-or-earlier-silently-lose-console-feedback-after-upgrading-to-v330)
 - [ ] [N1: Numeric options are still free-text boxes, so a typo like 1O is only caught when the button is pressed](#n1-numeric-options-are-still-free-text-boxes-so-a-typo-like-1o-is-only-caught-when-the-button-is-pressed)
-
----
-
-## 🟠 High
-
-### H1: The GitHub bug report form differs from the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW to this review. The file itself is unchanged since 2025-08-25 (commits `8361bd6`, `680ce47`), so it predates this release; the v3.2.1 review didn't check it.
-- **File:** [`.github/ISSUE_TEMPLATE/bug_report.yml:5`](https://github.com/bitfocus/companion-module-chamsys-magicq-osc/blob/ead4984af7bfff16648cbfde0ac68db6c3654582/.github/ISSUE_TEMPLATE/bug_report.yml#L5), [`.github/ISSUE_TEMPLATE/bug_report.yml:9-12`](https://github.com/bitfocus/companion-module-chamsys-magicq-osc/blob/ead4984af7bfff16648cbfde0ac68db6c3654582/.github/ISSUE_TEMPLATE/bug_report.yml#L9-L12), [`.github/ISSUE_TEMPLATE/bug_report.yml:53-54`](https://github.com/bitfocus/companion-module-chamsys-magicq-osc/blob/ead4984af7bfff16648cbfde0ac68db6c3654582/.github/ISSUE_TEMPLATE/bug_report.yml#L53-L54)
-
-**What goes wrong:** Someone opening a bug report on the module's GitHub repo gets a form that differs from the standard Companion module form: a different title prefix, a reworded "latest build" checkbox, and MagicQ-specific environment placeholders.
-
-**Why it happens:** Every module's `.github` files are expected to match the official template for its API level, so all modules behave the same for users and for Bitfocus tooling. This file was customised instead.
-
-**Evidence:**
-
-```text
-Differs from template (line 5: found 'title: '[BUG] '', template 'title: '[BUG]'')
-```
-
-Also differs at lines 9-10 and 12 (checkbox label, description and option reworded to "latest stable or beta build…") and at lines 53-54 (environment placeholders changed to `MagicQ Version` / `MagicQ Hardware`).
-
-**Confirm by:** `diff` [`.github/ISSUE_TEMPLATE/bug_report.yml`](https://github.com/bitfocus/companion-module-chamsys-magicq-osc/blob/ead4984af7bfff16648cbfde0ac68db6c3654582/.github/ISSUE_TEMPLATE/bug_report.yml) against `companion-module-template-js` v2.0.4 `.github/ISSUE_TEMPLATE/bug_report.yml`.
-
-**Fix:** replace the file with the template's copy.
-
-### H2: The GitHub issue chooser links differ from the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW to this review. The file itself is unchanged since 2025-08-25, so it predates this release; the v3.2.1 review didn't check it.
-- **File:** [`.github/ISSUE_TEMPLATE/config.yml:3-8`](https://github.com/bitfocus/companion-module-chamsys-magicq-osc/blob/ead4984af7bfff16648cbfde0ac68db6c3654582/.github/ISSUE_TEMPLATE/config.yml#L3-L8)
-
-**What goes wrong:** The "New issue" page on the module's GitHub repo shows a renamed link for reporting problems with Companion itself, plus an extra link to the MagicQ bug tracker that the standard template doesn't have.
-
-**Why it happens:** The template's contact link was renamed and reworded, and a second contact link was added.
-
-**Evidence:**
-
-```diff
--  - name: BUG OR FEATURE REQUEST FOR COMPANION ITSELF
-+  - name: Bug or Feature for Companion itself
- ...
--    about: Report it against the companion itself, to get the relevant people notified.
-+    about: Report it against Companion itself, to get the relevant people notified.
-+  - name: Bug or Feature for MagicQ itself
-+    url: https://secure.chamsys.co.uk/bugtracker
-+    about: Report it against MagicQ itself, to get the relevant people notified.
-```
-
-**Confirm by:** `diff` [`.github/ISSUE_TEMPLATE/config.yml`](https://github.com/bitfocus/companion-module-chamsys-magicq-osc/blob/ead4984af7bfff16648cbfde0ac68db6c3654582/.github/ISSUE_TEMPLATE/config.yml) against the template's `.github/ISSUE_TEMPLATE/config.yml`.
-
-**Fix:** replace the file with the template's copy. A link to the MagicQ bug tracker can go in `companion/HELP.md` or the README instead.
-
-### H3: The GitHub feature request form differs from the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW to this review. The file itself is unchanged since 2025-08-25, so it predates this release; the v3.2.1 review didn't check it.
-- **File:** [`.github/ISSUE_TEMPLATE/feature_request.yml:9-12`](https://github.com/bitfocus/companion-module-chamsys-magicq-osc/blob/ead4984af7bfff16648cbfde0ac68db6c3654582/.github/ISSUE_TEMPLATE/feature_request.yml#L9-L12)
-
-**What goes wrong:** Someone opening a feature request on the module's GitHub repo is asked to confirm they checked "the latest beta build" instead of the template's "updated to the latest version of the module".
-
-**Why it happens:** The checkbox's label, description and option were reworded from the template.
-
-**Evidence:**
-
-```text
-Differs from template (line 9: found 'label: Make sure you've checked the latest beta build', template 'label: Make sure you have updated to the latest version of the module')
-```
-
-Lines 10 and 12 (description and option) are reworded too.
-
-**Confirm by:** `diff` [`.github/ISSUE_TEMPLATE/feature_request.yml`](https://github.com/bitfocus/companion-module-chamsys-magicq-osc/blob/ead4984af7bfff16648cbfde0ac68db6c3654582/.github/ISSUE_TEMPLATE/feature_request.yml) against the template's `.github/ISSUE_TEMPLATE/feature_request.yml`.
-
-**Fix:** replace the file with the template's copy.
 
 ---
 
