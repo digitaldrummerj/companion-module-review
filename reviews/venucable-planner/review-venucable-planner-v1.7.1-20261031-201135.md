@@ -12,7 +12,7 @@
 | **Build** | `yarn install --immutable` + `yarn package` passed |
 | **Date** | 2026-10-31 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -23,10 +23,6 @@
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [C1: The .prettierignore file does not match the template](#c1-the-prettierignore-file-does-not-match-the-template)
-
 ### Non-blocking
 
 - [ ] [L1: With no internet, the connection stays on Connecting to VenuCable and never says the relay is unreachable](#l1-with-no-internet-the-connection-stays-on-connecting-to-venucable-and-never-says-the-relay-is-unreachable)
@@ -34,47 +30,6 @@
 - [ ] [L3: Presets dragged in after renaming the connection still point at the old connection name](#l3-presets-dragged-in-after-renaming-the-connection-still-point-at-the-old-connection-name)
 - [ ] [L4: Config fields use the deprecated isVisible functions instead of isVisibleExpression](#l4-config-fields-use-the-deprecated-isvisible-functions-instead-of-isvisibleexpression)
 - [ ] [L5: Upgrade scripts are passed inline instead of from a dedicated upgrades file](#l5-upgrade-scripts-are-passed-inline-instead-of-from-a-dedicated-upgrades-file)
-
-## 🔴 Critical
-
-### C1: The .prettierignore file does not match the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.prettierignore:1-3`](https://github.com/bitfocus/companion-module-venucable-planner/blob/5f0a8ebcc1487770efa844de362ed73555312d71/.prettierignore#L1-L3)
-
-**What goes wrong:** Running `yarn format` (Prettier) now reformats `package.json`, which the template deliberately leaves alone. Modules that drift from the template's tooling files are harder to troubleshoot later, because they no longer behave like every other module built from the same template.
-
-**Why it happens:** The template's two entries (`package.json` and `/LICENSE.md`) were replaced with three other entries. Adding entries for generated output is fine; removing the template's entries is not.
-
-**Evidence:** validator message "Differs from template (line 1: found 'release/', template 'package.json')".
-
-Template expects (`companion-module-template-js-v1`):
-
-```text
-package.json
-/LICENSE.md
-```
-
-Found:
-
-```text
-release/
-pkg/
-package-lock.json
-```
-
-**Confirm by:** open [`.prettierignore`](https://github.com/bitfocus/companion-module-venucable-planner/blob/5f0a8ebcc1487770efa844de362ed73555312d71/.prettierignore) and compare it with the template's `.prettierignore`.
-
-**Fix:** restore the template's two entries. The extra generated-output entries can stay on top of them.
-
-```text
-package.json
-/LICENSE.md
-release/
-pkg/
-package-lock.json
-```
 
 ## 🟢 Low
 
