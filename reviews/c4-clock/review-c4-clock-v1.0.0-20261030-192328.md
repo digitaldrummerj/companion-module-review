@@ -19,9 +19,8 @@ This is the module's first release, so there is no previous tag to diff against.
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | When a connection is renamed, Companion passes the new label to the running module and calls `configUpdated()` instead of restarting it (a restart would run `init()` and rebuild the presets), and it does not ask the module for its presets again | the `@companion-module/base` 2.1.3 doc comment in `dist/module-api/base.js:17` ("can be changed just before `configUpdated` is called") and the `label` getter at `base.js:19-20`; Companion's host code not checked | [L2](#l2-after-renaming-the-connection-newly-dragged-presets-show-the-old-connection-name-instead-of-live-values) |
-| A2 | Companion does not filter out unchanged values before they cost IPC and callback work: every `setVariableValues`, `checkFeedbacks` and `updateStatus` call is sent to and processed by the host | the base package forwards these calls straight to the host context (`base.js:82-84`, `167-169`); Companion's side not checked | [L1](#l1-the-module-resends-every-variable-rechecks-14-feedbacks-and-resets-the-status-twice-a-second-even-when-nothing-changed) |
-| A3 | Companion 5.0 aborts an action's `context.signal` in real use (abort button, re-press, connection disable), so passing it on has a practical effect | the API 2.1 compliance reference (abort signals); host behaviour not observed | [M1](#m1-a-button-press-keeps-its-http-request-running-after-companion-cancels-the-action) |
+| A1 | When a connection is renamed, Companion passes the new label to the running module and calls `configUpdated()` instead of restarting it (a restart would run `init()` and rebuild the presets), and it does not ask the module for its presets again | the `@companion-module/base` 2.1.3 doc comment in `dist/module-api/base.js:17` ("can be changed just before `configUpdated` is called") and the `label` getter at `base.js:19-20`; Companion's host code not checked | [L1](#l1-after-renaming-the-connection-newly-dragged-presets-show-the-old-connection-name-instead-of-live-values) |
+| A2 | Companion 5.0 aborts an action's `context.signal` in real use (abort button, re-press, connection disable), so passing it on has a practical effect | the API 2.1 compliance reference (abort signals); host behaviour not observed | [M1](#m1-a-button-press-keeps-its-http-request-running-after-companion-cancels-the-action) |
 
 ## 📋 Issues
 
@@ -34,9 +33,7 @@ This is the module's first release, so there is no previous tag to diff against.
 ### Non-blocking
 
 - [ ] [M1: A button press keeps its HTTP request running after Companion cancels the action](#m1-a-button-press-keeps-its-http-request-running-after-companion-cancels-the-action)
-- [ ] [L1: The module resends every variable, rechecks 14 feedbacks and resets the status twice a second, even when nothing changed](#l1-the-module-resends-every-variable-rechecks-14-feedbacks-and-resets-the-status-twice-a-second-even-when-nothing-changed)
-- [ ] [L2: After renaming the connection, newly dragged presets show the old connection name instead of live values](#l2-after-renaming-the-connection-newly-dragged-presets-show-the-old-connection-name-instead-of-live-values)
-- [ ] [N1: Type casts and non-null assertions in preset building hide layout mistakes](#n1-type-casts-and-non-null-assertions-in-preset-building-hide-layout-mistakes)
+- [ ] [L1: After renaming the connection, newly dragged presets show the old connection name instead of live values](#l1-after-renaming-the-connection-newly-dragged-presets-show-the-old-connection-name-instead-of-live-values)
 
 ## 🔴 Critical
 
@@ -152,19 +149,7 @@ httpRequest(url, { method, headers, signal })
 
 ## 🟢 Low
 
-### L1: The module resends every variable, rechecks 14 feedbacks and resets the status twice a second, even when nothing changed
-
-- **Source:** 🔎 QA reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`src/main.ts:139-268`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/src/main.ts#L139-L268)
-
-**What goes wrong:** While a C4 Clock connection is enabled, the module asks the app for its state every 500 ms. Each reply pushes all 37 variables (for example `$(C4_Clock:timer)` and the six quick-preset labels), re-runs all 14 feedbacks and sets the connection status to OK again, even when nothing changed (for example a paused timer showing 05:00). When the C4 app is closed, every tick writes the OFFLINE values, re-runs the feedbacks and sets "Connection Failure" again. Users see nothing wrong, but each connection adds constant work to Companion, which adds up with several connections or on a Raspberry Pi.
-
-**Why it happens:** The state handler (`applyState()`) and the offline handler (`markOffline()`) run on every poll result and never compare with what they sent last time.
-
-**Fix:** remember the last variable values, status and online flag, and only send what changed: `setVariableValues()` with the changed keys, `checkFeedbacks()` when a field a feedback reads has changed, and `updateStatus()` / `markOffline()` only when the state actually changes.
-
-### L2: After renaming the connection, newly dragged presets show the old connection name instead of live values
+### L1: After renaming the connection, newly dragged presets show the old connection name instead of live values
 
 - **Source:** 🔎 QA reviewer, compliance reviewer
 - **Classification:** 🆕 NEW
@@ -183,17 +168,3 @@ async configUpdated(config: ModuleConfig): Promise<void> {
 	this.startPolling()
 }
 ```
-
-## 💡 Nice to Have
-
-### N1: Type casts and non-null assertions in preset building hide layout mistakes
-
-- **Source:** 🔎 QA reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`src/presets.ts:314`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/src/presets.ts#L314), [`src/presets.ts:319`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/src/presets.ts#L319), [`src/presets.ts:339-340`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/src/presets.ts#L339-L340), [`src/presets.ts:412`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/src/presets.ts#L412), [`src/presets.ts:467`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/src/presets.ts#L467)
-
-**What goes wrong:** Nothing is visible today: all 30 generated layered layouts have a box and a text element. But if `design-assets/preset-layout.json` is regenerated with a layout that lacks one of them, the "C4 OFFLINE" overlay is built from `undefined` without any build or test error, and Companion may reject the preset or draw it wrong.
-
-**Why it happens:** `find(...)!` and casts such as `as unknown as Array<...>` tell TypeScript to skip its checks, so the generated layout's shape is never validated.
-
-**Fix:** replace the `!` with an explicit check that throws a clear error (as line 258 already does for a missing preset), or validate every layout in `scripts/generate-layered-presets.mjs`, and use type guards instead of `as unknown as`.
