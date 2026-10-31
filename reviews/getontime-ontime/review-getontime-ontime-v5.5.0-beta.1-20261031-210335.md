@@ -12,7 +12,7 @@
 | **Commit** | [`cc8d404`](https://github.com/bitfocus/companion-module-getontime-ontime/tree/cc8d404e014d7a9522c738f499c568364f82ed80) |
 | **Date** | 2026-10-31 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -24,10 +24,6 @@
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [C1: Yarn is set to accept dependencies from any git repository, a setting the template does not have](#c1-yarn-is-set-to-accept-dependencies-from-any-git-repository-a-setting-the-template-does-not-have)
-
 ### Non-blocking
 
 - [ ] [M1: The CI workflow is named node.yml where the template uses node.yaml](#m1-the-ci-workflow-is-named-nodeyml-where-the-template-uses-nodeyaml)
@@ -37,43 +33,11 @@
 - [ ] [L1: The Scroll Teleprompter preset scrolls 4 lines back but only 1 line forward](#l1-the-scroll-teleprompter-preset-scrolls-4-lines-back-but-only-1-line-forward)
 - [ ] [L2: Typos and three different names for the same setting in the new teleprompter labels](#l2-typos-and-three-different-names-for-the-same-setting-in-the-new-teleprompter-labels)
 - [ ] [L3: The new teleprompter dropdowns can be switched to expression mode, unlike the module's other toggle options](#l3-the-new-teleprompter-dropdowns-can-be-switched-to-expression-mode-unlike-the-modules-other-toggle-options)
+- [ ] [NR1: Remove approvedGitRepositories from .yarnrc.yml before the final release](#nr1-remove-approvedgitrepositories-from-yarnrcyml-before-the-final-release)
 
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🔴 Critical
-
-### C1: Yarn is set to accept dependencies from any git repository, a setting the template does not have
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW (added in this release by f2f655a "chore: match template")
-- **File:** [`.yarnrc.yml:1-2`](https://github.com/bitfocus/companion-module-getontime-ontime/blob/cc8d404e014d7a9522c738f499c568364f82ed80/.yarnrc.yml#L1-L2)
-
-**What goes wrong:** The module's Yarn settings no longer match the template's. The extra setting approves dependencies fetched from every git repository (`'**'`), something no other template-based module allows, and it makes the module's install behave differently from the reference when someone troubleshoots it later. The module has no git dependencies, so the setting isn't needed.
-
-**Why it happens:** This release brought `.yarnrc.yml` in line with the template (the `@getontime/*` pre-approval from the prior review is now commented out), but it also added an `approvedGitRepositories` key at the top. The template's `.yarnrc.yml` has only `enableScripts`, `nodeLinker`, `npmMinimalAgeGate` and `npmPreapprovedPackages`, and all four match.
-
-**Evidence:** validator reports "Extra keys not in template: approvedGitRepositories".
-
-```yaml
-# .yarnrc.yml:1-2
-approvedGitRepositories:
-  - '**'
-```
-
-**Fix:** remove the `approvedGitRepositories` key so the file matches the template. The commented-out `# - "@getontime/*"` line can stay.
-
-```yaml
-enableScripts: false
-
-nodeLinker: node-modules
-
-npmMinimalAgeGate: 3d
-
-npmPreapprovedPackages:
-  - '@companion-module/*'
-```
 
 ## 🟡 Medium
 
@@ -188,6 +152,39 @@ this.module.setPresetDefinitions(...generatePresets(this.state.customFields, thi
 **Why it happens:** On API 2.x every option except a text input gets an expression toggle unless it sets `disableAutoExpression: true`, and the new dropdowns don't.
 
 **Fix:** add `disableAutoExpression: true` to these five dropdowns, as the module's other toggle-style options do. Do it in this beta: once users have saved expressions in these fields, turning the toggle off breaks their buttons.
+
+## 🔮 Next Release
+
+### NR1: Remove approvedGitRepositories from .yarnrc.yml before the final release
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** 🆕 NEW (added in this release by f2f655a "chore: match template")
+- **File:** [`.yarnrc.yml:1-2`](https://github.com/bitfocus/companion-module-getontime-ontime/blob/cc8d404e014d7a9522c738f499c568364f82ed80/.yarnrc.yml#L1-L2)
+
+**What goes wrong:** The module's Yarn settings no longer match the template's. The extra setting approves dependencies fetched from every git repository (`'**'`), something no other template-based module allows, and it makes the module's install behave differently from the reference when someone troubleshoots it later. The module has no git dependencies, so the setting isn't needed.
+
+**Why it happens:** This release brought `.yarnrc.yml` in line with the template (the `@getontime/*` pre-approval from the prior review is now commented out), but it also added an `approvedGitRepositories` key at the top. The template's `.yarnrc.yml` has only `enableScripts`, `nodeLinker`, `npmMinimalAgeGate` and `npmPreapprovedPackages`, and all four match.
+
+**Evidence:** validator reports "Extra keys not in template: approvedGitRepositories".
+
+```yaml
+# .yarnrc.yml:1-2
+approvedGitRepositories:
+  - '**'
+```
+
+**Fix:** remove the `approvedGitRepositories` key so the file matches the template. The commented-out `# - "@getontime/*"` line can stay.
+
+```yaml
+enableScripts: false
+
+nodeLinker: node-modules
+
+npmMinimalAgeGate: 3d
+
+npmPreapprovedPackages:
+  - '@companion-module/*'
+```
 
 ## 📝 Additional Notes
 
