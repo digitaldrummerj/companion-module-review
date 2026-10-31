@@ -45,6 +45,7 @@
 - [ ] [C18: `package.json` has no `lint-staged` section](#c18-packagejson-has-no-lint-staged-section)
 - [ ] [C19: The module still targets Node 22, but the API 2.1 template runs on Node 26](#c19-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26)
 - [ ] [H1: `yarn lint` cannot run](#h1-yarn-lint-cannot-run)
+- [ ] [H2: README is in Spanish instead of English](#h2-readme-is-in-spanish-instead-of-english)
 
 ### Non-blocking
 
@@ -330,6 +331,30 @@ package.json devDependencies @types/node '^22.19.17' -> '^26.6.4'
 **Why it happens:** The module has no `lint` script, no `eslint.config.mjs` and no ESLint devDependency, so there is nothing for `yarn lint` to run.
 
 **Fix:** adopt the template's ESLint config, scripts and devDependencies ([C5](#c5-missing-eslintconfigmjs-file), [C11](#c11-packagejson-has-no-lintraw-script)–[C13](#c13-packagejson-is-missing-the-eslint-devdependency), [C17](#c17-packagejson-is-missing-the-typescript-eslint-devdependency)), then run `yarn lint` and fix anything it reports.
+
+### H2: README is in Spanish instead of English
+
+- **Source:** 🔎 compliance rule (everything in English) — verified
+- **Classification:** 🆕 NEW
+- **File:** [`README.md`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md)
+
+**What goes wrong:** `README.md`, the first page anyone sees on the module's GitHub repository, is in Spanish: requirements, install and build steps, and the project-structure table. Everything else in the module (HELP.md, labels, messages, comments) is in English. Users and contributors who don't read Spanish can't follow the README.
+
+**Why it happens:** Everything in a Companion module must be written in English: code comments, the text users see in Companion (action, feedback, preset and variable names, option labels, config fields, status and log messages), `companion/HELP.md` and `README.md`. That way every user, reviewer and future maintainer can read it. These lines are in Spanish.
+
+**Evidence:** 22 lines in 1 file, for example:
+
+```text
+README.md:3  Módulo de [Bitfocus Companion](https://bitfocus.io/companion) para controlar RiTA (Global Audio Solutions) a través de su API WebSocket v1.
+README.md:20  Requiere Node.js 22 y yarn 4 (con `corepack enable`, o `corepack yarn ...` sin permisos de administrador).
+README.md:43  | `src/index.ts` | Instancia del módulo, ciclo de vida y sondeo de estado |
+```
+
+**Confirm by:** open `README.md`.
+
+**Fix:** write all of this text in English. These are the lines to change:
+
+- [ ] [`README.md`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md) (22 lines): [`3`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L3), [`5`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L5), [`7`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L7), [`9-10`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L9-L10), [`12`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L12), [`14-16`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L14-L16), [`18`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L18), [`20`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L20), [`30`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L30), [`32`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L32), [`35`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L35), [`39`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L39), [`41`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L41), [`43-45`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L43-L45), [`48-50`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/README.md#L48-L50)
 
 ## 🟡 Medium
 
