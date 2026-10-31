@@ -214,7 +214,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | utopianacademy-deckboy | v1.0.7 | 2026-10-30 | [review](utopianacademy-deckboy/review-utopianacademy-deckboy-v1.0.7-20261030-192328.md) |
 | ✅ | showsign-signage | v1.0.1 | 2026-10-30 | [review](showsign-signage/review-showsign-signage-v1.0.1-20261030-192328.md) |
 | ✅ | thenoteslist-thenoteslist | v1.2.5 | 2026-10-30 | [review](thenoteslist-thenoteslist/review-thenoteslist-thenoteslist-v1.2.5-20261030-192328.md) |
-| ⬜ | cuemark-cuemark | v1.2.0 | 2026-10-31 | [review](cuemark-cuemark/review-cuemark-cuemark-v1.2.0-20261031-201135.md) |
+| ✅ | cuemark-cuemark | v1.2.0 | 2026-10-31 | [review](cuemark-cuemark/review-cuemark-cuemark-v1.2.0-20261031-201135.md) |
 | ⬜ | multicam-systems-rcp | v2.0.0-beta.5 | 2026-10-31 | [review](multicam-systems-rcp/review-multicam-systems-rcp-v2.0.0-beta.5-20261031-201135.md) |
 | ⬜ | multicam-systems-rcp | v1.1.0-beta.1 | 2026-10-31 | [review](multicam-systems-rcp/review-multicam-systems-rcp-v1.1.0-beta.1-20261031-201135.md) |
 | ⬜ | showsign-signage | v1.0.2 | 2026-10-31 | [review](showsign-signage/review-showsign-signage-v1.0.2-20261031-201135.md) |
