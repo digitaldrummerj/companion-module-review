@@ -11,7 +11,7 @@
 | **Commit** | [`f2dc3ed`](https://github.com/bitfocus/companion-module-derhamproductions-presenteringest/commit/f2dc3ede1b68eeb1528d835ceb8f97be468e6776) |
 | **Reviewed** | 2026-10-30 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -23,10 +23,6 @@
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [H1: Module checks workflow differs from the template](#h1-module-checks-workflow-differs-from-the-template)
-
 ### Non-blocking
 
 - [ ] [M1: "Seat: has a cue" feedback never lights when Cue is set to Custom message](#m1-seat-has-a-cue-feedback-never-lights-when-cue-is-set-to-custom-message)
@@ -36,42 +32,7 @@
 - [ ] [L2: Unexpected errors are reported with no detail in the log](#l2-unexpected-errors-are-reported-with-no-detail-in-the-log)
 - [ ] [L3: Refresh now description says the booking is checked every second, but the default is every 3 seconds](#l3-refresh-now-description-says-the-booking-is-checked-every-second-but-the-default-is-every-3-seconds)
 - [ ] [N1: Every feedback is re-checked every second while a countdown runs](#n1-every-feedback-is-re-checked-every-second-while-a-countdown-runs)
-
-## 🟠 High
-
-### H1: Module checks workflow differs from the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/companion-module-checks.yaml:11`](https://github.com/bitfocus/companion-module-derhamproductions-presenteringest/blob/f2dc3ede1b68eeb1528d835ceb8f97be468e6776/.github/workflows/companion-module-checks.yaml#L11), [`.github/workflows/companion-module-checks.yaml:15`](https://github.com/bitfocus/companion-module-derhamproductions-presenteringest/blob/f2dc3ede1b68eeb1528d835ceb8f97be468e6776/.github/workflows/companion-module-checks.yaml#L15)
-
-**What goes wrong:** The GitHub workflow that runs Bitfocus's shared module checks has been changed from the template. Every module is expected to carry the template's workflow unchanged, so that the checks behave the same everywhere and nobody has to work out a local variation when troubleshooting a failed check.
-
-**Why it happens:** Two lines were added to the template's file: the job's `if:` guard also skips the check when the repository is private, and `contents: read` was added under `permissions:`.
-
-**Evidence:**
-
-```yaml
-# .github/workflows/companion-module-checks.yaml:11-16 (module)
-    if: ${{ !contains(github.repository, 'companion-module-template-') && !github.event.repository.private }}
-
-    permissions:
-      # contents: read lets the shared workflow check out this repository
-      contents: read
-      packages: read
-```
-
-```yaml
-# companion-module-template-js-v2.0.4/.github/workflows/companion-module-checks.yaml:10-13 (template)
-    if: ${{ !contains(github.repository, 'companion-module-template-') }}
-
-    permissions:
-      packages: read
-```
-
-**Confirm by:** `diff` the module's [`.github/workflows/companion-module-checks.yaml`](https://github.com/bitfocus/companion-module-derhamproductions-presenteringest/blob/f2dc3ede1b68eeb1528d835ceb8f97be468e6776/.github/workflows/companion-module-checks.yaml) against `companion-module-template-js-v2.0.4/.github/workflows/companion-module-checks.yaml`. After the fix, the only remaining differences should be comment lines.
-
-**Fix:** replace the file with the template's `companion-module-checks.yaml`. Uncommenting `upload-artifact: true` is still fine.
+- [ ] [NR1: Sync the module checks workflow with the template in the next release](#nr1-sync-the-module-checks-workflow-with-the-template-in-the-next-release)
 
 ## 🟡 Medium
 
@@ -251,3 +212,39 @@ description: 'Fetch the booking straight away (it is also checked every few seco
 ```js
 this.checkFeedbacks('timer_state', 'timer_low')
 ```
+
+## 🔮 Next Release
+
+### NR1: Sync the module checks workflow with the template in the next release
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** 🆕 NEW
+- **File:** [`.github/workflows/companion-module-checks.yaml:11`](https://github.com/bitfocus/companion-module-derhamproductions-presenteringest/blob/f2dc3ede1b68eeb1528d835ceb8f97be468e6776/.github/workflows/companion-module-checks.yaml#L11), [`.github/workflows/companion-module-checks.yaml:15`](https://github.com/bitfocus/companion-module-derhamproductions-presenteringest/blob/f2dc3ede1b68eeb1528d835ceb8f97be468e6776/.github/workflows/companion-module-checks.yaml#L15)
+
+**What goes wrong:** The GitHub workflow that runs Bitfocus's shared module checks has been changed from the template. Every module is expected to carry the template's workflow unchanged, so that the checks behave the same everywhere and nobody has to work out a local variation when troubleshooting a failed check.
+
+**Why it happens:** Two lines were added to the template's file: the job's `if:` guard also skips the check when the repository is private, and `contents: read` was added under `permissions:`.
+
+**Evidence:**
+
+```yaml
+# .github/workflows/companion-module-checks.yaml:11-16 (module)
+    if: ${{ !contains(github.repository, 'companion-module-template-') && !github.event.repository.private }}
+
+    permissions:
+      # contents: read lets the shared workflow check out this repository
+      contents: read
+      packages: read
+```
+
+```yaml
+# companion-module-template-js-v2.0.4/.github/workflows/companion-module-checks.yaml:10-13 (template)
+    if: ${{ !contains(github.repository, 'companion-module-template-') }}
+
+    permissions:
+      packages: read
+```
+
+**Confirm by:** `diff` the module's [`.github/workflows/companion-module-checks.yaml`](https://github.com/bitfocus/companion-module-derhamproductions-presenteringest/blob/f2dc3ede1b68eeb1528d835ceb8f97be468e6776/.github/workflows/companion-module-checks.yaml) against `companion-module-template-js-v2.0.4/.github/workflows/companion-module-checks.yaml`. After the fix, the only remaining differences should be comment lines.
+
+**Fix:** replace the file with the template's `companion-module-checks.yaml`. Uncommenting `upload-artifact: true` is still fine.

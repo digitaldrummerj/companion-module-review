@@ -189,7 +189,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | screenbird-signage | v1.0.0 | 2026-10-30 | [review](screenbird-signage/review-screenbird-signage-v1.0.0-20261030-192328.md) |
 | ✅ | sonifex-avn-m8r | v0.1.1 | 2026-10-30 | [review](sonifex-avn-m8r/review-sonifex-avn-m8r-v0.1.1-20261030-192328.md) |
 | ✅ | projetech-studio | v1.5.1 | 2026-10-30 | [review](projetech-studio/review-projetech-studio-v1.5.1-20261030-192328.md) |
-| ⬜ | derhamproductions-presenteringest | v0.11.0 | 2026-10-30 | [review](derhamproductions-presenteringest/review-derhamproductions-presenteringest-v0.11.0-20261030-192328.md) |
+| ✅ | derhamproductions-presenteringest | v0.11.0 | 2026-10-30 | [review](derhamproductions-presenteringest/review-derhamproductions-presenteringest-v0.11.0-20261030-192328.md) |
 | ⬜ | mutedeck-mutedeck | v2.0.0 | 2026-10-30 | [review](mutedeck-mutedeck/review-mutedeck-mutedeck-v2.0.0-20261030-192328.md) |
 | ⬜ | uniliga-cg | v1.3.0 | 2026-10-30 | [review](uniliga-cg/review-uniliga-cg-v1.3.0-20261030-192328.md) |
 | ⬜ | sennheiser-ewdx | v1.1.1 | 2026-10-30 | [review](sennheiser-ewdx/review-sennheiser-ewdx-v1.1.1-20261030-192328.md) |
