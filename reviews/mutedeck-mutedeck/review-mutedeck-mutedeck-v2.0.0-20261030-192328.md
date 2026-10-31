@@ -163,3 +163,5 @@ npmPreapprovedPackages:
 **Why it happens:** The live-icon feedbacks return fixed background colours, and v2.0.0 changed the "off" colours and the share-on colour.
 
 **Fix:** mention the colour change in the release notes and the help page. Optionally, add colour options to the live-icon feedbacks so users can keep the v1 colours.
+
+A better long-term option is layered buttons. They need `@companion-module/base` 2.1, so users must be on Companion 5.0 or later. In a layered preset (`type: 'layered'`) the button is built from elements (box, image, text), and each feedback changes only one property of one element, through `styleOverrides` (`elementId` / `elementProperty`). This replaces live-icon feedbacks that return the whole button style. The presets and feedbacks would show the same states as today. Users could still change any colour, icon or text on their own buttons. An `alternatives` preset can list the layered version first, with a `simple` fallback for hosts that don't support layered buttons.
