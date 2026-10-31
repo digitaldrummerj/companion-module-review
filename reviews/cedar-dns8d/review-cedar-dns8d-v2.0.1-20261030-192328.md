@@ -12,7 +12,7 @@
 | **Prior review** | [v2.0.0 review](review-cedar-dns8d-v2.0.0-20261030-003407.md) |
 | **Review date** | 2026-10-30 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -23,10 +23,6 @@
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [C1: Template's .yarn and /*.tgz entries are still missing from .gitignore](#c1-templates-yarn-and-tgz-entries-are-still-missing-from-gitignore)
-
 ### Non-blocking
 
 - [ ] [M1: On and Learn expression help asks for a number, but only the text values 0, 1 and 2 work](#m1-on-and-learn-expression-help-asks-for-a-number-but-only-the-text-values-0-1-and-2-work)
@@ -35,50 +31,6 @@
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🔴 Critical
-
-### C1: Template's .yarn and /*.tgz entries are still missing from .gitignore
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW (still open from v2.0.0 review C2)
-- **File:** [`.gitignore:7-17`](https://github.com/bitfocus/companion-module-cedar-dns8d/blob/e91a8492339cd7e52fd626b8fada3bf5d4734b9a/.gitignore#L7-L17)
-
-**What goes wrong:** The `.gitignore` still doesn't match the one every other module ships. Files under `.yarn/patches`, `.yarn/plugins`, `.yarn/releases`, `.yarn/sdks` and `.yarn/versions` can still be committed, which is how the unused patch removed in this release got into the repository.
-
-**Why it happens:** Since v2.0.0 you added `/.vscode` and `*.tgz` (thanks), but the template's `/.yarn` and `/*.tgz` lines are still not there as written. The file ignores `.yarn/*` and then un-ignores five `.yarn` sub-folders, and uses `cedar-dns8d-*.tgz` and `*.tgz` in place of `/*.tgz`.
-
-**Evidence:** missing template `.gitignore` entries: `/*.tgz`, `/.yarn`.
-
-```text
-# .gitignore:7-17
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-cedar-dns8d-*.tgz
-/coverage
-.DS_Store
-*.tgz
-/.vscode
-```
-
-**Fix:** use the template's `.gitignore`. Keeping `/coverage` and `.DS_Store` on top of it is fine; drop the `.yarn/*` and `!.yarn/...` lines and the extra `.tgz` patterns.
-
-```text
-node_modules/
-package-lock.json
-/pkg
-/*.tgz
-/dist
-DEBUG-*
-/.yarn
-/.vscode
-/coverage
-.DS_Store
-```
 
 ## 🟡 Medium
 
