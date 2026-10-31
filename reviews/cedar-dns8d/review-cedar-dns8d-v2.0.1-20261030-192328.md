@@ -98,7 +98,7 @@ Alternatively, add an upgrade script that flags or clamps saved plain channel va
   - L1 an unreadable device reply now sets the connection status and clears it on the next good message.
   - N2 `configUpdated()` now resets the once-per-outage log flags.
   - L2 and N1 (wrong "Invalid channel" messages) no longer apply, because the module's own checks were removed. That removal is what [L1](#l1-an-upgraded-button-saved-with-custom-channel-0-now-switches-global-on-or-global-learn) covers.
-  - C2 is only partly fixed and is carried forward as [C1](#c1-templates-yarn-and-tgz-entries-are-still-missing-from-gitignore). M1 now has an `expressionDescription`, but its wording is new [M1](#m1-on-and-learn-expression-help-asks-for-a-number-but-only-the-text-values-0-1-and-2-work).
+  - C2 is only partly fixed (the template's `.yarn` and `/*.tgz` entries are still missing from `.gitignore`); no longer reported. M1 now has an `expressionDescription`, but its wording is new [M1](#m1-on-and-learn-expression-help-asks-for-a-number-but-only-the-text-values-0-1-and-2-work).
 - The API compliance check covered the API 2.0 and 2.1 rules only. The reference has no API 2.2 rules yet, so any 2.2-specific changes were not checked.
 - `tsconfig.build.json` differs from the template only in a trailing comma after `"rootDir": "./src"`. No change required.
 - `tsconfig.json` differs from the template (extra `compilerOptions.allowJs`; trailing comma after `"types": ["node"]`). Fine as long as the module builds — no change required.
