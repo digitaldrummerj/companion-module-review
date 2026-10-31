@@ -25,7 +25,6 @@
 ### Non-blocking
 
 - [ ] [M1: Readout presets may not show the time, media or player name because the variable prefix is hard-coded](#m1-readout-presets-may-not-show-the-time-media-or-player-name-because-the-variable-prefix-is-hard-coded)
-- [ ] [M2: CI workflow uses newer GitHub Action versions than the template](#m2-ci-workflow-uses-newer-github-action-versions-than-the-template)
 - [ ] [L1: Library item dropdowns list only the first 500 library items](#l1-library-item-dropdowns-list-only-the-first-500-library-items)
 - [ ] [L2: A leftover unused file says Companion does not resolve variables in options, which is wrong](#l2-a-leftover-unused-file-says-companion-does-not-resolve-variables-in-options-which-is-wrong)
 - [ ] [NR1: Consider moving to API 2.x for expression support in options](#nr1-consider-moving-to-api-2x-for-expression-support-in-options)
@@ -50,36 +49,6 @@
 
 ```ts
 const variable = (name: string) => `$(${self.label}:${name})`
-```
-
-### M2: CI workflow uses newer GitHub Action versions than the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml:18`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/.github/workflows/node.yaml#L18), [`.github/workflows/node.yaml:21`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/.github/workflows/node.yaml#L21)
-
-**What goes wrong:** The module's CI workflow no longer matches the official template, so it drifts from every other module's CI and makes later troubleshooting of build results harder. This file did not change since v1.0.0. It was M4 in the prior review, and is now raised to High because a `.github` file that exists but differs from the template is treated as blocking.
-
-**Why it happens:** The workflow pins `actions/checkout@v7` and `actions/setup-node@v6`, where the template pins `actions/checkout@v4` and `actions/setup-node@v4`. The commented-out test job and the dropped commented codecov step are comment-only and are not part of this finding.
-
-**Evidence:**
-
-```text
-Template: .github/workflows/node.yaml:17   - uses: actions/checkout@v4
-Module:   .github/workflows/node.yaml:18   - uses: actions/checkout@v7
-Template: .github/workflows/node.yaml:20     uses: actions/setup-node@v4
-Module:   .github/workflows/node.yaml:21     uses: actions/setup-node@v6
-```
-
-**Confirm by:** `diff companion-module-templates/companion-module-template-ts-v1/.github/workflows/node.yaml .github/workflows/node.yaml`, then open [`.github/workflows/node.yaml:18-21`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/.github/workflows/node.yaml#L18-L21).
-
-**Fix:** copy the template's `node.yaml` over the module's file.
-
-```yaml
-      - uses: actions/checkout@v4
-      - name: Use Node.js 22.x
-        # This should match the version of Node.js you have defined in the manifest.json runtime field
-        uses: actions/setup-node@v4
 ```
 
 ## 🟢 Low
