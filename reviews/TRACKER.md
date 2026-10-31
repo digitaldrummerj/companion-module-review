@@ -203,7 +203,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | eventspro-toolspro-timer | v1.2.1 | 2026-10-30 | [review](eventspro-toolspro-timer/review-eventspro-toolspro-timer-v1.2.1-20261030-192328.md) |
 | ✅ | flamingosoftware-toucantype | v1.0.0 | 2026-10-30 | [review](flamingosoftware-toucantype/review-flamingosoftware-toucantype-v1.0.0-20261030-192328.md) |
 | ✅ | middlethings-middlecontrol | v4.0.1 | 2026-10-30 | [review](middlethings-middlecontrol/review-middlethings-middlecontrol-v4.0.1-20261030-192328.md) |
-| ⬜ | cuetime-stagedisplay | v0.1.0 | 2026-10-30 | [review](cuetime-stagedisplay/review-cuetime-stagedisplay-v0.1.0-20261030-192328.md) |
+| ✅ | cuetime-stagedisplay | v0.1.0 | 2026-10-30 | [review](cuetime-stagedisplay/review-cuetime-stagedisplay-v0.1.0-20261030-192328.md) |
 | ⬜ | twoloox-pandorasbox | v3.1.4 | 2026-10-30 | [review](twoloox-pandorasbox/review-twoloox-pandorasbox-v3.1.4-20261030-192328.md) |
 | ✅ | ltn-schedule | v2.7.3 | 2026-10-30 | [review](ltn-schedule/review-ltn-schedule-v2.7.3-20261030-192328.md) |
 | ⬜ | videopathe-qplayer | v1.0.1 | 2026-10-30 | [review](videopathe-qplayer/review-videopathe-qplayer-v1.0.1-20261030-192328.md) |
