@@ -26,7 +26,6 @@
 ### Blocking
 
 - [ ] [C1: The .prettierignore file does not match the template](#c1-the-prettierignore-file-does-not-match-the-template)
-- [ ] [C2: Module is built on an outdated Companion v1 API, below the required 1.14 minimum](#c2-module-is-built-on-an-outdated-companion-v1-api-below-the-required-114-minimum)
 
 ### Non-blocking
 
@@ -76,47 +75,6 @@ release/
 pkg/
 package-lock.json
 ```
-
-### C2: Module is built on an outdated Companion v1 API, below the required 1.14 minimum
-
-- **Source:** 🔎 compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`package.json:26`](https://github.com/bitfocus/companion-module-venucable-planner/blob/5f0a8ebcc1487770efa844de362ed73555312d71/package.json#L26)
-
-**What goes wrong:** The module ships against `@companion-module/base` 1.12.1, two minor releases behind the current v1 line. Every API 1 module must be on at least 1.14.1, the version the official v1 JS template uses. On 1.12.1 the module can't use newer v1 features. For example, the "Pairing key" config field can't be a hidden `secret-text` field (1.12.1 has no such field type), so the key is shown in plain text in the connection settings.
-
-**Why it happens:** `package.json` pins `@companion-module/base` to `~1.12.1`, so `yarn.lock` and the installed package both resolve to 1.12.1. The template pins `~1.14.1`.
-
-**Evidence:**
-
-```json
-// package.json:25-27
-	"dependencies": {
-		"@companion-module/base": "~1.12.1",
-		"ws": "^8.18.0"
-```
-
-```text
-// yarn.lock:8-10
-"@companion-module/base@npm:~1.12.1":
-  version: 1.12.1
-  resolution: "@companion-module/base@npm:1.12.1"
-```
-
-```json
-// companion-module-template-js-v1/package.json:19
-		"@companion-module/base": "~1.14.1"
-```
-
-**Confirm by:** open [`package.json:26`](https://github.com/bitfocus/companion-module-venucable-planner/blob/5f0a8ebcc1487770efa844de362ed73555312d71/package.json#L26) and check that `@companion-module/base` is `~1.12.1`; the API 1 template uses `~1.14.1`.
-
-**Fix:** raise the base dependency to the template's version (`~1.15.1` is also fine), then run `yarn install` to refresh `yarn.lock`. Node 22 is already set in the manifest (`runtime.type: node22`) and in `engines.node` (`^22`), so nothing else needs to change for the bump.
-
-```json
-"@companion-module/base": "~1.14.1"
-```
-
-Once on the newer base, consider making the "Pairing key" field (`key`, [`src/main.js:52-59`](https://github.com/bitfocus/companion-module-venucable-planner/blob/5f0a8ebcc1487770efa844de362ed73555312d71/src/main.js#L52-L59)) a `secret-text` field so the key isn't exposed in exported configs.
 
 ## 🟢 Low
 
