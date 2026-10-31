@@ -98,6 +98,6 @@ const variable = (name: string) => `$(${self.label}:${name})`
 - Prior M1 (every variable and feedback re-sent four times a second): fixed. The ticker only repaints while something is playing or counting down, sends only changed variables, and re-checks only the time-based feedbacks.
 - Prior M2 (No target playlist still sent the active playlist): fixed. An empty choice now sends an empty target.
 - Prior M3 (variables resolved a second time): fixed in the wrappers; the leftover helper file is [L2](#l2-a-leftover-unused-file-says-companion-does-not-resolve-variables-in-options-which-is-wrong).
-- Prior M4 (workflow action versions): not changed; carried forward as [M2](#m2-ci-workflow-uses-newer-github-action-versions-than-the-template).
+- Prior M4 (workflow action versions): not changed; no longer reported.
 - Prior L1–L5 (rejected command turned the connection red, crash on an unexpected reply, unexplained Bad Configuration, `isVisible` functions, Open monitor window preset toggling): all fixed.
 - `yarn install --immutable`, `yarn package` and `yarn lint` all pass.
