@@ -11,7 +11,7 @@
 | **Build** | `yarn install --immutable` and `yarn package` pass |
 | **Date** | 2026-10-31 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -22,10 +22,6 @@
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [C1: .gitignore is missing five of the template's entries](#c1-gitignore-is-missing-five-of-the-templates-entries)
-
 ### Non-blocking
 
 - [ ] [M1: A wrong Key leaves the connection on Connecting with no error](#m1-a-wrong-key-leaves-the-connection-on-connecting-with-no-error)
@@ -34,55 +30,6 @@
 - [ ] [L3: The Go to page action sends a fractional page number as typed](#l3-the-go-to-page-action-sends-a-fractional-page-number-as-typed)
 - [ ] [L4: Upgrade scripts are declared in index.js rather than a separate upgrades.js](#l4-upgrade-scripts-are-declared-in-indexjs-rather-than-a-separate-upgradesjs)
 - [ ] [N1: Every poll resends all variables and feedbacks even when nothing changed](#n1-every-poll-resends-all-variables-and-feedbacks-even-when-nothing-changed)
-
-## 🔴 Critical
-
-### C1: .gitignore is missing five of the template's entries
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.gitignore`](https://github.com/bitfocus/companion-module-cuemark-cuemark/blob/f22be15beba189d369b0fe2e458c0a7cb481d434/.gitignore)
-
-**What goes wrong:** The module's `.gitignore` doesn't match the one every Companion module starts from. Anyone who builds or debugs the module from this repo can end up committing files the template keeps out, such as an npm `package-lock.json` next to `yarn.lock`, or `DEBUG-*` files other than `DEBUG-PACKAGED`. It also makes the repo look different from every other module when someone later troubleshoots a build.
-
-**Why it happens:** The file was written by hand. It covers similar ground (`pkg/`, `*.tgz`, `.yarn/`), but not with the template's entries, and two of the template's entries are missing altogether.
-
-**Evidence:**
-
-```text
-Template expects (companion-module-template-js-v1 @ 9e222b4):
-  node_modules/
-  package-lock.json
-  /pkg
-  /*.tgz
-  DEBUG-*
-  /.yarn
-
-Found:
-  node_modules/
-  pkg/
-  *.tgz
-  DEBUG-PACKAGED
-  # Yarn, as Bitfocus builds modules with it.
-  .yarn/
-  .pnp.*
-
-Missing: package-lock.json, /pkg, /*.tgz, DEBUG-*, /.yarn
-```
-
-**Confirm by:** open [`.gitignore`](https://github.com/bitfocus/companion-module-cuemark-cuemark/blob/f22be15beba189d369b0fe2e458c0a7cb481d434/.gitignore) and compare it with the template's list above.
-
-**Fix:** add the template's entries exactly as written. Extra entries of your own, such as `.pnp.*`, can stay.
-
-```text
-node_modules/
-package-lock.json
-/pkg
-/*.tgz
-DEBUG-*
-/.yarn
-.pnp.*
-```
 
 ## 🟡 Medium
 
