@@ -67,6 +67,7 @@
 
 ### Notes
 
+- **Commit messages:** the module's commit messages are in Spanish (e.g. `5fadbfd` "Versión 1.0.4 para revisión de Bitfocus"). Please write future commit messages in English.
 - [📝 Additional Notes](#-additional-notes)
 
 ## 🔴 Critical
