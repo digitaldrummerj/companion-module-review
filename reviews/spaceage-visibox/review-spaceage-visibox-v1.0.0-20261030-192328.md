@@ -45,6 +45,7 @@
 - [ ] [C18: `package.json` has no `lint-staged` section](#c18-packagejson-has-no-lint-staged-section)
 - [ ] [H1: `yarn lint` crashes before checking any code, because `prettier` is not installed](#h1-yarn-lint-crashes-before-checking-any-code-because-prettier-is-not-installed)
 - [ ] [H2: The module bundles itself with esbuild, which Companion's build tooling already does](#h2-the-module-bundles-itself-with-esbuild-which-companions-build-tooling-already-does)
+- [ ] [H3: The Visibox client library is a devDependency, although the module loads it at runtime](#h3-the-visibox-client-library-is-a-devdependency-although-the-module-loads-it-at-runtime)
 
 ### Non-blocking
 
@@ -556,7 +557,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'prettier' imported from node_
 
 **What goes wrong:** The module adds its own bundler on top of Companion's. `yarn package` runs esbuild to bundle `src/main.ts` into `dist/main.js`, then `companion-module-build` bundles it again. Companion's tooling already bundles the module and all of its dependencies when it packages it, so the esbuild step, its `--external` flags and the `esbuild` devDependency are extra build machinery that other Companion maintainers will not expect when they troubleshoot or take over the module.
 
-**Why it happens:** `@visibox/api-client` is listed as a devDependency and esbuild inlines it into `dist/main.js`. With the template's build, `tsc` compiles the TypeScript and `companion-module-build` (webpack, from `@companion-module/tools`) bundles every runtime dependency, so a normal `dependencies` entry is all the client library needs.
+**Why it happens:** esbuild inlines `@visibox/api-client`, which is listed as a devDependency ([H3](#h3-the-visibox-client-library-is-a-devdependency-although-the-module-loads-it-at-runtime)), into `dist/main.js`. With the template's build, `tsc` compiles the TypeScript and `companion-module-build` (webpack, from `@companion-module/tools`) bundles every runtime dependency, so a normal `dependencies` entry is all the client library needs.
 
 **Evidence:**
 
@@ -572,9 +573,52 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'prettier' imported from node_
 **Fix:** remove esbuild and use the template's build ([C13](#c13-packagejson-has-no-buildmain-script)):
 
 - Replace the `build` script with the template's `build` / `build:main` pair (`tsc -p tsconfig.build.json`), and use `"package": "run build && companion-module-build"`.
-- Move `@visibox/api-client` from `devDependencies` to `dependencies`.
+- Move `@visibox/api-client` from `devDependencies` to `dependencies` ([H3](#h3-the-visibox-client-library-is-a-devdependency-although-the-module-loads-it-at-runtime)).
 - Remove the `esbuild` devDependency.
 - Run `yarn package` and check the module still loads in Companion.
+
+### H3: The Visibox client library is a devDependency, although the module loads it at runtime
+
+- **Source:** 👤 reviewer
+- **Classification:** 🆕 NEW
+- **File:** [`package.json:21-27`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/package.json#L21-L27), [`src/api.ts:10-14`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/src/api.ts#L10-L14), [`src/feedbacks.ts:17`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/src/feedbacks.ts#L17)
+
+**What goes wrong:** `@visibox/api-client` is the code that talks to Visibox: every action, feedback and variable goes through it. `package.json` lists it under `devDependencies`, which means "only needed to develop or build the module". A packaged module does not install its devDependencies, so anything that installs or packages the module the standard way treats the client library as not shipping:
+
+- Companion's packaging tool (`companion-module-build`) builds the list of third-party packages it ships, and checks their licenses, from `dependencies` only. The Visibox client is left out, so its license is never checked or listed, although its code is inside `main.js`.
+- Installing the module for production (`yarn workspaces focus --production`, `npm install --omit=dev`) skips it, so `main.js` built from the plain `tsc` output fails to load with "Cannot find package '@visibox/api-client'".
+
+Today it only works because esbuild copies the library into `dist/main.js` at build time ([H2](#h2-the-module-bundles-itself-with-esbuild-which-companions-build-tooling-already-does)).
+
+**Why it happens:** `src/api.ts` and `src/feedbacks.ts` import the library at runtime (not type-only imports), but it was added as a devDependency.
+
+**Evidence:**
+
+```ts
+// src/api.ts:10-14
+import {
+  VisiboxApiClient as BaseClient,
+  type ConnectionStatus,
+  type LogFn,
+} from '@visibox/api-client'
+
+// src/feedbacks.ts:17
+import { summarizePlayback } from '@visibox/api-client'
+```
+
+```json
+"dependencies": {
+  "@companion-module/base": "~1.14.1",
+  "ws": "~8.21.1"
+},
+"devDependencies": {
+  "@companion-module/tools": "^2.6.1",
+  "@visibox/api-client": "^1.1.0",
+```
+
+**Confirm by:** open [`package.json:21-27`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/package.json#L21-L27); `@visibox/api-client` is under `devDependencies` while [`src/api.ts:10-14`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/src/api.ts#L10-L14) imports `VisiboxApiClient` from it.
+
+**Fix:** move `@visibox/api-client` to `dependencies` (`yarn add @visibox/api-client`, which also removes it from `devDependencies`), and keep it pinned with `~1.1.0` like the other dependencies.
 
 ## 🟡 Medium
 
