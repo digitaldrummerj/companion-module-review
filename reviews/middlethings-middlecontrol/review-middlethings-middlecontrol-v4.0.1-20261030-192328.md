@@ -16,16 +16,16 @@
 
 ### Blocking
 
-- [ ] [C1: The module cannot be installed or packaged with the standard build](#c1-the-module-cannot-be-installed-or-packaged-with-the-standard-build)
-- [ ] [C2: Yarn settings file is missing, so installs don't use the template's safety settings](#c2-yarn-settings-file-is-missing-so-installs-dont-use-the-templates-safety-settings)
-- [ ] [C3: Line-ending settings file is missing](#c3-line-ending-settings-file-is-missing)
-- [ ] [C4: Build output and debug files are not ignored by git](#c4-build-output-and-debug-files-are-not-ignored-by-git)
-- [ ] [C5: Source files sit at the module root instead of in a src folder](#c5-source-files-sit-at-the-module-root-instead-of-in-a-src-folder)
-- [ ] [C6: Package file is missing the engines, prettier and packageManager fields](#c6-package-file-is-missing-the-engines-prettier-and-packagemanager-fields)
-- [ ] [C7: Package file is missing the format and package scripts](#c7-package-file-is-missing-the-format-and-package-scripts)
-- [ ] [C8: Prettier is not a dev dependency](#c8-prettier-is-not-a-dev-dependency)
-- [ ] [C9: The module still targets Node 18, but the API 1 template runs on Node 22](#c9-the-module-still-targets-node-18-but-the-api-1-template-runs-on-node-22)
-- [ ] [H1: Module checks workflow adds a unit test job the template does not have](#h1-module-checks-workflow-adds-a-unit-test-job-the-template-does-not-have)
+- [ ] [C1: The module is built on a very old @companion-module/base (1.7) and Node 18: update to the latest v1 base and Node 22](#c1-the-module-is-built-on-a-very-old-companion-modulebase-17-and-node-18-update-to-the-latest-v1-base-and-node-22)
+- [ ] [C2: The module cannot be installed or packaged with the standard build](#c2-the-module-cannot-be-installed-or-packaged-with-the-standard-build)
+- [ ] [C3: Yarn settings file is missing, so installs don't use the template's safety settings](#c3-yarn-settings-file-is-missing-so-installs-dont-use-the-templates-safety-settings)
+- [ ] [C4: Line-ending settings file is missing](#c4-line-ending-settings-file-is-missing)
+- [ ] [C5: Build output and debug files are not ignored by git](#c5-build-output-and-debug-files-are-not-ignored-by-git)
+- [ ] [C6: Source files sit at the module root instead of in a src folder](#c6-source-files-sit-at-the-module-root-instead-of-in-a-src-folder)
+- [ ] [C7: Package file is missing the engines, prettier and packageManager fields](#c7-package-file-is-missing-the-engines-prettier-and-packagemanager-fields)
+- [ ] [C8: Package file is missing the format and package scripts](#c8-package-file-is-missing-the-format-and-package-scripts)
+- [ ] [C9: Prettier is not a dev dependency](#c9-prettier-is-not-a-dev-dependency)
+- [ ] [C10: The module still targets Node 18, but the API 1 template runs on Node 22](#c10-the-module-still-targets-node-18-but-the-api-1-template-runs-on-node-22)
 
 ### Non-blocking
 
@@ -36,7 +36,28 @@
 
 ## 🔴 Critical
 
-### C1: The module cannot be installed or packaged with the standard build
+### C1: The module is built on a very old @companion-module/base (1.7) and Node 18: update to the latest v1 base and Node 22
+
+- **Source:** 👤 Bitfocus reviewer
+- **Classification:** whole module, already the case in v3.4.0
+- **File:** [`package.json:15`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/package.json#L15), [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/companion/manifest.json#L18)
+
+**What goes wrong:** The module depends on `@companion-module/base` `~1.7`, a v1 release that is many versions old, and runs on Node 18. Users get none of the fixes and improvements made to the v1 base since then. The module also no longer matches the current API 1 template, which makes it harder for anyone to build, check or troubleshoot it the same way as other modules. Most of the template findings below come from that gap.
+
+**Why it happens:** The module was never moved forward from its old base and toolchain. The current API 1 template uses `@companion-module/base` `~1.14.1` (the newest v1 release on npm is 1.15.1, tagged `legacy-v1`), Node 22, Yarn 4 and its `src/` layout.
+
+**Evidence:**
+
+```text
+package.json:15            "@companion-module/base": "~1.7"
+companion/manifest.json:18 "type": "node18"
+```
+
+**Confirm by:** open [`package.json`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/package.json) and [`companion/manifest.json`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/companion/manifest.json), and compare them with the API 1 template (`companion-module-template-js-v1`).
+
+**Fix:** update `@companion-module/base` to the latest v1 release and move the module to Node 22. Use the current API 1 template as the starting point for the upgrade. Doing this upgrade fixes most of the other Critical findings in this review: [C2](#c2-the-module-cannot-be-installed-or-packaged-with-the-standard-build) (standard build), [C3](#c3-yarn-settings-file-is-missing-so-installs-dont-use-the-templates-safety-settings) (Yarn settings), [C4](#c4-line-ending-settings-file-is-missing) (line endings), [C5](#c5-build-output-and-debug-files-are-not-ignored-by-git) (git ignore), [C6](#c6-source-files-sit-at-the-module-root-instead-of-in-a-src-folder) (`src/` folder), [C7](#c7-package-file-is-missing-the-engines-prettier-and-packagemanager-fields), [C8](#c8-package-file-is-missing-the-format-and-package-scripts) and [C9](#c9-prettier-is-not-a-dev-dependency) (package file) and [C10](#c10-the-module-still-targets-node-18-but-the-api-1-template-runs-on-node-22) (Node version in every place).
+
+### C2: The module cannot be installed or packaged with the standard build
 
 - **Source:** 🤖 validate-template (BUILD-INSTALL), 🤖 validate-template (BUILD-PACKAGE)
 - **Classification:** template check (whole module) — already the case in v3.4.0
@@ -53,9 +74,9 @@ yarn install --immutable  -> failed (lockfile would be modified; yarn.lock is "y
 yarn package              -> failed (no "package" script in package.json)
 ```
 
-**Fix:** move the module onto the template's Yarn 4 setup: add `"packageManager": "yarn@4.12.0"` and the template's `.yarnrc.yml` (C2), add the `package` script (C7), then run `yarn install` with Yarn 4 and commit the regenerated `yarn.lock`.
+**Fix:** move the module onto the template's Yarn 4 setup: add `"packageManager": "yarn@4.12.0"` and the template's `.yarnrc.yml` ([C3](#c3-yarn-settings-file-is-missing-so-installs-dont-use-the-templates-safety-settings)), add the `package` script ([C8](#c8-package-file-is-missing-the-format-and-package-scripts)), then run `yarn install` with Yarn 4 and commit the regenerated `yarn.lock`.
 
-### C2: Yarn settings file is missing, so installs don't use the template's safety settings
+### C3: Yarn settings file is missing, so installs don't use the template's safety settings
 
 - **Source:** 🤖 validate-template (FILE-MISSING)
 - **Classification:** template check (whole module) — already the case in v3.4.0
@@ -78,7 +99,7 @@ npmPreapprovedPackages:
   - "@companion-module/*"
 ```
 
-### C3: Line-ending settings file is missing
+### C4: Line-ending settings file is missing
 
 - **Source:** 🤖 validate-template (FILE-MISSING)
 - **Classification:** template check (whole module) — already the case in v3.4.0
@@ -94,7 +115,7 @@ npmPreapprovedPackages:
 * text=auto eol=lf
 ```
 
-### C4: Build output and debug files are not ignored by git
+### C5: Build output and debug files are not ignored by git
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** template check (whole module) — already the case in v3.4.0
@@ -113,7 +134,7 @@ DEBUG-*
 /.yarn
 ```
 
-### C5: Source files sit at the module root instead of in a src folder
+### C6: Source files sit at the module root instead of in a src folder
 
 - **Source:** 🤖 validate-template (SRC-AT-ROOT)
 - **Classification:** partly 🆕 NEW — [`upgrades.js`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/upgrades.js), [`upgrades.test.js`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/upgrades.test.js) and [`feedbacks.test.js`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/feedbacks.test.js) were added at the root in this release; the other 12 files were already there in v3.4.0
@@ -125,13 +146,13 @@ DEBUG-*
 
 **Fix:** move the source and test files into `src/`, then update `"main"` in `package.json` and `runtime.entrypoint` in `companion/manifest.json` to point at the new entry file (e.g. `src/main.js`, entrypoint `../src/main.js`).
 
-### C6: Package file is missing the engines, prettier and packageManager fields
+### C7: Package file is missing the engines, prettier and packageManager fields
 
 - **Source:** 🤖 validate-template (PKG-FIELD)
 - **Classification:** template check (whole module) — already the case in v3.4.0
 - **File:** [`package.json`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/package.json)
 
-**What goes wrong:** Nothing pins the Node and Yarn versions the module is built with, and the formatter has no shared config, so builds and formatting differ between machines (and `packageManager` is part of why C1 fails).
+**What goes wrong:** Nothing pins the Node and Yarn versions the module is built with, and the formatter has no shared config, so builds and formatting differ between machines (and `packageManager` is part of why [C2](#c2-the-module-cannot-be-installed-or-packaged-with-the-standard-build) fails).
 
 **Why it happens:** The template's `package.json` has `engines`, `prettier` and `packageManager`; the module's has none of them.
 
@@ -146,7 +167,7 @@ DEBUG-*
 "packageManager": "yarn@4.12.0"
 ```
 
-### C7: Package file is missing the format and package scripts
+### C8: Package file is missing the format and package scripts
 
 - **Source:** 🤖 validate-template (PKG-SCRIPT)
 - **Classification:** template check (whole module) — already the case in v3.4.0
@@ -166,19 +187,19 @@ DEBUG-*
 }
 ```
 
-### C8: Prettier is not a dev dependency
+### C9: Prettier is not a dev dependency
 
 - **Source:** 🤖 validate-template (PKG-DEVDEP)
 - **Classification:** template check (whole module) — already the case in v3.4.0
 - **File:** [`package.json`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/package.json)
 
-**What goes wrong:** The `format` script (C7) has no Prettier installed to run.
+**What goes wrong:** The `format` script ([C8](#c8-package-file-is-missing-the-format-and-package-scripts)) has no Prettier installed to run.
 
 **Why it happens:** `devDependencies` only lists `@companion-module/tools`; the template also lists `prettier`.
 
 **Fix:** add `"prettier": "^3.7.4"` to `devDependencies`.
 
-### C9: The module still targets Node 18, but the API 1 template runs on Node 22
+### C10: The module still targets Node 18, but the API 1 template runs on Node 22
 
 - **Source:** 🤖 validate-template (NODE-VERSION)
 - **Classification:** template check (whole module) — already the case in v3.4.0
@@ -201,42 +222,6 @@ companion/manifest.json runtime.type 'node18' -> 'node22'
 
 - [ ] [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/companion/manifest.json#L18): `"type": "node22"` in `runtime`
 - [ ] [`.github/workflows/companion-module-checks.yaml`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/.github/workflows/companion-module-checks.yaml): `node-version: 22.x` (line 26)
-
-## 🟠 High
-
-### H1: Module checks workflow adds a unit test job the template does not have
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW change to an already-differing file — v3.4.0 already had the `unit:` job; this release added `cache: yarn` and the install step to it
-- **File:** [`.github/workflows/companion-module-checks.yaml:19-32`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/.github/workflows/companion-module-checks.yaml#L19-L32)
-
-**What goes wrong:** The workflow file differs from the template, so it no longer matches what other modules run. The extra job also runs on Node 18 (listed in [C9](#c9-the-module-still-targets-node-18-but-the-api-1-template-runs-on-node-22)) with `yarn install --frozen-lockfile`, a Yarn 1 command that stops working once the module moves to Yarn 4 (C1).
-
-**Why it happens:** The template's `companion-module-checks.yaml` ends after the `check:` job at line 17. The module adds a second `unit:` job.
-
-**Evidence:**
-
-```yaml
-# .github/workflows/companion-module-checks.yaml:19-32
-  unit:
-    name: Unit tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: yarn
-      # The tests import the real module files, some of which import @companion-module/base.
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-      - name: Run unit tests
-        run: node --test
-```
-
-**Confirm by:** diff [`.github/workflows/companion-module-checks.yaml`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/.github/workflows/companion-module-checks.yaml) against `companion-module-template-js-v1/.github/workflows/companion-module-checks.yaml` (the template ends at line 17).
-
-**Fix:** restore the template's `companion-module-checks.yaml` (remove lines 19-32). Run the unit tests locally with `yarn test`, or from a separate workflow file of your own.
 
 ## 🟡 Medium
 
