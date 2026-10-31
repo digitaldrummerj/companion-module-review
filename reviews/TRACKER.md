@@ -217,7 +217,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | cuemark-cuemark | v1.2.0 | 2026-10-31 | [review](cuemark-cuemark/review-cuemark-cuemark-v1.2.0-20261031-201135.md) |
 | ⬜ | multicam-systems-rcp | v2.0.0-beta.5 | 2026-10-31 | [review](multicam-systems-rcp/review-multicam-systems-rcp-v2.0.0-beta.5-20261031-201135.md) |
 | ⬜ | multicam-systems-rcp | v1.1.0-beta.1 | 2026-10-31 | [review](multicam-systems-rcp/review-multicam-systems-rcp-v1.1.0-beta.1-20261031-201135.md) |
-| ⬜ | showsign-signage | v1.0.2 | 2026-10-31 | [review](showsign-signage/review-showsign-signage-v1.0.2-20261031-201135.md) |
+| ✅ | showsign-signage | v1.0.2 | 2026-10-31 | [review](showsign-signage/review-showsign-signage-v1.0.2-20261031-201135.md) |
 | ⬜ | pixelmosaic-smartpreso | v1.0.0 | 2026-10-31 | [review](pixelmosaic-smartpreso/review-pixelmosaic-smartpreso-v1.0.0-20261031-201135.md) |
 | ⬜ | utopianacademy-deckboy | v1.0.8 | 2026-10-31 | [review](utopianacademy-deckboy/review-utopianacademy-deckboy-v1.0.8-20261031-201135.md) |
 | ⬜ | venucable-planner | v1.7.1 | 2026-10-31 | [review](venucable-planner/review-venucable-planner-v1.7.1-20261031-201135.md) |
