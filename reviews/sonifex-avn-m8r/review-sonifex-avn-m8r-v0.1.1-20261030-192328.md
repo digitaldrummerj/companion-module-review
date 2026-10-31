@@ -17,9 +17,7 @@
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | Companion does not restart a module's process just because its connection stays in a warning or Connection Failure state, so the leftover Ember+ clients keep running until the connection is disabled or Companion restarts | Companion restarts a module process only on a crash or disable/enable; the module does not crash on this path, because the event library it uses does not throw on an unhandled `error` event. Companion's host code was not checked | [H1](#h1-while-the-device-is-unreachable-failed-ember-connection-attempts-pile-up-in-the-background-and-later-stay-connected) |
-| A2 | The AVN-M8R keeps each leftover Ember+ session open, because it answers S101 keepalives as Ember+ providers normally do, and it does not refuse extra sessions | Standard Ember+ provider behaviour, reproduced only against a local TCP server; the device was not tested | [H1](#h1-while-the-device-is-unreachable-failed-ember-connection-attempts-pile-up-in-the-background-and-later-stay-connected) |
-| A3 | The AVN-M8R normally confirms Ember+ writes quickly, so an action that ignores an abort is rarely noticeable | Typical Ember+ provider behaviour; the device was not tested | [L3](#l3-aborting-a-button-does-not-stop-an-action-that-is-waiting-for-the-device-to-confirm-a-change) |
+| A1 | The AVN-M8R normally confirms Ember+ writes quickly, so an action that ignores an abort is rarely noticeable | Typical Ember+ provider behaviour; the device was not tested | [L3](#l3-aborting-a-button-does-not-stop-an-action-that-is-waiting-for-the-device-to-confirm-a-change) |
 
 ## 📋 Issues
 
@@ -27,7 +25,6 @@
 
 - [ ] [C1: Yarn config differs from the template: extra approvedGitRepositories entry](#c1-yarn-config-differs-from-the-template-extra-approvedgitrepositories-entry)
 - [ ] [C2: The module still targets Node 22, but the API 2.1 template runs on Node 26](#c2-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26)
-- [ ] [H1: While the device is unreachable, failed Ember+ connection attempts pile up in the background and later stay connected](#h1-while-the-device-is-unreachable-failed-ember-connection-attempts-pile-up-in-the-background-and-later-stay-connected)
 
 ### Non-blocking
 
@@ -99,118 +96,6 @@ package.json engines.node '^22.20' -> '^26'
 
 - [ ] [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/companion/manifest.json#L18): `"type": "node26"` in `runtime`
 - [ ] [`package.json:15`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/package.json#L15): `"engines": { "node": "^26" }`
-
-## 🟠 High
-
-### H1: While the device is unreachable, failed Ember+ connection attempts pile up in the background and later stay connected
-
-- **Source:** 🔎 protocol reviewer, QA reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/ember.js:69-74`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/src/ember.js#L69-L74), [`src/ember.js:118-135`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/src/ember.js#L118-L135)
-
-**What goes wrong:** A user adds the AVN-M8R connection while the unit is off, booting, unplugged or on another VLAN. This is common when Companion starts before the rack powers up. The connection status shows the Ember+ warning and the module retries about every 10 seconds, which is correct. But every failed attempt leaves its Ember+ client running in the background, and that client keeps opening a new TCP connection to port 9000 of the device every 5 seconds for up to 5 minutes. A new leftover client is added on every retry, so after a few minutes about 30 of them run at once. When the AVN-M8R comes back, they all connect next to the module's real client and stay connected, sending keepalives and reconnecting after a drop. The device ends up with dozens of extra Ember+ sessions from one Companion connection, until the user disables the connection or restarts Companion. Changing **Device IP** while the old address is unreachable does the same: the leftover clients keep connecting to the old IP. Users whose device is reachable when the connection starts are not affected, and a connection that drops after it was established is cleaned up correctly.
-
-**Why it happens:** Each attempt creates a new Ember+ client. Inside the Ember+ library (`emberplus-connection` 0.3.1), connecting starts a 5-second retry timer of its own, and only a successful connection stops it. When the attempt fails, the module throws the client away with `discard()`. That call does not stop the library's retry timer, because by then the library has already closed the half-open socket and its "disconnect" step returns early. The thrown-away client therefore keeps retrying, and once it connects it starts its keepalive. The module no longer holds a reference to it, so neither `destroy()` nor a config change can stop it.
-
-**Evidence:**
-
-```js
-// src/ember.js:69-74
-	async connect(host, port = 9000) {
-		await this.disconnect()
-		if (!host) return
-
-		const client = new EmberClient(host, port, 10000, true, 1000)
-		this.client = client
-```
-
-```js
-// src/ember.js:118-135
-		} catch (error) {
-			if (this.client === client) {
-				void this.disconnect()
-				this.instance.scheduleReconnect('ember', `initialisation failed (${error.message || error})`)
-			}
-		}
-	}
-
-	// Detaches listeners and discards the current client so its events can no longer trigger a reconnect.
-	async disconnect() {
-		this.ready = false
-		const client = this.client
-		this.client = null
-		if (!client) return
-
-		client.removeAllListeners()
-		client.discard()
-	}
-```
-
-```js
-// src/main.js:169-172 (RECONNECT_DELAY = 5000, src/main.js:19)
-		this.reconnectTimers[name] = setTimeout(() => {
-			delete this.reconnectTimers[name]
-			this.connectTransport(name)
-		}, RECONNECT_DELAY)
-```
-
-```js
-// node_modules/emberplus-connection/dist/Ember/Socket/S101Client.js:74-97 (v0.3.1)
-                const connectTimeoutListener = () => {
-                    if (this.socket) {
-                        this.socket.destroy();
-                        this.socket.removeAllListeners();
-                        delete this.socket;
-                    }
-                    ...
-                this._shouldBeConnected = true;
-            ...
-            if (!this._connectionAttemptTimer) {
-                this._connectionAttemptTimer = setInterval(() => this._autoReconnectionAttempt(), this._autoReconnectDelay);
-            }
-```
-
-```js
-// node_modules/emberplus-connection/dist/Ember/Socket/S101Socket.js:72-75 (v0.3.1)
-    async disconnect(timeout = 2) {
-        if (!this.isConnected() || this.socket === undefined) {
-            return Promise.resolve();
-        }
-```
-
-```text
-// Local reproduction (emberplus-connection 0.3.1, 127.0.0.1 only): failed connect, then removeAllListeners() + discard() as the module does
-connect result Could not connect to 127.0.0.1:1 after a timeout of 5 seconds
-after discard timer set? true shouldBeConnected false
-56.427 socket.connect 1 127.0.0.1
-01.428 socket.connect 1 127.0.0.1
-06.430 socket.connect 1 127.0.0.1
-11.430 socket.connect 1 127.0.0.1
-
-// Second run: two failed connects, each discarded, then a TCP server opened on that port
-server got connection #1
-server got connection #2
-server got connection #3
-server got connection #4
-total orphan connections after 12s: 4 open: 4
-```
-
-**Confirm by:** open [`src/ember.js:118-135`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/src/ember.js#L118-L135), then `node_modules/emberplus-connection/dist/Ember/Socket/S101Client.js:74-97` and `S101Socket.js:72-75`. After a connect timeout the socket is already deleted, so `discard()` returns early and the library's `_connectionAttemptTimer` interval is never cleared.
-
-**Fix:** keep one Ember+ client per device address instead of discarding and recreating it after every failed attempt. Create it in `connect()`, let the library's own reconnect (or another `client.connect()` on the same client) handle retries, and re-run the tree expansion and subscriptions from its `connected` event. Discard it only in `destroy()` and when the host changes. If you keep the recreate-per-attempt design, stop the library's retry before discarding:
-
-```js
-// private API of emberplus-connection 0.3.1: pin the version if you rely on it
-const s101 = client._client
-if (s101) {
-	s101._autoReconnect = false
-	s101._clearConnectionAttemptTimer?.()
-	s101.socket?.destroy()
-}
-client.discard()
-```
-
-Please also report the bug upstream (`discard()` should clear the S101 retry timer and destroy a connecting socket), and check whether a newer `emberplus-connection` release already fixes it.
 
 ## 🟡 Medium
 
