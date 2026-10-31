@@ -38,6 +38,7 @@
 - [ ] [C13: Prettier is not a devDependency, so yarn format relies on a global install](#c13-prettier-is-not-a-devdependency-so-yarn-format-relies-on-a-global-install)
 - [ ] [C14: The module still targets Node 18, but the API 1 template runs on Node 22](#c14-the-module-still-targets-node-18-but-the-api-1-template-runs-on-node-22)
 - [ ] [C15: yarn package fails, so no installable package can be built](#c15-yarn-package-fails-so-no-installable-package-can-be-built)
+- [ ] [H1: Code comments are in German instead of English](#h1-code-comments-are-in-german-instead-of-english)
 
 ### Non-blocking
 
@@ -324,6 +325,35 @@ companion/manifest.json runtime.type 'node18' -> 'node22'
 **Evidence:** `yarn package` (build) failed.
 
 **Fix:** fix C11 and C12 (and C4), run `yarn install`, then confirm `yarn package` produces the package.
+
+## 🟠 High
+
+### H1: Code comments are in German instead of English
+
+- **Source:** 🔎 compliance rule (comments in English) — verified
+- **Classification:** 🆕 NEW
+- **File:** [`main.js`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js) and 3 more files (listed under Fix)
+
+**What goes wrong:** 30 comment lines across 4 files are written in German. Anyone who later maintains or troubleshoots the module (a Bitfocus reviewer, a contributor fixing a bug, a user reading the source) can't follow what those comments explain, such as which command does what and which reply updates which state.
+
+**Why it happens:** Every comment in a Companion module must be written in English, so that everyone who works on the module can read it. The comments in this module were written in German.
+
+**Evidence:**
+
+```text
+main.js:17  // ws-Import über eine Konstante: der minifizierte Webpack-Build der Companion-Tools übersetzt `new WebSocket(url)`
+state.js:1  // Grafiken, die per Action ein- und ausgeblendet werden; id = Feld im graphics-Store des Backends.
+upgrade.js:1  // Grafik-Actions und -Feedbacks bekommen den Index für Tabellen, Brackets und Teams; vorhandene zeigen auf Index 0
+```
+
+**Confirm by:** open each file listed under Fix and read the comments at those lines (v1.1.1 had no comments, so all of them are new in this release).
+
+**Fix:** translate every comment into English. These are the lines to change:
+
+- [ ] `main.js` (15 lines): [`17-18`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L17-L18), [`41`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L41), [`60`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L60), [`62`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L62), [`64`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L64), [`94`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L94), [`104-105`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L104-L105), [`120`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L120), [`138-139`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L138-L139), [`160-161`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L160-L161), [`219`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/main.js#L219)
+- [ ] `presets.js` (3 lines): [`8`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/presets.js#L8), [`22`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/presets.js#L22), [`66`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/presets.js#L66)
+- [ ] `state.js` (11 lines): [`1-2`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/state.js#L1-L2), [`17`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/state.js#L17), [`24`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/state.js#L24), [`30`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/state.js#L30), [`33`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/state.js#L33), [`49`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/state.js#L49), [`73`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/state.js#L73), [`86`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/state.js#L86), [`118`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/state.js#L118), [`146`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/state.js#L146)
+- [ ] `upgrade.js` (1 line): [`1`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/upgrade.js#L1)
 
 ## 🟢 Low
 

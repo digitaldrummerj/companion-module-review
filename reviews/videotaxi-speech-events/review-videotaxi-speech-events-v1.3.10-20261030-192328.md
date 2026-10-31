@@ -27,6 +27,7 @@
 ### Blocking
 
 - [ ] [C1: Manifest search keywords include the banned keyword "stream deck"](#c1-manifest-search-keywords-include-the-banned-keyword-stream-deck)
+- [ ] [H1: Code comments are in German instead of English](#h1-code-comments-are-in-german-instead-of-english)
 
 ### Non-blocking
 
@@ -70,6 +71,32 @@
 ```json
 "keywords": ["video.taxi", "speech", "events", "transcription"]
 ```
+
+## 🟠 High
+
+### H1: Code comments are in German instead of English
+
+- **Source:** 🔎 compliance rule (comments in English) — verified
+- **Classification:** 🆕 NEW
+- **File:** [`src/main.js`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js)
+
+**What goes wrong:** 27 comment lines in `src/main.js` are written in German. Anyone who later maintains or troubleshoots the module (a Bitfocus reviewer, a contributor fixing a bug, a user reading the source) can't follow what those comments explain, such as which command does what and which reply updates which state.
+
+**Why it happens:** Every comment in a Companion module must be written in English, so that everyone who works on the module can read it. The comments in this module were written in German.
+
+**Evidence:**
+
+```text
+src/main.js:15  // Wird im Preset-Variablen-Text verwendet (Verbindungs-Label). Entspricht dem
+src/main.js:325  // Für Vollbild-Aktionen: zusätzlich die aktive Anlieferungssession (leere ID →
+src/main.js:740  // Stop-Feedback invertiert: rot im gestoppten Zustand, damit Start und
+```
+
+**Confirm by:** open `src/main.js` and read the comments at the lines listed under Fix.
+
+**Fix:** translate every comment into English. These are the lines to change:
+
+- [ ] `src/main.js` (27 lines): [`4`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L4), [`15-17`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L15-L17), [`116`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L116), [`147`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L147), [`155`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L155), [`171`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L171), [`179`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L179), [`224`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L224), [`294`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L294), [`301`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L301), [`325-326`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L325-L326), [`345`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L345), [`387`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L387), [`439`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L439), [`502`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L502), [`725`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L725), [`740-741`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L740-L741), [`745`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L745), [`764`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L764), [`786`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L786), [`797`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L797), [`801`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L801), [`817`](https://github.com/bitfocus/companion-module-videotaxi-speech-events/blob/4e9093fa64ad11d4d734300b8e95dbc932a331eb/src/main.js#L817)
 
 ## 🟡 Medium
 
