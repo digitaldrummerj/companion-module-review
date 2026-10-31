@@ -16,9 +16,8 @@
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | Hiding cameras in RCP (Setup → Companion buttons) is a normal operator setting that hides some, not all, cameras, and RCP then sends a non-empty `presentation.hiddenCameras` list, so camera presets are built while an earlier camera is hidden | the `Presentation.hiddenCameras` type in `src/api.ts` and its use in `src/presets/index.ts:47-49`; the RCP UI and a real device were not checked | [H2](#h2-camera-preset-value-buttons-show-another-cameras-value-once-a-camera-is-hidden-in-rcp) |
-| A2 | The RCP integration API (1.0-preview) has no equivalent of the old per-user camera preview selection, so the two removed actions cannot simply be re-implemented and an upgrade mapping or a deprecation stub is the realistic fix | the commit history and the replacement "Controller: Select Choice" action; what the device API offers was not checked | [M1](#m1-buttons-using-user-select-camera-or-user-clear-camera-selection-stop-working-after-the-upgrade) |
-| A3 | RCP pushes state often enough that a stale deck slot colour is corrected within a short time (every state push runs `checkAllFeedbacks`) | how often the device pushes state is not visible in the module code | [L4](#l4-stream-deck-plus-slot-colour-and-step-label-do-not-refresh-after-a-bank-or-step-size-change) |
+| A1 | The RCP integration API (1.0-preview) has no equivalent of the old per-user camera preview selection, so the two removed actions cannot simply be re-implemented and an upgrade mapping or a deprecation stub is the realistic fix | the commit history and the replacement "Controller: Select Choice" action; what the device API offers was not checked | [M1](#m1-buttons-using-user-select-camera-or-user-clear-camera-selection-stop-working-after-the-upgrade) |
+| A2 | RCP pushes state often enough that a stale deck slot colour is corrected within a short time (every state push runs `checkAllFeedbacks`) | how often the device pushes state is not visible in the module code | [L4](#l4-stream-deck-plus-slot-colour-and-step-label-do-not-refresh-after-a-bank-or-step-size-change) |
 
 ## 📋 Issues
 
@@ -26,8 +25,6 @@
 
 - [ ] [C1: Module runs on Node 22 while the API 2.1 template uses Node 26](#c1-module-runs-on-node-22-while-the-api-21-template-uses-node-26)
 - [ ] [C2: Pre-commit hook differs from the template](#c2-pre-commit-hook-differs-from-the-template)
-- [ ] [H1: CI workflow does not use the template reusable module-checks workflow](#h1-ci-workflow-does-not-use-the-template-reusable-module-checks-workflow)
-- [ ] [H2: Camera preset value buttons show another camera's value once a camera is hidden in RCP](#h2-camera-preset-value-buttons-show-another-cameras-value-once-a-camera-is-hidden-in-rcp)
 
 ### Non-blocking
 
@@ -77,7 +74,7 @@ tsconfig.build.json      extends               found '@companion-module/tools/ts
 - [ ] `package.json`: `"engines": { "node": "^26" }`
 - [ ] `package.json`: `"@types/node": "^26.6.4"` in `devDependencies`
 - [ ] `tsconfig.build.json`: `"extends": "@companion-module/tools/tsconfig/node26/recommended.json"`
-- [ ] `.github/workflows/companion-module-checks.yaml` line 20: `node-version: 26.x` (or adopt the template's reusable workflow, see [H1](#h1-ci-workflow-does-not-use-the-template-reusable-module-checks-workflow))
+- [ ] `.github/workflows/companion-module-checks.yaml` line 20: `node-version: 26.x`
 
 ### C2: Pre-commit hook differs from the template
 
@@ -101,137 +98,6 @@ tsconfig.build.json      extends               found '@companion-module/tools/ts
 
 ```text
 lint-staged
-```
-
-## 🟠 High
-
-### H1: CI workflow does not use the template reusable module-checks workflow
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/companion-module-checks.yaml:4-45`](https://github.com/bitfocus/companion-module-multicam-systems-rcp/blob/4775000dd4a82ce701fe672a97ddcec1c28685b2/.github/workflows/companion-module-checks.yaml#L4-L45)
-
-**What goes wrong:** The module's "Companion Module Checks" workflow is a hand-written job instead of Bitfocus's shared check, so the module isn't checked the same way as every other module, and changes Bitfocus makes to the shared check never reach it.
-
-**Why it happens:** The module adds a `pull_request:` trigger (line 4) and a top-level `permissions: contents: read` (lines 7-8), and replaces the template's `uses: bitfocus/actions/.github/workflows/module-checks.yaml@main` job (with its `if: ${{ !contains(github.repository, 'companion-module-template-') }}` guard and `permissions: packages: read`) with a `runs-on: ubuntu-latest` job (lines 12-45: checkout, setup-node, `yarn test`/`lint`/`companion-module-check`/`package`, a custom packaged-entrypoint check, upload-artifact). The comment at line 16 says the upstream reusable job "cannot clone this private fork"; the module is now released from the public `bitfocus` repo, where the reusable workflow works.
-
-**Evidence:** validator expected vs found:
-
-```text
-Differs from template (line 4: found 'pull_request:', template 'jobs:')
-```
-
-```yaml
-# .github/workflows/companion-module-checks.yaml:3-20
-on:
-  push:
-  pull_request:
-
-permissions:
-  contents: read
-
-jobs:
-  check:
-    name: Test and package Companion module
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      # The upstream reusable job removes contents permission and cannot clone this private fork.
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22.23.1'
-```
-
-**Confirm by:** `diff` [`.github/workflows/companion-module-checks.yaml`](https://github.com/bitfocus/companion-module-multicam-systems-rcp/blob/4775000dd4a82ce701fe672a97ddcec1c28685b2/.github/workflows/companion-module-checks.yaml#L1-L45) against `companion-module-template-ts` `.github/workflows/companion-module-checks.yaml`. (The `node-version` on line 20 is part of [C1](#c1-module-runs-on-node-22-while-the-api-21-template-uses-node-26).)
-
-**Fix:** copy the template's `companion-module-checks.yaml`. Enabling `upload-artifact: true` is accepted.
-
-```yaml
-name: Companion Module Checks
-
-on:
-  push:
-
-jobs:
-  check:
-    name: Check module
-
-    if: ${{ !contains(github.repository, 'companion-module-template-') }}
-
-    permissions:
-      packages: read
-
-    uses: bitfocus/actions/.github/workflows/module-checks.yaml@main
-    # with:
-    #   upload-artifact: true
-```
-
-### H2: Camera preset value buttons show another camera's value once a camera is hidden in RCP
-
-- **Source:** 🔎 QA reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/presets/index.ts:49-62`](https://github.com/bitfocus/companion-module-multicam-systems-rcp/blob/4775000dd4a82ce701fe672a97ddcec1c28685b2/src/presets/index.ts#L49-L62), [`src/presets/index.ts:89`](https://github.com/bitfocus/companion-module-multicam-systems-rcp/blob/4775000dd4a82ce701fe672a97ddcec1c28685b2/src/presets/index.ts#L89), [`src/presets/index.ts:225-260`](https://github.com/bitfocus/companion-module-multicam-systems-rcp/blob/4775000dd4a82ce701fe672a97ddcec1c28685b2/src/presets/index.ts#L225-L260)
-
-**What goes wrong:** An operator hides a camera from Companion in RCP (Setup → Companion buttons, hidden cameras), for example CAM 1. In the preset folder "Camera settings: CAM 2", the buttons "Shutter Speed Value" and "Shutter Speed + (value)" now show `$(multicam-rcp:camera_1_shutter_speed)`, which is CAM 1's shutter, not CAM 2's. Every camera after the hidden one is shifted by one, and the last camera's buttons may show nothing. The operator reads the wrong camera's ND, shutter or white-balance value on the very button they press to change it.
-
-**Why it happens:** The module's variables are numbered by each camera's position in the full camera list (CAM 1 = `camera_1`, CAM 2 = `camera_2`, …), hidden cameras included. The camera presets are built from the list with hidden cameras removed, and number their variables by the position in that shorter list. Once one camera is hidden, the two numberings no longer line up. v1.0.3 built the presets from the full list, so they matched; the hidden-camera filter is new in this release.
-
-**Evidence:**
-
-```ts
-// src/presets/index.ts:46-62
-	const presentation = applyPresentation(self.presentation)
-	const hiddenCameras = new Set(presentation.hiddenCameras)
-	const hiddenModules = new Set(presentation.hiddenModules)
-	const visibleCameras = self.cameras.filter((camera) => !hiddenCameras.has(camera.uuid))
-	...
-	visibleCameras.forEach((camera, cameraIndex) => {
-		const camNum = cameraIndex + 1
-```
-
-```ts
-// src/presets/index.ts:89
-				const variable = `$(multicam-rcp:camera_${camNum}_${prop})`
-```
-
-```ts
-// src/presets/index.ts:144-147 and 225
-						presets[`cam_${camIdShort}_${propIdShort}_val`] = {
-							...labelTile({
-								name: `${info.label} Value`,
-								title: variable,
-					const current = variable
-```
-
-```ts
-// src/variables.ts:29-31 and 150-152
-	self.cameras.forEach((camera, index) => {
-		const camNum = index + 1 // 1-based indexing
-		const prefix = `camera_${camNum}`
-```
-
-```ts
-// src/instance.ts:354-361 - self.cameras is the full, unfiltered list
-		this.apiCameras = state.cameras ?? []
-		this.presentation = state.presentation
-		...
-		this.cameras = this.apiCameras.map((camera) => ({
-			...camera,
-			assignedModuleControlProperties: camera.controls.map((c) => c.id),
-		})) as unknown as WebsocketCamerasOutput[]
-```
-
-**Confirm by:** open [`src/presets/index.ts:49-61`](https://github.com/bitfocus/companion-module-multicam-systems-rcp/blob/4775000dd4a82ce701fe672a97ddcec1c28685b2/src/presets/index.ts#L49-L61): `camNum` is the index in the filtered `visibleCameras`, and [line 89](https://github.com/bitfocus/companion-module-multicam-systems-rcp/blob/4775000dd4a82ce701fe672a97ddcec1c28685b2/src/presets/index.ts#L89) builds `camera_${camNum}_${prop}` from it. Then open [`src/variables.ts:29-31`](https://github.com/bitfocus/companion-module-multicam-systems-rcp/blob/4775000dd4a82ce701fe672a97ddcec1c28685b2/src/variables.ts#L29-L31): the variables are numbered by the index in the unfiltered `self.cameras`.
-
-**Fix:** number each preset's variable by the camera's position in the full camera list, and use the same number for the `getCameraDisplayName` fallback.
-
-```ts
-self.cameras.forEach((camera, index) => {
-	if (hiddenCameras.has(camera.uuid)) return
-	const camNum = index + 1
-	// …
-})
 ```
 
 ## 🟡 Medium
