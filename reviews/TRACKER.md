@@ -221,7 +221,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | pixelmosaic-smartpreso | v1.0.0 | 2026-10-31 | [review](pixelmosaic-smartpreso/review-pixelmosaic-smartpreso-v1.0.0-20261031-201135.md) |
 | ✅ | utopianacademy-deckboy | v1.0.8 | 2026-10-31 | [review](utopianacademy-deckboy/review-utopianacademy-deckboy-v1.0.8-20261031-201135.md) |
 | ✅ | venucable-planner | v1.7.1 | 2026-10-31 | [review](venucable-planner/review-venucable-planner-v1.7.1-20261031-201135.md) |
-| ⬜ | tow-mixeffect | v2.1.1 | 2026-10-31 | [review](tow-mixeffect/review-tow-mixeffect-v2.1.1-20261031-201135.md) |
+| ✅ | tow-mixeffect | v2.1.1 | 2026-10-31 | [review](tow-mixeffect/review-tow-mixeffect-v2.1.1-20261031-201135.md) |
 | ⬜ | cisco-cbs-350 | v1.0.1 | 2026-10-31 | [review](cisco-cbs-350/review-cisco-cbs-350-v1.0.1-20261031-201135.md) |
 | ⬜ | magewell-ultrastream | v1.1.1 | 2026-10-31 | [review](magewell-ultrastream/review-magewell-ultrastream-v1.1.1-20261031-201135.md) |
 | ⬜ | miniontoby-midi-multicammixer | v1.0.10 | 2026-10-31 | [review](miniontoby-midi-multicammixer/review-miniontoby-midi-multicammixer-v1.0.10-20261031-201135.md) |
