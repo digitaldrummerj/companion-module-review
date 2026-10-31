@@ -25,12 +25,12 @@
 
 ### Blocking
 
-- [ ] [C1: Module is built for Node 22 while API 2.1 modules run on Node 26](#c1-module-is-built-for-node-22-while-api-21-modules-run-on-node-26)
+- [ ] [C1: The module still targets Node 22, but the API 2.1 template runs on Node 26](#c1-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26)
 - [ ] [C2: package.json does not declare the Node and Yarn versions it needs](#c2-packagejson-does-not-declare-the-node-and-yarn-versions-it-needs)
 - [ ] [C3: Line endings are not pinned because .gitattributes is missing](#c3-line-endings-are-not-pinned-because-gitattributes-is-missing)
 - [ ] [C4: Packaged builds and editor settings are not ignored by git](#c4-packaged-builds-and-editor-settings-are-not-ignored-by-git)
 - [ ] [C5: An old packaged build (sennheiser-ewdx-1.0.7.tgz) is committed to the repo](#c5-an-old-packaged-build-sennheiser-ewdx-107tgz-is-committed-to-the-repo)
-- [ ] [H1: CI builds the module on Node 22 instead of Node 26](#h1-ci-builds-the-module-on-node-22-instead-of-node-26)
+- [ ] [H1: The CI workflow keeps the GitHub token and uses a different setup-node version than the template](#h1-the-ci-workflow-keeps-the-github-token-and-uses-a-different-setup-node-version-than-the-template)
 
 ### Non-blocking
 
@@ -40,42 +40,36 @@
 
 ## 🔴 Critical
 
-### C1: Module is built for Node 22 while API 2.1 modules run on Node 26
+### C1: The module still targets Node 22, but the API 2.1 template runs on Node 26
 
-- **Source:** 🤖 validate-template (MAN-RUNTIME)
+- **Source:** 🤖 validate-template (NODE-VERSION)
 - **Classification:** 🆕 NEW
-- **File:** [`companion/manifest.json:17-18`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/companion/manifest.json#L17-L18), [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/tsconfig.build.json#L2)
+- **File:** [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/companion/manifest.json#L18), [`package.json:28`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/package.json#L28), [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/tsconfig.build.json#L2), [`.github/workflows/node.yaml:19-63`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/.github/workflows/node.yaml#L19-L63)
 
-**What goes wrong:** This release moves the module to API 2.1 (Companion 5.0+), but it still tells Companion to run it on Node 22 and still compiles it for Node 22. Every API 2.1 module built from the template runs on Node 26, so this module runs on a different runtime from the rest, which makes later problems harder to troubleshoot.
+**What goes wrong:** Companion starts the module on Node 22, but API 2.1 modules are expected to match the API 2.1 template, which uses Node 26 in every place the Node version is named. The other places listed below still name another Node version too, so the module would run, type-check and build in CI on different Node versions even after the runtime is fixed. A module that does not match its template makes later troubleshooting harder: when something misbehaves, people look for the cause in the module instead of in the mismatched setup.
 
-**Why it happens:** The release raised `@companion-module/base` from ^1.11.3 to 2.1.3 and added `"type": "connection"` to the manifest, but kept the Node 22 runtime from the API 1 version. The build config (`tsconfig.build.json`) also still extends the Node 22 preset.
+**Why it happens:** Moving a module to another Node version means changing every place the version is named: the manifest runtime, `engines.node`, `@types/node`, the TypeScript preset and the CI workflows. These places still name a different Node version than the API 2.1 template.
 
 **Evidence:**
 
 ```text
-Template expects: "runtime": { "type": "node26", ... }
-Found:            "runtime": { "type": "node22", ... }   (companion/manifest.json:18)
-
-tsconfig.build.json:2  extends "@companion-module/tools/tsconfig/node22/recommended-esm.json"
-template:              extends "@companion-module/tools/tsconfig/node26/recommended.json"
+companion/manifest.json runtime.type 'node22' -> 'node26'
+package.json devDependencies @types/node '^22.15.19' -> '^26.6.4'
+tsconfig.build.json extends "@companion-module/tools/tsconfig/node22/recommended-esm.json" -> "@companion-module/tools/tsconfig/node26/recommended.json"
+.github/workflows/node.yaml line 19 step name 'Use Node.js 22.x' -> 'Use Node.js 26.x'
+.github/workflows/node.yaml line 23 node-version 22.x -> 26.x
+.github/workflows/node.yaml line 60 step name 'Use Node.js 22.x' -> 'Use Node.js 26.x' (commented out)
+.github/workflows/node.yaml line 63 node-version 22.x -> 26.x (commented out)
 ```
 
-Related: `@types/node` is `^22.15.19` in `package.json`, and CI uses Node 22 (see [H1](#h1-ci-builds-the-module-on-node-22-instead-of-node-26)).
+**Confirm by:** open each file above and compare it with the template's copy.
 
-**Confirm by:** open [`companion/manifest.json:17-18`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/companion/manifest.json#L17-L18) and [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/tsconfig.build.json#L2).
+**Fix:** update every place to Node 26, as the template does:
 
-**Fix:** switch the runtime and the build config to Node 26, as the template does.
-
-```json
-// companion/manifest.json
-"runtime": {
-	"type": "node26",
-```
-
-```json
-// tsconfig.build.json
-"extends": "@companion-module/tools/tsconfig/node26/recommended.json",
-```
+- [ ] [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/companion/manifest.json#L18): `"type": "node26"` in `runtime`
+- [ ] [`package.json:28`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/package.json#L28): `"@types/node": "^26.6.4"` in `devDependencies`
+- [ ] [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/tsconfig.build.json#L2): `"extends": "@companion-module/tools/tsconfig/node26/recommended.json"`
+- [ ] [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/.github/workflows/node.yaml): `- name: Use Node.js 26.x` (line 19), `node-version: 26.x` (line 23), `- name: Use Node.js 26.x` (line 60, commented out), `node-version: 26.x` (line 63, commented out)
 
 ### C2: package.json does not declare the Node and Yarn versions it needs
 
@@ -182,35 +176,33 @@ git rm --cached sennheiser-ewdx-1.0.7.tgz
 
 ## 🟠 High
 
-### H1: CI builds the module on Node 22 instead of Node 26
+### H1: The CI workflow keeps the GitHub token and uses a different setup-node version than the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml:18-23`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/.github/workflows/node.yaml#L18-L23)
+- **File:** [`.github/workflows/node.yaml:18-21`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/.github/workflows/node.yaml#L18-L21), [`.github/workflows/node.yaml:60-76`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/.github/workflows/node.yaml#L60-L76)
 
-**What goes wrong:** The GitHub CI check builds and lints the module on Node 22, so it doesn't test the module on the Node 26 runtime that API 2.1 modules use. The checkout step also keeps the GitHub token in the workspace, which the template turns off.
+**What goes wrong:** The checkout step keeps the GitHub token in the CI workspace, which the API 2.1 template turns off, and the workflow no longer matches what other modules run, which makes later troubleshooting harder. (Its Node 22 settings are listed in [C1](#c1-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26).)
 
-**Why it happens:** The workflow differs from the API 2.1 template's `node.yaml`:
+**Why it happens:** Apart from the Node version, the workflow differs from the API 2.1 template's `node.yaml`:
 
 - `actions/checkout` is missing the template's `with: persist-credentials: false`.
-- The Node step is `Use Node.js 22.x` / `actions/setup-node@v7` / `node-version: 22.x`, where the template has `Use Node.js 26.x` / `actions/setup-node@v6` / `node-version: 26.x`.
-- The commented-out test job has the same Node 22 / v7 drift, plus an extra `codecov/codecov-action@v5` step.
+- The Node step uses `actions/setup-node@v7`, where the template has `actions/setup-node@v6`.
+- The commented-out test job has the same `setup-node@v7` drift, plus an extra `codecov/codecov-action@v5` step.
 
 **Evidence:**
 
 ```yaml
-# .github/workflows/node.yaml:18-23
+# .github/workflows/node.yaml:18-21
       - uses: actions/checkout@v7
       - name: Use Node.js 22.x
         # This should match the version of Node.js you have defined in the manifest.json runtime field
         uses: actions/setup-node@v7
-        with:
-          node-version: 22.x
 ```
 
-**Confirm by:** `diff companion-module-template-ts/.github/workflows/node.yaml .github/workflows/node.yaml`, or open [`.github/workflows/node.yaml:18-23`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/.github/workflows/node.yaml#L18-L23).
+**Confirm by:** `diff companion-module-template-ts/.github/workflows/node.yaml .github/workflows/node.yaml`, or open [`.github/workflows/node.yaml:18-21`](https://github.com/bitfocus/companion-module-sennheiser-ewdx/blob/ce92ccbdc18ec47717f48565841ff7597cafc780/.github/workflows/node.yaml#L18-L21).
 
-**Fix:** replace the file with the template's `node.yaml`.
+**Fix:** replace the file with the template's `node.yaml`, which also covers the workflow items in [C1](#c1-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26):
 
 ```yaml
       - uses: actions/checkout@v7

@@ -24,7 +24,7 @@
 
 ### Blocking
 
-- [ ] [C1: Module targets Node 22 instead of the Node 26 runtime of the API 2.1 template](#c1-module-targets-node-22-instead-of-the-node-26-runtime-of-the-api-21-template)
+- [ ] [C1: The module still targets Node 22, but the API 2.1 template runs on Node 26](#c1-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26)
 - [ ] [C2: The standard package build fails](#c2-the-standard-package-build-fails)
 - [ ] [C3: package.json has no package script](#c3-packagejson-has-no-package-script)
 - [ ] [C4: package.json has no postinstall script](#c4-packagejson-has-no-postinstall-script)
@@ -46,36 +46,33 @@
 
 ## 🔴 Critical
 
-### C1: Module targets Node 22 instead of the Node 26 runtime of the API 2.1 template
+### C1: The module still targets Node 22, but the API 2.1 template runs on Node 26
 
-- **Source:** 🤖 validate-template (MAN-RUNTIME)
+- **Source:** 🤖 validate-template (NODE-VERSION)
 - **Classification:** 🆕 NEW
-- **File:** [`companion/manifest.json:20`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/companion/manifest.json#L20), [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/tsconfig.build.json#L2), [`package.json:26`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/package.json#L26), [`package.json:33`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/package.json#L33)
+- **File:** [`companion/manifest.json:20`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/companion/manifest.json#L20), [`package.json:26`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/package.json#L26), [`package.json:33`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/package.json#L33), [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/tsconfig.build.json#L2)
 
-**What goes wrong:** This release moves the module to API 2.1 (Companion 5.0+), but it still declares the Node 22 runtime and compiles against the Node 22 TypeScript preset. Modules on API 2.1 must match the template's Node 26 setup, so the module runs and builds differently from every other 2.1 module, which makes later troubleshooting harder.
+**What goes wrong:** Companion starts the module on Node 22, but API 2.1 modules are expected to match the API 2.1 template, which uses Node 26 in every place the Node version is named. The other places listed below still name another Node version too, so the module would run, type-check and build in CI on different Node versions even after the runtime is fixed. A module that does not match its template makes later troubleshooting harder: when something misbehaves, people look for the cause in the module instead of in the mismatched setup.
 
-**Why it happens:** The runtime and the TypeScript preset were not updated when the base package moved to 2.1.
+**Why it happens:** Moving a module to another Node version means changing every place the version is named: the manifest runtime, `engines.node`, `@types/node`, the TypeScript preset and the CI workflows. These places still name a different Node version than the API 2.1 template.
 
 **Evidence:**
 
 ```text
-companion/manifest.json  found: "type": "node22"   expected: "type": "node26"
-tsconfig.build.json      found: "extends": "@companion-module/tools/tsconfig/node22/recommended-esm.json"
-                         expected: "extends": "@companion-module/tools/tsconfig/node26/recommended.json"
-package.json             found: "engines": { "node": ">=22.0.0" }, "@types/node": "^22.15.21"
-                         template: "engines": { "node": "^26" }
+companion/manifest.json runtime.type 'node22' -> 'node26'
+package.json engines.node '>=22.0.0' -> '^26'
+package.json devDependencies @types/node '^22.15.21' -> '^26.6.4'
+tsconfig.build.json extends "@companion-module/tools/tsconfig/node22/recommended-esm.json" -> "@companion-module/tools/tsconfig/node26/recommended.json"
 ```
 
-**Fix:** switch the manifest runtime to Node 26 and extend the Node 26 TypeScript preset, as the template does; update `engines.node` and `@types/node` to match.
+**Confirm by:** open each file above and compare it with the template's copy.
 
-```json
-// companion/manifest.json
-"type": "node26",
-// tsconfig.build.json
-"extends": "@companion-module/tools/tsconfig/node26/recommended.json",
-// package.json
-"engines": { "node": "^26" }
-```
+**Fix:** update every place to Node 26, as the template does:
+
+- [ ] [`companion/manifest.json:20`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/companion/manifest.json#L20): `"type": "node26"` in `runtime`
+- [ ] [`package.json:26`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/package.json#L26): `"engines": { "node": "^26" }`
+- [ ] [`package.json:33`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/package.json#L33): `"@types/node": "^26.6.4"` in `devDependencies`
+- [ ] [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/d8539614ca870edec1e137ef2bb4352b13955d0c/tsconfig.build.json#L2): `"extends": "@companion-module/tools/tsconfig/node26/recommended.json"`
 
 ### C2: The standard package build fails
 

@@ -27,9 +27,9 @@ This is the module's first release, so there is no previous tag to diff against.
 
 ### Blocking
 
-- [ ] [C1: The module is set to run on Node 22, but API 2.1 modules run on Node 26](#c1-the-module-is-set-to-run-on-node-22-but-api-21-modules-run-on-node-26)
+- [ ] [C1: The module still targets Node 22, but the API 2.1 template runs on Node 26](#c1-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26)
 - [ ] [C2: Old build output is never cleared before a build, so stale files can end up in the package](#c2-old-build-output-is-never-cleared-before-a-build-so-stale-files-can-end-up-in-the-package)
-- [ ] [H1: The GitHub build check uses Node 22 and adds a test step the template does not have](#h1-the-github-build-check-uses-node-22-and-adds-a-test-step-the-template-does-not-have)
+- [ ] [H1: The GitHub build check adds a test step the template does not have](#h1-the-github-build-check-adds-a-test-step-the-template-does-not-have)
 
 ### Non-blocking
 
@@ -40,41 +40,38 @@ This is the module's first release, so there is no previous tag to diff against.
 
 ## 🔴 Critical
 
-### C1: The module is set to run on Node 22, but API 2.1 modules run on Node 26
+### C1: The module still targets Node 22, but the API 2.1 template runs on Node 26
 
-- **Source:** 🤖 validate-template (MAN-RUNTIME)
+- **Source:** 🤖 validate-template (NODE-VERSION)
 - **Classification:** 🆕 NEW
-- **File:** [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/companion/manifest.json#L18), [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/tsconfig.build.json#L2)
+- **File:** [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/companion/manifest.json#L18), [`package.json:26`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/package.json#L26), [`package.json:34`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/package.json#L34), [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/tsconfig.build.json#L2), [`.github/workflows/node.yaml:21-69`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/.github/workflows/node.yaml#L21-L69)
 
-**What goes wrong:** The module is built on API 2.1 (`@companion-module/base` 2.1.3), but its manifest asks Companion to run it on Node 22 and it is compiled with the Node 22 TypeScript preset. Every API 2.1 module is expected to match the API 2.1 template, which runs on Node 26. A module that differs from its template makes later troubleshooting harder.
+**What goes wrong:** Companion starts the module on Node 22, but API 2.1 modules are expected to match the API 2.1 template, which uses Node 26 in every place the Node version is named. The other places listed below still name another Node version too, so the module would run, type-check and build in CI on different Node versions even after the runtime is fixed. A module that does not match its template makes later troubleshooting harder: when something misbehaves, people look for the cause in the module instead of in the mismatched setup.
 
-**Why it happens:** The manifest's `runtime.type` tells Companion which Node.js version to start the module with. It was left at `node22`, and `tsconfig.build.json` extends the matching Node 22 preset, where the template extends the Node 26 one.
+**Why it happens:** Moving a module to another Node version means changing every place the version is named: the manifest runtime, `engines.node`, `@types/node`, the TypeScript preset and the CI workflows. These places still name a different Node version than the API 2.1 template.
 
 **Evidence:**
 
-```json
-// companion/manifest.json:18 (template: "node26")
-"type": "node22",
+```text
+companion/manifest.json runtime.type 'node22' -> 'node26'
+package.json engines.node '^22.20' -> '^26'
+package.json devDependencies @types/node '^22.19.17' -> '^26.6.4'
+tsconfig.build.json extends "@companion-module/tools/tsconfig/node22/recommended-esm.json" -> "@companion-module/tools/tsconfig/node26/recommended.json"
+.github/workflows/node.yaml line 21 step name 'Use Node.js 22.x' -> 'Use Node.js 26.x'
+.github/workflows/node.yaml line 25 node-version 22.x -> 26.x
+.github/workflows/node.yaml line 66 step name 'Use Node.js 22.x' -> 'Use Node.js 26.x' (commented out)
+.github/workflows/node.yaml line 69 node-version 22.x -> 26.x (commented out)
 ```
 
-```json
-// tsconfig.build.json:2 (template: "@companion-module/tools/tsconfig/node26/recommended.json")
-"extends": "@companion-module/tools/tsconfig/node22/recommended-esm.json",
-```
+**Confirm by:** open each file above and compare it with the template's copy.
 
-**Confirm by:** open [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/companion/manifest.json#L18) and compare with the template's `companion/manifest.json`.
+**Fix:** update every place to Node 26, as the template does:
 
-**Fix:** switch the runtime and the TypeScript preset to Node 26, as the template does, then rebuild.
-
-```json
-// companion/manifest.json
-"type": "node26",
-```
-
-```json
-// tsconfig.build.json
-"extends": "@companion-module/tools/tsconfig/node26/recommended.json",
-```
+- [ ] [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/companion/manifest.json#L18): `"type": "node26"` in `runtime`
+- [ ] [`package.json:26`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/package.json#L26): `"engines": { "node": "^26" }`
+- [ ] [`package.json:34`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/package.json#L34): `"@types/node": "^26.6.4"` in `devDependencies`
+- [ ] [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/tsconfig.build.json#L2): `"extends": "@companion-module/tools/tsconfig/node26/recommended.json"`
+- [ ] [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/.github/workflows/node.yaml): `- name: Use Node.js 26.x` (line 21), `node-version: 26.x` (line 25), `- name: Use Node.js 26.x` (line 66, commented out), `node-version: 26.x` (line 69, commented out)
 
 ### C2: Old build output is never cleared before a build, so stale files can end up in the package
 
@@ -109,23 +106,19 @@ This is the module's first release, so there is no previous tag to diff against.
 
 ## 🟠 High
 
-### H1: The GitHub build check uses Node 22 and adds a test step the template does not have
+### H1: The GitHub build check adds a test step the template does not have
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml:21-25`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/.github/workflows/node.yaml#L21-L25), [`.github/workflows/node.yaml:53-56`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/.github/workflows/node.yaml#L53-L56)
+- **File:** [`.github/workflows/node.yaml:53-56`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/.github/workflows/node.yaml#L53-L56)
 
-**What goes wrong:** The GitHub Actions check that runs on every push builds and lints the module with Node 22, while the API 2.1 template uses Node 26. It also adds a "Run module tests" step to the lint job, which is not in the template.
+**What goes wrong:** The GitHub Actions check that runs on every push adds a "Run module tests" step to the lint job, which is not in the API 2.1 template. The workflow no longer matches what other modules run, which makes later troubleshooting harder. (Its Node 22 settings are listed in [C1](#c1-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26).)
 
-**Why it happens:** The workflow file was not kept in line with the API 2.1 template. The template offers tests as a separate, commented-out `test` job instead of an extra step in the lint job. The commented-out lines 66 and 69 also say 22.x where the template says 26.x.
+**Why it happens:** The template offers tests as a separate, commented-out `test` job, not as an extra step in the lint job.
 
 **Evidence:**
 
 ```yaml
-# .github/workflows/node.yaml:21-25 (template: 26.x)
-- name: Use Node.js 22.x
-  ...
-  node-version: 22.x
 # .github/workflows/node.yaml:53-56 (not in the template)
 - name: Run module tests
   run: yarn test
@@ -135,7 +128,7 @@ This is the module's first release, so there is no previous tag to diff against.
 
 **Confirm by:** diff [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-c4-clock/blob/03329aca0c6d1b3257f48ce177d03627c77dc410/.github/workflows/node.yaml) against the template's copy.
 
-**Fix:** copy the template's `node.yaml`. Node 26 goes with the C1 fix. To run tests in CI, uncomment the template's optional `test` job instead of adding a step to the lint job.
+**Fix:** copy the template's `node.yaml` (with Node 26, as in [C1](#c1-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26)). To run tests in CI, uncomment the template's optional `test` job instead of adding a step to the lint job.
 
 ## 🟡 Medium
 

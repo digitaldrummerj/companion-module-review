@@ -36,7 +36,7 @@
 - [ ] [C11: package.json pins Yarn 1 instead of Yarn 4](#c11-packagejson-pins-yarn-1-instead-of-yarn-4)
 - [ ] [C12: There is no package script, so the module cannot be packaged](#c12-there-is-no-package-script-so-the-module-cannot-be-packaged)
 - [ ] [C13: Prettier is not a devDependency, so yarn format relies on a global install](#c13-prettier-is-not-a-devdependency-so-yarn-format-relies-on-a-global-install)
-- [ ] [C14: The module runs on Node 18 instead of Node 22](#c14-the-module-runs-on-node-18-instead-of-node-22)
+- [ ] [C14: The module still targets Node 18, but the API 1 template runs on Node 22](#c14-the-module-still-targets-node-18-but-the-api-1-template-runs-on-node-22)
 - [ ] [C15: yarn package fails, so no installable package can be built](#c15-yarn-package-fails-so-no-installable-package-can-be-built)
 
 ### Non-blocking
@@ -289,23 +289,27 @@ npmPreapprovedPackages:
 "prettier": "^3.7.4"
 ```
 
-### C14: The module runs on Node 18 instead of Node 22
+### C14: The module still targets Node 18, but the API 1 template runs on Node 22
 
-- **Source:** 🤖 validate-template (MAN-RUNTIME)
+- **Source:** 🤖 validate-template (NODE-VERSION)
 - **Classification:** 🆕 NEW
 - **File:** [`companion/manifest.json:20`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/companion/manifest.json#L20)
 
-**What goes wrong:** Companion starts the module on the end-of-life Node 18 runtime instead of Node 22, which the template and current Companion releases use.
+**What goes wrong:** Companion starts the module on Node 18, but API 1 modules are expected to match the API 1 template, which uses Node 22 in every place the Node version is named. A module that does not match its template makes later troubleshooting harder: when something misbehaves, people look for the cause in the module instead of in the mismatched setup.
 
-**Why it happens:** `runtime.type` in the manifest is `node18`.
+**Why it happens:** Moving a module to another Node version means changing every place the version is named: the manifest runtime, `engines.node`, `@types/node`, the TypeScript preset and the CI workflows. These places still name a different Node version than the API 1 template.
 
-**Evidence:** found `node18`; expected `node22`.
+**Evidence:**
 
-**Fix:** set the runtime to Node 22.
-
-```json
-"type": "node22"
+```text
+companion/manifest.json runtime.type 'node18' -> 'node22'
 ```
+
+**Confirm by:** open each file above and compare it with the template's copy.
+
+**Fix:** update every place to Node 22, as the template does:
+
+- [ ] [`companion/manifest.json:20`](https://github.com/bitfocus/companion-module-uniliga-cg/blob/9468691d5ec07de411e93efe95b8b8b21f3c86dd/companion/manifest.json#L20): `"type": "node22"` in `runtime`
 
 ### C15: yarn package fails, so no installable package can be built
 

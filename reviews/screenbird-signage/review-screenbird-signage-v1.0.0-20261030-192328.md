@@ -22,7 +22,8 @@ This is the module's first release, so there is no previous tag to diff against:
 - [ ] [C1: Prettier ignores a different license file than the template](#c1-prettier-ignores-a-different-license-file-than-the-template)
 - [ ] [C2: Yarn is missing the template's pre-approval for Companion packages](#c2-yarn-is-missing-the-templates-pre-approval-for-companion-packages)
 - [ ] [C3: Yarn package age gate uses a different value than the template](#c3-yarn-package-age-gate-uses-a-different-value-than-the-template)
-- [ ] [H1: CI builds on Node.js 26 instead of the Node.js 22 the module runs on](#h1-ci-builds-on-nodejs-26-instead-of-the-nodejs-22-the-module-runs-on)
+- [ ] [H1: CI builds on Node 26, but the module and the API 2.0 template use Node 22](#h1-ci-builds-on-node-26-but-the-module-and-the-api-20-template-use-node-22)
+- [ ] [H2: The CI checkout step differs from the API 2.0 template](#h2-the-ci-checkout-step-differs-from-the-api-20-template)
 
 ### Non-blocking
 
@@ -121,38 +122,53 @@ template:       expected: npmMinimalAgeGate: 3d
 
 ## 🟠 High
 
-### H1: CI builds on Node.js 26 instead of the Node.js 22 the module runs on
+### H1: CI builds on Node 26, but the module and the API 2.0 template use Node 22
+
+- **Source:** 🤖 validate-template (NODE-VERSION)
+- **Classification:** 🆕 NEW
+- **File:** [`.github/workflows/node.yaml:21-65`](https://github.com/bitfocus/companion-module-screenbird-signage/blob/07ed62f76687cc08e78a8f2477ef8060e45a415d/.github/workflows/node.yaml#L21-L65)
+
+**What goes wrong:** Companion runs this API 2.0 module on Node 22 (the manifest runtime is `node22`, as in the API 2.0 template), but the CI workflow builds and lints it on Node 26. A green CI run does not prove the module works on the Node version it actually ships on, and the workflow no longer matches the template, which makes later troubleshooting harder.
+
+**Why it happens:** Moving a module to another Node version means changing every place the version is named: the manifest runtime, `engines.node`, `@types/node`, the TypeScript preset and the CI workflows. These places still name a different Node version than the API 2.0 template.
+
+**Evidence:**
+
+```text
+.github/workflows/node.yaml line 21 step name 'Use Node.js 26.x' -> 'Use Node.js 22.x'
+.github/workflows/node.yaml line 25 node-version 26.x -> 22.x
+.github/workflows/node.yaml line 62 step name 'Use Node.js 26.x' -> 'Use Node.js 22.x' (commented out)
+.github/workflows/node.yaml line 65 node-version 26.x -> 22.x (commented out)
+```
+
+**Confirm by:** open each file above and compare it with the template's copy.
+
+**Fix:** update every place to Node 22, as the template does:
+
+- [ ] [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-screenbird-signage/blob/07ed62f76687cc08e78a8f2477ef8060e45a415d/.github/workflows/node.yaml): `- name: Use Node.js 22.x` (line 21), `node-version: 22.x` (line 25), `- name: Use Node.js 22.x` (line 62, commented out), `node-version: 22.x` (line 65, commented out)
+
+### H2: The CI checkout step differs from the API 2.0 template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml:18-25`](https://github.com/bitfocus/companion-module-screenbird-signage/blob/07ed62f76687cc08e78a8f2477ef8060e45a415d/.github/workflows/node.yaml#L18-L25)
+- **File:** [`.github/workflows/node.yaml:18-20`](https://github.com/bitfocus/companion-module-screenbird-signage/blob/07ed62f76687cc08e78a8f2477ef8060e45a415d/.github/workflows/node.yaml#L18-L20)
 
-**What goes wrong:** The GitHub CI check builds and lints the module on Node.js 26, but Companion runs it on Node.js 22 (the manifest's runtime is `node22`). A green CI run doesn't prove the module works on the Node.js version it actually ships on, and the workflow no longer matches the template.
+**What goes wrong:** Apart from the Node version ([H1](#h1-ci-builds-on-node-26-but-the-module-and-the-api-20-template-use-node-22)), the workflow's checkout step adds `persist-credentials: false`, which the API 2.0 template does not have. The file looks like a copy of the newer API 2.1 template's `node.yaml`, so it matches neither template.
 
-**Why it happens:** The workflow was edited away from the API 2.0 template: the checkout step gained `with: persist-credentials: false`, the Node.js step was changed from `22.x` to `26.x`, and the commented-out test job was also changed to `26.x`.
+**Why it happens:** `node.yaml` was taken from the API 2.1 template (which adds `persist-credentials: false` and uses Node 26), while the module is on API 2.0.
 
 **Evidence:**
 
 ```yaml
-# .github/workflows/node.yaml:18-25 (module)
+# .github/workflows/node.yaml:18-20 (the API 2.0 template has only the first line)
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - name: Use Node.js 26.x
-        # This should match the version of Node.js you have defined in the manifest.json runtime field
-        uses: actions/setup-node@v6
-        with:
-          node-version: 26.x
-# template (companion-module-template-ts-v2.0.4):
-      - uses: actions/checkout@v7
-      - name: Use Node.js 22.x
-        ...
-          node-version: 22.x
 ```
 
-**Confirm by:** `diff companion-module-template-ts-v2.0.4/.github/workflows/node.yaml .github/workflows/node.yaml`, and see [`.github/workflows/node.yaml:62-65`](https://github.com/bitfocus/companion-module-screenbird-signage/blob/07ed62f76687cc08e78a8f2477ef8060e45a415d/.github/workflows/node.yaml#L62-L65) for the test job.
+**Confirm by:** `diff companion-module-template-ts-v2.0.4/.github/workflows/node.yaml .github/workflows/node.yaml`.
 
-**Fix:** copy the template's `node.yaml` into the module, so CI uses Node.js 22.x to match the manifest.
+**Fix:** copy the API 2.0 template's `node.yaml` (this also fixes [H1](#h1-ci-builds-on-node-26-but-the-module-and-the-api-20-template-use-node-22)). If you move the module to API 2.1 later, take the API 2.1 template's `node.yaml` then, with its Node 26 settings everywhere.
 
 ## 🟢 Low
 

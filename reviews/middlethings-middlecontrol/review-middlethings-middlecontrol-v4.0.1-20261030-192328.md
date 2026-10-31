@@ -24,7 +24,7 @@
 - [ ] [C6: Package file is missing the engines, prettier and packageManager fields](#c6-package-file-is-missing-the-engines-prettier-and-packagemanager-fields)
 - [ ] [C7: Package file is missing the format and package scripts](#c7-package-file-is-missing-the-format-and-package-scripts)
 - [ ] [C8: Prettier is not a dev dependency](#c8-prettier-is-not-a-dev-dependency)
-- [ ] [C9: Module asks Companion for Node 18 instead of Node 22](#c9-module-asks-companion-for-node-18-instead-of-node-22)
+- [ ] [C9: The module still targets Node 18, but the API 1 template runs on Node 22](#c9-the-module-still-targets-node-18-but-the-api-1-template-runs-on-node-22)
 - [ ] [H1: Module checks workflow adds a unit test job the template does not have](#h1-module-checks-workflow-adds-a-unit-test-job-the-template-does-not-have)
 
 ### Non-blocking
@@ -178,17 +178,29 @@ DEBUG-*
 
 **Fix:** add `"prettier": "^3.7.4"` to `devDependencies`.
 
-### C9: Module asks Companion for Node 18 instead of Node 22
+### C9: The module still targets Node 18, but the API 1 template runs on Node 22
 
-- **Source:** 🤖 validate-template (MAN-RUNTIME)
+- **Source:** 🤖 validate-template (NODE-VERSION)
 - **Classification:** template check (whole module) — already the case in v3.4.0
-- **File:** [`companion/manifest.json`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/companion/manifest.json)
+- **File:** [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/companion/manifest.json#L18), [`.github/workflows/companion-module-checks.yaml:26-26`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/.github/workflows/companion-module-checks.yaml#L26-L26)
 
-**What goes wrong:** Companion starts the module on the Node 18 runtime, which is end-of-life, instead of the Node 22 runtime the template targets.
+**What goes wrong:** Companion starts the module on Node 18, but API 1 modules are expected to match the API 1 template, which uses Node 22 in every place the Node version is named. The other places listed below still name another Node version too, so the module would run, type-check and build in CI on different Node versions even after the runtime is fixed. A module that does not match its template makes later troubleshooting harder: when something misbehaves, people look for the cause in the module instead of in the mismatched setup.
 
-**Why it happens:** The manifest has `"runtime": { "type": "node18", … }`; the template has `"node22"`.
+**Why it happens:** Moving a module to another Node version means changing every place the version is named: the manifest runtime, `engines.node`, `@types/node`, the TypeScript preset and the CI workflows. These places still name a different Node version than the API 1 template.
 
-**Fix:** set `runtime.type` to `"node22"` in `companion/manifest.json`.
+**Evidence:**
+
+```text
+companion/manifest.json runtime.type 'node18' -> 'node22'
+.github/workflows/companion-module-checks.yaml line 26 node-version 18 -> 22.x
+```
+
+**Confirm by:** open each file above and compare it with the template's copy.
+
+**Fix:** update every place to Node 22, as the template does:
+
+- [ ] [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/companion/manifest.json#L18): `"type": "node22"` in `runtime`
+- [ ] [`.github/workflows/companion-module-checks.yaml`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/.github/workflows/companion-module-checks.yaml): `node-version: 22.x` (line 26)
 
 ## 🟠 High
 
@@ -198,7 +210,7 @@ DEBUG-*
 - **Classification:** 🆕 NEW change to an already-differing file — v3.4.0 already had the `unit:` job; this release added `cache: yarn` and the install step to it
 - **File:** [`.github/workflows/companion-module-checks.yaml:19-32`](https://github.com/bitfocus/companion-module-middlethings-middlecontrol/blob/f760cd6905d79dcb2c74efcd33f9a04d7abd3d59/.github/workflows/companion-module-checks.yaml#L19-L32)
 
-**What goes wrong:** The workflow file differs from the template, so it no longer matches what other modules run. The extra job also runs on Node 18 with `yarn install --frozen-lockfile`, a Yarn 1 command that stops working once the module moves to Yarn 4 (C1).
+**What goes wrong:** The workflow file differs from the template, so it no longer matches what other modules run. The extra job also runs on Node 18 (listed in [C9](#c9-the-module-still-targets-node-18-but-the-api-1-template-runs-on-node-22)) with `yarn install --frozen-lockfile`, a Yarn 1 command that stops working once the module moves to Yarn 4 (C1).
 
 **Why it happens:** The template's `companion-module-checks.yaml` ends after the `check:` job at line 17. The module adds a second `unit:` job.
 

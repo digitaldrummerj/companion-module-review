@@ -26,7 +26,7 @@
 ### Blocking
 
 - [ ] [C1: Yarn config differs from the template: extra approvedGitRepositories entry](#c1-yarn-config-differs-from-the-template-extra-approvedgitrepositories-entry)
-- [ ] [C2: The module asks Companion for Node 22 instead of Node 26, which API 2.1 modules use](#c2-the-module-asks-companion-for-node-22-instead-of-node-26-which-api-21-modules-use)
+- [ ] [C2: The module still targets Node 22, but the API 2.1 template runs on Node 26](#c2-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26)
 - [ ] [H1: While the device is unreachable, failed Ember+ connection attempts pile up in the background and later stay connected](#h1-while-the-device-is-unreachable-failed-ember-connection-attempts-pile-up-in-the-background-and-later-stay-connected)
 
 ### Non-blocking
@@ -76,33 +76,29 @@ npmPreapprovedPackages:
 
 **Fix:** remove the dependency on the git package rather than just deleting the key, because deleting the key alone makes `yarn install` fail. Check whether a newer `emberplus-connection` release depends on an npm-published `asn1`, and upgrade to it if so. If no release does, please ask in the review thread how Bitfocus wants this git dependency handled.
 
-### C2: The module asks Companion for Node 22 instead of Node 26, which API 2.1 modules use
+### C2: The module still targets Node 22, but the API 2.1 template runs on Node 26
 
-- **Source:** 🤖 validate-template (MAN-RUNTIME)
+- **Source:** 🤖 validate-template (NODE-VERSION)
 - **Classification:** 🆕 NEW
-- **File:** [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/companion/manifest.json#L18)
+- **File:** [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/companion/manifest.json#L18), [`package.json:15`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/package.json#L15)
 
-**What goes wrong:** The module is built on API 2.1 (`@companion-module/base` 2.1.3), whose template runs modules on Node 26, but its manifest asks Companion for Node 22. A module that runs on a different Node version from every other API 2.1 module makes problems harder to troubleshoot.
+**What goes wrong:** Companion starts the module on Node 22, but API 2.1 modules are expected to match the API 2.1 template, which uses Node 26 in every place the Node version is named. The other places listed below still name another Node version too, so the module would run, type-check and build in CI on different Node versions even after the runtime is fixed. A module that does not match its template makes later troubleshooting harder: when something misbehaves, people look for the cause in the module instead of in the mismatched setup.
 
-**Why it happens:** `runtime.type` in the manifest is `node22`. The API 2.1 template sets `node26`.
+**Why it happens:** Moving a module to another Node version means changing every place the version is named: the manifest runtime, `engines.node`, `@types/node`, the TypeScript preset and the CI workflows. These places still name a different Node version than the API 2.1 template.
 
 **Evidence:**
 
-```json
-// companion/manifest.json:17-18 (module)
-"runtime": {
-	"type": "node22",
+```text
+companion/manifest.json runtime.type 'node22' -> 'node26'
+package.json engines.node '^22.20' -> '^26'
 ```
 
-Expected (template): `"type": "node26"`.
+**Confirm by:** open each file above and compare it with the template's copy.
 
-**Confirm by:** open [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/companion/manifest.json#L18) and check `runtime.type`.
+**Fix:** update every place to Node 26, as the template does:
 
-**Fix:** set the runtime to Node 26, as in the template.
-
-```json
-"type": "node26",
-```
+- [ ] [`companion/manifest.json:18`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/companion/manifest.json#L18): `"type": "node26"` in `runtime`
+- [ ] [`package.json:15`](https://github.com/bitfocus/companion-module-sonifex-avn-m8r/blob/5c2fa0d52fa8a27130449dbedd07da7d609a9772/package.json#L15): `"engines": { "node": "^26" }`
 
 ## 🟠 High
 

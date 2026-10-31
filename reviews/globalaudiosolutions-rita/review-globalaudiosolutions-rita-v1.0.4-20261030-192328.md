@@ -43,7 +43,7 @@
 - [ ] [C16: `package.json` is missing the `prettier` devDependency](#c16-packagejson-is-missing-the-prettier-devdependency)
 - [ ] [C17: `package.json` is missing the `typescript-eslint` devDependency](#c17-packagejson-is-missing-the-typescript-eslint-devdependency)
 - [ ] [C18: `package.json` has no `lint-staged` section](#c18-packagejson-has-no-lint-staged-section)
-- [ ] [C19: Module runs on Node 22 instead of the template's Node 26](#c19-module-runs-on-node-22-instead-of-the-templates-node-26)
+- [ ] [C19: The module still targets Node 22, but the API 2.1 template runs on Node 26](#c19-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26)
 - [ ] [H1: `yarn lint` cannot run](#h1-yarn-lint-cannot-run)
 
 ### Non-blocking
@@ -145,7 +145,7 @@ The module was not started from the current API 2.1 TypeScript template (`compan
 
 **Why it happens:** The template builds with `tsconfig.build.json` (which extends `@companion-module/tools/tsconfig/node26/recommended.json`), and its `tsconfig.json` only extends that file. This repo has only a `tsconfig.json`.
 
-**Fix:** copy `tsconfig.build.json` and `tsconfig.json` from the template (see [C19](#c19-module-runs-on-node-22-instead-of-the-templates-node-26)).
+**Fix:** copy `tsconfig.build.json` and `tsconfig.json` from the template (see [C19](#c19-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26)).
 
 ### C7: `package.json` has no `prettier` field
 
@@ -291,20 +291,31 @@ The module was not started from the current API 2.1 TypeScript template (`compan
 
 **Fix:** copy the template's `lint-staged` section into `package.json`.
 
-### C19: Module runs on Node 22 instead of the template's Node 26
+### C19: The module still targets Node 22, but the API 2.1 template runs on Node 26
 
-- **Source:** 🤖 validate-template (MAN-RUNTIME)
+- **Source:** 🤖 validate-template (NODE-VERSION)
 - **Classification:** 🆕 NEW
-- **File:** [`companion/manifest.json:19`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/companion/manifest.json#L19), [`tsconfig.json:2`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/tsconfig.json#L2)
+- **File:** [`companion/manifest.json:19`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/companion/manifest.json#L19), [`package.json:18`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/package.json#L18), [`package.json:27`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/package.json#L27)
 
-**What goes wrong:** Companion starts this module on Node 22, while every module built from the API 2.1 template runs on Node 26. A runtime that differs from the template makes later troubleshooting harder.
+**What goes wrong:** Companion starts the module on Node 22, but API 2.1 modules are expected to match the API 2.1 template, which uses Node 26 in every place the Node version is named. The other places listed below still name another Node version too, so the module would run, type-check and build in CI on different Node versions even after the runtime is fixed. A module that does not match its template makes later troubleshooting harder: when something misbehaves, people look for the cause in the module instead of in the mismatched setup.
 
-**Why it happens:** The manifest's `runtime.type` is `node22`, and the compiler settings follow it: `tsconfig.json` extends `@companion-module/tools/tsconfig/node22/recommended-esm.json`, `engines.node` is `^22.20` and `@types/node` is `^22.19.17`.
+**Why it happens:** Moving a module to another Node version means changing every place the version is named: the manifest runtime, `engines.node`, `@types/node`, the TypeScript preset and the CI workflows. These places still name a different Node version than the API 2.1 template.
 
-- **Expected (template):** `"runtime": { "type": "node26" }`; `tsconfig.json` extends `./tsconfig.build.json`, which extends `@companion-module/tools/tsconfig/node26/recommended.json`
-- **Found:** `"type": "node22"`; `tsconfig.json` extends `@companion-module/tools/tsconfig/node22/recommended-esm.json`
+**Evidence:**
 
-**Fix:** set `runtime.type` to `node26`, take the template's `tsconfig.json` and `tsconfig.build.json` (see [C6](#c6-missing-tsconfigbuildjson-file)), and update `engines.node` and `@types/node` to the template's Node 26 values.
+```text
+companion/manifest.json runtime.type 'node22' -> 'node26'
+package.json engines.node '^22.20' -> '^26'
+package.json devDependencies @types/node '^22.19.17' -> '^26.6.4'
+```
+
+**Confirm by:** open each file above and compare it with the template's copy.
+
+**Fix:** update every place to Node 26, as the template does:
+
+- [ ] [`companion/manifest.json:19`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/companion/manifest.json#L19): `"type": "node26"` in `runtime`
+- [ ] [`package.json:18`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/package.json#L18): `"engines": { "node": "^26" }`
+- [ ] [`package.json:27`](https://github.com/bitfocus/companion-module-globalaudiosolutions-rita/blob/5fadbfd3060dd9bb3f777c4fc19f069017fa92fc/package.json#L27): `"@types/node": "^26.6.4"` in `devDependencies`
 
 ## 🟠 High
 
@@ -561,4 +572,4 @@ Setting `AuthenticationFailure` in the early-return branch of `authenticate()` w
 ## 📝 Additional Notes
 
 - First release: the module has never been published, so there is no previous tag to diff against and the whole module at v1.0.4 was reviewed. The repo's earlier tags (v1.0.0–v1.0.3) were never released.
-- `tsconfig.json` differs from the template (`extends` is `@companion-module/tools/tsconfig/node22/recommended-esm.json` where the template has `./tsconfig.build.json`). This is covered by the fix in [C19](#c19-module-runs-on-node-22-instead-of-the-templates-node-26).
+- `tsconfig.json` differs from the template (`extends` is `@companion-module/tools/tsconfig/node22/recommended-esm.json` where the template has `./tsconfig.build.json`). This is covered by the fix in [C6](#c6-missing-tsconfigbuildjson-file).

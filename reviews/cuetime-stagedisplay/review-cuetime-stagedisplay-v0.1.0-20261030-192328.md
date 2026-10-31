@@ -36,6 +36,7 @@
 - [ ] [H2: Choosing a discovered CueTime display in the connection settings never connects](#h2-choosing-a-discovered-cuetime-display-in-the-connection-settings-never-connects)
 - [ ] [H3: Session Progress Bar feedback is drawn once and never updates](#h3-session-progress-bar-feedback-is-drawn-once-and-never-updates)
 - [ ] [H4: Toggle Playback does nothing when the display is idle](#h4-toggle-playback-does-nothing-when-the-display-is-idle)
+- [ ] [H5: The Node type definitions are for Node 25, but the module and the API 2.1 template use Node 26](#h5-the-node-type-definitions-are-for-node-25-but-the-module-and-the-api-21-template-use-node-26)
 
 ### Non-blocking
 
@@ -437,6 +438,28 @@ export function buildStartSession(state: ProtocolState): Built<CommandPayloads['
 	self.sendCommand('start_session', built.payload)
 }
 ```
+
+### H5: The Node type definitions are for Node 25, but the module and the API 2.1 template use Node 26
+
+- **Source:** 🤖 validate-template (NODE-VERSION)
+- **Classification:** 🆕 NEW
+- **File:** [`package.json:36`](https://github.com/bitfocus/companion-module-cuetime-stagedisplay/blob/e2b23561eb9c902d9c90d731041f5bfa72a7c050/package.json#L36)
+
+**What goes wrong:** The module runs on Node 26 (manifest `runtime.type` is `node26`, as in the API 2.1 template), but its TypeScript type definitions are for Node 25. Type-checking then uses a different Node API surface than the one Companion runs, and the dependency no longer matches the template, which makes later troubleshooting harder.
+
+**Why it happens:** Moving a module to another Node version means changing every place the version is named: the manifest runtime, `engines.node`, `@types/node`, the TypeScript preset and the CI workflows. These places still name a different Node version than the API 2.1 template.
+
+**Evidence:**
+
+```text
+package.json devDependencies @types/node '^25.9.3' -> '^26.6.4'
+```
+
+**Confirm by:** open each file above and compare it with the template's copy.
+
+**Fix:** update every place to Node 26, as the template does:
+
+- [ ] [`package.json:36`](https://github.com/bitfocus/companion-module-cuetime-stagedisplay/blob/e2b23561eb9c902d9c90d731041f5bfa72a7c050/package.json#L36): `"@types/node": "^26.6.4"` in `devDependencies`
 
 ## 🟡 Medium
 
