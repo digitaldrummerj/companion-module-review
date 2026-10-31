@@ -44,6 +44,7 @@
 - [ ] [C17: `prettier` is not a devDependency](#c17-prettier-is-not-a-devdependency)
 - [ ] [C18: `package.json` has no `lint-staged` section](#c18-packagejson-has-no-lint-staged-section)
 - [ ] [H1: `yarn lint` crashes before checking any code, because `prettier` is not installed](#h1-yarn-lint-crashes-before-checking-any-code-because-prettier-is-not-installed)
+- [ ] [H2: The module bundles itself with esbuild, which Companion's build tooling already does](#h2-the-module-bundles-itself-with-esbuild-which-companions-build-tooling-already-does)
 
 ### Non-blocking
 
@@ -546,6 +547,34 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'prettier' imported from node_
 **Confirm by:** `yarn lint` passes after adding the template's `prettier` devDependency ([C17](#c17-prettier-is-not-a-devdependency)) and `prettier` field ([C9](#c9-packagejson-has-no-prettier-field-so-formatting-does-not-use-the-companion-style)).
 
 **Fix:** add prettier as in [C17](#c17-prettier-is-not-a-devdependency) and [C9](#c9-packagejson-has-no-prettier-field-so-formatting-does-not-use-the-companion-style), then run `yarn lint` and fix anything it reports.
+
+### H2: The module bundles itself with esbuild, which Companion's build tooling already does
+
+- **Source:** 👤 reviewer
+- **Classification:** 🆕 NEW
+- **File:** [`package.json:7-9`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/package.json#L7-L9), [`package.json:27-30`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/package.json#L27-L30)
+
+**What goes wrong:** The module adds its own bundler on top of Companion's. `yarn package` runs esbuild to bundle `src/main.ts` into `dist/main.js`, then `companion-module-build` bundles it again. Companion's tooling already bundles the module and all of its dependencies when it packages it, so the esbuild step, its `--external` flags and the `esbuild` devDependency are extra build machinery that other Companion maintainers will not expect when they troubleshoot or take over the module.
+
+**Why it happens:** `@visibox/api-client` is listed as a devDependency and esbuild inlines it into `dist/main.js`. With the template's build, `tsc` compiles the TypeScript and `companion-module-build` (webpack, from `@companion-module/tools`) bundles every runtime dependency, so a normal `dependencies` entry is all the client library needs.
+
+**Evidence:**
+
+```json
+"build": "rimraf dist && tsc -p tsconfig.build.json --noEmit && esbuild src/main.ts --bundle --platform=node --target=node22 --format=esm --main-fields=module,main --external:@companion-module/base --external:ws --outfile=dist/main.js",
+"package": "npm run build && companion-module-build",
+"@visibox/api-client": "^1.1.0",
+"esbuild": "^0.28.1",
+```
+
+**Confirm by:** open [`package.json:7-9`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/package.json#L7-L9) and [`package.json:27-30`](https://github.com/bitfocus/companion-module-spaceage-visibox/blob/5554612e0b12ecb484081430ee413d6608fe23bb/package.json#L27-L30), and compare with the template's `build` / `build:main` / `package` scripts.
+
+**Fix:** remove esbuild and use the template's build ([C13](#c13-packagejson-has-no-buildmain-script)):
+
+- Replace the `build` script with the template's `build` / `build:main` pair (`tsc -p tsconfig.build.json`), and use `"package": "run build && companion-module-build"`.
+- Move `@visibox/api-client` from `devDependencies` to `dependencies`.
+- Remove the `esbuild` devDependency.
+- Run `yarn package` and check the module still loads in Companion.
 
 ## 🟡 Medium
 
