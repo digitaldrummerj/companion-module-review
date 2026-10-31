@@ -224,7 +224,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | tow-mixeffect | v2.1.1 | 2026-10-31 | [review](tow-mixeffect/review-tow-mixeffect-v2.1.1-20261031-201135.md) |
 | ✅ | cisco-cbs-350 | v1.0.1 | 2026-10-31 | [review](cisco-cbs-350/review-cisco-cbs-350-v1.0.1-20261031-201135.md) |
 | ✅ | magewell-ultrastream | v1.1.1 | 2026-10-31 | [review](magewell-ultrastream/review-magewell-ultrastream-v1.1.1-20261031-201135.md) |
-| ⬜ | miniontoby-midi-multicammixer | v1.0.10 | 2026-10-31 | [review](miniontoby-midi-multicammixer/review-miniontoby-midi-multicammixer-v1.0.10-20261031-201135.md) |
+| ✅ | miniontoby-midi-multicammixer | v1.0.10 | 2026-10-31 | [review](miniontoby-midi-multicammixer/review-miniontoby-midi-multicammixer-v1.0.10-20261031-201135.md) |
 | ⬜ | livelogix-cadence | v1.4.1 | 2026-10-31 | [review](livelogix-cadence/review-livelogix-cadence-v1.4.1-20261031-201135.md) |
 | ⬜ | thenoteslist-thenoteslist | v1.2.6 | 2026-10-31 | [review](thenoteslist-thenoteslist/review-thenoteslist-thenoteslist-v1.2.6-20261031-201135.md) |
 | ⬜ | screenbird-signage | v1.0.1 | 2026-10-31 | [review](screenbird-signage/review-screenbird-signage-v1.0.1-20261031-201135.md) |
