@@ -12,7 +12,7 @@
 | **Prior review** | [v1.0.0 review](review-videopathe-qplayer-v1.0.0-20261030-003407.md) |
 | **Reviewed** | 2026-10-30 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -22,13 +22,10 @@
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [H1: CI workflow uses newer GitHub Action versions than the template](#h1-ci-workflow-uses-newer-github-action-versions-than-the-template)
-
 ### Non-blocking
 
 - [ ] [M1: Readout presets may not show the time, media or player name because the variable prefix is hard-coded](#m1-readout-presets-may-not-show-the-time-media-or-player-name-because-the-variable-prefix-is-hard-coded)
+- [ ] [M2: CI workflow uses newer GitHub Action versions than the template](#m2-ci-workflow-uses-newer-github-action-versions-than-the-template)
 - [ ] [L1: Library item dropdowns list only the first 500 library items](#l1-library-item-dropdowns-list-only-the-first-500-library-items)
 - [ ] [L2: A leftover unused file says Companion does not resolve variables in options, which is wrong](#l2-a-leftover-unused-file-says-companion-does-not-resolve-variables-in-options-which-is-wrong)
 - [ ] [NR1: Consider moving to API 2.x for expression support in options](#nr1-consider-moving-to-api-2x-for-expression-support-in-options)
@@ -37,9 +34,25 @@
 
 - [📝 Additional Notes](#-additional-notes)
 
-## 🟠 High
+## 🟡 Medium
 
-### H1: CI workflow uses newer GitHub Action versions than the template
+### M1: Readout presets may not show the time, media or player name because the variable prefix is hard-coded
+
+- **Source:** 🔎 compliance reviewer
+- **Classification:** 🆕 NEW
+- **File:** [`src/presets.ts:11-13`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/src/presets.ts#L11-L13), [`companion/HELP.md:131`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/companion/HELP.md#L131), [`README.md:242`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/README.md#L242), [`README.md:254`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/README.md#L254)
+
+**What goes wrong:** A user adds a QPlayer connection (labelled "QPlayer" by default) and drags a **Readouts** preset such as "Active remaining time" or "Active media name", or the **Select Player 1** / **Select Player 2** presets, onto a button. The button text refers to `$(videopathe-qplayer:remaining_formatted)`, but the connection's variables are published under the connection label, as `$(QPlayer:remaining_formatted)`. If Companion does not rewrite the prefix (see [A1](#-assumptions-to-confirm)), the button shows `$NA` instead of `00:42`. The same applies after renaming the connection or adding a second one ("QPlayer_2"). HELP.md and README.md give users the same hard-coded prefix.
+
+**Why it happens:** `UpdatePresets` builds every variable reference from a fixed module id (`const moduleId = 'videopathe-qplayer'`), not from the connection's label. In Companion, variable references use the connection label.
+
+**Fix:** build the prefix from the connection label, and in HELP.md and README.md write the examples as `$(<connection label>:p2_program_remaining_formatted)` with a note that the prefix is the connection's label.
+
+```ts
+const variable = (name: string) => `$(${self.label}:${name})`
+```
+
+### M2: CI workflow uses newer GitHub Action versions than the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -67,24 +80,6 @@ Module:   .github/workflows/node.yaml:21     uses: actions/setup-node@v6
       - name: Use Node.js 22.x
         # This should match the version of Node.js you have defined in the manifest.json runtime field
         uses: actions/setup-node@v4
-```
-
-## 🟡 Medium
-
-### M1: Readout presets may not show the time, media or player name because the variable prefix is hard-coded
-
-- **Source:** 🔎 compliance reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`src/presets.ts:11-13`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/src/presets.ts#L11-L13), [`companion/HELP.md:131`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/companion/HELP.md#L131), [`README.md:242`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/README.md#L242), [`README.md:254`](https://github.com/bitfocus/companion-module-videopathe-qplayer/blob/c3d9da971a891434ddf2374fb2eea0ba2271b6e8/README.md#L254)
-
-**What goes wrong:** A user adds a QPlayer connection (labelled "QPlayer" by default) and drags a **Readouts** preset such as "Active remaining time" or "Active media name", or the **Select Player 1** / **Select Player 2** presets, onto a button. The button text refers to `$(videopathe-qplayer:remaining_formatted)`, but the connection's variables are published under the connection label, as `$(QPlayer:remaining_formatted)`. If Companion does not rewrite the prefix (see [A1](#-assumptions-to-confirm)), the button shows `$NA` instead of `00:42`. The same applies after renaming the connection or adding a second one ("QPlayer_2"). HELP.md and README.md give users the same hard-coded prefix.
-
-**Why it happens:** `UpdatePresets` builds every variable reference from a fixed module id (`const moduleId = 'videopathe-qplayer'`), not from the connection's label. In Companion, variable references use the connection label.
-
-**Fix:** build the prefix from the connection label, and in HELP.md and README.md write the examples as `$(<connection label>:p2_program_remaining_formatted)` with a note that the prefix is the connection's label.
-
-```ts
-const variable = (name: string) => `$(${self.label}:${name})`
 ```
 
 ## 🟢 Low
@@ -134,6 +129,6 @@ const variable = (name: string) => `$(${self.label}:${name})`
 - Prior M1 (every variable and feedback re-sent four times a second): fixed. The ticker only repaints while something is playing or counting down, sends only changed variables, and re-checks only the time-based feedbacks.
 - Prior M2 (No target playlist still sent the active playlist): fixed. An empty choice now sends an empty target.
 - Prior M3 (variables resolved a second time): fixed in the wrappers; the leftover helper file is [L2](#l2-a-leftover-unused-file-says-companion-does-not-resolve-variables-in-options-which-is-wrong).
-- Prior M4 (workflow action versions): not changed; carried forward as [H1](#h1-ci-workflow-uses-newer-github-action-versions-than-the-template).
+- Prior M4 (workflow action versions): not changed; carried forward as [M2](#m2-ci-workflow-uses-newer-github-action-versions-than-the-template).
 - Prior L1–L5 (rejected command turned the connection red, crash on an unexpected reply, unexplained Bad Configuration, `isVisible` functions, Open monitor window preset toggling): all fixed.
 - `yarn install --immutable`, `yarn package` and `yarn lint` all pass.
