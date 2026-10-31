@@ -187,7 +187,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | feelworld-l3-series | v1.1.0 | 2026-10-30 | [review](feelworld-l3-series/review-feelworld-l3-series-v1.1.0-20261030-192328.md) |
 | ✅ | videotaxi-speech-events | v1.3.10 | 2026-10-30 | [review](videotaxi-speech-events/review-videotaxi-speech-events-v1.3.10-20261030-192328.md) |
 | ✅ | screenbird-signage | v1.0.0 | 2026-10-30 | [review](screenbird-signage/review-screenbird-signage-v1.0.0-20261030-192328.md) |
-| ⬜ | sonifex-avn-m8r | v0.1.1 | 2026-10-30 | [review](sonifex-avn-m8r/review-sonifex-avn-m8r-v0.1.1-20261030-192328.md) |
+| ✅ | sonifex-avn-m8r | v0.1.1 | 2026-10-30 | [review](sonifex-avn-m8r/review-sonifex-avn-m8r-v0.1.1-20261030-192328.md) |
 | ⬜ | projetech-studio | v1.5.1 | 2026-10-30 | [review](projetech-studio/review-projetech-studio-v1.5.1-20261030-192328.md) |
 | ⬜ | derhamproductions-presenteringest | v0.11.0 | 2026-10-30 | [review](derhamproductions-presenteringest/review-derhamproductions-presenteringest-v0.11.0-20261030-192328.md) |
 | ⬜ | mutedeck-mutedeck | v2.0.0 | 2026-10-30 | [review](mutedeck-mutedeck/review-mutedeck-mutedeck-v2.0.0-20261030-192328.md) |
