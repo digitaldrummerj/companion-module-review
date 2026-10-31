@@ -11,23 +11,20 @@
 | **Commit** | [`59dafaa`](https://github.com/bitfocus/companion-module-pixelmosaic-smartpreso/tree/59dafaa81c29790c40db9b7833f343f2f38ce45f) |
 | **Reviewed** | 2026-10-31 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | Smart Preso (SP Builder) sends no state back to the controller over OSC today, so a feedback would need a new listener (if the device can report state) or state the module last commanded | The maintainer's comment in [`src/feedbacks.ts:3`](https://github.com/bitfocus/companion-module-pixelmosaic-smartpreso/blob/59dafaa81c29790c40db9b7833f343f2f38ce45f/src/feedbacks.ts#L3), [`companion/HELP.md:37`](https://github.com/bitfocus/companion-module-pixelmosaic-smartpreso/blob/59dafaa81c29790c40db9b7833f343f2f38ce45f/companion/HELP.md#L37) and the send-only socket; the Smart Preso OSC documentation was not checked | [H1](#h1-no-feedbacks-buttons-cant-show-what-smart-preso-is-doing) |
-| A2 | The first-release rule (at least one device-state feedback) applies to a one-way, send-only protocol too | The rule lists no exception for one-way protocols; whether one applies is a policy call | [H1](#h1-no-feedbacks-buttons-cant-show-what-smart-preso-is-doing) |
+| A1 | Smart Preso (SP Builder) sends no state back to the controller over OSC today, so a feedback would need a new listener (if the device can report state) or state the module last commanded | The maintainer's comment in [`src/feedbacks.ts:3`](https://github.com/bitfocus/companion-module-pixelmosaic-smartpreso/blob/59dafaa81c29790c40db9b7833f343f2f38ce45f/src/feedbacks.ts#L3), [`companion/HELP.md:37`](https://github.com/bitfocus/companion-module-pixelmosaic-smartpreso/blob/59dafaa81c29790c40db9b7833f343f2f38ce45f/companion/HELP.md#L37) and the send-only socket; the Smart Preso OSC documentation was not checked | [M1](#m1-no-feedbacks-buttons-cant-show-what-smart-preso-is-doing) |
+| A2 | The first-release rule (at least one device-state feedback) applies to a one-way, send-only protocol too | The rule lists no exception for one-way protocols; whether one applies is a policy call | [M1](#m1-no-feedbacks-buttons-cant-show-what-smart-preso-is-doing) |
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [H1: No feedbacks: buttons can't show what Smart Preso is doing](#h1-no-feedbacks-buttons-cant-show-what-smart-preso-is-doing)
-
 ### Non-blocking
 
+- [ ] [M1: No feedbacks: buttons can't show what Smart Preso is doing](#m1-no-feedbacks-buttons-cant-show-what-smart-preso-is-doing)
 - [ ] [L1: Connection shows OK when every send fails, and stays red after a socket error](#l1-connection-shows-ok-when-every-send-fails-and-stays-red-after-a-socket-error)
 - [ ] [L2: Typos in action and preset definitions won't be caught at build time](#l2-typos-in-action-and-preset-definitions-wont-be-caught-at-build-time)
 - [ ] [L3: Test pattern option is hard to use in expression mode](#l3-test-pattern-option-is-hard-to-use-in-expression-mode)
@@ -37,9 +34,9 @@
 
 - [📝 Additional Notes](#-additional-notes)
 
-## 🟠 High
+## 🟡 Medium
 
-### H1: No feedbacks: buttons can't show what Smart Preso is doing
+### M1: No feedbacks: buttons can't show what Smart Preso is doing
 
 - **Source:** 🔎 compliance reviewer — ⚠️ needs your check
 - **Classification:** 🆕 NEW
