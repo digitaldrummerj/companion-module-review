@@ -25,6 +25,7 @@
 
 - [ ] [C1: Module runs on Node 22 while the API 2.1 template uses Node 26](#c1-module-runs-on-node-22-while-the-api-21-template-uses-node-26)
 - [ ] [C2: Pre-commit hook differs from the template](#c2-pre-commit-hook-differs-from-the-template)
+- [ ] [H1: CI workflow does not use the template reusable module-checks workflow](#h1-ci-workflow-does-not-use-the-template-reusable-module-checks-workflow)
 
 ### Non-blocking
 
@@ -74,7 +75,7 @@ tsconfig.build.json      extends               found '@companion-module/tools/ts
 - [ ] `package.json`: `"engines": { "node": "^26" }`
 - [ ] `package.json`: `"@types/node": "^26.6.4"` in `devDependencies`
 - [ ] `tsconfig.build.json`: `"extends": "@companion-module/tools/tsconfig/node26/recommended.json"`
-- [ ] `.github/workflows/companion-module-checks.yaml` line 20: `node-version: 26.x`
+- [ ] `.github/workflows/companion-module-checks.yaml` line 20: `node-version: 26.x` (or adopt the template's reusable workflow, see [H1](#h1-ci-workflow-does-not-use-the-template-reusable-module-checks-workflow))
 
 ### C2: Pre-commit hook differs from the template
 
@@ -98,6 +99,70 @@ tsconfig.build.json      extends               found '@companion-module/tools/ts
 
 ```text
 lint-staged
+```
+
+## 🟠 High
+
+### H1: CI workflow does not use the template reusable module-checks workflow
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** 🆕 NEW
+- **File:** [`.github/workflows/companion-module-checks.yaml:4-45`](https://github.com/bitfocus/companion-module-multicam-systems-rcp/blob/4775000dd4a82ce701fe672a97ddcec1c28685b2/.github/workflows/companion-module-checks.yaml#L4-L45)
+
+**What goes wrong:** The module's "Companion Module Checks" workflow is a hand-written job instead of Bitfocus's shared check, so the module isn't checked the same way as every other module, and changes Bitfocus makes to the shared check never reach it.
+
+**Why it happens:** The module adds a `pull_request:` trigger (line 4) and a top-level `permissions: contents: read` (lines 7-8), and replaces the template's `uses: bitfocus/actions/.github/workflows/module-checks.yaml@main` job (with its `if: ${{ !contains(github.repository, 'companion-module-template-') }}` guard and `permissions: packages: read`) with a `runs-on: ubuntu-latest` job (lines 12-45: checkout, setup-node, `yarn test`/`lint`/`companion-module-check`/`package`, a custom packaged-entrypoint check, upload-artifact). The comment at line 16 says the upstream reusable job "cannot clone this private fork"; the module is now released from the public `bitfocus` repo, where the reusable workflow works.
+
+**Evidence:** validator expected vs found:
+
+```text
+Differs from template (line 4: found 'pull_request:', template 'jobs:')
+```
+
+```yaml
+# .github/workflows/companion-module-checks.yaml:3-20
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Test and package Companion module
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # The upstream reusable job removes contents permission and cannot clone this private fork.
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.23.1'
+```
+
+**Confirm by:** `diff` [`.github/workflows/companion-module-checks.yaml`](https://github.com/bitfocus/companion-module-multicam-systems-rcp/blob/4775000dd4a82ce701fe672a97ddcec1c28685b2/.github/workflows/companion-module-checks.yaml#L1-L45) against `companion-module-template-ts` `.github/workflows/companion-module-checks.yaml`. (The `node-version` on line 20 is part of [C1](#c1-module-runs-on-node-22-while-the-api-21-template-uses-node-26).)
+
+**Fix:** copy the template's `companion-module-checks.yaml`. Enabling `upload-artifact: true` is accepted.
+
+```yaml
+name: Companion Module Checks
+
+on:
+  push:
+
+jobs:
+  check:
+    name: Check module
+
+    if: ${{ !contains(github.repository, 'companion-module-template-') }}
+
+    permissions:
+      packages: read
+
+    uses: bitfocus/actions/.github/workflows/module-checks.yaml@main
+    # with:
+    #   upload-artifact: true
 ```
 
 ## 🟡 Medium
