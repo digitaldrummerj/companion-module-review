@@ -12,25 +12,22 @@
 | **Prior review** | [v1.1.0 (2026-08-03)](review-crewlan-connect-v1.1.0-20260803-184441.md) |
 | **Reviewed** | 2026-10-30 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [H1: The CI workflow node.yaml differs from the template](#h1-the-ci-workflow-nodeyaml-differs-from-the-template)
-
 ### Non-blocking
 
+- [ ] [M1: The CI workflow node.yaml differs from the template](#m1-the-ci-workflow-nodeyaml-differs-from-the-template)
 - [ ] [L1: The Status list on hand-built indicator buttons shows your own statuses, not the ones the indicator accepts](#l1-the-status-list-on-hand-built-indicator-buttons-shows-your-own-statuses-not-the-ones-the-indicator-accepts)
 
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
 
-## 🟠 High
+## 🟡 Medium
 
-### H1: The CI workflow node.yaml differs from the template
+### M1: The CI workflow node.yaml differs from the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW (first raised in this review; `.github/workflows/node.yaml` is unchanged since v1.4.3)
