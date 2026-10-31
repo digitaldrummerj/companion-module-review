@@ -11,7 +11,7 @@
 | **Build** | `yarn install --immutable` and `yarn package` pass |
 | **Date** | 2026-10-31 |
 
-## Verdict: ✅ Approved
+## Verdict: ❌ Changes Required
 
 ## ❓ Assumptions to Confirm
 
@@ -22,6 +22,10 @@
 
 ## 📋 Issues
 
+### Blocking
+
+- [ ] [H1: The manifest lists a legacy id although the module has never been published](#h1-the-manifest-lists-a-legacy-id-although-the-module-has-never-been-published)
+
 ### Non-blocking
 
 - [ ] [M1: A wrong Key leaves the connection on Connecting with no error](#m1-a-wrong-key-leaves-the-connection-on-connecting-with-no-error)
@@ -30,6 +34,35 @@
 - [ ] [L3: The Go to page action sends a fractional page number as typed](#l3-the-go-to-page-action-sends-a-fractional-page-number-as-typed)
 - [ ] [L4: Upgrade scripts are declared in index.js rather than a separate upgrades.js](#l4-upgrade-scripts-are-declared-in-indexjs-rather-than-a-separate-upgradesjs)
 - [ ] [N1: Every poll resends all variables and feedbacks even when nothing changed](#n1-every-poll-resends-all-variables-and-feedbacks-even-when-nothing-changed)
+
+## 🟠 High
+
+### H1: The manifest lists a legacy id although the module has never been published
+
+- **Source:** 👤 Bitfocus reviewer
+- **Classification:** 🆕 NEW
+- **File:** [`companion/manifest.json:28-30`](https://github.com/bitfocus/companion-module-cuemark-cuemark/blob/f22be15beba189d369b0fe2e458c0a7cb481d434/companion/manifest.json#L28-L30)
+
+**What goes wrong:** `legacyIds` tells Companion which older module ids this module replaces. When Companion finds a saved connection that uses one of those ids, it moves the connection over to this module. Cuemark has never been published, so it replaces no module, and no existing module uses the id `cuemark`. Declaring `cuemark` here only reserves an id the module doesn't own. If a module with that id is ever published, Companion would move its users' connections to Cuemark.
+
+**Why it happens:** The manifest declares `"legacyIds": ["cuemark"]`, probably left over from side-loaded test builds with that id. The template ships `"legacyIds": []`.
+
+**Evidence:**
+
+```json
+// companion/manifest.json:28-30
+  "legacyIds": [
+    "cuemark"
+  ],
+```
+
+**Confirm by:** open [`companion/manifest.json`](https://github.com/bitfocus/companion-module-cuemark-cuemark/blob/f22be15beba189d369b0fe2e458c0a7cb481d434/companion/manifest.json) and compare `legacyIds` with the template's `"legacyIds": []`.
+
+**Fix:** make `legacyIds` an empty array, as in the template:
+
+```json
+"legacyIds": [],
+```
 
 ## 🟡 Medium
 
