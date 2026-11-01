@@ -78,6 +78,8 @@ enableScripts: false
 
 **Fix:** either say in the release notes that users with three or more ports of the same name must pick the **MIDI Out** port again, or add a config upgrade script that rewrites an old-style name ("loopMIDI Port 1 2", matching `^(.*?)( \d+)+$`) to the new form (the base name plus the last number, "loopMIDI Port 2").
 
+**Maintainer response (2026-11-01):** won't fix, and the reviewer accepts it. loopMIDI does not allow duplicate port names, so the loopMIDI example cannot happen. The module has few users so far. An upgrade script would risk breaking more configs than it fixes, because some real port names already end in numbers: the suggested pattern would also rewrite those. Do not raise this again in later reviews, and do not count it as an open finding in a re-review.
+
 ## 📝 Additional Notes
 
 - `tsconfig.build.json` differs from the template: it adds `compilerOptions.rootDir: "./src"` (line 6). The build passes, so no change is required.
