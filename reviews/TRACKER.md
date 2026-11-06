@@ -232,10 +232,8 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | getontime-ontime | v5.5.0-beta.1 | 2026-10-31 | [review](getontime-ontime/review-getontime-ontime-v5.5.0-beta.1-20261031-210335.md) |
 | ✅ | miniontoby-midi-multicammixer | v1.0.11 | 2026-11-01 | published.  manual review. |
 | ⬜ | uniliga-cg | v1.3.1 | 2026-11-06 | [review](uniliga-cg/review-uniliga-cg-v1.3.1-20261106-181511.md) |
-| ⬜ | apple-tv | v1.0.0 | 2026-11-06 | [review](apple-tv/review-apple-tv-v1.0.0-20261106-181511.md) |
 | ⬜ | c4-clock | v1.0.2 | 2026-11-06 | [review](c4-clock/review-c4-clock-v1.0.2-20261106-181511.md) |
 | ⬜ | cuemark-cuemark | v1.2.1 | 2026-11-06 | [review](cuemark-cuemark/review-cuemark-cuemark-v1.2.1-20261106-181511.md) |
-| ⬜ | venucable-planner | v1.7.2 | 2026-11-06 | [review](venucable-planner/review-venucable-planner-v1.7.2-20261106-181511.md) |
 | ⬜ | jozeemedia-jcounter | v3.0.1 | 2026-11-06 | [review](jozeemedia-jcounter/review-jozeemedia-jcounter-v3.0.1-20261106-181511.md) |
 | ⬜ | spaceage-visibox | v1.0.1 | 2026-11-06 | [review](spaceage-visibox/review-spaceage-visibox-v1.0.1-20261106-181511.md) |
 | ⬜ | videotaxi-speech-events | v1.3.11 | 2026-11-06 | [review](videotaxi-speech-events/review-videotaxi-speech-events-v1.3.11-20261106-181511.md) |
@@ -255,9 +253,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | eventspro-toolspro-timer | v1.2.2 | 2026-11-06 | [review](eventspro-toolspro-timer/review-eventspro-toolspro-timer-v1.2.2-20261106-181511.md) |
 | ⬜ | fora-mfr | v2.0.0 | 2026-11-06 | [review](fora-mfr/review-fora-mfr-v2.0.0-20261106-181511.md) |
 | ⬜ | middleman-breaktime | v2.0.1 | 2026-11-06 | [review](middleman-breaktime/review-middleman-breaktime-v2.0.1-20261106-181511.md) |
-| ⬜ | sony-bravia | v2.2.1 | 2026-11-06 | [review](sony-bravia/review-sony-bravia-v2.2.1-20261106-181511.md) |
 | ⬜ | nextologies-nextotalk | v1.0.2 | 2026-11-06 | [review](nextologies-nextotalk/review-nextologies-nextotalk-v1.0.2-20261106-181511.md) |
-| ⬜ | oncue-oncue | v1.3.5 | 2026-11-06 | [review](oncue-oncue/review-oncue-oncue-v1.3.5-20261106-181511.md) |
 | ⬜ | epiphan-pearl | v3.0.0 | 2026-11-06 | [review](epiphan-pearl/review-epiphan-pearl-v3.0.0-20261106-181511.md) |
 | ⬜ | monnit-sensors | v2.0.0 | 2026-11-06 | [review](monnit-sensors/review-monnit-sensors-v2.0.0-20261106-181511.md) |
 | ⬜ | vyv-photon | v4.0.0 | 2026-11-06 | [review](vyv-photon/review-vyv-photon-v4.0.0-20261106-181511.md) |
@@ -268,4 +264,3 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | vhd-vx90 | v1.2.2 | 2026-11-06 | [review](vhd-vx90/review-vhd-vx90-v1.2.2-20261106-181511.md) |
 | ⬜ | vhd-vx61xl | v1.0.2 | 2026-11-06 | [review](vhd-vx61xl/review-vhd-vx61xl-v1.0.2-20261106-181511.md) |
 | ⬜ | pltech-kumatimer | v2.7.0 | 2026-11-06 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.7.0-20261106-181511.md) |
-| ⬜ | rundown-studio | v2.3.1 | 2026-11-06 | [review](rundown-studio/review-rundown-studio-v2.3.1-20261106-181511.md) |
