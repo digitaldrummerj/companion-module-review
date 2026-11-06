@@ -6,7 +6,7 @@
 | **Scope** | `tag` (v1.2.0..v2.0.0) |
 | **Version** | v2.0.0 (`05b0319`) |
 | **Release** | Update — last published v1.2.0 |
-| **API** | 2.2 (base 2.2.2, yarn.lock) — requires Companion 5.0+ (at least; the fact sheet has no mapped minimum for 2.2) |
+| **API** | 2.2 (base 2.2.2, yarn.lock) — requires Companion 5.1+ |
 | **Template** | `companion-module-template-js` @ `89da037` (2026-11-01) |
 | **Reviewed** | 2026-11-06 |
 
@@ -382,4 +382,4 @@ As a safety net, also fall back to the defaults in the two threshold callbacks, 
 
 ## 📝 Additional Notes
 
-- The review's API compliance checklist has no API 2.2 reference yet, so the module (base 2.2.2) was checked against the API 2.0 and 2.1 rules only.
+- API compliance was re-checked on 2026-11-06 against the API 2.2 rules (companion-v2-api-compliance 1.2.0): the module has no `src/`, so the six source files at the repository root were checked by hand. No value-type feedbacks, preset `storeResult`/`localVariables` or `hasResult`, Regex keys or UDP/shared sockets are used, and every variable id is valid (`last_poll_date`, `last_poll_time`, and per-sensor ids built by [`sanitizeId`](https://github.com/bitfocus/companion-module-monnit-sensors/blob/05b0319e961b88878985634acb9dc36a729ab47a/main.js#L9-L11), which maps every character outside a-z and 0-9 to `_`). No API 2.2 findings.

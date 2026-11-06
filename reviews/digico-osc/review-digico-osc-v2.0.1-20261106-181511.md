@@ -6,7 +6,7 @@
 | **Scope** | `tag` (changes `v1.0.4..v2.0.1`) |
 | **Version** | v2.0.1 ([`0602e22`](https://github.com/bitfocus/companion-module-digico-osc/commit/0602e2229ee11056f380ebecedd1d6499acc3134)) |
 | **Release** | Update — last published v1.0.4 |
-| **API** | 2.2 (base 2.2.2, yarn.lock) |
+| **API** | 2.2 (base 2.2.2, yarn.lock) — requires Companion 5.1+ |
 | **Template** | `companion-module-template-ts` @ `e0d42b7` (2026-10-11) |
 | **Reviewed** | 2026-11-06 |
 
@@ -29,6 +29,7 @@
 | A11 | The preset sections the console reports can change in normal use (another session loaded, or a preset created in a new section) | sections come partly from console preset records (`src/main.ts:211-226`), which are session data | [M9](#m9-preset-actions-and-feedbacks-lose-the-picked-preset-when-the-consoles-preset-sections-change) |
 | A12 | In value mode, Companion's number field won't save a value below the field's `min` | v2.0 reference "Expression validation" row; base typings call min/max UI hints | [M10](#m10-relative-mode-cant-step-a-value-down-when-the-parameters-range-starts-at-0) |
 | A13 | Companion's multi-select editor does not show a single (non-array) value as selected, and re-saving keeps only array values | the multidropdown option type expects an array of choice ids; Companion UI not checked | [L3](#l3-upgraded-channel-selections-are-saved-as-a-single-value-in-a-multi-select-field) |
+| A14 | When the module sends through a `'udp4'` shared socket, Companion's host resolves a hostname such as `sd12.local` to an IPv4 address and can't send to an IPv6 address on that socket | the v2.2 reference ("A shared UDP socket can only send to its own family") and how Node `dgram` behaves; the send happens in the Companion host, which was not checked | [M13](#m13-the-ip-address-fields-reject-hostnames-deprecated-regexip) (the note about the hard-coded `'udp4'` sockets if the regex is dropped) |
 
 ## 📋 Issues
 
@@ -56,6 +57,7 @@
 - [ ] [M10: Relative mode can't step a value down when the parameter's range starts at 0](#m10-relative-mode-cant-step-a-value-down-when-the-parameters-range-starts-at-0)
 - [ ] [M11: No feedback can colour a button, so mute, solo or macro state can't light a button directly](#m11-no-feedback-can-colour-a-button-so-mute-solo-or-macro-state-cant-light-a-button-directly)
 - [ ] [M12: The release workflow (release.yaml) is missing](#m12-the-release-workflow-releaseyaml-is-missing)
+- [ ] [M13: The IP address fields reject hostnames (deprecated Regex.IP)](#m13-the-ip-address-fields-reject-hostnames-deprecated-regexip)
 - [ ] [L1: iPad relay problems only reach the log, and the connection still shows OK](#l1-ipad-relay-problems-only-reach-the-log-and-the-connection-still-shows-ok)
 - [ ] [L2: A Receive Port that is already in use shows up as "No response received from connected Mixer"](#l2-a-receive-port-that-is-already-in-use-shows-up-as-no-response-received-from-connected-mixer)
 - [ ] [L3: Upgraded channel selections are saved as a single value in a multi-select field](#l3-upgraded-channel-selections-are-saved-as-a-single-value-in-a-multi-select-field)
@@ -63,8 +65,7 @@
 - [ ] [L5: Every console name change rebuilds and resends all of the roughly 660 action definitions](#l5-every-console-name-change-rebuilds-and-resends-all-of-the-roughly-660-action-definitions)
 - [ ] [L6: Commands marked MAYBE? are shown to users as normal actions and feedbacks](#l6-commands-marked-maybe-are-shown-to-users-as-normal-actions-and-feedbacks)
 - [ ] [L7: The upgrade script's log messages don't reach the connection log](#l7-the-upgrade-scripts-log-messages-dont-reach-the-connection-log)
-- [ ] [L8: The IP address fields reject hostnames (deprecated Regex.IP)](#l8-the-ip-address-fields-reject-hostnames-deprecated-regexip)
-- [ ] [L9: The help page doesn't cover the iPad relay, actions, feedbacks or variables, and has broken formatting](#l9-the-help-page-doesnt-cover-the-ipad-relay-actions-feedbacks-or-variables-and-has-broken-formatting)
+- [ ] [L8: The help page doesn't cover the iPad relay, actions, feedbacks or variables, and has broken formatting](#l8-the-help-page-doesnt-cover-the-ipad-relay-actions-feedbacks-or-variables-and-has-broken-formatting)
 - [ ] [N1: Count variables are named like sections, not counts](#n1-count-variables-are-named-like-sections-not-counts)
 - [ ] [N2: The README version history describes the rewrite as a version-number change only](#n2-the-readme-version-history-describes-the-rewrite-as-a-version-number-change-only)
 
@@ -699,6 +700,21 @@ function wireArguments(row: CommandRow, value: unknown): OSCSomeArguments {
 
 **Fix:** add the template's `release.yaml`. It packages the module through the `bitfocus/actions` module checks when a release is published and attaches the `.tgz` to the GitHub release.
 
+### M13: The IP address fields reject hostnames (deprecated Regex.IP)
+
+- **Source:** 🔎 compliance reviewer
+- **Classification:** 🆕 NEW
+- **File:** [`src/config.ts:31`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/config.ts#L31), [`src/config.ts:65`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/config.ts#L65)
+
+**What goes wrong:** A user can't enter a hostname (for example `sd12.local`) for Mixer IP Address or iPad IP Address; only a dotted IPv4 address passes validation. On top of that, as soon as Companion asks for the config fields (for example when the user opens the connection settings), the connection log shows the warning "Regex.IP is deprecated. Use IPV4 instead, or preferably allow any text so that hostnames and IPv6 addresses can be entered", once per module process.
+
+**Why it happens:** Both fields use `Regex.IP`, which @companion-module/base 2.2.2 marks `@deprecated`: "Use `IPV4` instead, or preferably a `textinput` field without a regex so that hostnames and IPv6 addresses can be entered". Under API 2.2 (base 2.2.2) deprecated Regex patterns are a Medium. Reading `Regex.IP` is also what writes the warning to the connection log (`node_modules/@companion-module/base/dist/module-api/enums.js:57`, `:88`).
+
+**Fix:** replace `Regex.IP` on both fields. Both fields stay `textinput`, so no upgrade script is needed. One thing to check if you drop the regex to allow hostnames: both shared UDP sockets are created as `createSharedUdpSocket('udp4', ...)` ([`src/mixers.ts:59`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/mixers.ts#L59), [`src/ipadRelay.ts:23`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/ipadRelay.ts#L23)), so an IPv6 address typed into Mixer IP Address or iPad IP Address would then fail silently. So either:
+
+- use `Regex.IPV4`, which matches the `udp4` sockets and is the smallest change; or
+- drop the regex (use `minLength: 1`) and create the socket as `'udp6'` when `net.isIPv6(host)` is true.
+
 ## 🟢 Low
 
 ### L1: iPad relay problems only reach the log, and the connection still shows OK
@@ -785,19 +801,7 @@ function wireArguments(row: CommandRow, value: unknown): OSCSomeArguments {
 
 **Fix:** use `const logger = createModuleLogger('upgrade')` and `logger.debug(...)` in place of `console.log`.
 
-### L8: The IP address fields reject hostnames (deprecated Regex.IP)
-
-- **Source:** 🔎 compliance reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`src/config.ts:31`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/config.ts#L31), [`src/config.ts:65`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/config.ts#L65)
-
-**What goes wrong:** A user can't enter a hostname (for example `sd12.local`) for Mixer IP Address or iPad IP Address; only a dotted IPv4 address passes validation.
-
-**Why it happens:** Both fields use `Regex.IP`, which @companion-module/base 2.2.2 marks `@deprecated`: "Use `IPV4` instead, or preferably a `textinput` field without a regex so that hostnames and IPv6 addresses can be entered".
-
-**Fix:** use `Regex.IPV4` if the console only accepts IPv4 addresses, or drop the regex and use `minLength: 1`.
-
-### L9: The help page doesn't cover the iPad relay, actions, feedbacks or variables, and has broken formatting
+### L8: The help page doesn't cover the iPad relay, actions, feedbacks or variables, and has broken formatting
 
 - **Source:** 🔎 compliance reviewer
 - **Classification:** 🆕 NEW
@@ -834,4 +838,4 @@ function wireArguments(row: CommandRow, value: unknown): OSCSomeArguments {
 ## 📝 Additional Notes
 
 - `tsconfig.build.json` adds `"resolveJsonModule": true` to `compilerOptions`, which the template does not have. The module builds, so no change is required. (The `extends` preset is covered by [C2](#c2-the-module-still-targets-node-22-but-the-api-22-template-runs-on-node-26).)
-- The API compliance check used the v2.0 and v2.1 references. The review tooling has no API 2.2 reference yet, so rules that are new in API 2.2 were not checked.
+- API compliance was re-checked on 2026-11-06 against the API 2.2 rules (companion-v2-api-compliance 1.2.0): the value feedback schema already declares `result: JsonValue`, and there are no Companion presets, so no `storeResult` is needed. The only deprecated Regex is `Regex.IP` (see [M13](#m13-the-ip-address-fields-reject-hostnames-deprecated-regexip)), and there are no unknown Regex keys. The `udp4` sockets are not an IPv6 finding, because the host fields only accept IPv4 for now. All variable ids are valid and come from the module's bundled tables, not from device data.

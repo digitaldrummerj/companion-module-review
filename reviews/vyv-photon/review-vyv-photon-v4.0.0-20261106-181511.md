@@ -6,9 +6,9 @@
 | **Scope** | `tag` (`v3.1.1..v4.0.0`) |
 | **Version** | v4.0.0 ([`c18f22a`](https://github.com/bitfocus/companion-module-vyv-photon/commit/c18f22aacdb19faecc120dfb20361a6d21088d4b)) |
 | **Release** | Update — last published v3.1.1 |
-| **API** | 2.2 (base 2.2.2, yarn.lock) — requires Companion 5.0+ (the exact 2.2 minimum is not yet recorded in the API skill) |
+| **API** | 2.2 (base 2.2.2, yarn.lock) — requires Companion 5.1+ |
 | **Template** | `companion-module-template-js` @ `89da037` (2026-11-01) |
-| **API rules checked** | API 2.0 and 2.1 rules plus the v1 → v2 migration checks (the API skill has no 2.2 reference yet) |
+| **API rules checked** | API 2.0, 2.1 and 2.2 rules plus the v1 → v2 migration checks |
 | **Reviewed** | 2026-11-06 |
 
 ## Verdict: ❌ Changes Required
@@ -41,6 +41,10 @@
 - [ ] [L2: Xenon and Tachyon do not show up as separate products in the connection list](#l2-xenon-and-tachyon-do-not-show-up-as-separate-products-in-the-connection-list)
 - [ ] [N1: The Presets panel shows the Default Cues heading twice](#n1-the-presets-panel-shows-the-default-cues-heading-twice)
 - [ ] [N2: The Special Code choice can be switched to an expression that needs the raw device codes](#n2-the-special-code-choice-can-be-switched-to-an-expression-that-needs-the-raw-device-codes)
+
+### Notes
+
+- [📝 Additional Notes](#-additional-notes)
 
 ## 🔴 Critical
 
@@ -318,7 +322,7 @@ A simpler alternative is to drop the manual timers and let the helper reconnect 
 
 **What goes wrong:** Anyone who opens the log of a VYV Photon connection on v4.0.0 sees two warnings every time the module starts: "Regex.PORT is deprecated. Use a number input field with min: 1 and max: 65535 instead" and "Regex.IP is deprecated. Use IPV4 instead, or preferably allow any text so that hostnames and IPv6 addresses can be entered". They look like faults and send users looking for a problem that isn't there. The old IP pattern also keeps rejecting hostnames such as `photon.local` and IPv6 addresses in the "Target IP" setting and in the "New IP Address" option of the "Update Target IP Address" action. Buttons keep working.
 
-**Why it happens:** This release moves to `@companion-module/base` 2.2.2, which deprecates the ready-made `Regex.IP` and `Regex.PORT` patterns and logs a one-time warning whenever a module reads one (`dist/module-api/enums.js`, the `deprecatedRegexKeys` map). The module reads both in its config fields ([`index.js:230-244`](https://github.com/bitfocus/companion-module-vyv-photon/blob/c18f22aacdb19faecc120dfb20361a6d21088d4b/index.js#L230-L244), edited in this release) and in two action options, which are built in `init()`. The reviewer reproduced both warnings by building the action definitions against the installed base 2.2.2.
+**Why it happens:** This release moves to `@companion-module/base` 2.2.2, which deprecates the ready-made `Regex.IP` and `Regex.PORT` patterns and logs a one-time warning whenever a module reads one (`dist/module-api/enums.js`, the `deprecatedRegexKeys` map). The module reads both in its config fields ([`index.js:230-244`](https://github.com/bitfocus/companion-module-vyv-photon/blob/c18f22aacdb19faecc120dfb20361a6d21088d4b/index.js#L230-L244), edited in this release) and in two action options, which are built in `init()`. The reviewer reproduced both warnings by building the action definitions against the installed base 2.2.2. This is the API 2.2 rule "Deprecated Regex patterns" (base 2.2.2+), which is a 🟡 Medium finding. The installed base 2.2.2 lists both `IP` and `PORT` in `deprecatedRegexKeys` (`node_modules/@companion-module/base/dist/module-api/enums.js:56-68`), and reading either key logs the warning once per key. The four reads are [`index.js:235`](https://github.com/bitfocus/companion-module-vyv-photon/blob/c18f22aacdb19faecc120dfb20361a6d21088d4b/index.js#L235) (Target IP), [`index.js:243`](https://github.com/bitfocus/companion-module-vyv-photon/blob/c18f22aacdb19faecc120dfb20361a6d21088d4b/index.js#L243) (Target Port), [`actions.js:68`](https://github.com/bitfocus/companion-module-vyv-photon/blob/c18f22aacdb19faecc120dfb20361a6d21088d4b/actions.js#L68) (New Port) and [`actions.js:91`](https://github.com/bitfocus/companion-module-vyv-photon/blob/c18f22aacdb19faecc120dfb20361a6d21088d4b/actions.js#L91) (New IP Address).
 
 **Fix:** follow the base library's advice for each field:
 
@@ -326,6 +330,8 @@ A simpler alternative is to drop the manual timers and let the helper reconnect 
 2. **"Target IP" setting:** drop the `regex` so hostnames and IPv6 addresses can be entered (the TCP helper accepts both), or use `Regex.IPV4` if Photon only works with IPv4.
 3. **"Update Target Port" action, "New Port" option:** drop the regex, or make it `type: 'number'` with min 1 / max 65535. The number type needs an appended upgrade script: when `options.new_port.isExpression` is false, write back `{ isExpression: false, value: Number(options.new_port.value) }`, and leave expressions untouched.
 4. **"Update Target IP Address" action, "New IP Address" option:** drop the regex, or use `Regex.IPV4`.
+
+`Regex.IPV4` is safe to use because `package.json` pins `@companion-module/base` `~2.2.2`, the first version that has it. Changing the Target Port setting from `textinput` to `number` changes the type of the saved value, so the upgrade script in step 1 is required, not optional. The same applies to the action-option upgrade in step 3. Add both scripts to the end of the `UpgradeScripts` array in [`upgrades.js`](https://github.com/bitfocus/companion-module-vyv-photon/blob/c18f22aacdb19faecc120dfb20361a6d21088d4b/upgrades.js#L22-L29), after the existing `renameActionIds` entry. Never put them before it.
 
 ### M2: No release workflow, so GitHub releases do not get the built package attached
 
@@ -404,3 +410,7 @@ this.socket = new TCPHelper(this.config.host, port, { reconnect: false })
 **Why it happens:** In API v2, every option that isn't a text input gets an expression toggle automatically unless it sets `disableAutoExpression: true`. The action itself wasn't edited, but the base upgrade in this release gives it the toggle.
 
 **Fix:** add `disableAutoExpression: true` to the `s_code` dropdown so it stays a plain choice. If you'd rather keep expression support, add an `expressionDescription` that lists the codes.
+
+## 📝 Additional Notes
+
+- API compliance was re-checked on 2026-11-06 against the API 2.2 rules (companion-v2-api-compliance 1.2.0): no new findings. The module has no feedbacks (so no value-feedback `result`), no preset `storeResult` or `hasResult` action, no unknown `Regex` key and no UDP or shared socket (TCP only), and its four variable ids (`connection_status`, `target_port`, `target_ip`, `connection_failures`) are static and valid. api-scan scanned 0 files because the code sits at the repository root, so `actions.js`, `cues.js`, `index.js`, `presets.js` and `upgrades.js` were checked by hand. The only 2.2 issue is the deprecated `Regex.IP` / `Regex.PORT` usage, already reported as [M1](#m1-every-start-of-the-module-logs-two-deprecation-warnings-that-look-like-faults) at its correct Medium severity. Base 2.2.x needs Companion 5.1+ (Companion 5.0.x refuses to load it), so the API line above now says 5.1+.

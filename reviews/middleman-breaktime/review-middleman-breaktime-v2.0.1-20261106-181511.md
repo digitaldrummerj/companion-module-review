@@ -6,7 +6,7 @@
 | **Scope** | `tag` (v1.0.3..v2.0.1; v2.0.0 was not published) |
 | **Version** | v2.0.1 ([`1189ab7`](https://github.com/bitfocus/companion-module-middleman-breaktime/tree/1189ab71b52f9ba2fb3a1846afcda80f1e06de6b)) |
 | **Release** | Update — last published v1.0.3 |
-| **API** | 2.2 (base 2.2.2, yarn.lock) |
+| **API** | 2.2 (base 2.2.2, yarn.lock) — requires Companion 5.1+ |
 | **Template** | `companion-module-template-ts` @ `e0d42b7` (2026-10-11) |
 | **Prior review** | [v2.0.0, 2026-10-30](review-middleman-breaktime-v2.0.0-20261030-003407.md) (❌ Changes Required) |
 | **Review date** | 2026-11-06 |
@@ -582,4 +582,5 @@ return JSON.parse(text)
 - v2.0.0 review [H1](review-middleman-breaktime-v2.0.0-20261030-003407.md#h1-variables-typed-into-the-seconds-and-slot-fields-are-never-resolved-so-those-buttons-and-feedbacks-stop-working) (variables in the Seconds and Slot fields never resolved): fixed by the move to API 2.2, where Companion resolves variables in `useVariables` text fields before the callback runs.
 - v2.0.0 review [NR1](review-middleman-breaktime-v2.0.0-20261030-003407.md#nr1-module-stays-on-companion-api-113-consider-114-or-v2-next) (stay on API 1.13): done, `@companion-module/base` is `~2.2.2`.
 - `tsconfig.json` differs from the template: `extends` is `@companion-module/tools/tsconfig/node22/recommended-esm.json` instead of the template's `./tsconfig.build.json` (non-blocking; the module builds and lints).
-- API compliance was checked against the API 2.0 and 2.1 rules only: the review's API reference has no 2.2 section yet, so changes that are new in 2.2 were not checked. [`companion/HELP.md:13`](https://github.com/bitfocus/companion-module-middleman-breaktime/blob/1189ab71b52f9ba2fb3a1846afcda80f1e06de6b/companion/HELP.md#L13) says module 2.x needs Companion 5.1 or later.
+- API compliance was re-checked on 2026-11-06 against the API 2.2 rules (companion-v2-api-compliance 1.2.0): they were applied to the whole module, all as NEW, because this release moves base from 1.x to 2.2.2. The value-feedback `result` schema, preset `storeResult` and action results in presets don't apply (the feedbacks are boolean or advanced, and there are no result actions). There are no UDP sockets, and no `Regex.` key is read anywhere. Every variable id is a static, valid string, including the `running_N_*` slot ids and the `component_<slug>` ids, so Companion 5.1+ drops none. No 2.2 findings.
+- [`companion/HELP.md:13`](https://github.com/bitfocus/companion-module-middleman-breaktime/blob/1189ab71b52f9ba2fb3a1846afcda80f1e06de6b/companion/HELP.md#L13) says module 2.x needs Companion 5.1 or later.

@@ -32,6 +32,10 @@
 - [ ] [N1: Code comment describes crosspoint and alarm feedbacks this module doesn't have](#n1-code-comment-describes-crosspoint-and-alarm-feedbacks-this-module-doesnt-have)
 - [ ] [N2: Spelling errors in the Help text and a connection log message](#n2-spelling-errors-in-the-help-text-and-a-connection-log-message)
 
+### Notes
+
+- [📝 Additional Notes](#-additional-notes)
+
 ## 🔴 Critical
 
 ### C1: Yarn config allows installing packages from any git repository, unlike the template
@@ -189,3 +193,7 @@ Alternatively, retry the logic cell read on the status interval until it succeed
 **Why it happens:** These are misspellings of "received" and "occurred". The MIB names its trap `errorOccured`, and that spelling has spread into the prose and the log text.
 
 **Fix:** use "received" and "occurred" in [`companion/HELP.md:17`](https://github.com/bitfocus/companion-module-stagetec-xci/blob/1bee6c414a5ece863070c006649b51dff22dce4c/companion/HELP.md#L17) and [`companion/HELP.md:91`](https://github.com/bitfocus/companion-module-stagetec-xci/blob/1bee6c414a5ece863070c006649b51dff22dce4c/companion/HELP.md#L91), and in the log text at [`src/main.ts:408`](https://github.com/bitfocus/companion-module-stagetec-xci/blob/1bee6c414a5ece863070c006649b51dff22dce4c/src/main.ts#L408) (`occured ? 'occurred' : 'removed'`). Keep the MIB identifiers (`errorOccured`) as they are. While editing, you could also fix the older "recieved" and "reciever" spellings in `companion/HELP.md` (lines 5, 13, 75, 79 and 83) and the `companion/manifest.json` description, which predate this release.
+
+## 📝 Additional Notes
+
+- API compliance was re-checked on 2026-11-06 against the API 2.2 rules (companion-v2-api-compliance 1.2.0): the API 2.2 rules (base 2.2.2 from `yarn.lock`, `package.json` `~2.2.2`) and the v2.0 variable-id rule found nothing in the whole module (no Regex patterns, value feedback results, preset results, UDP/IPv6 or variable-id problems). C1, M1, L1, N1 and N2 are not covered by any 2.2 rule, so none of them change.

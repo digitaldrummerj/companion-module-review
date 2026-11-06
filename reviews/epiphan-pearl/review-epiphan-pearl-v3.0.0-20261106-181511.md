@@ -6,7 +6,7 @@
 | **Scope** | `tag` |
 | **Version** | v3.0.0 |
 | **Release** | Update — last published v2.2.1 |
-| **API** | 2.2 (base 2.2.2, yarn.lock) — minimum Companion version for 2.2 not on record (API 2.1 requires Companion 5.0+) |
+| **API** | 2.2 (base 2.2.2, yarn.lock) — requires Companion 5.1+ |
 | **Template** | `companion-module-template-js` @ `89da037` (2026-11-01) |
 | **Compared** | `v2.2.1..v3.0.0` (60 commits, 56 files, +16308/−2726; a full rewrite from base 1.x to 2.2) |
 | **Review commit** | [`5e4d53b`](https://github.com/bitfocus/companion-module-epiphan-pearl/tree/5e4d53bf1c48a6382a1745ca99c939949e620e7b) |
@@ -620,5 +620,5 @@ for (const [option_key, style_key] of Object.entries(upgrade_rules)) {
 
 ## 📝 Additional Notes
 
-- API 2.2-specific changes were not checked: the API compliance reference has no 2.2 rules yet, so this release was checked against the 2.0 and 2.1 rules only.
+- API compliance was re-checked on 2026-11-06 against the API 2.2 rules (companion-v2-api-compliance 1.2.0): API 2.2 requires Companion 5.1+; the 2.2 rules were checked, with no findings. There are no deprecated or unknown `Regex` keys (3.0.0 replaces v2.2.1's `Regex.IP` with a Host text field with no regex and a `number` Port field, converted by the `portAsNumberV300` upgrade script), no value feedbacks, no preset using `storeResult` or a `hasResult` action, no UDP or shared socket, and every dynamic variable id passes through `safeId()` behind a fixed prefix, so Companion 5.1+ drops none. [L8](#l8-a-host-typed-with-a-port-passes-validation-and-ends-in-connection-failure) is about the module's own host check, not a deprecated `Regex`, and is unchanged.
 - There is no API 2.2 template. The template-file findings ([C1](#c1-gitattributes-is-missing)–[C8](#c8-the-build-fails), [M1](#m1-the-releaseyaml-workflow-is-missing)) compare against `companion-module-template-js` main @ `89da037` (API 2.1, `node26` runtime).
