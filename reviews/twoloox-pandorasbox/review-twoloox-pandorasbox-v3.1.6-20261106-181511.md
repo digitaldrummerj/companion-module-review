@@ -12,7 +12,7 @@
 | **Review commit** | [`1ec73b4`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/tree/1ec73b407eafd5a50165ce002fa9193571ee8f59) |
 | **Date** | 2026-11-06 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -23,10 +23,6 @@
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [H1: A code comment still contains the German word hakt](#h1-a-code-comment-still-contains-the-german-word-hakt)
-
 ### Non-blocking
 
 - [ ] [M1: Saving corrected settings during a retry can switch the connection back to the old settings](#m1-saving-corrected-settings-during-a-retry-can-switch-the-connection-back-to-the-old-settings)
@@ -35,36 +31,8 @@
 
 ### Notes
 
+- **English:** please keep code comments and commit messages in English going forward. One comment still has a German word: "hakt" at [`src/variables.ts:182`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/1ec73b407eafd5a50165ce002fa9193571ee8f59/src/variables.ts#L182) (the English "stutters" follows it). Not blocking for this release.
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: A code comment still contains the German word hakt
-
-- **Source:** 🔎 compliance reviewer — ⚠️ needs your check
-- **Classification:** 🆕 NEW
-- **File:** [`src/variables.ts:182`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/1ec73b407eafd5a50165ce002fa9193571ee8f59/src/variables.ts#L182)
-
-**What goes wrong:** Users see nothing different. But a maintainer or reviewer who reads the comment above the code for the "Sequence N Time Since Last Cue" variables (`sequence_<id>_countup*`) finds the German word "hakt" in the middle of an English sentence. The English translation "(stutters)" follows straight after, so the meaning gets across, but the code base is no longer English-only. Everything in a Companion module (comments included) must be in English, so anyone who maintains, reviews or troubleshoots it can read it. That makes this one word a blocking finding.
-
-**Why it happens:** The comment explains why the `_countup_ff` value mirrors the current frame, and describes the display with the German word before giving the English one. The comment is new in this release: the countup variables did not exist in v3.0.1. It was already there in v3.1.4, and the previous review missed it. It was not introduced by the 3.1.6 changes.
-
-**Evidence:**
-
-```ts
-// src/variables.ts:181-183
-// borrowed/carried, so whenever time.f dips below the cue's frame offset it clamps to 0 for a
-// stretch of every second - looking like the display "hakt" (stutters) once a second instead of
-// updating frame-by-frame like the countdown does. Mirroring time.f directly keeps this ticking
-```
-
-**Confirm by:** open [`src/variables.ts:182`](https://github.com/bitfocus/companion-module-twoloox-pandorasbox/blob/1ec73b407eafd5a50165ce002fa9193571ee8f59/src/variables.ts#L182). The comment contains the German word "hakt" followed by "(stutters)". No other non-English text was found in the module.
-
-**Fix:** drop the German word and keep the English one.
-
-```ts
-// stretch of every second - making the display stutter once a second instead of
-```
 
 ## 🟡 Medium
 
@@ -185,4 +153,4 @@ onSequenceCountdown: (seqId, h, m, s, f) => {
 ## 📝 Additional Notes
 
 - **Prior review (v3.1.4):** all 16 findings are fixed in v3.1.6, and none are carried forward: C1 (Node 26 everywhere), C2–C5 (`package`, `postinstall` and `format` scripts; `yarn package` now builds), C6 (`LICENSE`), C7 (anchored `.gitignore` entries), C8 (`.husky/pre-commit`), C9 (`.prettierignore`), M1–M2 (`node.yaml` and `release.yaml` workflows), L1 (new upgrade script gives old "Remaining cue under threshold" feedbacks sequence 1), L2 (`disableAutoExpression` on the fixed-choice dropdowns), N1 (unchanged timecode no longer re-sent), N2 (typed action and feedback options) and N3 (manifest version 3.1.6, not a prerelease). The template check, `yarn install --immutable`, `yarn package` and `yarn lint` all pass.
-- **The findings above are not regressions:** H1, M1, L1 and N1 are all on code that was already in v3.1.4 and that the 3.1.6 changes did not touch. The previous review missed them.
+- **The findings above are not regressions:** M1, L1 and N1 are all on code that was already in v3.1.4 and that the 3.1.6 changes did not touch. The previous review missed them.
