@@ -6,7 +6,7 @@ This repo is the **workspace** for reviewing Bitfocus Companion modules for rele
 
 Say **"review the next module"** or **"review companion-module-X"**, or use **`/review-module [name] [tag|module|both]`**. Both invoke the plugin's `review-companion-module` skill, which runs the pipeline in order:
 
-delivery-mode question → `bitfocus-queue.ps1` (marks never-published modules `new module`) → `bitfocus-setup-module.ps1` → assign you as reviewer in the portal → `module-facts.ps1` (runs `api-scan.ps1`; reports the API level — 1 / 2.0 / 2.1 — and which v2 reference files apply) → `validate-template.ps1 -RunBuild` → dispatch the `companion-protocol-reviewer`, `companion-qa-reviewer`, and `companion-compliance-reviewer` subagents → assemble one review under `reviews/{module}/` + a ⬜ `TRACKER.md` row → deliver it (auto mode) or wait for "submit".
+delivery-mode question → `bitfocus-queue.ps1` (marks never-published modules `new module`) → `bitfocus-setup-module.ps1` → assign you as reviewer in the portal → `module-facts.ps1` (runs `api-scan.ps1`; reports the API level — 1 / 2.0 / 2.1 / 2.2 — and which v2 reference files apply) → `validate-template.ps1 -RunBuild` → dispatch the `companion-protocol-reviewer`, `companion-qa-reviewer`, and `companion-compliance-reviewer` subagents → assemble one review under `reviews/{module}/` + a ⬜ `TRACKER.md` row → deliver it (auto mode) or wait for "submit".
 
 The scripts live in the plugin (`<plugin>/scripts/`); the skill invokes them from there. Run from this repo's root — the scripts locate the workspace from `COMPANION_REVIEW_ROOT` or the git toplevel of the current directory.
 
