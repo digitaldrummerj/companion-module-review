@@ -245,7 +245,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | sennheiser-evolutionwireless | v2.0.0 | 2026-11-06 | [review](sennheiser-evolutionwireless/review-sennheiser-evolutionwireless-v2.0.0-20261106-181511.md) |
 | ⬜ | digico-osc | v2.0.1 | 2026-11-06 | [review](digico-osc/review-digico-osc-v2.0.1-20261106-181511.md) |
 | ⬜ | showrevue-showrevue | v1.1.1 | 2026-11-06 | [review](showrevue-showrevue/review-showrevue-showrevue-v1.1.1-20261106-181511.md) |
-| ⬜ | twoloox-pandorasbox | v3.1.6 | 2026-11-06 | [review](twoloox-pandorasbox/review-twoloox-pandorasbox-v3.1.6-20261106-181511.md) |
+| ✅ | twoloox-pandorasbox | v3.1.6 | 2026-11-06 | [review](twoloox-pandorasbox/review-twoloox-pandorasbox-v3.1.6-20261106-181511.md) |
 | ⬜ | liveplay-liveplay | v1.1.0 | 2026-11-06 | [review](liveplay-liveplay/review-liveplay-liveplay-v1.1.0-20261106-181511.md) |
 | ⬜ | outline-et | v1.0.1 | 2026-11-06 | [review](outline-et/review-outline-et-v1.0.1-20261106-181511.md) |
 | ⬜ | cuetime-stagedisplay | v0.1.2 | 2026-11-06 | [review](cuetime-stagedisplay/review-cuetime-stagedisplay-v0.1.2-20261106-181511.md) |
