@@ -12,7 +12,7 @@
 | **Follow-up to** | [v3.0.0 review](review-jozeemedia-jcounter-v3.0.0-20261030-003407.md) (2026-10-30; v3.0.0 was never published) |
 | **Review date** | 2026-11-06 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -26,11 +26,6 @@
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [C1: `.gitignore` is missing template entries](#c1-gitignore-is-missing-template-entries)
-- [ ] [H1: Non-English text in `README-HE-REVIEW-FIXES.txt`](#h1-non-english-text-in-readme-he-review-fixestxt)
-
 ### Non-blocking
 
 - [ ] [L1: Buttons silently do nothing when the local feedback port is already in use](#l1-buttons-silently-do-nothing-when-the-local-feedback-port-is-already-in-use)
@@ -40,80 +35,12 @@
 - [ ] [L5: The README and tools folder still carry one-off review-submission steps](#l5-the-readme-and-tools-folder-still-carry-one-off-review-submission-steps)
 - [ ] [N1: A feedback-port conflict now shows a raw connection error instead of Feedback port conflict](#n1-a-feedback-port-conflict-now-shows-a-raw-connection-error-instead-of-feedback-port-conflict)
 - [ ] [N2: The Timer START and PAUSE presets don't light up while the timer runs](#n2-the-timer-start-and-pause-presets-dont-light-up-while-the-timer-runs)
+- [ ] [NR1: `.gitignore` is missing template entries](#nr1-gitignore-is-missing-template-entries)
+- [ ] [NR2: Non-English text in `README-HE-REVIEW-FIXES.txt`](#nr2-non-english-text-in-readme-he-review-fixestxt)
 
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🔴 Critical
-
-### C1: `.gitignore` is missing template entries
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW (still open from the v3.0.0 review's [C2](review-jozeemedia-jcounter-v3.0.0-20261030-003407.md#c2-gitignore-is-missing-five-template-entries))
-- **File:** [`.gitignore:1-4`](https://github.com/bitfocus/companion-module-jozeemedia-jcounter/blob/c83148454fe929a22877f812447c62fee80d9117/.gitignore#L1-L4)
-
-**What goes wrong:** Build output can be committed by accident. Running `yarn package` creates `jozeemedia-jcounter-3.0.1.tgz` in the repository root, and nothing ignores it: `git status` lists it as untracked (`?? jozeemedia-jcounter-3.0.1.tgz`).
-
-**Why it happens:** The module's `.gitignore` lists `node_modules/`, `pkg/`, `pkg.tgz` and `.yarn/`. `pkg.tgz` doesn't match the real package name, and the template's other entries are missing. v2.0.1 still had `package-lock.json` and `DEBUG-*`; the v3 rewrite dropped them.
-
-**Validator message:** Missing template .gitignore entries: package-lock.json, /pkg, /*.tgz, DEBUG-*, /.yarn
-
-**Evidence:** the module's `.gitignore` (lines 1-4) against the v1 template's `.gitignore`:
-
-```text
-# module .gitignore
-node_modules/
-pkg/
-pkg.tgz
-.yarn/
-
-# template .gitignore
-node_modules/
-package-lock.json
-/pkg
-/*.tgz
-DEBUG-*
-/.yarn
-```
-
-**Confirm by:** `diff .gitignore <template>/.gitignore`. Every template line must be present.
-
-**Fix:** replace `.gitignore` with the template's six entries. Extra entries of the module's own are allowed.
-
-```text
-node_modules/
-package-lock.json
-/pkg
-/*.tgz
-DEBUG-*
-/.yarn
-```
-
-## 🟠 High
-
-### H1: Non-English text in `README-HE-REVIEW-FIXES.txt`
-
-- **Source:** 🤖 validate-template (NOT-ENGLISH)
-- **Classification:** 🆕 NEW
-- **File:** [`README-HE-REVIEW-FIXES.txt:4-29`](https://github.com/bitfocus/companion-module-jozeemedia-jcounter/blob/c83148454fe929a22877f812447c62fee80d9117/README-HE-REVIEW-FIXES.txt#L4-L29)
-
-**What goes wrong:** Everything in a Companion module must be in English, so that any maintainer or contributor can read it. This release adds a file at the repository root that is written almost entirely in Hebrew. It holds the release-preparation steps and the list of fixes for the v3.0.0 review, and other maintainers can't read it.
-
-**Why it happens:** The file was uploaded together with the v3.0.1 fixes, next to `tools/PREPARE-FOR-REVIEW.cmd`. Only its title (lines 1-2) is in English.
-
-**Validator message:** Everything in the module must be written in English (code comments, user-facing text, HELP.md, README.md, …). 22 lines are in another language: README-HE-REVIEW-FIXES.txt (22 lines: 4-5, 7, 9-17, 19-26, 28-29)
-
-**Evidence:**
-
-```text
-// README-HE-REVIEW-FIXES.txt:4
-תכולה: תיקוני דוח הבדיקה מ-30.10.2026 למודול jozeemedia-jcounter.
-```
-
-**Confirm by:** `git ls-files README-HE-REVIEW-FIXES.txt` at the tag, then read [`README-HE-REVIEW-FIXES.txt:4-29`](https://github.com/bitfocus/companion-module-jozeemedia-jcounter/blob/c83148454fe929a22877f812447c62fee80d9117/README-HE-REVIEW-FIXES.txt#L4-L29).
-
-**Fix:** remove the file from the repository: it was one-off preparation notes, and the fix list is already in [`CHANGELOG.md:3-10`](https://github.com/bitfocus/companion-module-jozeemedia-jcounter/blob/c83148454fe929a22877f812447c62fee80d9117/CHANGELOG.md#L3-L10). If you want to keep it, translate it to English.
 
 ## 🟢 Low
 
@@ -259,7 +186,7 @@ callback: (action) => {
 
 **What goes wrong:** Companion users see nothing. Anyone who opens the repository on GitHub finds instructions for this one-time submission instead of module documentation. The README says to "Regenerate and commit `yarn.lock` using `corepack yarn install` before the first build", which is already done, and tells readers to "tag the tested commit as `v3.0.1` and submit it in the Bitfocus Developer Portal". `tools/PREPARE-FOR-REVIEW.cmd` is a Windows helper for the same one-time submission. This confuses later maintainers and contributors.
 
-**Why it happens:** The files that prepared the v3.0.1 resubmission were uploaded together with the module source. `README-HE-REVIEW-FIXES.txt` belongs to the same set and is covered by [H1](#h1-non-english-text-in-readme-he-review-fixestxt).
+**Why it happens:** The files that prepared the v3.0.1 resubmission were uploaded together with the module source. `README-HE-REVIEW-FIXES.txt` belongs to the same set and is covered by [NR2](#nr2-non-english-text-in-readme-he-review-fixestxt).
 
 **Fix:** delete `tools/PREPARE-FOR-REVIEW.cmd`. In `README.md`, replace lines 15 and 24 with plain build instructions (`corepack yarn install`, `corepack yarn package`) and drop the tagging and portal-submission steps. Keep the "Upgrading from J-COUNTER 2" section.
 
@@ -304,6 +231,74 @@ feedbacks: op.id === 'start'
   : [],
 ```
 
+## 🔮 Next Release
+
+### NR1: `.gitignore` is missing template entries
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** 🆕 NEW (still open from the v3.0.0 review's [C2](review-jozeemedia-jcounter-v3.0.0-20261030-003407.md#c2-gitignore-is-missing-five-template-entries))
+- **File:** [`.gitignore:1-4`](https://github.com/bitfocus/companion-module-jozeemedia-jcounter/blob/c83148454fe929a22877f812447c62fee80d9117/.gitignore#L1-L4)
+
+**What goes wrong:** Build output can be committed by accident. Running `yarn package` creates `jozeemedia-jcounter-3.0.1.tgz` in the repository root, and nothing ignores it: `git status` lists it as untracked (`?? jozeemedia-jcounter-3.0.1.tgz`).
+
+**Why it happens:** The module's `.gitignore` lists `node_modules/`, `pkg/`, `pkg.tgz` and `.yarn/`. `pkg.tgz` doesn't match the real package name, and the template's other entries are missing. v2.0.1 still had `package-lock.json` and `DEBUG-*`; the v3 rewrite dropped them.
+
+**Validator message:** Missing template .gitignore entries: package-lock.json, /pkg, /*.tgz, DEBUG-*, /.yarn
+
+**Evidence:** the module's `.gitignore` (lines 1-4) against the v1 template's `.gitignore`:
+
+```text
+# module .gitignore
+node_modules/
+pkg/
+pkg.tgz
+.yarn/
+
+# template .gitignore
+node_modules/
+package-lock.json
+/pkg
+/*.tgz
+DEBUG-*
+/.yarn
+```
+
+**Confirm by:** `diff .gitignore <template>/.gitignore`. Every template line must be present.
+
+**Fix:** replace `.gitignore` with the template's six entries. Extra entries of the module's own are allowed.
+
+```text
+node_modules/
+package-lock.json
+/pkg
+/*.tgz
+DEBUG-*
+/.yarn
+```
+
+### NR2: Non-English text in `README-HE-REVIEW-FIXES.txt`
+
+- **Source:** 🤖 validate-template (NOT-ENGLISH)
+- **Classification:** 🆕 NEW
+- **File:** [`README-HE-REVIEW-FIXES.txt:4-29`](https://github.com/bitfocus/companion-module-jozeemedia-jcounter/blob/c83148454fe929a22877f812447c62fee80d9117/README-HE-REVIEW-FIXES.txt#L4-L29)
+
+**What goes wrong:** Everything in a Companion module must be in English, so that any maintainer or contributor can read it. This release adds a file at the repository root that is written almost entirely in Hebrew. It holds the release-preparation steps and the list of fixes for the v3.0.0 review, and other maintainers can't read it.
+
+**Why it happens:** The file was uploaded together with the v3.0.1 fixes, next to `tools/PREPARE-FOR-REVIEW.cmd`. Only its title (lines 1-2) is in English.
+
+**Validator message:** Everything in the module must be written in English (code comments, user-facing text, HELP.md, README.md, …). 22 lines are in another language: README-HE-REVIEW-FIXES.txt (22 lines: 4-5, 7, 9-17, 19-26, 28-29)
+
+**Evidence:**
+
+```text
+// README-HE-REVIEW-FIXES.txt:4
+תכולה: תיקוני דוח הבדיקה מ-30.10.2026 למודול jozeemedia-jcounter.
+```
+
+**Confirm by:** `git ls-files README-HE-REVIEW-FIXES.txt` at the tag, then read [`README-HE-REVIEW-FIXES.txt:4-29`](https://github.com/bitfocus/companion-module-jozeemedia-jcounter/blob/c83148454fe929a22877f812447c62fee80d9117/README-HE-REVIEW-FIXES.txt#L4-L29).
+
+**Fix:** remove the file from the repository: it was one-off preparation notes, and the fix list is already in [`CHANGELOG.md:3-10`](https://github.com/bitfocus/companion-module-jozeemedia-jcounter/blob/c83148454fe929a22877f812447c62fee80d9117/CHANGELOG.md#L3-L10). If you want to keep it, translate it to English.
+
 ## 📝 Additional Notes
 
 - v3.0.0 was never published, so this review's tag diff (`v2.0.1..v3.0.1`) covers both the v3.0.0 and the v3.0.1 changes. [L1](#l1-buttons-silently-do-nothing-when-the-local-feedback-port-is-already-in-use), [L2](#l2-the-connection-variable-still-says-online-after-saving-settings-for-a-j-counter-that-never-answers), [N1](#n1-a-feedback-port-conflict-now-shows-a-raw-connection-error-instead-of-feedback-port-conflict) and [N2](#n2-the-timer-start-and-pause-presets-dont-light-up-while-the-timer-runs) were already in the v3.0.0 code and were not raised in that review.
@@ -314,7 +309,7 @@ feedbacks: op.id === 'start'
 | v3.0.0 item | Status in v3.0.1 |
 | --- | --- |
 | C1: `.gitattributes` missing | Fixed: added, matches the template |
-| C2: `.gitignore` missing entries | Still open: see [C1](#c1-gitignore-is-missing-template-entries) |
+| C2: `.gitignore` missing entries | Still open: see [NR1](#nr1-gitignore-is-missing-template-entries) |
 | C3: `.yarnrc.yml` missing | Fixed: matches `companion-module-template-js` |
 | C4: source files at the root | Fixed: all six files are in `src/`, and `main` and the manifest `entrypoint` point there |
 | C5: no `engines` | Fixed |
