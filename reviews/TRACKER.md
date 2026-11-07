@@ -240,7 +240,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | avmatrix-switcher | v1.0.1 | 2026-11-06 | [review](avmatrix-switcher/review-avmatrix-switcher-v1.0.1-20261106-181511.md) |
 | ✅ | feelworld-l3-series | v1.1.3 | 2026-11-06 | [review](feelworld-l3-series/review-feelworld-l3-series-v1.1.3-20261106-181511.md) |
 | ✅ | autodirector-mirusuite | v1.1.1 | 2026-11-06 | [review](autodirector-mirusuite/review-autodirector-mirusuite-v1.1.1-20261106-181511.md) |
-| ⬜ | google-nest | v1.0.4 | 2026-11-06 | [review](google-nest/review-google-nest-v1.0.4-20261106-181511.md) |
+| ✅ | google-nest | v1.0.4 | 2026-11-06 | [review](google-nest/review-google-nest-v1.0.4-20261106-181511.md) |
 | ✅ | fritz-fritzbox | v1.0.0 | 2026-11-06 | [review](fritz-fritzbox/review-fritz-fritzbox-v1.0.0-20261106-181511.md) |
 | ⬜ | sennheiser-evolutionwireless | v2.0.0 | 2026-11-06 | [review](sennheiser-evolutionwireless/review-sennheiser-evolutionwireless-v2.0.0-20261106-181511.md) |
 | ⬜ | digico-osc | v2.0.1 | 2026-11-06 | [review](digico-osc/review-digico-osc-v2.0.1-20261106-181511.md) |
