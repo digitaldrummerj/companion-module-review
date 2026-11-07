@@ -231,7 +231,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | showsign-signage | v1.0.3 | 2026-10-31 | [review](showsign-signage/review-showsign-signage-v1.0.3-20261031-201135.md) |
 | ✅ | getontime-ontime | v5.5.0-beta.1 | 2026-10-31 | [review](getontime-ontime/review-getontime-ontime-v5.5.0-beta.1-20261031-210335.md) |
 | ✅ | miniontoby-midi-multicammixer | v1.0.11 | 2026-11-01 | published.  manual review. |
-| ⬜ | uniliga-cg | v1.3.1 | 2026-11-06 | [review](uniliga-cg/review-uniliga-cg-v1.3.1-20261106-181511.md) |
+| ✅ | uniliga-cg | v1.3.1 | 2026-11-06 | [review](uniliga-cg/review-uniliga-cg-v1.3.1-20261106-181511.md) |
 | ⬜ | c4-clock | v1.0.2 | 2026-11-06 | [review](c4-clock/review-c4-clock-v1.0.2-20261106-181511.md) |
 | ⬜ | cuemark-cuemark | v1.2.1 | 2026-11-06 | [review](cuemark-cuemark/review-cuemark-cuemark-v1.2.1-20261106-181511.md) |
 | ⬜ | jozeemedia-jcounter | v3.0.1 | 2026-11-06 | [review](jozeemedia-jcounter/review-jozeemedia-jcounter-v3.0.1-20261106-181511.md) |
