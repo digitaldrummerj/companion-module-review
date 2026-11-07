@@ -236,7 +236,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | cuemark-cuemark | v1.2.1 | 2026-11-06 | [review](cuemark-cuemark/review-cuemark-cuemark-v1.2.1-20261106-181511.md) |
 | ⬜ | jozeemedia-jcounter | v3.0.1 | 2026-11-06 | [review](jozeemedia-jcounter/review-jozeemedia-jcounter-v3.0.1-20261106-181511.md) |
 | ⬜ | spaceage-visibox | v1.0.1 | 2026-11-06 | [review](spaceage-visibox/review-spaceage-visibox-v1.0.1-20261106-181511.md) |
-| ⬜ | videotaxi-speech-events | v1.3.11 | 2026-11-06 | [review](videotaxi-speech-events/review-videotaxi-speech-events-v1.3.11-20261106-181511.md) |
+| ✅ | videotaxi-speech-events | v1.3.11 | 2026-11-06 | [review](videotaxi-speech-events/review-videotaxi-speech-events-v1.3.11-20261106-181511.md) |
 | ⬜ | avmatrix-switcher | v1.0.1 | 2026-11-06 | [review](avmatrix-switcher/review-avmatrix-switcher-v1.0.1-20261106-181511.md) |
 | ⬜ | feelworld-l3-series | v1.1.3 | 2026-11-06 | [review](feelworld-l3-series/review-feelworld-l3-series-v1.1.3-20261106-181511.md) |
 | ⬜ | autodirector-mirusuite | v1.1.1 | 2026-11-06 | [review](autodirector-mirusuite/review-autodirector-mirusuite-v1.1.1-20261106-181511.md) |
