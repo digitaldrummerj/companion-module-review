@@ -12,13 +12,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | The missed clear also happens on Windows, Linux and Raspberry Pi Companion hosts, not only on macOS where it was measured (from 1 in 20 to 1 in 4 timer firings, depending on the run). It may happen less often on Windows, whose coarser timers usually fire late | Local Node 22.21.1 runs on macOS that copy the module's `lastSeen` and `setTimeout` flow; other operating systems not tested. The strict comparison that causes the miss is the same everywhere | [M1](#m1-clear-validity-when-tracker-data-is-stale-sometimes-leaves-the-old-value-showing) |
-| A2 | Companion's connection settings show a saved dropdown value that is not in the list (the default `0.0.0.0`) as a custom value when custom values are allowed | Companion host UI behaviour; not checked in a live Companion | [N1](#n1-interface-dropdown-has-no-any-interface-entry-and-misses-adapters-added-after-start) |
-| A3 | Companion calls the module's `getConfigFields()` each time the user opens the connection's settings, so building the interface list there would refresh it | Usual Companion host behaviour; not visible in the module or in the base 1.11.3 typings | [N1](#n1-interface-dropdown-has-no-any-interface-entry-and-misses-adapters-added-after-start) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -255,3 +251,11 @@ this.log('info', `✅ Joined multicast group ${this.config.host} on interface ${
 **Why it happens:** [`src/config.ts`](https://github.com/bitfocus/companion-module-PosiStageNet-protocol/blob/df89164a0f3e1a6bb42fddf312bb14efcae5d80d/src/config.ts) and [`src/main.ts`](https://github.com/bitfocus/companion-module-PosiStageNet-protocol/blob/df89164a0f3e1a6bb42fddf312bb14efcae5d80d/src/main.ts) changed in this release, but `companion/HELP.md` did not.
 
 **Fix:** add a short section to `companion/HELP.md` on the new options: what the timeout does, a recommended value relative to your PSN source's packet rate, and that the validity variable becomes empty when the tracker is stale. Also explain that the bind interface selects which network card joins the multicast group.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | The missed clear also happens on Windows, Linux and Raspberry Pi Companion hosts, not only on macOS where it was measured (from 1 in 20 to 1 in 4 timer firings, depending on the run). It may happen less often on Windows, whose coarser timers usually fire late | Local Node 22.21.1 runs on macOS that copy the module's `lastSeen` and `setTimeout` flow; other operating systems not tested. The strict comparison that causes the miss is the same everywhere | [M1](#m1-clear-validity-when-tracker-data-is-stale-sometimes-leaves-the-old-value-showing) |
+| A2 | Companion's connection settings show a saved dropdown value that is not in the list (the default `0.0.0.0`) as a custom value when custom values are allowed | Companion host UI behaviour; not checked in a live Companion | [N1](#n1-interface-dropdown-has-no-any-interface-entry-and-misses-adapters-added-after-start) |
+| A3 | Companion calls the module's `getConfigFields()` each time the user opens the connection's settings, so building the interface list there would refresh it | Usual Companion host behaviour; not visible in the module or in the base 1.11.3 typings | [N1](#n1-interface-dropdown-has-no-any-interface-entry-and-misses-adapters-added-after-start) |

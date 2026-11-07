@@ -13,13 +13,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | A Timer page that is already open in a browser is not reloaded when the module process restarts (Companion restart, connection disabled and re-enabled, module update, crash), so the page keeps its old control token and its local timer state | Companion serves the module's pages through `handleHttpRequest` and has no way to reload a browser tab. The session reset itself was reproduced with `src/lan-session.cjs`. Not checked in a live Companion | [L1](#l1-after-companion-or-the-connection-restarts-the-open-timer-page-reconnects-but-resets-the-speaker-countdown-to-1000) |
-| A2 | Companion does real work for every `setVariableValues` and `checkFeedbacks` message, even when no value has changed | `@companion-module/base` 1.13.6 sends both on every call without comparing values. How the host handles them was not checked | [N3](#n3-lan-mode-resends-every-variable-and-re-checks-every-feedback-four-times-a-second-even-when-nothing-changed) |
-| A3 | Companion's connection settings editor shows a config field that has no `width` without breaking the layout (most likely at full width) | The base 1.13.6 typing declares `width` as required. How the Companion UI handles a missing width was not checked live | [N6](#n6-the-first-settings-field-timer-connection-has-no-width) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -364,3 +360,11 @@ Or drop the Advanced checkbox and always use the typed local IP.
 - New in this review: [H1](#h1-the-connections-settings-actions-presets-browser-timer-and-help-page-are-in-spanish) (the text was already in v1.2.1), [L1](#l1-after-companion-or-the-connection-restarts-the-open-timer-page-reconnects-but-resets-the-speaker-countdown-to-1000), [L3](#l3-in-lan-mode-the-connection-status-stays-green-even-when-no-timer-page-is-open), [L5](#l5-the-seconds-variable-is-one-second-behind-the-time-variable-for-half-of-every-second-in-lan-mode), [N2](#n2-after-the-osc-bridge-comes-back-the-speaker-slot-list-can-take-up-to-10-s-to-refresh), [N3](#n3-lan-mode-resends-every-variable-and-re-checks-every-feedback-four-times-a-second-even-when-nothing-changed) and [N6](#n6-the-first-settings-field-timer-connection-has-no-width).
 - The template check found no differences, and `yarn install --immutable` and `yarn package` both succeeded.
 - [`companion/HELP.md:3`](https://github.com/bitfocus/companion-module-eventspro-toolspro-timer/blob/06631f24d2c15518e36792940fbc9744db93326e/companion/HELP.md#L3) calls this build a test candidate that hasn't been verified, and [`companion/HELP.md:11`](https://github.com/bitfocus/companion-module-eventspro-toolspro-timer/blob/06631f24d2c15518e36792940fbc9744db93326e/companion/HELP.md#L11) says it hasn't been tried on a real network with Windows and a phone yet. When you rewrite the help page in English ([H1](#h1-the-connections-settings-actions-presets-browser-timer-and-help-page-are-in-spanish)), consider whether that belongs in a released module's help.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | A Timer page that is already open in a browser is not reloaded when the module process restarts (Companion restart, connection disabled and re-enabled, module update, crash), so the page keeps its old control token and its local timer state | Companion serves the module's pages through `handleHttpRequest` and has no way to reload a browser tab. The session reset itself was reproduced with `src/lan-session.cjs`. Not checked in a live Companion | [L1](#l1-after-companion-or-the-connection-restarts-the-open-timer-page-reconnects-but-resets-the-speaker-countdown-to-1000) |
+| A2 | Companion does real work for every `setVariableValues` and `checkFeedbacks` message, even when no value has changed | `@companion-module/base` 1.13.6 sends both on every call without comparing values. How the host handles them was not checked | [N3](#n3-lan-mode-resends-every-variable-and-re-checks-every-feedback-four-times-a-second-even-when-nothing-changed) |
+| A3 | Companion's connection settings editor shows a config field that has no `width` without breaking the layout (most likely at full width) | The base 1.13.6 typing declares `width` as required. How the Companion UI handles a missing width was not checked live | [N6](#n6-the-first-settings-field-timer-connection-has-no-width) |

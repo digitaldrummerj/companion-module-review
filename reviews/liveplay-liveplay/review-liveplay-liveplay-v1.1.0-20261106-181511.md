@@ -18,11 +18,9 @@ Both High findings below were already in v1.0.0 and are unchanged in this releas
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | When Companion starts a connection it passes the saved config to `init()` as stored, without filling in missing fields from the config field defaults, so `config.host` can be `undefined` for a config that never had that key (for example one carried over from the `liveplay` id, or an imported one) | Field defaults are applied when a connection is created; no default-filling for existing configs was found in `@companion-module/base` 2.1.3, which only forwards the config it gets from Companion. Companion's own host code was not checked | [L2](#l2-a-saved-config-with-no-host-stops-the-connection-from-starting-instead-of-showing-a-config-error) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -141,3 +139,9 @@ if (self.wsSend({ type: 'bus_gain', busId: bus.id, gainDb: db })) bus.gainDb = d
 - **v1.0.0 L5 (expression mode on fixed-choice dropdowns), fixed:** all six Mode / Direction dropdowns set `disableAutoExpression: true`.
 - **v1.0.0 L6 (one preset and two variables per cue), fixed:** each "Cues: …" preset group is now a template group over the single "Cue by UUID" preset, and the per-cue name variables are an opt-in checkbox ("Per-cue name variables", off by default).
 - **v1.0.0 N1 (config info text), fixed:** the missing space between the two sentences is added.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | When Companion starts a connection it passes the saved config to `init()` as stored, without filling in missing fields from the config field defaults, so `config.host` can be `undefined` for a config that never had that key (for example one carried over from the `liveplay` id, or an imported one) | Field defaults are applied when a connection is created; no default-filling for existing configs was found in `@companion-module/base` 2.1.3, which only forwards the config it gets from Companion. Companion's own host code was not checked | [L2](#l2-a-saved-config-with-no-host-stops-the-connection-from-starting-instead-of-showing-a-config-error) |

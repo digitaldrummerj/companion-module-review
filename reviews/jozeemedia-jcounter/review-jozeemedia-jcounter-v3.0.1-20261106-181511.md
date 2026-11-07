@@ -14,15 +14,9 @@
 
 ## Verdict: ✅ Approved
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | Companion keeps showing the last value a module set for a variable until the module sets a new one. It does not clear or re-derive module variables when the connection status changes to Connection failure | General Companion host behaviour; the reviewers' reproduction stubbed the base and osc modules, so the Companion side was not exercised | [L2](#l2-the-connection-variable-still-says-online-after-saving-settings-for-a-j-counter-that-never-answers) |
-| A2 | Opening a UDP socket on a port that another process already holds fails with `EADDRINUSE` on every platform Companion runs on, including Windows. Two J-COUNTER connections (each its own process) on the same port conflict the same way | Reproduced on macOS with the module's own osc 2.4.5: a second `UDPPort` on the same port emitted `error` (bind EADDRINUSE) and never `ready`. Node's dgram does not set `reuseAddr` by default. Windows and cross-process runs were not tried | [L1](#l1-buttons-silently-do-nothing-when-the-local-feedback-port-is-already-in-use), [N1](#n1-a-feedback-port-conflict-now-shows-a-raw-connection-error-instead-of-feedback-port-conflict) |
-| A3 | A Companion version too old to resolve `useVariables` text fields itself (module API before 1.13) refuses to load a package built with base 1.15.1, so no Companion that can run this build skips the variable parsing | The `@deprecated` note on `parseVariablesInString` in base 1.15.1 ("Companion now handles this for you, for actions and feedbacks"); Companion's API-version gate was not checked | [L4](#l4-timer-set-title-parses-its-variables-a-second-time-with-a-deprecated-call) |
-| A4 | A v2.0.1 connection whose "Feedback Port" was never edited stores it as the number `7803` (the v2.0.1 default), and Companion stores a string once the user edits that text field | v2.0.1 declares `default: 7803` (a number) on a `textinput`; Companion's config storage was not checked | [L3](#l3-the-v2-upgrade-warning-misses-some-upgraded-connections-and-repeats-for-others) |
-| A5 | After a connection moves from v2.0.1 to v3.0.1, Companion keeps buttons that use removed action or feedback IDs as non-working entries, and it runs upgrade scripts on imported buttons with `config` set to `null` | General Companion upgrade behaviour and the `CompanionStaticUpgradeProps` typing in base 1.15.1 (`config` is typed as the config or `null`); Companion's own upgrade runner was not checked | [L3](#l3-the-v2-upgrade-warning-misses-some-upgraded-connections-and-repeats-for-others) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -322,3 +316,13 @@ DEBUG-*
 | L3: unsupported `affectedProperties` | Fixed: removed |
 | N1: number fields sent as text | Fixed: values are rounded and clamped, and empty or invalid input is skipped with a warning |
 | N2: title doesn't accept variables | Fixed: `useVariables: true`; see [L4](#l4-timer-set-title-parses-its-variables-a-second-time-with-a-deprecated-call) for the extra parse call |
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | Companion keeps showing the last value a module set for a variable until the module sets a new one. It does not clear or re-derive module variables when the connection status changes to Connection failure | General Companion host behaviour; the reviewers' reproduction stubbed the base and osc modules, so the Companion side was not exercised | [L2](#l2-the-connection-variable-still-says-online-after-saving-settings-for-a-j-counter-that-never-answers) |
+| A2 | Opening a UDP socket on a port that another process already holds fails with `EADDRINUSE` on every platform Companion runs on, including Windows. Two J-COUNTER connections (each its own process) on the same port conflict the same way | Reproduced on macOS with the module's own osc 2.4.5: a second `UDPPort` on the same port emitted `error` (bind EADDRINUSE) and never `ready`. Node's dgram does not set `reuseAddr` by default. Windows and cross-process runs were not tried | [L1](#l1-buttons-silently-do-nothing-when-the-local-feedback-port-is-already-in-use), [N1](#n1-a-feedback-port-conflict-now-shows-a-raw-connection-error-instead-of-feedback-port-conflict) |
+| A3 | A Companion version too old to resolve `useVariables` text fields itself (module API before 1.13) refuses to load a package built with base 1.15.1, so no Companion that can run this build skips the variable parsing | The `@deprecated` note on `parseVariablesInString` in base 1.15.1 ("Companion now handles this for you, for actions and feedbacks"); Companion's API-version gate was not checked | [L4](#l4-timer-set-title-parses-its-variables-a-second-time-with-a-deprecated-call) |
+| A4 | A v2.0.1 connection whose "Feedback Port" was never edited stores it as the number `7803` (the v2.0.1 default), and Companion stores a string once the user edits that text field | v2.0.1 declares `default: 7803` (a number) on a `textinput`; Companion's config storage was not checked | [L3](#l3-the-v2-upgrade-warning-misses-some-upgraded-connections-and-repeats-for-others) |
+| A5 | After a connection moves from v2.0.1 to v3.0.1, Companion keeps buttons that use removed action or feedback IDs as non-working entries, and it runs upgrade scripts on imported buttons with `config` set to `null` | General Companion upgrade behaviour and the `CompanionStaticUpgradeProps` typing in base 1.15.1 (`config` is typed as the config or `null`); Companion's own upgrade runner was not checked | [L3](#l3-the-v2-upgrade-warning-misses-some-upgraded-connections-and-repeats-for-others) |

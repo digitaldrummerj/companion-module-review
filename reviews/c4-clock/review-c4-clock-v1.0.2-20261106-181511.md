@@ -24,14 +24,9 @@ What happened to the v1.0.0 findings:
 
 ## Verdict: ✅ Approved
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | When a boolean feedback with `defaultStyle: {}` is added to a button, Companion applies no style properties until the user picks them | the base 2.1.3 typing for `defaultStyle` ("The default style properties for this feedback") in `dist/module-api/feedback.d.ts:114-115`; Companion's host code not checked | [L2](#l2-four-feedbacks-change-nothing-on-the-button-when-added-because-they-have-no-default-style) |
-| A2 | Companion shows the status message passed to `updateStatus()` in the Connections list without shortening it much, so a long HTML body is shown as an unreadable status | general knowledge of the Companion Connections UI; not checked against Companion 5.0 source or a live instance | [L3](#l3-a-wrong-web-control-port-can-fill-the-connection-status-with-a-whole-html-error-page) |
-| A3 | The current public C4 Clock release (5.77.193) still lacks the Freeze last slide and AUTO LOAD PPT HTTP endpoints, so these controls always show UNAVAILABLE for customers | the maintainer's own statements in [`companion/HELP.md:38-42`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/companion/HELP.md#L38-L42), [`companion/HELP.md:83-85`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/companion/HELP.md#L83-L85) and [`CHANGELOG.md:18-21`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/CHANGELOG.md#L18-L21); C4 Clock itself not checked | [L4](#l4-freeze-last-slide-and-auto-load-powerpoint-always-show-unavailable-on-the-public-c4-release) |
-| A4 | Each `checkFeedbacks(type, ...)` call makes Companion re-run the callback of every placed feedback of those types, so calling it unconditionally every 500 ms costs real work | the base 2.1.3 doc comment on `checkFeedbacks` ("Request all feedbacks of the specified types to be re-executed"); Companion's host scheduling not checked | [N5](#n5-every-500-ms-poll-resends-all-variables-and-rechecks-all-16-feedback-types-even-when-nothing-changed) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -195,3 +190,12 @@ this.updatePresets()
 ```ts
 if (!background || !text) throw new Error(`Layered preset ${id} needs a box and a text element`)
 ```
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | When a boolean feedback with `defaultStyle: {}` is added to a button, Companion applies no style properties until the user picks them | the base 2.1.3 typing for `defaultStyle` ("The default style properties for this feedback") in `dist/module-api/feedback.d.ts:114-115`; Companion's host code not checked | [L2](#l2-four-feedbacks-change-nothing-on-the-button-when-added-because-they-have-no-default-style) |
+| A2 | Companion shows the status message passed to `updateStatus()` in the Connections list without shortening it much, so a long HTML body is shown as an unreadable status | general knowledge of the Companion Connections UI; not checked against Companion 5.0 source or a live instance | [L3](#l3-a-wrong-web-control-port-can-fill-the-connection-status-with-a-whole-html-error-page) |
+| A3 | The current public C4 Clock release (5.77.193) still lacks the Freeze last slide and AUTO LOAD PPT HTTP endpoints, so these controls always show UNAVAILABLE for customers | the maintainer's own statements in [`companion/HELP.md:38-42`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/companion/HELP.md#L38-L42), [`companion/HELP.md:83-85`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/companion/HELP.md#L83-L85) and [`CHANGELOG.md:18-21`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/CHANGELOG.md#L18-L21); C4 Clock itself not checked | [L4](#l4-freeze-last-slide-and-auto-load-powerpoint-always-show-unavailable-on-the-public-c4-release) |
+| A4 | Each `checkFeedbacks(type, ...)` call makes Companion re-run the callback of every placed feedback of those types, so calling it unconditionally every 500 ms costs real work | the base 2.1.3 doc comment on `checkFeedbacks` ("Request all feedbacks of the specified types to be re-executed"); Companion's host scheduling not checked | [N5](#n5-every-500-ms-poll-resends-all-variables-and-rechecks-all-16-feedback-types-even-when-nothing-changed) |

@@ -20,13 +20,9 @@ This is a follow-up to the v1.1.0 review. The module has still never been publis
 
 ## Verdict: ✅ Approved
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | The switcher numbers its inputs from 0 (Input 1 = 0 … Media = 4) in both the `0x20 0x0d`/`0x0e` replies and the `pgmpvwInfo` JSON report, as the module's comments say ("confirmed by testing"). If it numbers them from 1, the variables are right and the Source Indicator feedbacks and presets are off by one instead | The comments at [`src/feedbacks.ts:15`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/feedbacks.ts#L15), [`src/main.ts:383`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/main.ts#L383) and [`src/main.ts:537-538`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/main.ts#L537-L538), and the preset mapping at [`src/presets.ts:353-354`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/presets.ts#L353-L354); not checked on hardware | [L6](#l6-source-and-stream-dropdown-values-are-0-based-so-expression-mode-entries-pick-the-wrong-input) |
-| A2 | When a button has several actions, Companion starts them concurrently by default, so two "Stream N Toggle" actions on one button wait for the device's confirmation at the same time | Companion's default action-group behaviour (concurrent unless the user picks sequential or adds waits); not determinable from the module or the base package | [L2](#l2-starting-one-stream-can-mark-a-different-stream-as-live-and-hide-its-address-empty-warning) |
-| A3 | The operating system reports UDP send failures (for example `EHOSTUNREACH` / `ENETUNREACH` when the route to the switcher is gone) through the `dgram` send callback | General Node `dgram` behaviour; the module only shows that callback errors are logged | [L4](#l4-the-connection-stays-green-when-commands-cant-be-sent) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -250,3 +246,11 @@ Use `this.later(...)` in `flashAction()`, `warnStreamNoAddress()`, `warnNoDisk()
 ## 📝 Additional Notes
 
 - `tsconfig.build.json` differs from the template: `exclude` uses `src/**/*.spec.ts` where the template has `src/**/*spec.ts` (line 4). It builds fine; no change required.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | The switcher numbers its inputs from 0 (Input 1 = 0 … Media = 4) in both the `0x20 0x0d`/`0x0e` replies and the `pgmpvwInfo` JSON report, as the module's comments say ("confirmed by testing"). If it numbers them from 1, the variables are right and the Source Indicator feedbacks and presets are off by one instead | The comments at [`src/feedbacks.ts:15`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/feedbacks.ts#L15), [`src/main.ts:383`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/main.ts#L383) and [`src/main.ts:537-538`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/main.ts#L537-L538), and the preset mapping at [`src/presets.ts:353-354`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/presets.ts#L353-L354); not checked on hardware | [L6](#l6-source-and-stream-dropdown-values-are-0-based-so-expression-mode-entries-pick-the-wrong-input) |
+| A2 | When a button has several actions, Companion starts them concurrently by default, so two "Stream N Toggle" actions on one button wait for the device's confirmation at the same time | Companion's default action-group behaviour (concurrent unless the user picks sequential or adds waits); not determinable from the module or the base package | [L2](#l2-starting-one-stream-can-mark-a-different-stream-as-live-and-hide-its-address-empty-warning) |
+| A3 | The operating system reports UDP send failures (for example `EHOSTUNREACH` / `ENETUNREACH` when the route to the switcher is gone) through the `dgram` send callback | General Node `dgram` behaviour; the module only shows that callback errors are logged | [L4](#l4-the-connection-stays-green-when-commands-cant-be-sent) |

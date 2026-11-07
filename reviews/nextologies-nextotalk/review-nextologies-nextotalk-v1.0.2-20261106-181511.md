@@ -15,14 +15,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | Companion keeps a connection's module process running for as long as the connection is enabled (days or weeks on a show machine), so leaked memory builds up and is only given back when the connection or Companion restarts | Companion runs each connection in a long-lived child process; the module's own prune comment in `src/state.ts` expects "weeks of uptime". Companion's host code was not checked | [H1](#h1-module-memory-grows-every-time-a-new-key-image-is-drawn-and-is-never-given-back) |
-| A2 | The NextoTalk extension sends enough distinct room names and font-size levels in real use (the module's comment says "hundreds of meetings/day") for the leak to reach about 10 MB a day | The maintainer's comment in `src/state.ts:176-181`, not observed traffic. The leak itself (about 15 KB per new image) was measured | [H1](#h1-module-memory-grows-every-time-a-new-key-image-is-drawn-and-is-never-given-back) |
-| A3 | Companion's built-in button text renderer, which drew the room name up to v1.0.1, wraps text that is wider than the button onto more lines, so multi-word names from `update_room_name` used to be readable | How Companion 3.x/4.x renders button text; cannot be checked from the module or `@companion-module/base` | [M1](#m1-renamed-rooms-and-bare-meeting-ids-are-drawn-on-one-line-and-cut-off-at-the-button-edges) |
-| A4 | The NextoTalk Chrome extension connects to port 7006 out of the box, so a user who follows the help page's 7005 ends up with a port mismatch | The message of commit `6b4fa54` ("Default to 7006, matching what the Chrome extension expects"); the extension's code is not in this repo. The help page disagreeing with the module's own default is confirmed from code either way | [L1](#l1-help-page-still-says-the-default-websocket-port-is-7005-but-new-connections-listen-on-7006) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -217,3 +212,12 @@ function keySvg(artPng64: string, name: string, level: number): string {
 ## 📝 Additional Notes
 
 - **Follow-up to the [v1.0.0 review](review-nextologies-nextotalk-v1.0.0-20260803-184331.md):** all five of its blocking findings are resolved at v1.0.2. Accepted client sockets now have an `error` listener and the server sets a 1 MiB `maxPayload` (prior C1, [`src/main.ts:102`](https://github.com/bitfocus/companion-module-nextologies-nextotalk/blob/e3fc882f9033b73ceecec33425612108de144b14/src/main.ts#L102), [`src/main.ts:153`](https://github.com/bitfocus/companion-module-nextologies-nextotalk/blob/e3fc882f9033b73ceecec33425612108de144b14/src/main.ts#L153)). `eslint.config.mjs` now spreads the template's `generateEslintConfig()` output and adds scoped overrides, which is an accepted deviation (prior C3). `repository.url` points at the bitfocus org (prior C4). The manifest keywords no longer repeat the product name (prior C6). The version shown in the connection status, the `module_version` variable and the welcome payload is read from `package.json` (prior C7, [`src/main.ts:22`](https://github.com/bitfocus/companion-module-nextologies-nextotalk/blob/e3fc882f9033b73ceecec33425612108de144b14/src/main.ts#L22)).
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | Companion keeps a connection's module process running for as long as the connection is enabled (days or weeks on a show machine), so leaked memory builds up and is only given back when the connection or Companion restarts | Companion runs each connection in a long-lived child process; the module's own prune comment in `src/state.ts` expects "weeks of uptime". Companion's host code was not checked | [H1](#h1-module-memory-grows-every-time-a-new-key-image-is-drawn-and-is-never-given-back) |
+| A2 | The NextoTalk extension sends enough distinct room names and font-size levels in real use (the module's comment says "hundreds of meetings/day") for the leak to reach about 10 MB a day | The maintainer's comment in `src/state.ts:176-181`, not observed traffic. The leak itself (about 15 KB per new image) was measured | [H1](#h1-module-memory-grows-every-time-a-new-key-image-is-drawn-and-is-never-given-back) |
+| A3 | Companion's built-in button text renderer, which drew the room name up to v1.0.1, wraps text that is wider than the button onto more lines, so multi-word names from `update_room_name` used to be readable | How Companion 3.x/4.x renders button text; cannot be checked from the module or `@companion-module/base` | [M1](#m1-renamed-rooms-and-bare-meeting-ids-are-drawn-on-one-line-and-cut-off-at-the-button-edges) |
+| A4 | The NextoTalk Chrome extension connects to port 7006 out of the box, so a user who follows the help page's 7005 ends up with a port mismatch | The message of commit `6b4fa54` ("Default to 7006, matching what the Chrome extension expects"); the extension's code is not in this repo. The help page disagreeing with the module's own default is confirmed from code either way | [L1](#l1-help-page-still-says-the-default-websocket-port-is-7005-but-new-connections-listen-on-7006) |

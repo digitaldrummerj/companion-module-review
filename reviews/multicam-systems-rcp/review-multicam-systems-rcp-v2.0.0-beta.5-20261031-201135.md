@@ -12,12 +12,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | The RCP integration API (1.0-preview) has no equivalent of the old per-user camera preview selection, so the two removed actions cannot simply be re-implemented and an upgrade mapping or a deprecation stub is the realistic fix | the commit history and the replacement "Controller: Select Choice" action; what the device API offers was not checked | [M1](#m1-buttons-using-user-select-camera-or-user-clear-camera-selection-stop-working-after-the-upgrade) |
-| A2 | RCP pushes state often enough that a stale deck slot colour is corrected within a short time (every state push runs `checkAllFeedbacks`) | how often the device pushes state is not visible in the module code | [L4](#l4-stream-deck-plus-slot-colour-and-step-label-do-not-refresh-after-a-bank-or-step-size-change) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -365,3 +362,10 @@ isVisibleExpression: "$(options:connection) != 'cloud'"
 ## 📝 Additional Notes
 
 - `tsconfig.build.json` differs from the template (line 7: found `"module": "NodeNext",`, template `"rootDir": "./src",`). Fine as long as the module builds — no change required. (The preset `extends` line is part of [C1](#c1-module-runs-on-node-22-while-the-api-21-template-uses-node-26).)
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | The RCP integration API (1.0-preview) has no equivalent of the old per-user camera preview selection, so the two removed actions cannot simply be re-implemented and an upgrade mapping or a deprecation stub is the realistic fix | the commit history and the replacement "Controller: Select Choice" action; what the device API offers was not checked | [M1](#m1-buttons-using-user-select-camera-or-user-clear-camera-selection-stop-working-after-the-upgrade) |
+| A2 | RCP pushes state often enough that a stale deck slot colour is corrected within a short time (every state push runs `checkAllFeedbacks`) | how often the device pushes state is not visible in the module code | [L4](#l4-stream-deck-plus-slot-colour-and-step-label-do-not-refresh-after-a-bank-or-step-size-change) |

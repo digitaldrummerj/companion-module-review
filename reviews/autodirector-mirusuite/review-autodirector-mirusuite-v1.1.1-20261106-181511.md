@@ -18,12 +18,9 @@ The maintainer fixed every finding from the v1.1.0 review. Because v1.1.0 was ne
 
 ## Verdict: ✅ Approved
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | The module host in Companion 5 drops values for variable ids that have no definition, so `$(autodirector-mirusuite:connection)` stays blank until the definitions are registered | `companion-module-base` main branch, `packages/host/src/instance.ts` (`setVariableValues` deletes unknown ids); the 2.1.x host shipped with Companion 5 was not checked | [M1](#m1-if-mirusuite-is-not-running-when-companion-starts-the-connection-has-no-actions-feedbacks-presets-or-connection-variable) |
-| A2 | The `eventsource` client reconnects on its own once MiruSuite is reachable, so its open handler then loads the configuration and the definitions appear | [`src/scripts/eventhandler.ts:54-63`](https://github.com/bitfocus/companion-module-autodirector-mirusuite/blob/0a61715acbc71a2eaf5a66b97c1722f0eae11680/src/scripts/eventhandler.ts#L54-L63) and the usual `eventsource` 2.x reconnect behaviour. This only affects how the problem recovers, not whether it happens | [M1](#m1-if-mirusuite-is-not-running-when-companion-starts-the-connection-has-no-actions-feedbacks-presets-or-connection-variable) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -162,3 +159,10 @@ The maintainer fixed every finding from the v1.1.0 review. Because v1.1.0 was ne
 ## 📝 Additional Notes
 
 - `tsconfig.build.json` differs from the template: `compilerOptions` drops `"verbatimModuleSyntax": true` and adds `"module": "NodeNext"` and `"moduleResolution": "NodeNext"`; `outDir` and `rootDir` are only in a different order. The Node 26 preset in `extends` matches the template. The module builds, so no change is required.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | The module host in Companion 5 drops values for variable ids that have no definition, so `$(autodirector-mirusuite:connection)` stays blank until the definitions are registered | `companion-module-base` main branch, `packages/host/src/instance.ts` (`setVariableValues` deletes unknown ids); the 2.1.x host shipped with Companion 5 was not checked | [M1](#m1-if-mirusuite-is-not-running-when-companion-starts-the-connection-has-no-actions-feedbacks-presets-or-connection-variable) |
+| A2 | The `eventsource` client reconnects on its own once MiruSuite is reachable, so its open handler then loads the configuration and the definitions appear | [`src/scripts/eventhandler.ts:54-63`](https://github.com/bitfocus/companion-module-autodirector-mirusuite/blob/0a61715acbc71a2eaf5a66b97c1722f0eae11680/src/scripts/eventhandler.ts#L54-L63) and the usual `eventsource` 2.x reconnect behaviour. This only affects how the problem recovers, not whether it happens | [M1](#m1-if-mirusuite-is-not-running-when-companion-starts-the-connection-has-no-actions-feedbacks-presets-or-connection-variable) |

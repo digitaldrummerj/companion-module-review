@@ -15,13 +15,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | Companion does not deduplicate repeated identical `updateStatus`, `setVariableValues` and `checkAllFeedbacks` calls, so it does a little work for each one, but setting the same status again adds no log entry and changes nothing on screen | `@companion-module/base` 2.1.3 `dist/module-api/base.js:167-168` forwards every call straight to the host with no diffing; Companion's host code was not checked | [N1](#n1-every-2-second-status-poll-re-sends-all-66-variables-re-checks-every-feedback-and-re-sets-the-status-to-ok-even-when-nothing-changed) |
-| A2 | When a user aborts a button's running actions, Companion 5 aborts `context.signal` for every action callback that is still pending, and it does not wait for one press's callback to finish before starting the next | the base 2.1.3 `action.d.ts` doc comment on `CompanionActionCallbackContext.signal` ("aborts when the result of this execution is no longer needed (eg the user aborted the running actions)"); how the host schedules callbacks was not checked | [M1](#m1-aborting-a-buttons-running-actions-does-not-stop-queued-gain-pad-and-phantom-changes) |
-| A3 | The Bitfocus developer-portal build runs the module's own `yarn package` script, so `--prerelease` is carried into every portal build | a local `yarn package` wrote `"isPrerelease": true` into `pkg/allenheath-dt168/companion/manifest.json`; how the portal invokes `companion-module-build` was not checked (the finding holds for local builds either way) | [L2](#l2-yarn-package-always-marks-the-build-as-a-prerelease-and-packagejson-differs-from-the-template) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -418,3 +414,11 @@ Optionally, make `DTClient.refresh()` return a refresh that is already in flight
 **Why it happens:** The dropdown doesn't set `disableAutoExpression: true`, which the v2 guidance recommends for on/off/toggle choices that make little sense as expressions. A first release is the safe time to add it: base 2.1.3 warns that setting it later breaks expressions users have already saved.
 
 **Fix:** add `disableAutoExpression: true` to the `mode` dropdown, or keep expression mode and add an `expressionDescription` such as "Must evaluate to 'toggle', 'on' or 'off'".
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | Companion does not deduplicate repeated identical `updateStatus`, `setVariableValues` and `checkAllFeedbacks` calls, so it does a little work for each one, but setting the same status again adds no log entry and changes nothing on screen | `@companion-module/base` 2.1.3 `dist/module-api/base.js:167-168` forwards every call straight to the host with no diffing; Companion's host code was not checked | [N1](#n1-every-2-second-status-poll-re-sends-all-66-variables-re-checks-every-feedback-and-re-sets-the-status-to-ok-even-when-nothing-changed) |
+| A2 | When a user aborts a button's running actions, Companion 5 aborts `context.signal` for every action callback that is still pending, and it does not wait for one press's callback to finish before starting the next | the base 2.1.3 `action.d.ts` doc comment on `CompanionActionCallbackContext.signal` ("aborts when the result of this execution is no longer needed (eg the user aborted the running actions)"); how the host schedules callbacks was not checked | [M1](#m1-aborting-a-buttons-running-actions-does-not-stop-queued-gain-pad-and-phantom-changes) |
+| A3 | The Bitfocus developer-portal build runs the module's own `yarn package` script, so `--prerelease` is carried into every portal build | a local `yarn package` wrote `"isPrerelease": true` into `pkg/allenheath-dt168/companion/manifest.json`; how the portal invokes `companion-module-build` was not checked (the finding holds for local builds either way) | [L2](#l2-yarn-package-always-marks-the-build-as-a-prerelease-and-packagejson-differs-from-the-template) |

@@ -13,13 +13,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | Companion's connection editor lets a user save the "MFR Port" number field empty, or with a fractional value such as 23.5, so that value reaches the module's connect code | The field sets `min`/`max` but no `required` or `step` ([`src/config.ts:42-50`](https://github.com/bitfocus/companion-module-fora-mfr/blob/3385ec7ca378f92e23d6f76fc4987af47b523491/src/config.ts#L42-L50)). The Node socket errors were reproduced locally; how Companion validates number fields before saving was not checked | [L1](#l1-clearing-the-mfr-port-field-or-typing-235-crashes-the-module-instead-of-showing-a-configuration-error) |
-| A2 | Companion does not catch an exception thrown from a module's `setImmediate` callback, so the module process dies and Companion restarts it | No `uncaughtException` handler exists in `node_modules/@companion-module/base/dist`; Companion's restart behaviour was not checked in its code | [L1](#l1-clearing-the-mfr-port-field-or-typing-235-crashes-the-module-instead-of-showing-a-configuration-error) |
-| A3 | In expression mode Companion compares a dropdown's computed value to the choice ids exactly (case- and type-sensitive): `'11'` matches the hex id `11` (port 18), while `'0a'` or the number 10 match nothing and the action is skipped | The v2 API reference (a dropdown value must match a choice unless custom values are allowed) and the base 2.1.3 typing comment on `allowInvalidValues`; Companion's comparison code was not run | [M1](#m1-typing-a-port-number-into-a-port-option-in-expression-mode-can-route-to-the-wrong-port) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -334,3 +330,11 @@ if (!host || !Number.isInteger(port) || port < 1 || port > 65535) {
 **Why it happens:** A source rename rebuilds the routed-name values for every destination, although only the destinations routed to (or staged with) that source change.
 
 **Fix:** for a source rename, set only the `xpt##_name` / `xpt##_pending_name` variables of the destinations whose route or staged source is that source. Or leave the full update to the debounced definitions timer that already batches name changes.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | Companion's connection editor lets a user save the "MFR Port" number field empty, or with a fractional value such as 23.5, so that value reaches the module's connect code | The field sets `min`/`max` but no `required` or `step` ([`src/config.ts:42-50`](https://github.com/bitfocus/companion-module-fora-mfr/blob/3385ec7ca378f92e23d6f76fc4987af47b523491/src/config.ts#L42-L50)). The Node socket errors were reproduced locally; how Companion validates number fields before saving was not checked | [L1](#l1-clearing-the-mfr-port-field-or-typing-235-crashes-the-module-instead-of-showing-a-configuration-error) |
+| A2 | Companion does not catch an exception thrown from a module's `setImmediate` callback, so the module process dies and Companion restarts it | No `uncaughtException` handler exists in `node_modules/@companion-module/base/dist`; Companion's restart behaviour was not checked in its code | [L1](#l1-clearing-the-mfr-port-field-or-typing-235-crashes-the-module-instead-of-showing-a-configuration-error) |
+| A3 | In expression mode Companion compares a dropdown's computed value to the choice ids exactly (case- and type-sensitive): `'11'` matches the hex id `11` (port 18), while `'0a'` or the number 10 match nothing and the action is skipped | The v2 API reference (a dropdown value must match a choice unless custom values are allowed) and the base 2.1.3 typing comment on `allowInvalidValues`; Companion's comparison code was not run | [M1](#m1-typing-a-port-number-into-a-port-option-in-expression-mode-can-route-to-the-wrong-port) |

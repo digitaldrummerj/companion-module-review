@@ -15,15 +15,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | Controlling a SHARK H4K through a typed Target IP is a normal, supported setup | The help page and the Target IP tooltip document typing an IP, and the code ships H4K profiles; but `companion/HELP.md` lists only the SHARK S6 and S6 PLUS | [L5](#l5-the-help-page-does-not-list-the-shark-s5-h5-h4k-or-h4k-plus-that-this-release-supports) |
-| A2 | One Companion session can send 65,535 commands on one connection, for example days of shows without a restart, or a T-Bar or Adjust action on an encoder | The counter is only reset when a new connection object is built (reconnect or restart); the packets per action come from the code, real usage is an estimate | [H2](#h2-after-65535-commands-every-button-fails-while-the-status-stays-green) |
-| A3 | When a module re-registers its actions with different dropdown choice IDs, Companion keeps each saved button's stored option value and passes it to the callback unchanged | How Companion stores API 1 action options; not verifiable from the module code | [M2](#m2-buttons-built-under-one-device-profile-press-different-keys-after-the-profile-changes) |
-| A4 | Companion does not replace variables in an API 1 feedback's text option by itself; the module has to call `parseVariablesInString` | The base 1.14.1 typing describes `useVariables` only as "Whether to suggest variables to the user"; Companion's host code was not checked | [N2](#n2-the-last-action-flash-key-field-offers-variables-but-does-not-resolve-them) |
-| A5 | Companion runs the actions of one button step at the same time, not one after another | Companion's default action execution; not in the module code | [L7](#l7-the-orange-last-action-flash-can-light-the-wrong-button-or-none-when-two-actions-run-at-the-same-time) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -411,3 +405,13 @@ private later(fn: () => void, ms: number): void {
 - **Partly fixed:** v1.0.0 M1 (scan sockets) continues as [L1](#l1-disabling-the-connection-during-a-device-scan-leaves-the-scan-sockets-broadcasting-v100-m1-only-partly-fixed), L11 (info-level logging) as [L6](#l6-switcher-reports-and-field-writes-still-flood-the-log-at-info-level-and-h4k-packets-are-handled-twice-v100-l11-partly-fixed), and N1 (loose typing, unused code) as [N4](#n4-leftover-unused-code-a-non-null-assertion-and-a-double-cast-v100-n1-partly-addressed). v1.0.0 NR1 is carried forward as [NR1](#nr1-plan-the-move-to-companion-modulebase-v2x).
 - **Kept by the maintainer:** v1.0.0 N2 (zero-width characters to order the preset categories) is intentionally unchanged, with the reason given in the CHANGELOG. It was a Nice to Have, so it is not raised again.
 - `validate-template.ps1 -RunBuild` passed `yarn install --immutable`, `yarn package` and `yarn lint`, and the first-release manifest check is clean. Apart from [H1](#h1-action-descriptions-option-labels-code-comments-and-the-changelog-are-in-chinese), the module matches the API 1 TypeScript template.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | Controlling a SHARK H4K through a typed Target IP is a normal, supported setup | The help page and the Target IP tooltip document typing an IP, and the code ships H4K profiles; but `companion/HELP.md` lists only the SHARK S6 and S6 PLUS | [L5](#l5-the-help-page-does-not-list-the-shark-s5-h5-h4k-or-h4k-plus-that-this-release-supports) |
+| A2 | One Companion session can send 65,535 commands on one connection, for example days of shows without a restart, or a T-Bar or Adjust action on an encoder | The counter is only reset when a new connection object is built (reconnect or restart); the packets per action come from the code, real usage is an estimate | [H2](#h2-after-65535-commands-every-button-fails-while-the-status-stays-green) |
+| A3 | When a module re-registers its actions with different dropdown choice IDs, Companion keeps each saved button's stored option value and passes it to the callback unchanged | How Companion stores API 1 action options; not verifiable from the module code | [M2](#m2-buttons-built-under-one-device-profile-press-different-keys-after-the-profile-changes) |
+| A4 | Companion does not replace variables in an API 1 feedback's text option by itself; the module has to call `parseVariablesInString` | The base 1.14.1 typing describes `useVariables` only as "Whether to suggest variables to the user"; Companion's host code was not checked | [N2](#n2-the-last-action-flash-key-field-offers-variables-but-does-not-resolve-them) |
+| A5 | Companion runs the actions of one button step at the same time, not one after another | Companion's default action execution; not in the module code | [L7](#l7-the-orange-last-action-flash-can-light-the-wrong-button-or-none-when-two-actions-run-at-the-same-time) |

@@ -13,11 +13,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | Companion 4 shows a saved button action whose action ID the module no longer defines as unknown, and the action does nothing when pressed | general Companion host behaviour for removed action definitions; not checked in the Companion source | [M1](#m1-buttons-using-user-select-camera-or-user-clear-camera-selection-stop-working-after-the-update) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -247,3 +245,9 @@ this.log('warn', `RCP connection failed: ${err?.message ?? 'disconnected'}`)
 ## 📝 Additional Notes
 
 - `tsconfig.build.json` differs from the template (`"extends"` is `@companion-module/tools/tsconfig/node22/recommended-esm.json` where the template has `@companion-module/tools/tsconfig/node22/recommended`; changed in this tag). Fine as long as the module builds and lints, which it does — no change required.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | Companion 4 shows a saved button action whose action ID the module no longer defines as unknown, and the action does nothing when pressed | general Companion host behaviour for removed action definitions; not checked in the Companion source | [M1](#m1-buttons-using-user-select-camera-or-user-clear-camera-selection-stop-working-after-the-update) |

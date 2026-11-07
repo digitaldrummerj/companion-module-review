@@ -16,11 +16,9 @@ This release adds Opening Animation actions, feedbacks, variables and presets, a
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | KUMA Timer hosts older than v1.21.0 (overtime blink) and v1.20.2 (opening animation) leave `blink_overtime` / `opener_look` out of `/api/status`, which is why the module falls back to "on" and "neon" | the module's own comments in [`src/types.ts:160-165`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/types.ts#L160-L165) and [`src/actions.ts:402-404`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/actions.ts#L402-L404); no host was tested. It shapes only the suggested fix, not the offline behaviour, which is confirmed in the code | [L2](#l2-blink-and-neon-look-buttons-light-up-while-kuma-timer-is-offline) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -212,3 +210,9 @@ In `clearVariables()` set `blink_overtime: 'false'`, `opener_look: ''` and `open
 - v2.6.2 L2 is still open: a zero-length "Time Glide: finish in a set duration" still turns the connection red, because every non-OK command reply sets Connection Failure ([`src/main.ts:133-142`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/main.ts#L133-L142)).
 - v2.6.2 L3 is still open: `ppt_slide_of` is still missing from `clearVariables()` ([`src/variables.ts:328-400`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/variables.ts#L328-L400)), so it keeps the last slide after KUMA Timer goes offline. The new `ppt_notes` / `ppt_notes_next` variables are cleared correctly.
 - v2.6.2 N1 and N2 are still open: the layout feedback still shows both the Slot and the Name field, and option types are still unchecked (the new code repeats this, see [N2](#n2-new-opener-and-blink-actions-and-feedbacks-read-options-untyped)).
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | KUMA Timer hosts older than v1.21.0 (overtime blink) and v1.20.2 (opening animation) leave `blink_overtime` / `opener_look` out of `/api/status`, which is why the module falls back to "on" and "neon" | the module's own comments in [`src/types.ts:160-165`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/types.ts#L160-L165) and [`src/actions.ts:402-404`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/actions.ts#L402-L404); no host was tested. It shapes only the suggested fix, not the offline behaviour, which is confirmed in the code | [L2](#l2-blink-and-neon-look-buttons-light-up-while-kuma-timer-is-offline) |

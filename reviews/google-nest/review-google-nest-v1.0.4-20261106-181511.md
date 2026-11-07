@@ -13,14 +13,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | Companion shows the message a module passes with its status next to the connection's status in the Connections list, so the user sees the text "fetch failed" | General knowledge of the Companion 4.x Connections page; the host-side rendering is not in `@companion-module/base` | [N1](#n1-when-the-companion-machine-cant-reach-google-the-status-only-says-fetch-failed-as-an-unknown-error) |
-| A2 | Companion can store, and pass to the module, a Poll Interval value outside the field's 15-300 range or an empty value; its settings page does not always block saving an out-of-range number | `@companion-module/base` 2.0.4 number-field typings ("values may not conform to this, you should validate the value in your code"); the host's config editor was not checked or live-tested | [L1](#l1-a-poll-interval-of-0-empty-or-below-15-makes-the-module-poll-google-back-to-back) |
-| A3 | Node 22's built-in `fetch` does not hand a connection back for reuse until an unread response body is read, cancelled or garbage-collected | undici documentation on unconsumed bodies; not checked in this module's runtime | [N9](#n9-successful-command-responses-are-never-read) |
-| A4 | Google lets two homes in one Device Access project each hold a thermostat with the same custom name, so the feedback Device dropdown can show two identical labels | The module itself adds the home name to the action dropdown labels and the variable names ([`src/actionsThermostat.ts:74`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/actionsThermostat.ts#L74), [`src/variables.ts:23`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/variables.ts#L23)), which suggests the maintainer expects this; Google's naming rules were not checked | [L3](#l3-the-feedbacks-device-dropdown-cant-tell-apart-same-named-thermostats-in-different-homes) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -374,3 +369,12 @@ isVisibleExpression: '$(options:fanMode) == "ON"',
 | L5 | Variable ids change when a device or home is renamed | ✅ Fixed: the ids are built from Google's stable device id ([`src/helpers.ts:19-43`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/helpers.ts#L19-L43)) |
 | L6 | Template placeholder preset ships in the Presets tab | ✅ Fixed: replaced with real thermostat presets ([`src/presets.ts`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/presets.ts)) |
 | N1 | Fixed-choice dropdowns allow expression mode | ✅ Fixed in the actions; the 'Thermostat: Mode active' feedback's Mode dropdown still allows it, now [N3](#n3-the-mode-dropdown-in-thermostat-mode-active-can-still-be-switched-to-an-expression) |
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | Companion shows the message a module passes with its status next to the connection's status in the Connections list, so the user sees the text "fetch failed" | General knowledge of the Companion 4.x Connections page; the host-side rendering is not in `@companion-module/base` | [N1](#n1-when-the-companion-machine-cant-reach-google-the-status-only-says-fetch-failed-as-an-unknown-error) |
+| A2 | Companion can store, and pass to the module, a Poll Interval value outside the field's 15-300 range or an empty value; its settings page does not always block saving an out-of-range number | `@companion-module/base` 2.0.4 number-field typings ("values may not conform to this, you should validate the value in your code"); the host's config editor was not checked or live-tested | [L1](#l1-a-poll-interval-of-0-empty-or-below-15-makes-the-module-poll-google-back-to-back) |
+| A3 | Node 22's built-in `fetch` does not hand a connection back for reuse until an unread response body is read, cancelled or garbage-collected | undici documentation on unconsumed bodies; not checked in this module's runtime | [N9](#n9-successful-command-responses-are-never-read) |
+| A4 | Google lets two homes in one Device Access project each hold a thermostat with the same custom name, so the feedback Device dropdown can show two identical labels | The module itself adds the home name to the action dropdown labels and the variable names ([`src/actionsThermostat.ts:74`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/actionsThermostat.ts#L74), [`src/variables.ts:23`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/variables.ts#L23)), which suggests the maintainer expects this; Google's naming rules were not checked | [L3](#l3-the-feedbacks-device-dropdown-cant-tell-apart-same-named-thermostats-in-different-homes) |

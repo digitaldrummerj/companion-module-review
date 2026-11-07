@@ -13,15 +13,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | When one button runs two Start Event actions with no delay between them, Companion starts the second one less than half a second after the first, whether it runs them together or one after the other | Companion's default button step behaviour (actions without a delay run back to back or together). Not checkable from the module or the `@companion-module/base` package | [L1](#l1-a-button-with-two-start-event-or-two-end-running-event-actions-only-runs-the-first-one) |
-| A2 | Once base removes `disableNewConfigLayout`, Companion's automatic config layout ignores the `width` values and shows the blank `runningSlotsFiller` static-text as an empty row | The deprecation note in base 2.2.2 `base.d.ts` and the module's own comment ("base 2.x's automatic layout ignores widths"). How Companion's UI renders it was not checked | [M3](#m3-the-connection-settings-page-relies-on-a-deprecated-layout-switch-that-will-be-removed) |
-| A3 | Advanced feedbacks are likely to be removed in a future major version of the Companion module API | The companion-v2-api-compliance v2.1 reference ("discouraged and likely to be removed in a future major version"). The base 2.2.2 typings carry no `@deprecated` tag on the advanced type | [M4](#m4-the-new-status-band-and-event-tile-feedbacks-use-the-discouraged-advanced-feedback-type) |
-| A4 | Companion fires an action callback's `context.signal` when the user aborts a button's running actions, and the abort usually arrives after the request has already reached BreakTime | The base 2.2.2 typing comment on `CompanionActionCallbackContext.signal` ("aborts when the result of this execution is no longer needed (eg the user aborted the running actions)"). When the host fires it was not checked | [L3](#l3-aborting-a-buttons-running-actions-doesnt-cancel-the-breaktime-request-it-is-waiting-on) |
-| A5 | Companion shows a `number` option as a number box that enforces its min and max in the button editor, and a `textinput` as free text | The v2.0 compliance reference and general Companion UI behaviour. Not checked against the running Companion UI | [N1](#n1-the-seconds-field-of-the-armed-duration-actions-lost-its-number-box-and-range-check) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -584,3 +578,13 @@ return JSON.parse(text)
 - `tsconfig.json` differs from the template: `extends` is `@companion-module/tools/tsconfig/node22/recommended-esm.json` instead of the template's `./tsconfig.build.json` (non-blocking; the module builds and lints).
 - API compliance was re-checked on 2026-11-06 against the API 2.2 rules (companion-v2-api-compliance 1.2.0): they were applied to the whole module, all as NEW, because this release moves base from 1.x to 2.2.2. The value-feedback `result` schema, preset `storeResult` and action results in presets don't apply (the feedbacks are boolean or advanced, and there are no result actions). There are no UDP sockets, and no `Regex.` key is read anywhere. Every variable id is a static, valid string, including the `running_N_*` slot ids and the `component_<slug>` ids, so Companion 5.1+ drops none. No 2.2 findings.
 - [`companion/HELP.md:13`](https://github.com/bitfocus/companion-module-middleman-breaktime/blob/1189ab71b52f9ba2fb3a1846afcda80f1e06de6b/companion/HELP.md#L13) says module 2.x needs Companion 5.1 or later.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | When one button runs two Start Event actions with no delay between them, Companion starts the second one less than half a second after the first, whether it runs them together or one after the other | Companion's default button step behaviour (actions without a delay run back to back or together). Not checkable from the module or the `@companion-module/base` package | [L1](#l1-a-button-with-two-start-event-or-two-end-running-event-actions-only-runs-the-first-one) |
+| A2 | Once base removes `disableNewConfigLayout`, Companion's automatic config layout ignores the `width` values and shows the blank `runningSlotsFiller` static-text as an empty row | The deprecation note in base 2.2.2 `base.d.ts` and the module's own comment ("base 2.x's automatic layout ignores widths"). How Companion's UI renders it was not checked | [M3](#m3-the-connection-settings-page-relies-on-a-deprecated-layout-switch-that-will-be-removed) |
+| A3 | Advanced feedbacks are likely to be removed in a future major version of the Companion module API | The companion-v2-api-compliance v2.1 reference ("discouraged and likely to be removed in a future major version"). The base 2.2.2 typings carry no `@deprecated` tag on the advanced type | [M4](#m4-the-new-status-band-and-event-tile-feedbacks-use-the-discouraged-advanced-feedback-type) |
+| A4 | Companion fires an action callback's `context.signal` when the user aborts a button's running actions, and the abort usually arrives after the request has already reached BreakTime | The base 2.2.2 typing comment on `CompanionActionCallbackContext.signal` ("aborts when the result of this execution is no longer needed (eg the user aborted the running actions)"). When the host fires it was not checked | [L3](#l3-aborting-a-buttons-running-actions-doesnt-cancel-the-breaktime-request-it-is-waiting-on) |
+| A5 | Companion shows a `number` option as a number box that enforces its min and max in the button editor, and a `textinput` as free text | The v2.0 compliance reference and general Companion UI behaviour. Not checked against the running Companion UI | [N1](#n1-the-seconds-field-of-the-armed-duration-actions-lost-its-number-box-and-range-check) |

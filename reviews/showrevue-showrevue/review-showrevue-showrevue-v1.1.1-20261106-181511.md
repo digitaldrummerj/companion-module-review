@@ -14,14 +14,9 @@ This is the module's first release. It has never been published, so there is no 
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | When an action callback fails, Companion logs the error and the module keeps running; the button press just does nothing. If the module process crashed instead, H1 would be Critical | General Companion behaviour. The action dispatch runs in Companion's host, not in `@companion-module/base` 2.1.3, so it was not read. The failure itself was reproduced with Node | [H1](#h1-overlay-widget-set-colour-action-and-its-two-presets-never-send-anything-to-showrevue) |
-| A2 | Companion 5 does not substitute variables into connection config text fields, even with `useVariables: true`, so the module receives the raw `$(...)` text in `init()` and `configUpdated()` | base 2.1.3 typings (`module-api/config.d.ts`, `module-api/input.d.ts`) allow `useVariables` on config text fields but document no config-time substitution. Companion's host code was not checked | [L2](#l2-target-host-offers-variables-but-a-variable-there-is-sent-as-a-literal-hostname) |
-| A3 | Companion lets a user save the connection with "Feedback listen port" blank or invalid; the `Regex.PORT` check only warns | base 2.1.3 typings say regex "values may not conform to this, you should validate the value in your code". Whether Companion's config editor blocks Save was not checked (one reviewer assumed it does, which would make N1 unreachable) | [N1](#n1-clearing-feedback-listen-port-keeps-listening-on-the-old-port) |
-| A4 | For a CommonJS entrypoint, Companion's v2 host reads upgrade scripts only from a named `UpgradeScripts` export (`module.exports.UpgradeScripts`), not from a separate file | the API 2.1 JS template's `export { UpgradeScripts }` and the v2 compliance checklist. Companion's module loader is not in the module's `node_modules`, so it was not read | [L5](#l5-upgrade-scripts-added-later-would-never-run-because-the-upgrade-list-is-not-exported) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -317,3 +312,12 @@ Alternatively, convert the module to ES modules like the 2.1 JS template (`"type
 **Why it happens:** `handleStateMessage()` always calls `refreshVariables()`, which sends the whole variable set, and then `checkFeedbacks()` with every feedback id, whatever value changed.
 
 **Fix:** set only the variable for the value that changed (`this.setVariableValues({ [key]: ... })`), and only re-check the feedbacks that depend on it.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | When an action callback fails, Companion logs the error and the module keeps running; the button press just does nothing. If the module process crashed instead, H1 would be Critical | General Companion behaviour. The action dispatch runs in Companion's host, not in `@companion-module/base` 2.1.3, so it was not read. The failure itself was reproduced with Node | [H1](#h1-overlay-widget-set-colour-action-and-its-two-presets-never-send-anything-to-showrevue) |
+| A2 | Companion 5 does not substitute variables into connection config text fields, even with `useVariables: true`, so the module receives the raw `$(...)` text in `init()` and `configUpdated()` | base 2.1.3 typings (`module-api/config.d.ts`, `module-api/input.d.ts`) allow `useVariables` on config text fields but document no config-time substitution. Companion's host code was not checked | [L2](#l2-target-host-offers-variables-but-a-variable-there-is-sent-as-a-literal-hostname) |
+| A3 | Companion lets a user save the connection with "Feedback listen port" blank or invalid; the `Regex.PORT` check only warns | base 2.1.3 typings say regex "values may not conform to this, you should validate the value in your code". Whether Companion's config editor blocks Save was not checked (one reviewer assumed it does, which would make N1 unreachable) | [N1](#n1-clearing-feedback-listen-port-keeps-listening-on-the-old-port) |
+| A4 | For a CommonJS entrypoint, Companion's v2 host reads upgrade scripts only from a named `UpgradeScripts` export (`module.exports.UpgradeScripts`), not from a separate file | the API 2.1 JS template's `export { UpgradeScripts }` and the v2 compliance checklist. Companion's module loader is not in the module's `node_modules`, so it was not read | [L5](#l5-upgrade-scripts-added-later-would-never-run-because-the-upgrade-list-is-not-exported) |

@@ -13,15 +13,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | When Photon quits or restarts, it closes the TCP connection cleanly, which the module sees as an `end` event. If Photon resets the connection instead, the leftover timer comes from the older `error` handler ([`index.js:196-198`](https://github.com/bitfocus/companion-module-vyv-photon/blob/c18f22aacdb19faecc120dfb20361a6d21088d4b/index.js#L196-L198)), which has the same pattern and the same fix | Node socket behaviour; how Photon closes its connections is not visible in the module. The leak itself is proven from the code whichever handler fires | [H1](#h1-a-reconnect-started-when-photon-closes-the-connection-is-never-cancelled-so-it-survives-settings-changes-and-removal) |
-| A2 | Companion can start a connection whose saved settings have no port value (for example a carried-over or hand-edited config), because it does not fill in missing config defaults for existing connections | The config field's `default: '55503'` covers new connections; whether Companion back-fills missing keys is host behaviour not visible in the module or base | [L1](#l1-the-connection-crash-loops-when-its-saved-settings-have-no-target-port) |
-| A3 | Companion routes the base library's warnings to the connection's log, where users see them | `node_modules/@companion-module/base/dist/logging.js` (the sink lookup); reproduced only with the default console sink, the host side was not checked | [M1](#m1-every-start-of-the-module-logs-two-deprecation-warnings-that-look-like-faults) |
-| A4 | Companion's add-connection list and search show each `products` entry as its own product, so one comma-separated string shows as one product | The manifest schema defines `products` as an array of single product names; the UI rendering is not in the module or base | [L2](#l2-xenon-and-tachyon-do-not-show-up-as-separate-products-in-the-connection-list) |
-| A5 | Companion's Presets panel shows a group's name as a heading under its section's name, so a section and its only group with the same name show the same heading twice | Base 2.2.2 preset structure typings (`dist/module-api/preset/structure.d.ts`); the UI rendering is not in base | [N1](#n1-the-presets-panel-shows-the-default-cues-heading-twice) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -414,3 +408,13 @@ this.socket = new TCPHelper(this.config.host, port, { reconnect: false })
 ## 📝 Additional Notes
 
 - API compliance was re-checked on 2026-11-06 against the API 2.2 rules (companion-v2-api-compliance 1.2.0): no new findings. The module has no feedbacks (so no value-feedback `result`), no preset `storeResult` or `hasResult` action, no unknown `Regex` key and no UDP or shared socket (TCP only), and its four variable ids (`connection_status`, `target_port`, `target_ip`, `connection_failures`) are static and valid. api-scan scanned 0 files because the code sits at the repository root, so `actions.js`, `cues.js`, `index.js`, `presets.js` and `upgrades.js` were checked by hand. The only 2.2 issue is the deprecated `Regex.IP` / `Regex.PORT` usage, already reported as [M1](#m1-every-start-of-the-module-logs-two-deprecation-warnings-that-look-like-faults) at its correct Medium severity. Base 2.2.x needs Companion 5.1+ (Companion 5.0.x refuses to load it), so the API line above now says 5.1+.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | When Photon quits or restarts, it closes the TCP connection cleanly, which the module sees as an `end` event. If Photon resets the connection instead, the leftover timer comes from the older `error` handler ([`index.js:196-198`](https://github.com/bitfocus/companion-module-vyv-photon/blob/c18f22aacdb19faecc120dfb20361a6d21088d4b/index.js#L196-L198)), which has the same pattern and the same fix | Node socket behaviour; how Photon closes its connections is not visible in the module. The leak itself is proven from the code whichever handler fires | [H1](#h1-a-reconnect-started-when-photon-closes-the-connection-is-never-cancelled-so-it-survives-settings-changes-and-removal) |
+| A2 | Companion can start a connection whose saved settings have no port value (for example a carried-over or hand-edited config), because it does not fill in missing config defaults for existing connections | The config field's `default: '55503'` covers new connections; whether Companion back-fills missing keys is host behaviour not visible in the module or base | [L1](#l1-the-connection-crash-loops-when-its-saved-settings-have-no-target-port) |
+| A3 | Companion routes the base library's warnings to the connection's log, where users see them | `node_modules/@companion-module/base/dist/logging.js` (the sink lookup); reproduced only with the default console sink, the host side was not checked | [M1](#m1-every-start-of-the-module-logs-two-deprecation-warnings-that-look-like-faults) |
+| A4 | Companion's add-connection list and search show each `products` entry as its own product, so one comma-separated string shows as one product | The manifest schema defines `products` as an array of single product names; the UI rendering is not in the module or base | [L2](#l2-xenon-and-tachyon-do-not-show-up-as-separate-products-in-the-connection-list) |
+| A5 | Companion's Presets panel shows a group's name as a heading under its section's name, so a section and its only group with the same name show the same heading twice | Base 2.2.2 preset structure typings (`dist/module-api/preset/structure.d.ts`); the UI rendering is not in base | [N1](#n1-the-presets-panel-shows-the-default-cues-heading-twice) |

@@ -13,11 +13,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | When Reset All is switched to expression mode, Companion's action editor no longer applies the expression's result to the Logic Cell field's show/hide rule, so the field stops following it (it either always hides or always shows, depending on whether the editor reads the expression text or an empty value) | The `@companion-module/base` 2.2.2 doc comment on `isVisibleExpression` (`dist/module-api/input.d.ts:36`) says such references aren't allowed. It doesn't say what the editor then shows. Companion's UI source wasn't checked and this wasn't live-tested | [M1](#m1-the-logic-cell-field-stops-following-reset-all-once-reset-all-is-switched-to-an-expression) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -197,3 +195,9 @@ Alternatively, retry the logic cell read on the status interval until it succeed
 ## 📝 Additional Notes
 
 - API compliance was re-checked on 2026-11-06 against the API 2.2 rules (companion-v2-api-compliance 1.2.0): the API 2.2 rules (base 2.2.2 from `yarn.lock`, `package.json` `~2.2.2`) and the v2.0 variable-id rule found nothing in the whole module (no Regex patterns, value feedback results, preset results, UDP/IPv6 or variable-id problems). C1, M1, L1, N1 and N2 are not covered by any 2.2 rule, so none of them change.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | When Reset All is switched to expression mode, Companion's action editor no longer applies the expression's result to the Logic Cell field's show/hide rule, so the field stops following it (it either always hides or always shows, depending on whether the editor reads the expression text or an empty value) | The `@companion-module/base` 2.2.2 doc comment on `isVisibleExpression` (`dist/module-api/input.d.ts:36`) says such references aren't allowed. It doesn't say what the editor then shows. Companion's UI source wasn't checked and this wasn't live-tested | [M1](#m1-the-logic-cell-field-stops-following-reset-all-once-reset-all-is-switched-to-an-expression) |

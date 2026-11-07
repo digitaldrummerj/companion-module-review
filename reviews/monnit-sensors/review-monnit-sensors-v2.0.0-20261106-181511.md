@@ -12,12 +12,9 @@
 
 ## Verdict: ❌ Changes Required
 
-## ❓ Assumptions to Confirm
+## ❓ Assumptions
 
-| # | Assumption | Based on | Affects |
-| --- | --- | --- | --- |
-| A1 | When Companion loads a saved feedback that lacks an option the definition now has (for example `above_bgcolor`), it does not fill in that option's default, so the callback receives `undefined` | The `@companion-module/base` 2.2.2 types pass the stored options through unchanged, and the module's own v1.1.0 upgrade script added these keys explicitly. Companion's host code was not checked | [M1](#m1-temperature-and-humidity-threshold-buttons-stop-changing-colour-for-users-who-update-straight-from-v10x) |
-| A2 | When an advanced feedback returns `bgcolor` and `color` as `undefined`, Companion ignores them and the button keeps its normal style, rather than erroring or applying another colour | Reproduced locally that the callback returns `{ bgcolor: undefined, color: undefined }`, which JSON serialisation turns into `{}`. Not checked: that the module-to-Companion channel drops `undefined` keys, and how Companion merges the style | [M1](#m1-temperature-and-humidity-threshold-buttons-stop-changing-colour-for-users-who-update-straight-from-v10x) |
+Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
 
@@ -383,3 +380,10 @@ As a safety net, also fall back to the defaults in the two threshold callbacks, 
 ## 📝 Additional Notes
 
 - API compliance was re-checked on 2026-11-06 against the API 2.2 rules (companion-v2-api-compliance 1.2.0): the module has no `src/`, so the six source files at the repository root were checked by hand. No value-type feedbacks, preset `storeResult`/`localVariables` or `hasResult`, Regex keys or UDP/shared sockets are used, and every variable id is valid (`last_poll_date`, `last_poll_time`, and per-sensor ids built by [`sanitizeId`](https://github.com/bitfocus/companion-module-monnit-sensors/blob/05b0319e961b88878985634acb9dc36a729ab47a/main.js#L9-L11), which maps every character outside a-z and 0-9 to `_`). No API 2.2 findings.
+
+## ❓ Assumptions to Confirm
+
+| # | Assumption | Based on | Affects |
+| --- | --- | --- | --- |
+| A1 | When Companion loads a saved feedback that lacks an option the definition now has (for example `above_bgcolor`), it does not fill in that option's default, so the callback receives `undefined` | The `@companion-module/base` 2.2.2 types pass the stored options through unchanged, and the module's own v1.1.0 upgrade script added these keys explicitly. Companion's host code was not checked | [M1](#m1-temperature-and-humidity-threshold-buttons-stop-changing-colour-for-users-who-update-straight-from-v10x) |
+| A2 | When an advanced feedback returns `bgcolor` and `color` as `undefined`, Companion ignores them and the button keeps its normal style, rather than erroring or applying another colour | Reproduced locally that the callback returns `{ bgcolor: undefined, color: undefined }`, which JSON serialisation turns into `{}`. Not checked: that the module-to-Companion channel drops `undefined` keys, and how Companion merges the style | [M1](#m1-temperature-and-humidity-threshold-buttons-stop-changing-colour-for-users-who-update-straight-from-v10x) |
