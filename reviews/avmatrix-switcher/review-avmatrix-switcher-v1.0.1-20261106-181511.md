@@ -19,21 +19,18 @@
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | When the Device dropdown only offers "No supported device found", Companion saves Device as an empty string, so a user who then types a Target IP ends up with an empty Device and a Target IP | [`src/config.ts:41-44`](https://github.com/bitfocus/companion-module-avmatrix-switcher/blob/9f9e26e8803abd98003191f6d0b240b7abefd023/src/config.ts#L41-L44) gives that placeholder the id `''` and uses it as the default; how the Companion UI saves a dropdown with a single placeholder choice was not checked | [H2](#h2-a-shark-h4k-reached-by-a-typed-target-ip-is-sent-shark-s6-plus-commands) |
-| A2 | A SHARK H4K does not act correctly on key presses and probes sent in the S6 PLUS packet format and key numbering | The module's own key tables and comments (`src/devices/protocols.ts`, `src/devices/types.ts`); not tested on hardware | [H2](#h2-a-shark-h4k-reached-by-a-typed-target-ip-is-sent-shark-s6-plus-commands) |
-| A3 | Controlling a SHARK H4K through a typed Target IP is a normal, supported setup. If the H4K is not officially supported yet, Medium may fit H2 better | The help page and the Target IP tooltip document typing an IP, and the code ships H4K profiles; but `companion/HELP.md` lists only the SHARK S6 and S6 PLUS | [H2](#h2-a-shark-h4k-reached-by-a-typed-target-ip-is-sent-shark-s6-plus-commands), [L5](#l5-the-help-page-does-not-list-the-shark-s5-h5-h4k-or-h4k-plus-that-this-release-supports) |
-| A4 | One Companion session can send 65,535 commands on one connection, for example days of shows without a restart, or a T-Bar or Adjust action on an encoder | The counter is only reset when a new connection object is built (reconnect or restart); the packets per action come from the code, real usage is an estimate | [H3](#h3-after-65535-commands-every-button-fails-while-the-status-stays-green) |
-| A5 | When a module re-registers its actions with different dropdown choice IDs, Companion keeps each saved button's stored option value and passes it to the callback unchanged | How Companion stores API 1 action options; not verifiable from the module code | [M2](#m2-buttons-built-under-one-device-profile-press-different-keys-after-the-profile-changes) |
-| A6 | Companion does not replace variables in an API 1 feedback's text option by itself; the module has to call `parseVariablesInString` | The base 1.14.1 typing describes `useVariables` only as "Whether to suggest variables to the user"; Companion's host code was not checked | [N2](#n2-the-last-action-flash-key-field-offers-variables-but-does-not-resolve-them) |
-| A7 | Companion runs the actions of one button step at the same time, not one after another | Companion's default action execution; not in the module code | [L7](#l7-the-orange-last-action-flash-can-light-the-wrong-button-or-none-when-two-actions-run-at-the-same-time) |
+| A1 | Controlling a SHARK H4K through a typed Target IP is a normal, supported setup | The help page and the Target IP tooltip document typing an IP, and the code ships H4K profiles; but `companion/HELP.md` lists only the SHARK S6 and S6 PLUS | [L5](#l5-the-help-page-does-not-list-the-shark-s5-h5-h4k-or-h4k-plus-that-this-release-supports) |
+| A2 | One Companion session can send 65,535 commands on one connection, for example days of shows without a restart, or a T-Bar or Adjust action on an encoder | The counter is only reset when a new connection object is built (reconnect or restart); the packets per action come from the code, real usage is an estimate | [H2](#h2-after-65535-commands-every-button-fails-while-the-status-stays-green) |
+| A3 | When a module re-registers its actions with different dropdown choice IDs, Companion keeps each saved button's stored option value and passes it to the callback unchanged | How Companion stores API 1 action options; not verifiable from the module code | [M2](#m2-buttons-built-under-one-device-profile-press-different-keys-after-the-profile-changes) |
+| A4 | Companion does not replace variables in an API 1 feedback's text option by itself; the module has to call `parseVariablesInString` | The base 1.14.1 typing describes `useVariables` only as "Whether to suggest variables to the user"; Companion's host code was not checked | [N2](#n2-the-last-action-flash-key-field-offers-variables-but-does-not-resolve-them) |
+| A5 | Companion runs the actions of one button step at the same time, not one after another | Companion's default action execution; not in the module code | [L7](#l7-the-orange-last-action-flash-can-light-the-wrong-button-or-none-when-two-actions-run-at-the-same-time) |
 
 ## 📋 Issues
 
 ### Blocking
 
 - [ ] [H1: Action descriptions, option labels, code comments and the changelog are in Chinese](#h1-action-descriptions-option-labels-code-comments-and-the-changelog-are-in-chinese)
-- [ ] [H2: A SHARK H4K reached by a typed Target IP is sent SHARK S6 PLUS commands](#h2-a-shark-h4k-reached-by-a-typed-target-ip-is-sent-shark-s6-plus-commands)
-- [ ] [H3: After 65,535 commands every button fails while the status stays green](#h3-after-65535-commands-every-button-fails-while-the-status-stays-green)
+- [ ] [H2: After 65,535 commands every button fails while the status stays green](#h2-after-65535-commands-every-button-fails-while-the-status-stays-green)
 
 ### Non-blocking
 
@@ -96,108 +93,7 @@ Everything in the module must be written in English (code comments, user-facing 
 
 **Fix:** translate every comment, action and feedback description, option label, log message and the CHANGELOG into English. Remove the `.idea/` IDE folder and the `md/` developer notes from the repository (add them to `.gitignore`), or translate the notes if they should stay.
 
-### H2: A SHARK H4K reached by a typed Target IP is sent SHARK S6 PLUS commands
-
-- **Source:** 🔎 protocol reviewer + QA reviewer + compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/main.ts:512-518`](https://github.com/bitfocus/companion-module-avmatrix-switcher/blob/9f9e26e8803abd98003191f6d0b240b7abefd023/src/main.ts#L512-L518), [`src/main.ts:256-270`](https://github.com/bitfocus/companion-module-avmatrix-switcher/blob/9f9e26e8803abd98003191f6d0b240b7abefd023/src/main.ts#L256-L270), [`src/devices/index.ts:46-48`](https://github.com/bitfocus/companion-module-avmatrix-switcher/blob/9f9e26e8803abd98003191f6d0b240b7abefd023/src/devices/index.ts#L46-L48)
-
-**What goes wrong:** The help text says Target IP can be typed in by hand when the switcher is on another subnet and cannot be discovered. Take a SHARK H4K on another VLAN, at 10.0.5.20. The user types that address and saves. The module can't find it in the scan list, so it falls back to the SHARK S6 PLUS profile, and every button then uses S6 PLUS key values and command codes:
-
-- "Switch CUT / AUTO / FTB / MUTE" > CUT sends key 17. The module's own H4K table says CUT is 13 and 17 is SPEED1.
-- "DSK Status" uses command 0x0040, which the H4K table assigns to LOGO.
-- The action list shows S6 PLUS items such as "Switch Stream" and PIP2/PIP3, which the H4K doesn't have.
-
-Either the switcher never answers the S6 PLUS-style probe and the status ends in Connection Failure, or it answers, the status goes green, and the buttons do the wrong thing or nothing.
-
-The same happens on the local subnet if the H4K is off when the connection is added: the scan finds nothing, the user types the IP, and the S6 PLUS profile stays until Companion has been restarted twice. The reverse also happens. Leave Device on a local H4K (the one the first scan picked) and change Target IP to a remote S6 PLUS. After the next restart the start-up scan switches the profile to H4K, so the S6 PLUS gets H4K-format commands.
-
-**Why it happens:** The connection picks the device profile only by looking the Target IP up in the scanned device list. If the address isn't there, the profile falls back to the default, which is the SHARK S6 PLUS. The config has no way to choose the model by hand, although the module's own scan warning ([`src/main.ts:480`](https://github.com/bitfocus/companion-module-avmatrix-switcher/blob/9f9e26e8803abd98003191f6d0b240b7abefd023/src/main.ts#L480), in Chinese) tells users to "manually specify Device Model in the config". The start-up scan then refreshes the profile and the heartbeat target from the scan entry that matches the **Device** dropdown (`config.device`), not the Target IP the connection actually uses (`config.host`). The S6, S5 and H5 profiles share the S6 PLUS command set, so only the SHARK H4K and H4K PLUS are affected. All of this code is new in v1.0.1.
-
-**Evidence:**
-
-```ts
-// src/main.ts:512-518 (setupConnection)
-		// 当前连接目标对应的扫描信息（可能因手动输入 IP 而不存在）
-		const targetDevice = this.discoveredDevices.find((d) => d.host === this.config.host)
-		// 依据扫描到的型号（或设备类型标识）切换产品档案
-		this.applyDeviceProfile(targetDevice?.model, targetDevice?.productType)
-		const modelLabel = targetDevice
-			? resolveDeviceModel(targetDevice.model, targetDevice.productType)
-			: 'Unknown (manual IP)'
-```
-
-```ts
-// src/devices/index.ts:45-48
-/** 取当前设备的产品档案；未识别型号回退默认档案 */
-export function getActiveProfile(rawModel: string | undefined, deviceType?: number): DeviceProfile {
-	return matchDeviceProfile(rawModel, deviceType) ?? DEFAULT_DEVICE_PROFILE
-}
-```
-
-```ts
-// src/devices/profiles.ts:96-98
-/** 未识别型号时使用的档案（保持原有行为：按 S6 PLUS 全功能处理） */
-export const DEFAULT_DEVICE_PROFILE: DeviceProfile =
-	DEVICE_PROFILES.find((p) => p.id === 'shark-s6-plus') ?? DEVICE_PROFILES[0]
-```
-
-```ts
-// src/devices/protocols.ts:105-109 (CCP_0617_KEY_MAP) and 136-140 (H4K_KEY_MAP)
-	cut: 17,
-	auto: 18,
-	ftb: 19,
-	mute: 20,
-	speed1: 21,
-...
-	cut: 13,
-	auto: 14,
-	ftb: 15,
-	mute: 16,
-	speed1: 17,
-```
-
-```ts
-// src/communication.ts:489 (the scan is broadcast-only, so a host on another subnet never enters the scan list)
-				const broadcastTarget = '255.255.255.255'
-```
-
-```ts
-// src/main.ts:256-270 (start-up scan keys the profile and heartbeat target on config.device, not config.host)
-			const firstSetup = !this.config.device && !this.config.host
-			if (!firstSetup) {
-				const stillOnline = saved.find((d) => d.host === this.config.device)
-				...
-				if (stillOnline) {
-					this.applyDeviceProfile(stillOnline.rawModel, stillOnline.productType)
-					if (this.comm) {
-						this.comm.setTargetDevice(this.discoveredDevices.find((d) => d.host === stillOnline.host))
-						if (this.comm.getStatus()) this.comm.startHeartbeat()
-```
-
-```ts
-// src/config.ts:62-68 (no model field; Target IP documented as editable by hand)
-			type: 'textinput',
-			id: 'host',
-			label: 'Target IP',
-			...
-			tooltip: 'IP of the selected device; can be edited manually (useful when the device is on another subnet)',
-```
-
-**Confirm by:** open [`src/main.ts:512-515`](https://github.com/bitfocus/companion-module-avmatrix-switcher/blob/9f9e26e8803abd98003191f6d0b240b7abefd023/src/main.ts#L512-L515) and [`src/devices/index.ts:46-48`](https://github.com/bitfocus/companion-module-avmatrix-switcher/blob/9f9e26e8803abd98003191f6d0b240b7abefd023/src/devices/index.ts#L46-L48). A Target IP that is missing from the scan list resolves to the SHARK S6 PLUS profile. Then check [`src/main.ts:258`](https://github.com/bitfocus/companion-module-avmatrix-switcher/blob/9f9e26e8803abd98003191f6d0b240b7abefd023/src/main.ts#L258), which matches on `config.device` instead of `config.host` before it calls `applyDeviceProfile` and `setTargetDevice`.
-
-**Fix:** choose the profile from the address the connection actually uses, and give users a way to set the model by hand.
-
-1. In `scanDevicesOnce()`, look up `saved.find((d) => d.host === this.config.host)` and pass that entry to `applyDeviceProfile` and `setTargetDevice`.
-2. Add a "Device Model" dropdown to the config (Auto / SHARK S6 / S6 PLUS / S5 / H5 / H4K / H4K PLUS), and use it whenever the Target IP is not in the scan list. The scan warning already promises this field.
-3. In `setupConnection()`, when no scanned device matches, apply the manual model or keep the current profile instead of falling back to the S6 PLUS.
-
-```ts
-const profileSource = targetDevice ?? this.manualModelDevice()
-if (profileSource) this.applyDeviceProfile(profileSource.model, profileSource.productType)
-```
-
-### H3: After 65,535 commands every button fails while the status stays green
+### H2: After 65,535 commands every button fails while the status stays green
 
 - **Source:** 🔎 QA reviewer — verified
 - **Classification:** 🆕 NEW
@@ -294,7 +190,7 @@ const packet = UDPPacker.packCommand(cmd, data, this.indexCounter, session)
 - **Classification:** 🆕 NEW
 - **File:** [`src/actions.ts:1012-1016`](https://github.com/bitfocus/companion-module-avmatrix-switcher/blob/9f9e26e8803abd98003191f6d0b240b7abefd023/src/actions.ts#L1012-L1016), [`src/presets.ts:85-93`](https://github.com/bitfocus/companion-module-avmatrix-switcher/blob/9f9e26e8803abd98003191f6d0b240b7abefd023/src/presets.ts#L85-L93)
 
-**What goes wrong:** Take a page built from the bundled presets while the connection used the SHARK S6 PLUS profile, for example during the typed-IP fallback in [H2](#h2-a-shark-h4k-reached-by-a-typed-target-ip-is-sent-shark-s6-plus-commands), or before an S6 PLUS was replaced by an H4K and the Device dropdown changed. Once the profile is H4K, the "PVW1" button still shows PVW1 and lights green when PVW1 is on preview, but pressing it selects PVW3. The CUT button sends SPEED1, and FTB sends a CHROMA key. The action editor shows the stored value under a different label, for example "PVW3".
+**What goes wrong:** Take a page built from the bundled presets while the connection used the SHARK S6 PLUS profile, for example before an S6 PLUS was replaced by an H4K and the Device dropdown changed. Once the profile is H4K, the "PVW1" button still shows PVW1 and lights green when PVW1 is on preview, but pressing it selects PVW3. The CUT button sends SPEED1, and FTB sends a CHROMA key. The action editor shows the stored value under a different label, for example "PVW3".
 
 **Why it happens:** The "Source (PGM / PVW)" and "Switch CUT / AUTO / FTB / MUTE" dropdowns, and the presets, store the raw device key number, which differs between the S6 PLUS and H4K protocols. Saved buttons keep those numbers when the actions are re-registered for a new profile. The feedbacks, by contrast, use logical source numbers (1-6), so the button still lights for the right source.
 
