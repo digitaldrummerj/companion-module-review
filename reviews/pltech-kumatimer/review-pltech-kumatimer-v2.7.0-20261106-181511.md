@@ -14,7 +14,7 @@
 
 This release adds Opening Animation actions, feedbacks, variables and presets, an Overtime Blink action, feedback, variable and preset, and the `ppt_notes` / `ppt_notes_next` speaker-notes variables. `yarn install --immutable`, `yarn package` and `yarn lint` all pass.
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions
 
@@ -22,119 +22,18 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [H1: GitHub workflow uses older checkout and setup-node actions than the template](#h1-github-workflow-uses-older-checkout-and-setup-node-actions-than-the-template)
-- [ ] [H2: Migration notes and a code comment are written in Polish, so other maintainers can't read them](#h2-migration-notes-and-a-code-comment-are-written-in-polish-so-other-maintainers-cant-read-them)
-
 ### Non-blocking
 
 - [ ] [L1: Help page doesn't describe the new Opening animation features](#l1-help-page-doesnt-describe-the-new-opening-animation-features)
 - [ ] [L2: BLINK and NEON look buttons light up while KUMA Timer is offline](#l2-blink-and-neon-look-buttons-light-up-while-kuma-timer-is-offline)
 - [ ] [N1: The Action field of the new on/off actions can be switched to expression mode](#n1-the-action-field-of-the-new-onoff-actions-can-be-switched-to-expression-mode)
 - [ ] [N2: New opener and blink actions and feedbacks read options untyped](#n2-new-opener-and-blink-actions-and-feedbacks-read-options-untyped)
+- [ ] [NR1: GitHub workflow uses older checkout and setup-node actions than the template](#nr1-github-workflow-uses-older-checkout-and-setup-node-actions-than-the-template)
+- [ ] [NR2: Migration notes and a code comment are written in Polish, so other maintainers can't read them](#nr2-migration-notes-and-a-code-comment-are-written-in-polish-so-other-maintainers-cant-read-them)
 
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: GitHub workflow uses older checkout and setup-node actions than the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW at this severity. The file is unchanged since v1.8.0 and was [M1 in the v2.6.2 review](review-pltech-kumatimer-v2.6.2-20261030-003407.md#m1-github-workflow-uses-an-older-checkout-action-than-the-template); the current template check rates a `.github` file that exists but differs from the template as High
-- **File:** [`.github/workflows/node.yaml:18`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/.github/workflows/node.yaml#L18), [`.github/workflows/node.yaml:21`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/.github/workflows/node.yaml#L21)
-
-**What goes wrong:** Users see no effect. The module's GitHub lint workflow runs on older versions of the checkout and Node setup actions than the API 2.0 template, so its CI no longer matches what every other module built from that template runs. A difference like this makes later troubleshooting harder.
-
-**Why it happens:** The workflow was copied from an older template and has not been refreshed since. The template has since moved to `actions/checkout@v7` and `actions/setup-node@v6`. The commented-out `test:` job differs the same way, and it also has two extra commented-out lines (a codecov step) that the template doesn't have.
-
-**Evidence:**
-
-```diff
-# diff companion-module-template-ts-v2.0.4/.github/workflows/node.yaml .github/workflows/node.yaml
-18c18
-<       - uses: actions/checkout@v7
----
->       - uses: actions/checkout@v4
-21c21
-<         uses: actions/setup-node@v6
----
->         uses: actions/setup-node@v4
-59c59
-<   #     - uses: actions/checkout@v7
----
->   #     - uses: actions/checkout@v4
-61c61
-<   #       uses: actions/setup-node@v6
----
->   #       uses: actions/setup-node@v4
-74a75,76
->   #     - name: Send coverage
->   #       uses: codecov/codecov-action@v5
-```
-
-The validator reports this as "line 15" because it skips comment lines; the actual file line is 18.
-
-**Confirm by:** `diff companion-module-templates/companion-module-template-ts-v2.0.4/.github/workflows/node.yaml .github/workflows/node.yaml`, or open [`.github/workflows/node.yaml:18-21`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/.github/workflows/node.yaml#L18-L21).
-
-**Fix:** copy `.github/workflows/node.yaml` from the API 2.0 template (`companion-module-template-ts-v2.0.4` @ `d62230e`).
-
-### H2: Migration notes and a code comment are written in Polish, so other maintainers can't read them
-
-- **Source:** 🔎 compliance reviewer — verified
-- **Classification:** 🆕 NEW (this release re-aligned the Polish tables and added an English banner on top, but left the Polish text; the file dates from v2.0.3 and the comment from v2.4.0)
-- **File:** [`MIGRATION_NOTES.md:11-395`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/MIGRATION_NOTES.md#L11-L395), [`src/actions.ts:414-415`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/actions.ts#L414-L415)
-
-**What goes wrong:** Nothing changes in the Companion UI; the problem is for people working on the module. A maintainer, Bitfocus reviewer or contributor who doesn't read Polish opens `MIGRATION_NOTES.md` to learn why the module was built the way it is: why the connection settings fields are required, why cue and preset buttons aren't template presets, what the "S1" to "S10" surprise findings were. Almost all of it is in Polish ("Migrujemy pltech-kumatimer z ...", "Recon findings — co dotyka naszego kodu", table columns "Decyzja | Wybór | Implikacja"). Only the new banner at lines 3-9 is in English. The comment above the "Blackmagic Output On / Off" action also quotes a request in Polish. Every file in a module has to be in English so anyone who maintains or troubleshoots it can read it.
-
-**Why it happens:** `MIGRATION_NOTES.md` is the author's own migration log, written in Polish and committed to the repo. This release rewrote every Polish table in it (Prettier re-alignment) and added the English banner, but kept the Polish text. The English rule covers the whole module, so the Polish comment in [`src/actions.ts:414-415`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/actions.ts#L414-L415), from an earlier release, is part of this finding too. The Polish parts of `MIGRATION_NOTES.md` are lines 11-395: the status, TL;DR, decision tables, recon tables, risk register, the S1-S10 findings and the day logs.
-
-**Evidence:**
-
-```markdown
-<!-- MIGRATION_NOTES.md:11-16 (tracked file, per git ls-files) -->
-> **Status:** Plan zlockowany 30 kwi 2026 wieczór. Implementation start: poniedziałek (Day 1).
-> Cały recon zrobiony, decyzje podjęte, czekamy na pn rano.
-
-## TL;DR
-
-Migrujemy `pltech-kumatimer` z `@companion-module/base@~1.14.1` na **`^2.0.4`**. ~10-13h aktywnej roboty rozłożone na 5 dni roboczych. **70% breaking changes z oficjalnego guide nas nie dotyczy** — zostaje 13 must-fix punktów + opcjonalne refactoringi.
-```
-
-```markdown
-<!-- MIGRATION_NOTES.md:22 and 31 -->
-| #        | Decyzja                | Wybór                                                                   | Implikacja   ...
-## Recon findings — co dotyka naszego kodu
-```
-
-```markdown
-<!-- MIGRATION_NOTES.md:316-318 (S9; the same pattern runs through the day logs and the "Decyzje recap" table at 388-395) -->
-**Decyzja:** zostawiam individual preset definitions (50 LOC overhead vs templates), labels pozostają dynamiczne. Udokumentowane w komentarzu `setupPresets()` header.
-```
-
-```ts
-// src/actions.ts:413-415
-		blackmagic_enable: {
-			// RC2, 17 Sep 2026 (Pawel: "guzik do companion z START i STOP
-			// Blackmagic output... lub toggle") — starts/stops "Live KUMA
-```
-
-```diff
-# git diff v2.6.2..v2.7.0 -- MIGRATION_NOTES.md (excerpt): the release adds the English banner and re-aligns the Polish tables
-+> ## Variable names are a contract (Dashboard presets read them)
--| # | Decyzja | Wybór | Implikacja |
-+| #        | Decyzja                | Wybór                                                                   | Implikacja      ...
-```
-
-**Confirm by:** open [`MIGRATION_NOTES.md`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/MIGRATION_NOTES.md#L11-L395): lines 11 to 395 are Polish prose and tables (Status, TL;DR, "Decyzja | Wybór | Implikacja", "Recon findings — co dotyka naszego kodu", S1-S10, the day logs). Then open [`src/actions.ts:414-415`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/actions.ts#L414-L415) and find the Polish quote "guzik do companion z START i STOP ... lub toggle".
-
-**Fix:** translate `MIGRATION_NOTES.md` into English, or remove it from the repo. It is a private migration log and also points at the author's local tooling (`~/family/contracts.md`, `python3 ~/family/bin/family.py`, `/tmp/api2-tsc-errors.log`), so moving the parts that still matter into English code comments or a short English CONTRIBUTING note may be simpler. Rewrite the comment in `src/actions.ts` in English, for example:
-
-```ts
-// RC2, 17 Sep 2026 (Pawel asked for a Companion button with START and STOP for the Blackmagic output, or a toggle)
-```
 
 ## 🟢 Low
 
@@ -203,9 +102,107 @@ In `clearVariables()` set `blink_overtime: 'false'`, `opener_look: ''` and `open
 
 **Fix:** optionally add `actions` and `feedbacks` schemas to `KumaTypes` so the callbacks get typed options and the manual `typeof` / `String()` conversions can go.
 
+## 🔮 Next Release
+
+### NR1: GitHub workflow uses older checkout and setup-node actions than the template
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** 🆕 NEW (carried over: the file is unchanged since v1.8.0 and was [M1 in the v2.6.2 review](review-pltech-kumatimer-v2.6.2-20261030-003407.md#m1-github-workflow-uses-an-older-checkout-action-than-the-template))
+- **File:** [`.github/workflows/node.yaml:18`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/.github/workflows/node.yaml#L18), [`.github/workflows/node.yaml:21`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/.github/workflows/node.yaml#L21)
+
+**What goes wrong:** Users see no effect. The module's GitHub lint workflow runs on older versions of the checkout and Node setup actions than the API 2.0 template, so its CI no longer matches what every other module built from that template runs. A difference like this makes later troubleshooting harder.
+
+**Why it happens:** The workflow was copied from an older template and has not been refreshed since. The template has since moved to `actions/checkout@v7` and `actions/setup-node@v6`. The commented-out `test:` job differs the same way, and it also has two extra commented-out lines (a codecov step) that the template doesn't have.
+
+**Evidence:**
+
+```diff
+# diff companion-module-template-ts-v2.0.4/.github/workflows/node.yaml .github/workflows/node.yaml
+18c18
+<       - uses: actions/checkout@v7
+---
+>       - uses: actions/checkout@v4
+21c21
+<         uses: actions/setup-node@v6
+---
+>         uses: actions/setup-node@v4
+59c59
+<   #     - uses: actions/checkout@v7
+---
+>   #     - uses: actions/checkout@v4
+61c61
+<   #       uses: actions/setup-node@v6
+---
+>   #       uses: actions/setup-node@v4
+74a75,76
+>   #     - name: Send coverage
+>   #       uses: codecov/codecov-action@v5
+```
+
+The validator reports this as "line 15" because it skips comment lines; the actual file line is 18.
+
+**Confirm by:** `diff companion-module-templates/companion-module-template-ts-v2.0.4/.github/workflows/node.yaml .github/workflows/node.yaml`, or open [`.github/workflows/node.yaml:18-21`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/.github/workflows/node.yaml#L18-L21).
+
+**Fix:** copy `.github/workflows/node.yaml` from the API 2.0 template (`companion-module-template-ts-v2.0.4` @ `d62230e`).
+
+### NR2: Migration notes and a code comment are written in Polish, so other maintainers can't read them
+
+- **Source:** 🔎 compliance reviewer — verified
+- **Classification:** 🆕 NEW (this release re-aligned the Polish tables and added an English banner on top, but left the Polish text; the file dates from v2.0.3 and the comment from v2.4.0)
+- **File:** [`MIGRATION_NOTES.md:11-395`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/MIGRATION_NOTES.md#L11-L395), [`src/actions.ts:414-415`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/actions.ts#L414-L415)
+
+**What goes wrong:** Nothing changes in the Companion UI; the problem is for people working on the module. A maintainer, Bitfocus reviewer or contributor who doesn't read Polish opens `MIGRATION_NOTES.md` to learn why the module was built the way it is: why the connection settings fields are required, why cue and preset buttons aren't template presets, what the "S1" to "S10" surprise findings were. Almost all of it is in Polish ("Migrujemy pltech-kumatimer z ...", "Recon findings — co dotyka naszego kodu", table columns "Decyzja | Wybór | Implikacja"). Only the new banner at lines 3-9 is in English. The comment above the "Blackmagic Output On / Off" action also quotes a request in Polish. Every file in a module has to be in English so anyone who maintains or troubleshoots it can read it.
+
+**Why it happens:** `MIGRATION_NOTES.md` is the author's own migration log, written in Polish and committed to the repo. This release rewrote every Polish table in it (Prettier re-alignment) and added the English banner, but kept the Polish text. The English rule covers the whole module, so the Polish comment in [`src/actions.ts:414-415`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/actions.ts#L414-L415), from an earlier release, is part of this finding too. The Polish parts of `MIGRATION_NOTES.md` are lines 11-395: the status, TL;DR, decision tables, recon tables, risk register, the S1-S10 findings and the day logs.
+
+**Evidence:**
+
+```markdown
+<!-- MIGRATION_NOTES.md:11-16 (tracked file, per git ls-files) -->
+> **Status:** Plan zlockowany 30 kwi 2026 wieczór. Implementation start: poniedziałek (Day 1).
+> Cały recon zrobiony, decyzje podjęte, czekamy na pn rano.
+
+## TL;DR
+
+Migrujemy `pltech-kumatimer` z `@companion-module/base@~1.14.1` na **`^2.0.4`**. ~10-13h aktywnej roboty rozłożone na 5 dni roboczych. **70% breaking changes z oficjalnego guide nas nie dotyczy** — zostaje 13 must-fix punktów + opcjonalne refactoringi.
+```
+
+```markdown
+<!-- MIGRATION_NOTES.md:22 and 31 -->
+| #        | Decyzja                | Wybór                                                                   | Implikacja   ...
+## Recon findings — co dotyka naszego kodu
+```
+
+```markdown
+<!-- MIGRATION_NOTES.md:316-318 (S9; the same pattern runs through the day logs and the "Decyzje recap" table at 388-395) -->
+**Decyzja:** zostawiam individual preset definitions (50 LOC overhead vs templates), labels pozostają dynamiczne. Udokumentowane w komentarzu `setupPresets()` header.
+```
+
+```ts
+// src/actions.ts:413-415
+		blackmagic_enable: {
+			// RC2, 17 Sep 2026 (Pawel: "guzik do companion z START i STOP
+			// Blackmagic output... lub toggle") — starts/stops "Live KUMA
+```
+
+```diff
+# git diff v2.6.2..v2.7.0 -- MIGRATION_NOTES.md (excerpt): the release adds the English banner and re-aligns the Polish tables
++> ## Variable names are a contract (Dashboard presets read them)
+-| # | Decyzja | Wybór | Implikacja |
++| #        | Decyzja                | Wybór                                                                   | Implikacja      ...
+```
+
+**Confirm by:** open [`MIGRATION_NOTES.md`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/MIGRATION_NOTES.md#L11-L395): lines 11 to 395 are Polish prose and tables (Status, TL;DR, "Decyzja | Wybór | Implikacja", "Recon findings — co dotyka naszego kodu", S1-S10, the day logs). Then open [`src/actions.ts:414-415`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/actions.ts#L414-L415) and find the Polish quote "guzik do companion z START i STOP ... lub toggle".
+
+**Fix:** translate `MIGRATION_NOTES.md` into English, or remove it from the repo. It is a private migration log and also points at the author's local tooling (`~/family/contracts.md`, `python3 ~/family/bin/family.py`, `/tmp/api2-tsc-errors.log`), so moving the parts that still matter into English code comments or a short English CONTRIBUTING note may be simpler. Rewrite the comment in `src/actions.ts` in English, for example:
+
+```ts
+// RC2, 17 Sep 2026 (Pawel asked for a Companion button with START and STOP for the Blackmagic output, or a toggle)
+```
+
 ## 📝 Additional Notes
 
-- Follow-up to the [v2.6.2 review](review-pltech-kumatimer-v2.6.2-20261030-003407.md) (approved): none of its findings were changed in v2.7.0. Its M1 (workflow action versions) is carried forward as [H1](#h1-github-workflow-uses-older-checkout-and-setup-node-actions-than-the-template), at High under the current template check. The rest stay open, unchanged and non-blocking, as listed below.
+- Follow-up to the [v2.6.2 review](review-pltech-kumatimer-v2.6.2-20261030-003407.md) (approved): none of its findings were changed in v2.7.0. Its M1 (workflow action versions) is carried forward as [NR1](#nr1-github-workflow-uses-older-checkout-and-setup-node-actions-than-the-template), for the next release. The rest stay open, unchanged and non-blocking, as listed below.
 - v2.6.2 L1 is still open: Timer mode and TCR source buttons light up while KUMA Timer is offline ([`src/feedbacks.ts:149`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/feedbacks.ts#L149), [`src/feedbacks.ts:303`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/feedbacks.ts#L303)). It can be fixed together with [L2](#l2-blink-and-neon-look-buttons-light-up-while-kuma-timer-is-offline).
 - v2.6.2 L2 is still open: a zero-length "Time Glide: finish in a set duration" still turns the connection red, because every non-OK command reply sets Connection Failure ([`src/main.ts:133-142`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/main.ts#L133-L142)).
 - v2.6.2 L3 is still open: `ppt_slide_of` is still missing from `clearVariables()` ([`src/variables.ts:328-400`](https://github.com/bitfocus/companion-module-pltech-kumatimer/blob/5aefc3938a26d3a6d22c9175e6b56a58799e99e3/src/variables.ts#L328-L400)), so it keeps the last slide after KUMA Timer goes offline. The new `ppt_notes` / `ppt_notes_next` variables are cleared correctly.
