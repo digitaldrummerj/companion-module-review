@@ -11,118 +11,18 @@
 | **Build** | `yarn install --immutable` + `yarn package` passed |
 | **Reviewed** | 2026-10-30 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [C1: Line-ending rules file `.gitattributes` is missing](#c1-line-ending-rules-file-gitattributes-is-missing)
-- [ ] [C2: `.gitignore` does not ignore `package-lock.json`](#c2-gitignore-does-not-ignore-package-lockjson)
-- [ ] [C3: `.prettierignore` replaces the template entries instead of keeping them](#c3-prettierignore-replaces-the-template-entries-instead-of-keeping-them)
-- [ ] [C4: `.yarnrc.yml` pre-approves `@mutedeck/*` packages, skipping the 3-day age gate](#c4-yarnrcyml-pre-approves-mutedeck-packages-skipping-the-3-day-age-gate)
 
 ### Non-blocking
 
 - [ ] [L1: The MuteDeck status button says Offline while MuteDeck waits for the user to click Allow](#l1-the-mutedeck-status-button-says-offline-while-mutedeck-waits-for-the-user-to-click-allow)
 - [ ] [L2: Help page says screen share turns the button green, but it now turns it red](#l2-help-page-says-screen-share-turns-the-button-green-but-it-now-turns-it-red)
 - [ ] [N1: Existing live-icon buttons change colour after the upgrade, with no option to keep the old look](#n1-existing-live-icon-buttons-change-colour-after-the-upgrade-with-no-option-to-keep-the-old-look)
-
-## 🔴 Critical
-
-### C1: Line-ending rules file `.gitattributes` is missing
-
-- **Source:** 🤖 validate-template (FILE-MISSING)
-- **Classification:** 🆕 NEW
-- **File:** `.gitattributes` (missing)
-
-**What goes wrong:** Without the template's `.gitattributes`, Git doesn't normalise line endings. A contributor on Windows can commit CRLF line endings, which shows up as whole-file diffs and can break formatting checks.
-
-**Why it happens:** Every module built from the template is expected to ship the template's `.gitattributes`. This repository has none.
-
-**Evidence:** template `companion-module-template-js-v2.0.4/.gitattributes` contains:
-
-```text
-* text=auto eol=lf
-```
-
-The module has no `.gitattributes` file.
-
-**Fix:** copy the template's `.gitattributes` into the repository root.
-
-### C2: `.gitignore` does not ignore `package-lock.json`
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.gitignore:1-10`](https://github.com/bitfocus/companion-module-mutedeck-mutedeck/blob/af3a2104a01fcb515a29131a7838fc9cf3533177/.gitignore#L1-L10)
-
-**What goes wrong:** If someone runs `npm install` in this Yarn project, the generated `package-lock.json` can be committed by accident, leaving two lock files that disagree about dependency versions.
-
-**Why it happens:** The template's `.gitignore` lists `package-lock.json`; this module's `.gitignore` is missing that line. The module's extra entries (`.DS_Store`, `*.log`, `streamdeck-plugin-nodejs/`) are fine. Only the missing line is the problem.
-
-**Evidence:** template entries vs module:
-
-```text
-template: node_modules/  package-lock.json  /pkg  /*.tgz  DEBUG-*  /.yarn
-module:   node_modules/  /pkg  /*.tgz  DEBUG-*  /.yarn  .DS_Store  *.log  streamdeck-plugin-nodejs/
-```
-
-**Fix:** add `package-lock.json` to `.gitignore`.
-
-```text
-package-lock.json
-```
-
-### C3: `.prettierignore` replaces the template entries instead of keeping them
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.prettierignore:1-4`](https://github.com/bitfocus/companion-module-mutedeck-mutedeck/blob/af3a2104a01fcb515a29131a7838fc9cf3533177/.prettierignore#L1-L4)
-
-**What goes wrong:** Running the formatter rewrites `package.json` and `LICENSE.md`, which the template deliberately leaves alone, so formatting runs produce unrelated changes to those files.
-
-**Why it happens:** The template's `.prettierignore` lists `package.json` and `/LICENSE.md`. The module's file has different entries (`node_modules/`, `pkg/`, `*.tgz`, `streamdeck-plugin-nodejs/`) and neither template entry. Adding extra entries for generated files is fine; dropping the template's entries is not.
-
-**Evidence:** validator reports a difference at line 1 (found `node_modules/`, template `package.json`).
-
-```text
-template: package.json  /LICENSE.md
-module:   node_modules/  pkg/  *.tgz  streamdeck-plugin-nodejs/
-```
-
-**Fix:** restore the two template entries; the module's extra entries can stay below them.
-
-```text
-package.json
-/LICENSE.md
-```
-
-### C4: `.yarnrc.yml` pre-approves `@mutedeck/*` packages, skipping the 3-day age gate
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.yarnrc.yml:4-7`](https://github.com/bitfocus/companion-module-mutedeck-mutedeck/blob/af3a2104a01fcb515a29131a7838fc9cf3533177/.yarnrc.yml#L4-L7)
-
-**What goes wrong:** The template makes Yarn refuse any package version published less than 3 days ago (`npmMinimalAgeGate: 3d`), which protects the build from a freshly compromised release. This release exempts every `@mutedeck/*` package, including the module's `@mutedeck/plugin-client` dependency, from that protection.
-
-**Why it happens:** `npmPreapprovedPackages` lists the scopes that skip the age gate. The template allows only `@companion-module/*`; v2.0.0 adds `@mutedeck/*` with the comment "our own SDK, released together with this module".
-
-**Evidence:** value mismatch: `npmPreapprovedPackages` = `[@companion-module/*, @mutedeck/*]` (template `[@companion-module/*]`).
-
-```yaml
-# .yarnrc.yml:4-7
-npmPreapprovedPackages:
-  - '@companion-module/*'
-  # our own SDK, released together with this module
-  - '@mutedeck/*'
-```
-
-**Fix:** remove the `@mutedeck/*` entry and its comment, so the file matches the template. Publish the SDK at least 3 days before tagging a module release that needs it.
-
-```yaml
-npmPreapprovedPackages:
-  - "@companion-module/*"
-```
+- [ ] [NR1: Line-ending rules file `.gitattributes` is missing](#nr1-line-ending-rules-file-gitattributes-is-missing)
+- [ ] [NR2: `.gitignore` does not ignore `package-lock.json`](#nr2-gitignore-does-not-ignore-package-lockjson)
+- [ ] [NR3: `.prettierignore` replaces the template entries instead of keeping them](#nr3-prettierignore-replaces-the-template-entries-instead-of-keeping-them)
 
 ## 🟢 Low
 
@@ -165,3 +65,72 @@ npmPreapprovedPackages:
 **Fix:** mention the colour change in the release notes and the help page. Optionally, add colour options to the live-icon feedbacks so users can keep the v1 colours.
 
 A better long-term option is layered buttons. They need `@companion-module/base` 2.1, so users must be on Companion 5.0 or later. In a layered preset (`type: 'layered'`) the button is built from elements (box, image, text), and each feedback changes only one property of one element, through `styleOverrides` (`elementId` / `elementProperty`). This replaces live-icon feedbacks that return the whole button style. The presets and feedbacks would show the same states as today. Users could still change any colour, icon or text on their own buttons. An `alternatives` preset can list the layered version first, with a `simple` fallback for hosts that don't support layered buttons.
+
+## 🔮 Next Release
+
+### NR1: Line-ending rules file `.gitattributes` is missing
+
+- **Source:** 🤖 validate-template (FILE-MISSING)
+- **Classification:** 🆕 NEW
+- **File:** `.gitattributes` (missing)
+
+**What goes wrong:** Without the template's `.gitattributes`, Git doesn't normalise line endings. A contributor on Windows can commit CRLF line endings, which shows up as whole-file diffs and can break formatting checks.
+
+**Why it happens:** Every module built from the template is expected to ship the template's `.gitattributes`. This repository has none.
+
+**Evidence:** template `companion-module-template-js-v2.0.4/.gitattributes` contains:
+
+```text
+* text=auto eol=lf
+```
+
+The module has no `.gitattributes` file.
+
+**Fix:** copy the template's `.gitattributes` into the repository root.
+
+### NR2: `.gitignore` does not ignore `package-lock.json`
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** 🆕 NEW
+- **File:** [`.gitignore:1-10`](https://github.com/bitfocus/companion-module-mutedeck-mutedeck/blob/af3a2104a01fcb515a29131a7838fc9cf3533177/.gitignore#L1-L10)
+
+**What goes wrong:** If someone runs `npm install` in this Yarn project, the generated `package-lock.json` can be committed by accident, leaving two lock files that disagree about dependency versions.
+
+**Why it happens:** The template's `.gitignore` lists `package-lock.json`; this module's `.gitignore` is missing that line. The module's extra entries (`.DS_Store`, `*.log`, `streamdeck-plugin-nodejs/`) are fine. Only the missing line is the problem.
+
+**Evidence:** template entries vs module:
+
+```text
+template: node_modules/  package-lock.json  /pkg  /*.tgz  DEBUG-*  /.yarn
+module:   node_modules/  /pkg  /*.tgz  DEBUG-*  /.yarn  .DS_Store  *.log  streamdeck-plugin-nodejs/
+```
+
+**Fix:** add `package-lock.json` to `.gitignore`.
+
+```text
+package-lock.json
+```
+
+### NR3: `.prettierignore` replaces the template entries instead of keeping them
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** 🆕 NEW
+- **File:** [`.prettierignore:1-4`](https://github.com/bitfocus/companion-module-mutedeck-mutedeck/blob/af3a2104a01fcb515a29131a7838fc9cf3533177/.prettierignore#L1-L4)
+
+**What goes wrong:** Running the formatter rewrites `package.json` and `LICENSE.md`, which the template deliberately leaves alone, so formatting runs produce unrelated changes to those files.
+
+**Why it happens:** The template's `.prettierignore` lists `package.json` and `/LICENSE.md`. The module's file has different entries (`node_modules/`, `pkg/`, `*.tgz`, `streamdeck-plugin-nodejs/`) and neither template entry. Adding extra entries for generated files is fine; dropping the template's entries is not.
+
+**Evidence:** validator reports a difference at line 1 (found `node_modules/`, template `package.json`).
+
+```text
+template: package.json  /LICENSE.md
+module:   node_modules/  pkg/  *.tgz  streamdeck-plugin-nodejs/
+```
+
+**Fix:** restore the two template entries; the module's extra entries can stay below them.
+
+```text
+package.json
+/LICENSE.md
+```
