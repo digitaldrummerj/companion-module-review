@@ -16,20 +16,18 @@
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | Existing v1.0.4 connections still hold their settings under the v1 keys (`host`, `port`, `receiveport`, `series`), and Companion passes them, with the v1 action and feedback ids, to this module's upgrade script unchanged. Companion does not rename or carry over config keys by itself | v1.0.4 `config_fields`; base 2.2.2 `upgrade.d.ts`, where `updatedConfig` is the only way an upgrade can change config; the module's own script maps v1 ids. Companion's host code and its legacy wrapper not checked | [H1](#h1-upgrading-from-v104-loses-the-saved-console-ip-and-ports-so-no-button-reaches-the-console), [H3](#h3-upgraded-macro-state-feedbacks-point-at-a-feedback-that-doesnt-exist-so-macro-buttons-stop-changing-colour), [M8](#m8-upgraded-v1-buttons-from-the-osc-and-s-range-command-sets-misfire-a-fader-off-button-sets-0-db), [L3](#l3-upgraded-channel-selections-are-saved-as-a-single-value-in-a-multi-select-field) |
-| A2 | Companion passes a saved dropdown value that is no longer in the option's choices straight to the action callback | base 2.2.2 does no choice validation; the host not checked | [H2](#h2-an-action-set-to-a-channel-the-session-doesnt-have-mutes-or-fades-input-channel-1-instead) |
-| A3 | Snapshot and macro index 0 is a real snapshot or macro on the console, so the index-0 fallback acts on something (the channel-1 fallback does not depend on this) | the CSV lists `osc_min` 0 for `/Snapshots/name`; device behaviour not confirmed | [H2](#h2-an-action-set-to-a-channel-the-session-doesnt-have-mutes-or-fades-input-channel-1-instead) |
-| A4 | The console does not apply a value from an OSC set message that has no argument (it ignores it or treats it as a query), and `BFloat` is the intended type for these five rows | the module itself sends argument-less messages as queries (`src/main.ts:534`); the 148 other on/off rows use `BFloat` | [H4](#h4-five-dynamic-eq-and-alternate-solo-actions-send-the-command-without-the-chosen-value) |
-| A5 | Companion shows a migrated feedback whose id no longer exists as an unknown feedback and never runs it | how Companion matches feedback ids to definitions; not tested live | [H3](#h3-upgraded-macro-state-feedbacks-point-at-a-feedback-that-doesnt-exist-so-macro-buttons-stop-changing-colour) |
-| A6 | In Companion 5 a value feedback can't be added to a button's style; only boolean feedbacks colour a button directly | companion-v2-feedbacks reference (value feedbacks are for expressions, local variables and layered graphics); not tested live | [H3](#h3-upgraded-macro-state-feedbacks-point-at-a-feedback-that-doesnt-exist-so-macro-buttons-stop-changing-colour), [M11](#m11-no-feedback-can-colour-a-button-so-mute-solo-or-macro-state-cant-light-a-button-directly) |
-| A7 | Companion does not re-run feedback callbacks by itself after `configUpdated()` or after the module calls `setFeedbackDefinitions()` again; callbacks only run on subscribe, on option edits, or on `checkFeedbacks*()` / `checkAllFeedbacks()` | base 2.2.2 `setFeedbackDefinitions` only forwards the definitions to the host; host behaviour not checked | [M1](#m1-feedbacks-stop-updating-after-the-connection-settings-are-saved) |
-| A8 | The Companion host rejects a shared-UDP-socket send when the OS reports a send error (for example EHOSTDOWN or ENETUNREACH while the console is off or the network is not up yet) | base 2.2.2 turns a rejected send into an `'error'` event on the socket (verified); whether and when the host rejects is host- and OS-specific | [M2](#m2-one-failed-udp-send-stops-all-console-queries-until-the-connection-is-restarted) |
-| A9 | Companion's shared UDP socket delivers every datagram on a port to every connection that joined that port | base 2.2.2 doc comment on `createSharedUdpSocket`; the fan-out happens in the host | [M4](#m4-two-digico-connections-on-the-same-receive-port-show-each-others-console-data) |
-| A10 | Companion's number field accepts a decimal entry such as 1.15 when no `step` is set (or the value comes from an expression) | Companion UI behaviour; the truncation itself was reproduced | [M5](#m5-renumber-snapshot-sets-the-number-001-too-low-for-about-1-in-8-values) |
-| A11 | The preset sections the console reports can change in normal use (another session loaded, or a preset created in a new section) | sections come partly from console preset records (`src/main.ts:211-226`), which are session data | [M9](#m9-preset-actions-and-feedbacks-lose-the-picked-preset-when-the-consoles-preset-sections-change) |
-| A12 | In value mode, Companion's number field won't save a value below the field's `min` | v2.0 reference "Expression validation" row; base typings call min/max UI hints | [M10](#m10-relative-mode-cant-step-a-value-down-when-the-parameters-range-starts-at-0) |
-| A13 | Companion's multi-select editor does not show a single (non-array) value as selected, and re-saving keeps only array values | the multidropdown option type expects an array of choice ids; Companion UI not checked | [L3](#l3-upgraded-channel-selections-are-saved-as-a-single-value-in-a-multi-select-field) |
-| A14 | When the module sends through a `'udp4'` shared socket, Companion's host resolves a hostname such as `sd12.local` to an IPv4 address and can't send to an IPv6 address on that socket | the v2.2 reference ("A shared UDP socket can only send to its own family") and how Node `dgram` behaves; the send happens in the Companion host, which was not checked | [M13](#m13-the-ip-address-fields-reject-hostnames-deprecated-regexip) (the note about the hard-coded `'udp4'` sockets if the regex is dropped) |
+| A1 | Existing v1.0.4 connections still hold their settings under the v1 keys (`host`, `port`, `receiveport`, `series`), and Companion passes them, with the v1 action and feedback ids, to this module's upgrade script unchanged. Companion does not rename or carry over config keys by itself | v1.0.4 `config_fields`; base 2.2.2 `upgrade.d.ts`, where `updatedConfig` is the only way an upgrade can change config; the module's own script maps v1 ids. Companion's host code and its legacy wrapper not checked | [H1](#h1-upgrading-from-v104-loses-the-saved-console-ip-and-ports-so-no-button-reaches-the-console), [H2](#h2-upgraded-macro-state-feedbacks-point-at-a-feedback-that-doesnt-exist-so-macro-buttons-stop-changing-colour), [M8](#m8-upgraded-v1-buttons-from-the-osc-and-s-range-command-sets-misfire-a-fader-off-button-sets-0-db), [L3](#l3-upgraded-channel-selections-are-saved-as-a-single-value-in-a-multi-select-field) |
+| A2 | The console does not apply a value from an OSC set message that has no argument (it ignores it or treats it as a query), and `BFloat` is the intended type for these five rows | the module itself sends argument-less messages as queries (`src/main.ts:534`); the 148 other on/off rows use `BFloat` | [H3](#h3-five-dynamic-eq-and-alternate-solo-actions-send-the-command-without-the-chosen-value) |
+| A3 | Companion shows a migrated feedback whose id no longer exists as an unknown feedback and never runs it | how Companion matches feedback ids to definitions; not tested live | [H2](#h2-upgraded-macro-state-feedbacks-point-at-a-feedback-that-doesnt-exist-so-macro-buttons-stop-changing-colour) |
+| A4 | In Companion 5 a value feedback can't be added to a button's style; only boolean feedbacks colour a button directly | companion-v2-feedbacks reference (value feedbacks are for expressions, local variables and layered graphics); not tested live | [H2](#h2-upgraded-macro-state-feedbacks-point-at-a-feedback-that-doesnt-exist-so-macro-buttons-stop-changing-colour), [M11](#m11-no-feedback-can-colour-a-button-so-mute-solo-or-macro-state-cant-light-a-button-directly) |
+| A5 | Companion does not re-run feedback callbacks by itself after `configUpdated()` or after the module calls `setFeedbackDefinitions()` again; callbacks only run on subscribe, on option edits, or on `checkFeedbacks*()` / `checkAllFeedbacks()` | base 2.2.2 `setFeedbackDefinitions` only forwards the definitions to the host; host behaviour not checked | [M1](#m1-feedbacks-stop-updating-after-the-connection-settings-are-saved) |
+| A6 | The Companion host rejects a shared-UDP-socket send when the OS reports a send error (for example EHOSTDOWN or ENETUNREACH while the console is off or the network is not up yet) | base 2.2.2 turns a rejected send into an `'error'` event on the socket (verified); whether and when the host rejects is host- and OS-specific | [M2](#m2-one-failed-udp-send-stops-all-console-queries-until-the-connection-is-restarted) |
+| A7 | Companion's shared UDP socket delivers every datagram on a port to every connection that joined that port | base 2.2.2 doc comment on `createSharedUdpSocket`; the fan-out happens in the host | [M4](#m4-two-digico-connections-on-the-same-receive-port-show-each-others-console-data) |
+| A8 | Companion's number field accepts a decimal entry such as 1.15 when no `step` is set (or the value comes from an expression) | Companion UI behaviour; the truncation itself was reproduced | [M5](#m5-renumber-snapshot-sets-the-number-001-too-low-for-about-1-in-8-values) |
+| A9 | The preset sections the console reports can change in normal use (another session loaded, or a preset created in a new section) | sections come partly from console preset records (`src/main.ts:211-226`), which are session data | [M9](#m9-preset-actions-and-feedbacks-lose-the-picked-preset-when-the-consoles-preset-sections-change) |
+| A10 | In value mode, Companion's number field won't save a value below the field's `min` | v2.0 reference "Expression validation" row; base typings call min/max UI hints | [M10](#m10-relative-mode-cant-step-a-value-down-when-the-parameters-range-starts-at-0) |
+| A11 | Companion's multi-select editor does not show a single (non-array) value as selected, and re-saving keeps only array values | the multidropdown option type expects an array of choice ids; Companion UI not checked | [L3](#l3-upgraded-channel-selections-are-saved-as-a-single-value-in-a-multi-select-field) |
+| A12 | When the module sends through a `'udp4'` shared socket, Companion's host resolves a hostname such as `sd12.local` to an IPv4 address and can't send to an IPv6 address on that socket | the v2.2 reference ("A shared UDP socket can only send to its own family") and how Node `dgram` behaves; the send happens in the Companion host, which was not checked | [M13](#m13-the-ip-address-fields-reject-hostnames-deprecated-regexip) |
 
 ## 📋 Issues
 
@@ -38,10 +36,9 @@
 - [ ] [C1: The module's repository link still points at the template placeholder](#c1-the-modules-repository-link-still-points-at-the-template-placeholder)
 - [ ] [C2: The module still targets Node 22, but the API 2.2 template runs on Node 26](#c2-the-module-still-targets-node-22-but-the-api-22-template-runs-on-node-26)
 - [ ] [H1: Upgrading from v1.0.4 loses the saved console IP and ports, so no button reaches the console](#h1-upgrading-from-v104-loses-the-saved-console-ip-and-ports-so-no-button-reaches-the-console)
-- [ ] [H2: An action set to a channel the session doesn't have mutes or fades Input Channel 1 instead](#h2-an-action-set-to-a-channel-the-session-doesnt-have-mutes-or-fades-input-channel-1-instead)
-- [ ] [H3: Upgraded macro-state feedbacks point at a feedback that doesn't exist, so macro buttons stop changing colour](#h3-upgraded-macro-state-feedbacks-point-at-a-feedback-that-doesnt-exist-so-macro-buttons-stop-changing-colour)
-- [ ] [H4: Five dynamic EQ and alternate-solo actions send the command without the chosen value](#h4-five-dynamic-eq-and-alternate-solo-actions-send-the-command-without-the-chosen-value)
-- [ ] [H5: The CI workflow (node.yaml) differs from the template](#h5-the-ci-workflow-nodeyaml-differs-from-the-template)
+- [ ] [H2: Upgraded macro-state feedbacks point at a feedback that doesn't exist, so macro buttons stop changing colour](#h2-upgraded-macro-state-feedbacks-point-at-a-feedback-that-doesnt-exist-so-macro-buttons-stop-changing-colour)
+- [ ] [H3: Five dynamic EQ and alternate-solo actions send the command without the chosen value](#h3-five-dynamic-eq-and-alternate-solo-actions-send-the-command-without-the-chosen-value)
+- [ ] [H4: The CI workflow (node.yaml) differs from the template](#h4-the-ci-workflow-nodeyaml-differs-from-the-template)
 
 ### Non-blocking
 
@@ -228,90 +225,7 @@ if (old && old.ip === undefined && typeof old.host === 'string' && old.host.trim
 return { updatedConfig, updatedActions, updatedFeedbacks }
 ```
 
-### H2: An action set to a channel the session doesn't have mutes or fades Input Channel 1 instead
-
-- **Source:** 🔎 QA reviewer + compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/actions.ts:35-41`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/actions.ts#L35-L41)
-
-**What goes wrong:** A user has a button running "[Input Channels] Mute" with Input Channel = 60 and Value = On, and the console has a 48-channel session loaded. Pressing the button mutes Input Channel 1. The same happens to every channel action (mute, solo, fader, toggle, cross-fade) whose chosen channel is above the count the console reports: after loading a smaller session, for example, or with buttons upgraded from v1.0.4, which offered channels 1-144 whatever the session size. Snapshot and macro actions such as "[Snapshots] Recall Snapshot" and "[Macros] Recall Macro" fall back to index 0 in the same way, for example when the chosen snapshot has been deleted. Reproduced against the built `dist`: with the console reporting 48 channels, channel 60 sent `/Input_Channels/1/mute 1`. On a live mixer this mutes or fades the wrong channel.
-
-**Why it happens:** Before sending, `optionIndexes()` keeps only the selected channels that appear in the action's channel list, and that list is capped at the console's reported count. When none of the selected channels survive, it returns a default (channel 1, or index 0 for snapshots and macros) instead of returning nothing, and the action sends the command to that default.
-
-**Evidence:**
-
-```ts
-// src/actions.ts:35-41
-function optionIndexes(value: unknown, choices: Array<{ id: number | string }>, fallback = 1): number[] {
-	const valid = choices.flatMap((choice) => (typeof choice.id === 'number' ? [choice.id] : []))
-	const selected = Array.isArray(value) ? value : value === undefined || value === null ? [] : [value]
-	if (selected.includes('all')) return valid.length ? valid : [fallback]
-	const indexes = [...new Set(selected.map(Number).filter((index) => Number.isInteger(index) && valid.includes(index)))]
-	return indexes.length ? indexes : [fallback]
-}
-// src/actions.ts:441
-			const paths = selectedPaths(row.oscPath, event.options, selectorChoices, root && hasEntityRoot(root) ? 0 : 1)
-// src/actions.ts:504-505
-			const args = wireArguments(row, value)
-			for (const path of paths) self.send_osc(path, args)
-```
-
-```ts
-// src/main.ts:158-165
-			if (count !== undefined) for (let index = 1; index <= count; index++) choicesByIndex.add(index)
-		}
-		if (choicesByIndex.size === 0) choicesByIndex.add(1)
-
-		const label = getPathAxisLabel(path, axis)
-		const indexes = [...choicesByIndex]
-			.filter((index) => index >= 1 && (provider ? index <= (count ?? provider.maxCount) : true))
-			.sort((left, right) => left - right)
-```
-
-```ts
-// src/upgrades.ts:27-31 (v1 buttons are migrated straight into index_1)
-	mute: {
-		actionId: '/Input_Channels/*/mute',
-		options: { channel: 'index_1', mute: 'value' },
-		convertNumericStrings: ['mute'],
-	},
-```
-
-```js
-// v1.0.4:actions.js:9-11 (v1 offered channels 1-144 whatever the session size)
-	for (var i = 1; i < 145; i++) {
-		CHOICES_CHANNELS.push({ label: `ch ${i}`, id: i})
-	}
-```
-
-```text
-node -e on a copy of optionIndexes (identical to dist/actions.js:9-15)
-post48 [60]: [ 1 ]
-post48 [5,60]: [ 5 ]
-entity deleted 3: [ 0 ]
-```
-
-**Confirm by:** open [`src/actions.ts:35-41`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/actions.ts#L35-L41): `return indexes.length ? indexes : [fallback]` turns a channel that isn't in the list built at [`src/main.ts:158-165`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/main.ts#L158-L165) into channel 1, and [`src/actions.ts:441`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/actions.ts#L441) and [`src/actions.ts:504-505`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/actions.ts#L504-L505) send the command there.
-
-**Fix:** don't fall back to a default index when the user's selection is filtered out. Use the selected numbers as they are (limited only to the protocol maximum); when nothing is left, log a warning and send nothing. Keep a default only for the case where no option value is set at all, and use the same rule for the preset target fallback at [`src/actions.ts:384-388`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/actions.ts#L384-L388) and [`src/actions.ts:407-411`](https://github.com/bitfocus/companion-module-digico-osc/blob/0602e2229ee11056f380ebecedd1d6499acc3134/src/actions.ts#L407-L411).
-
-```ts
-function optionIndexes(value: unknown, choices: Array<{ id: number | string }>, fallback = 1): number[] {
-	const valid = choices.flatMap((choice) => (typeof choice.id === 'number' ? [choice.id] : []))
-	if (value === undefined || value === null) return [fallback]
-	const selected = Array.isArray(value) ? value : [value]
-	if (selected.includes('all')) return valid
-	return [...new Set(selected.map(Number).filter((index) => Number.isInteger(index) && index >= 0))]
-}
-
-// in the callback
-if (paths.length === 0) {
-	logger.warn(`${row.oscPath}: no valid channel selected, nothing sent`)
-	return
-}
-```
-
-### H3: Upgraded macro-state feedbacks point at a feedback that doesn't exist, so macro buttons stop changing colour
+### H2: Upgraded macro-state feedbacks point at a feedback that doesn't exist, so macro buttons stop changing colour
 
 - **Source:** 🔎 QA reviewer + compliance reviewer — verified
 - **Classification:** 🔙 REGRESSION
@@ -390,7 +304,7 @@ digico_entities.csv:3:/Macros/Buttons/state/*,Int,0,2,RW,OSC Macro button state 
 
 **Fix:** add a boolean feedback that colours the button by macro state, and migrate the old feedback to it with its colours. For example, a "Macro button state" feedback with options `index_1` (the button) and `state` (on/off) and a `defaultStyle`, returning `record.state == state`. Then migrate `macroStatus` to it: `index_1 = { isExpression: false, value: Number(macro.value) - 1 }`, `state` from the old `state` option, and `style: { color: fg.value, bgcolor: bg.value }` taken from the old wrapped `fg`/`bg` options (`style` takes raw values). v2.0.0 was never published, so you can fix the existing upgrade script in place.
 
-### H4: Five dynamic EQ and alternate-solo actions send the command without the chosen value
+### H3: Five dynamic EQ and alternate-solo actions send the command without the chosen value
 
 - **Source:** 🔎 QA reviewer + compliance reviewer — verified
 - **Classification:** 🆕 NEW
@@ -454,7 +368,7 @@ const dataType = rawType && DATA_TYPES.find((type) => type.toLowerCase() === raw
 if (rawType && !dataType) throw new Error(`Invalid data_type in ${file}, row ${index + 2}: ${rawType}`)
 ```
 
-### H5: The CI workflow (node.yaml) differs from the template
+### H4: The CI workflow (node.yaml) differs from the template
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -686,7 +600,7 @@ function wireArguments(row: CommandRow, value: unknown): OSCSomeArguments {
 
 **Why it happens:** `FeedbacksSchema` declares every feedback as `type: 'value'`, and `UpdateFeedbacks` only produces value feedbacks. There is no boolean feedback with a `defaultStyle`.
 
-**Fix:** for on/off rows (`isBooleanDataType(row.dataType)`, or Int rows with range 0..1), also generate a boolean feedback, for example `${row.oscPath}#on` with the same selector options and `defaultStyle: { bgcolor: combineRgb(255, 0, 0) }`, returning `value === 1`. Keep the value feedbacks for expressions and local variables. This is also the feedback [H3](#h3-upgraded-macro-state-feedbacks-point-at-a-feedback-that-doesnt-exist-so-macro-buttons-stop-changing-colour) needs as its upgrade target.
+**Fix:** for on/off rows (`isBooleanDataType(row.dataType)`, or Int rows with range 0..1), also generate a boolean feedback, for example `${row.oscPath}#on` with the same selector options and `defaultStyle: { bgcolor: combineRgb(255, 0, 0) }`, returning `value === 1`. Keep the value feedbacks for expressions and local variables. This is also the feedback [H2](#h2-upgraded-macro-state-feedbacks-point-at-a-feedback-that-doesnt-exist-so-macro-buttons-stop-changing-colour) needs as its upgrade target.
 
 ### M12: The release workflow (release.yaml) is missing
 
