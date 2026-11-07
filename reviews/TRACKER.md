@@ -253,7 +253,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | eventspro-toolspro-timer | v1.2.2 | 2026-11-06 | [review](eventspro-toolspro-timer/review-eventspro-toolspro-timer-v1.2.2-20261106-181511.md) |
 | ✅ | fora-mfr | v2.0.0 | 2026-11-06 | [review](fora-mfr/review-fora-mfr-v2.0.0-20261106-181511.md) |
 | ✅ | middleman-breaktime | v2.0.1 | 2026-11-06 | [review](middleman-breaktime/review-middleman-breaktime-v2.0.1-20261106-181511.md) |
-| ⬜ | nextologies-nextotalk | v1.0.2 | 2026-11-06 | [review](nextologies-nextotalk/review-nextologies-nextotalk-v1.0.2-20261106-181511.md) |
+| ✅ | nextologies-nextotalk | v1.0.2 | 2026-11-06 | [review](nextologies-nextotalk/review-nextologies-nextotalk-v1.0.2-20261106-181511.md) |
 | ⬜ | epiphan-pearl | v3.0.0 | 2026-11-06 | [review](epiphan-pearl/review-epiphan-pearl-v3.0.0-20261106-181511.md) |
 | ⬜ | monnit-sensors | v2.0.0 | 2026-11-06 | [review](monnit-sensors/review-monnit-sensors-v2.0.0-20261106-181511.md) |
 | ⬜ | vyv-photon | v4.0.0 | 2026-11-06 | [review](vyv-photon/review-vyv-photon-v4.0.0-20261106-181511.md) |
