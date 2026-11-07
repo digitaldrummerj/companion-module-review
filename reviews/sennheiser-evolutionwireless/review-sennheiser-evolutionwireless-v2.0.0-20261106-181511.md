@@ -16,7 +16,7 @@
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | Companion passes text-field (`textinput`) config values to the module as text, including the Target Port default `'53212'`, and never turns them into numbers | `ModuleConfig.port: string`, the field's `type: 'textinput'` with `default: '53212'`, and the base 1.11.0 typing `default?: string`; Companion's host code wasn't checked, and a hand-edited or imported config holding a numeric port wasn't ruled out | [C1](#c1-every-connection-stops-at-bad-configuration-port-is-not-an-integer-and-never-connects), [M1](#m1-disabling-or-deleting-the-connection-doesnt-close-the-udp-socket-or-stop-the-60-second-push-timer) |
+| A1 | Companion passes text-field (`textinput`) config values to the module as text, including the Target Port default `'53212'`, and never turns them into numbers | `ModuleConfig.port: string`, the field's `type: 'textinput'` with `default: '53212'`, and the base 1.11.0 typing `default?: string`; Companion's host code wasn't checked, and a hand-edited or imported config holding a numeric port wasn't ruled out | [M1](#m1-disabling-or-deleting-the-connection-doesnt-close-the-udp-socket-or-stop-the-60-second-push-timer) |
 | A2 | Companion's shared UDP socket delivers every packet that arrives on a port to every connection that joined that port, whatever the sender, and keeps delivering to a joined socket until the module closes it or its process stops | the module's own comment at [`src/api.ts:58`](https://github.com/bitfocus/companion-module-sennheiser-evolutionwireless/blob/4ab05292d9a8596054b5273588babcc687668a57/src/api.ts#L58), and base 1.11.0, which hands incoming packets to every socket still in its handler list and removes a socket only on `close()` or a fatal error; Companion's host side wasn't checked | [H1](#h1-saving-the-connection-settings-doesnt-refresh-the-actions-and-variables-and-leaves-the-old-udp-socket-running), [M1](#m1-disabling-or-deleting-the-connection-doesnt-close-the-udp-socket-or-stop-the-60-second-push-timer), [M4](#m4-the-log-fills-with-ignoring-udp-message-from-unknown-source-when-several-ew-units-share-the-port) |
 | A3 | Companion starts a newly added connection (`init()`) before the user's first Save and applies that Save through `configUpdated()`, so the Device Type picked in the very first Save already misses the refresh | the general Companion 3/4 connection lifecycle (base `_handleInit` / `_handleConfigUpdateAndLabel`); not checked in Companion's host code | [H1](#h1-saving-the-connection-settings-doesnt-refresh-the-actions-and-variables-and-leaves-the-old-udp-socket-running) |
 | A4 | v2.0.0 is the module's first release for current Companion: the module store has no approved version, and the repo's 2022 tags v1.0.0–v1.0.2 are Companion 2.x bundled-module releases that don't count as a baseline | the Bitfocus versions API (no approved version); v1.0.2 uses the Companion 2.x layout (`api_version` in package.json, no `companion/manifest.json`) and already has the same Mute Toggle logic and no feedbacks. If an earlier store release exists, H2 becomes pre-existing and H3 loses the first-release rule | [H2](#h2-the-mute-actions-toggle-option-never-unmutes-an-em-receiver), [H3](#h3-buttons-cant-show-the-devices-state-because-the-module-has-no-feedbacks) |
@@ -28,15 +28,14 @@
 
 ### Blocking
 
-- [ ] [C1: Every connection stops at Bad Configuration "Port is not an integer" and never connects](#c1-every-connection-stops-at-bad-configuration-port-is-not-an-integer-and-never-connects)
-- [ ] [C2: Windows line endings can slip into commits: `.gitattributes` is missing](#c2-windows-line-endings-can-slip-into-commits-gitattributes-is-missing)
-- [ ] [C3: The packaged module can be committed by accident: `.gitignore` is missing template entries](#c3-the-packaged-module-can-be-committed-by-accident-gitignore-is-missing-template-entries)
-- [ ] [C4: Lint and formatting don't run before each commit: `.husky/pre-commit` is missing](#c4-lint-and-formatting-dont-run-before-each-commit-huskypre-commit-is-missing)
-- [ ] [C5: Installs don't use the template's safe Yarn settings: `.yarnrc.yml` is missing](#c5-installs-dont-use-the-templates-safe-yarn-settings-yarnrcyml-is-missing)
-- [ ] [C6: The required Node and Yarn versions aren't declared: `engines` is missing from `package.json`](#c6-the-required-node-and-yarn-versions-arent-declared-engines-is-missing-from-packagejson)
-- [ ] [C7: Builds don't pin a Yarn version: `packageManager` is missing from `package.json`](#c7-builds-dont-pin-a-yarn-version-packagemanager-is-missing-from-packagejson)
-- [ ] [C8: Node type definitions aren't pinned to Node 22: the `@types/node` devDependency is missing](#c8-node-type-definitions-arent-pinned-to-node-22-the-typesnode-devdependency-is-missing)
-- [ ] [C9: The module still targets Node 18, while the template runs on Node 22](#c9-the-module-still-targets-node-18-while-the-template-runs-on-node-22)
+- [ ] [C1: Windows line endings can slip into commits: `.gitattributes` is missing](#c1-windows-line-endings-can-slip-into-commits-gitattributes-is-missing)
+- [ ] [C2: The packaged module can be committed by accident: `.gitignore` is missing template entries](#c2-the-packaged-module-can-be-committed-by-accident-gitignore-is-missing-template-entries)
+- [ ] [C3: Lint and formatting don't run before each commit: `.husky/pre-commit` is missing](#c3-lint-and-formatting-dont-run-before-each-commit-huskypre-commit-is-missing)
+- [ ] [C4: Installs don't use the template's safe Yarn settings: `.yarnrc.yml` is missing](#c4-installs-dont-use-the-templates-safe-yarn-settings-yarnrcyml-is-missing)
+- [ ] [C5: The required Node and Yarn versions aren't declared: `engines` is missing from `package.json`](#c5-the-required-node-and-yarn-versions-arent-declared-engines-is-missing-from-packagejson)
+- [ ] [C6: Builds don't pin a Yarn version: `packageManager` is missing from `package.json`](#c6-builds-dont-pin-a-yarn-version-packagemanager-is-missing-from-packagejson)
+- [ ] [C7: Node type definitions aren't pinned to Node 22: the `@types/node` devDependency is missing](#c7-node-type-definitions-arent-pinned-to-node-22-the-typesnode-devdependency-is-missing)
+- [ ] [C8: The module still targets Node 18, while the template runs on Node 22](#c8-the-module-still-targets-node-18-while-the-template-runs-on-node-22)
 - [ ] [H1: Saving the connection settings doesn't refresh the actions and variables, and leaves the old UDP socket running](#h1-saving-the-connection-settings-doesnt-refresh-the-actions-and-variables-and-leaves-the-old-udp-socket-running)
 - [ ] [H2: The Mute action's Toggle option never unmutes an EM receiver](#h2-the-mute-actions-toggle-option-never-unmutes-an-em-receiver)
 - [ ] [H3: Buttons can't show the device's state because the module has no feedbacks](#h3-buttons-cant-show-the-devices-state-because-the-module-has-no-feedbacks)
@@ -64,105 +63,7 @@
 
 ## 🔴 Critical
 
-### C1: Every connection stops at Bad Configuration "Port is not an integer" and never connects
-
-- **Source:** 🔎 protocol reviewer + QA reviewer + compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/api.ts:32-36`](https://github.com/bitfocus/companion-module-sennheiser-evolutionwireless/blob/4ab05292d9a8596054b5273588babcc687668a57/src/api.ts#L32-L36)
-
-**What goes wrong:** Anyone who adds a Sennheiser EW connection, enters a Target IP such as 192.168.33.86 and keeps the default Target Port 53212 sees the connection status "Bad Configuration: Port is not an integer". Every other port (1, 65535, …) gets the same status, and so does an older config with no port saved. No UDP socket is opened and no Push subscription is sent, so the variables (Name, Frequency, RF Mute, AF Peak, …) never fill in. Every action (Mute, Name, Frequency, Sensitivity, …) fails with "Cannot read properties of undefined (reading 'send')" in the log. As released, the module does nothing for anyone.
-
-**Why it happens:** Target Port is a text field, so the module receives the port as text (`'53212'`), and the code's own fallback for a missing port is the text `'53212'` too. `Number.isInteger()` doesn't convert text to a number, so `Number.isInteger('53212')` is `false`. The "not an integer" check therefore always matches, and the branch that opens the socket can never run. Commit `c238a42` ("Fix the port numeric checking logic") added the `!`. Before it, the check had the opposite mistake and happened to always pass.
-
-**Evidence:**
-
-```ts
-// src/api.ts:27-45
-	if (self.config.host && self.config.host !== '') {
-		if (self.config.port === undefined) {
-			self.config.port = '53212'
-		}
-
-		if (self.config.port === '') {
-			self.updateStatus(InstanceStatus.BadConfig, 'Port empty')
-		} else if (!Number.isInteger(self.config.port)) {
-			self.updateStatus(InstanceStatus.BadConfig, 'Port is not an integer')
-		} else if (Number(self.config.port) <= 0 || Number(self.config.port) > 65535) {
-			...
-		} else {
-			self.log('info', `[Sennheiser EW][${self.config.host}] Connecting via UDP Port ${self.config.port}`)
-
-			self._socket = self.createSharedUdpSocket('udp4', (msg, rinfo) => checkMessage(self, msg, rinfo))
-			self._socket.bind(self.config.port)
-```
-
-```ts
-// src/config.ts:3-5
-export interface ModuleConfig {
-	host: string
-	port: string
-// src/config.ts:27-34
-		{
-			type: 'textinput',
-			id: 'port',
-			label: 'Target Port',
-			width: 2,
-			default: '53212',
-			regex: Regex.PORT,
-		},
-```
-
-```ts
-// src/api.ts:73-78
-export function sendCommand(self: evolutionInstance, command: string): void {
-	...
-	self._socket.send(`${command}\r`, Number(self.config.port), self.config.host)
-}
-```
-
-```ts
-// node_modules/@companion-module/base/dist/module-api/input.d.ts:134-139 (base 1.11.0)
-export interface CompanionInputFieldTextInput extends CompanionInputFieldBase {
-    type: 'textinput';
-    /**
-     * The default text value
-     */
-    default?: string;
-```
-
-```text
-$ node -e "console.log(Number.isInteger('53212'), Number.isInteger('1'), Number.isInteger(undefined), Number.isInteger(53212))"
-false false false true
-```
-
-```diff
-// git show c238a42 -- src/api.ts
--		} else if (Number.isInteger(self.config.port)) {
-+		} else if (!Number.isInteger(self.config.port)) {
- 			self.updateStatus(InstanceStatus.BadConfig, 'Port is not an integer')
-```
-
-The QA reviewer also ran the built `dist/api.js` `initConnection()` with a mock instance. `'53212'`, `undefined`, `'1'` and `'65535'` all gave `bad_config: Port is not an integer`, `createSharedUdpSocket` was never called, and a later `sendCommand` threw `Cannot read properties of undefined (reading 'send')`. The bundle in the packaged `sennheiser-evolutionwireless-2.0.0.tgz` has the same check.
-
-**Confirm by:** open [`src/api.ts:34`](https://github.com/bitfocus/companion-module-sennheiser-evolutionwireless/blob/4ab05292d9a8596054b5273588babcc687668a57/src/api.ts#L34). `!Number.isInteger(self.config.port)` runs on the text value from the Target Port field at [`src/config.ts:27-34`](https://github.com/bitfocus/companion-module-sennheiser-evolutionwireless/blob/4ab05292d9a8596054b5273588babcc687668a57/src/config.ts#L27-L34), so the socket at [`src/api.ts:44-45`](https://github.com/bitfocus/companion-module-sennheiser-evolutionwireless/blob/4ab05292d9a8596054b5273588babcc687668a57/src/api.ts#L44-L45) is never created.
-
-**Fix:** convert the port to a number once, check that number, and pass it to `bind()` and `send()`. Then test a fresh connection with the default port before re-releasing. Fixing this makes [H1](#h1-saving-the-connection-settings-doesnt-refresh-the-actions-and-variables-and-leaves-the-old-udp-socket-running) and [M1](#m1-disabling-or-deleting-the-connection-doesnt-close-the-udp-socket-or-stop-the-60-second-push-timer) reachable, so close the old socket and stop the Push timer in the same change.
-
-```ts
-const port = Number(self.config.port ?? '53212')
-if (self.config.port === '') {
-	self.updateStatus(InstanceStatus.BadConfig, 'Port empty')
-} else if (!Number.isInteger(port)) {
-	self.updateStatus(InstanceStatus.BadConfig, 'Port is not an integer')
-} else if (port <= 0 || port > 65535) {
-	// ...
-} else {
-	// ...
-	self._socket.bind(port)
-}
-```
-
-### C2: Windows line endings can slip into commits: `.gitattributes` is missing
+### C1: Windows line endings can slip into commits: `.gitattributes` is missing
 
 - **Source:** 🤖 validate-template (FILE-MISSING)
 - **Classification:** 🆕 NEW
@@ -186,7 +87,7 @@ Found: file missing
 * text=auto eol=lf
 ```
 
-### C3: The packaged module can be committed by accident: `.gitignore` is missing template entries
+### C2: The packaged module can be committed by accident: `.gitignore` is missing template entries
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -205,7 +106,7 @@ Found instead: /pkg.tgz, .yarn/install-state.gz
 
 **Fix:** copy the template's `.gitignore`: replace `/pkg.tgz` with `/*.tgz` and `.yarn/install-state.gz` with `/.yarn`, and add `/.vscode`.
 
-### C4: Lint and formatting don't run before each commit: `.husky/pre-commit` is missing
+### C3: Lint and formatting don't run before each commit: `.husky/pre-commit` is missing
 
 - **Source:** 🤖 validate-template (FILE-MISSING)
 - **Classification:** 🆕 NEW
@@ -229,13 +130,13 @@ Found: file missing
 lint-staged
 ```
 
-### C5: Installs don't use the template's safe Yarn settings: `.yarnrc.yml` is missing
+### C4: Installs don't use the template's safe Yarn settings: `.yarnrc.yml` is missing
 
 - **Source:** 🤖 validate-template (FILE-MISSING)
 - **Classification:** 🆕 NEW
 - **File:** `.yarnrc.yml` (missing)
 
-**What goes wrong:** Once the module moves to Yarn 4 ([C7](#c7-builds-dont-pin-a-yarn-version-packagemanager-is-missing-from-packagejson)), installs without this file use Yarn's defaults: Plug'n'Play instead of the `node_modules` folder the template uses, dependency install scripts allowed to run, and newly published package versions installed straight away, with no 3-day wait that guards against a compromised release.
+**What goes wrong:** Once the module moves to Yarn 4 ([C6](#c6-builds-dont-pin-a-yarn-version-packagemanager-is-missing-from-packagejson)), installs without this file use Yarn's defaults: Plug'n'Play instead of the `node_modules` folder the template uses, dependency install scripts allowed to run, and newly published package versions installed straight away, with no 3-day wait that guards against a compromised release.
 
 **Why it happens:** The template's `.yarnrc.yml` sets those four options. The module has no `.yarnrc.yml`.
 
@@ -252,7 +153,7 @@ npmPreapprovedPackages: ["@companion-module/*"]
 
 **Fix:** copy `.yarnrc.yml` from the template.
 
-### C6: The required Node and Yarn versions aren't declared: `engines` is missing from `package.json`
+### C5: The required Node and Yarn versions aren't declared: `engines` is missing from `package.json`
 
 - **Source:** 🤖 validate-template (PKG-FIELD)
 - **Classification:** 🆕 NEW
@@ -272,7 +173,7 @@ npmPreapprovedPackages: ["@companion-module/*"]
 
 **Fix:** add the template's `engines` field to `package.json`.
 
-### C7: Builds don't pin a Yarn version: `packageManager` is missing from `package.json`
+### C6: Builds don't pin a Yarn version: `packageManager` is missing from `package.json`
 
 - **Source:** 🤖 validate-template (PKG-FIELD)
 - **Classification:** 🆕 NEW
@@ -290,9 +191,9 @@ npmPreapprovedPackages: ["@companion-module/*"]
 // Found: no "packageManager" field; yarn.lock starts with "# yarn lockfile v1"
 ```
 
-**Fix:** add `"packageManager": "yarn@4.12.0"`, then run `yarn install` with Yarn 4 (together with the `.yarnrc.yml` from [C5](#c5-installs-dont-use-the-templates-safe-yarn-settings-yarnrcyml-is-missing)) and commit the regenerated `yarn.lock`.
+**Fix:** add `"packageManager": "yarn@4.12.0"`, then run `yarn install` with Yarn 4 (together with the `.yarnrc.yml` from [C4](#c4-installs-dont-use-the-templates-safe-yarn-settings-yarnrcyml-is-missing)) and commit the regenerated `yarn.lock`.
 
-### C8: Node type definitions aren't pinned to Node 22: the `@types/node` devDependency is missing
+### C7: Node type definitions aren't pinned to Node 22: the `@types/node` devDependency is missing
 
 - **Source:** 🤖 validate-template (PKG-DEVDEP)
 - **Classification:** 🆕 NEW
@@ -312,7 +213,7 @@ npmPreapprovedPackages: ["@companion-module/*"]
 
 **Fix:** add `"@types/node": "^22.19.3"` to `devDependencies`.
 
-### C9: The module still targets Node 18, while the template runs on Node 22
+### C8: The module still targets Node 18, while the template runs on Node 22
 
 - **Source:** 🤖 validate-template (NODE-VERSION)
 - **Classification:** 🆕 NEW
@@ -338,7 +239,7 @@ tsconfig.build.json:2                   extends "@companion-module/tools/tsconfi
 - [ ] [`tsconfig.build.json`](https://github.com/bitfocus/companion-module-sennheiser-evolutionwireless/blob/4ab05292d9a8596054b5273588babcc687668a57/tsconfig.build.json#L2): `"extends": "@companion-module/tools/tsconfig/node22/recommended"`
 - [ ] [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-sennheiser-evolutionwireless/blob/4ab05292d9a8596054b5273588babcc687668a57/.github/workflows/node.yaml#L21-L25): `- name: Use Node.js 22.x` (line 21) and `node-version: 22.x` (line 25), and in the commented-out `test:` job too (lines 55 and 58)
 
-`engines.node` and `@types/node` are missing entirely; they're covered by [C6](#c6-the-required-node-and-yarn-versions-arent-declared-engines-is-missing-from-packagejson) and [C8](#c8-node-type-definitions-arent-pinned-to-node-22-the-typesnode-devdependency-is-missing).
+`engines.node` and `@types/node` are missing entirely; they're covered by [C5](#c5-the-required-node-and-yarn-versions-arent-declared-engines-is-missing-from-packagejson) and [C7](#c7-node-type-definitions-arent-pinned-to-node-22-the-typesnode-devdependency-is-missing).
 
 ## 🟠 High
 
@@ -351,7 +252,7 @@ tsconfig.build.json:2                   extends "@companion-module/tools/tsconfi
 **What goes wrong:** Two things go wrong when a user changes a connection setting and clicks Save:
 
 - Changing Device Type from "SR (Transmitter, IEM)" to "EM (Receiver, Mic)", or back, doesn't change the actions or variables. An EM user keeps seeing the SR-only actions (Nudge Sensitivity, Sensitivity, Equalizer, Mode) and SR variables, and the EM actions (Nudge AfOut, Level) don't appear until Companion restarts or the connection is disabled and enabled again. This happens today.
-- Every Save opens another UDP socket next to the old one, and the old one keeps receiving. After 3 saves, each packet from the unit is processed 4 times (repeated variable updates, and repeated log lines with Verbose logging on). If the new settings are invalid (Target IP cleared, a bad port), the old socket stays open and the old 60-second Push timer keeps running. [C1](#c1-every-connection-stops-at-bad-configuration-port-is-not-an-integer-and-never-connects) hides this part today, because no socket is ever opened, but it goes live as soon as C1 is fixed.
+- Every Save opens another UDP socket next to the old one, and the old one keeps receiving. After 3 saves, each packet from the unit is processed 4 times (repeated variable updates, and repeated log lines with Verbose logging on). If the new settings are invalid (Target IP cleared, a bad port), the old socket stays open and the old 60-second Push timer keeps running.
 
 **Why it happens:** `configUpdated()` stores the new settings and calls `initConnection()` again, and nothing else. It doesn't rebuild the action and variable lists, which `init()` built from the Device Type in place at start-up. `initConnection()` then creates a new socket over the old one without closing it first. The base package keeps every joined socket in its list until `close()` is called, so the old socket keeps receiving packets and running its message handler. The old Push timer is only cleared when a new socket reaches "listening", so with invalid new settings it's never cleared.
 
@@ -565,7 +466,7 @@ src/index.ts:6, 33, 58, 59
 
 **What goes wrong:** The module's CI workflow no longer matches the template's. Updates to the template's workflow can't be copied over cleanly, and anyone troubleshooting a CI run has to work out which differences are deliberate.
 
-**Why it happens:** Several steps were changed by hand. The Node version lines are covered by [C9](#c9-the-module-still-targets-node-18-while-the-template-runs-on-node-22) and left out here.
+**Why it happens:** Several steps were changed by hand. The Node version lines are covered by [C8](#c8-the-module-still-targets-node-18-while-the-template-runs-on-node-22) and left out here.
 
 **Evidence:**
 
@@ -576,7 +477,7 @@ src/index.ts:6, 33, 58, 59
 
 **Confirm by:** diff the file against `companion-module-template-ts-v1/.github/workflows/node.yaml` @ `42609d8`.
 
-**Fix:** copy the template's `node.yaml`, with Node 22 as in C9. The commented-out `test:` job differs from the template too, but that's comment-only and not part of this finding.
+**Fix:** copy the template's `node.yaml`, with Node 22 as in [C8](#c8-the-module-still-targets-node-18-while-the-template-runs-on-node-22). The commented-out `test:` job differs from the template too, but that's comment-only and not part of this finding.
 
 ## 🟡 Medium
 
@@ -586,7 +487,7 @@ src/index.ts:6, 33, 58, 59
 - **Classification:** 🆕 NEW
 - **File:** [`src/index.ts:39-41`](https://github.com/bitfocus/companion-module-sennheiser-evolutionwireless/blob/4ab05292d9a8596054b5273588babcc687668a57/src/index.ts#L39-L41)
 
-**What goes wrong:** When a user disables or deletes the connection, the module doesn't leave the shared UDP port or stop the 60-second timer that re-sends `Push 60 …` to the unit. It relies on Companion stopping its process afterwards. [C1](#c1-every-connection-stops-at-bad-configuration-port-is-not-an-integer-and-never-connects) hides this today, because no socket or timer is ever created, but it becomes real as soon as C1 is fixed.
+**What goes wrong:** When a user disables or deletes the connection, the module doesn't leave the shared UDP port or stop the 60-second timer that re-sends `Push 60 …` to the unit. It relies on Companion stopping its process afterwards.
 
 **Why it happens:** `destroy()` is where a module releases what it started. This one only writes a debug log: there is no `clearInterval` for the Push timer and no `close()` for the socket.
 
@@ -604,7 +505,7 @@ src/index.ts:6, 33, 58, 59
 - **Classification:** 🆕 NEW
 - **File:** [`src/api.ts:73-79`](https://github.com/bitfocus/companion-module-sennheiser-evolutionwireless/blob/4ab05292d9a8596054b5273588babcc687668a57/src/api.ts#L73-L79)
 
-**What goes wrong:** Pressing a button with any of the module's actions (Mute, Name, Frequency, Nudge frequency, …) while the connection is in Bad Configuration logs the raw error "Cannot read properties of undefined (reading 'send')" instead of a clear "not connected" message. That happens with an empty Target IP or a bad port, and at v2.0.0 always, because of C1. Pressing while the socket is still opening logs "Socket is not open".
+**What goes wrong:** Pressing a button with any of the module's actions (Mute, Name, Frequency, Nudge frequency, …) while the connection is in Bad Configuration logs the raw error "Cannot read properties of undefined (reading 'send')" instead of a clear "not connected" message. That happens with an empty Target IP or a bad port. Pressing while the socket is still opening logs "Socket is not open".
 
 **Why it happens:** `sendCommand()` uses the socket without checking that one exists and has finished opening. The socket field is untyped (`any`), so TypeScript can't flag the missing case.
 
@@ -628,7 +529,7 @@ src/index.ts:6, 33, 58, 59
 - **Classification:** 🆕 NEW
 - **File:** [`src/api.ts:11-14`](https://github.com/bitfocus/companion-module-sennheiser-evolutionwireless/blob/4ab05292d9a8596054b5273588babcc687668a57/src/api.ts#L11-L14)
 
-**What goes wrong:** Take a rack of 4 IEM transmitters, each with its own connection, all on Target Port 53212 with Update Rate Fast (200 ms). Every connection receives the other units' status pushes and logs an info line for each one, such as "Ignoring UDP message from unknown source: 192.168.33.87:53212". That's about 15 lines a second per connection, about 60 a second in all, even with Verbose logging off, and it buries useful log entries. (C1 hides this today, because no socket is opened.)
+**What goes wrong:** Take a rack of 4 IEM transmitters, each with its own connection, all on Target Port 53212 with Update Rate Fast (200 ms). Every connection receives the other units' status pushes and logs an info line for each one, such as "Ignoring UDP message from unknown source: 192.168.33.87:53212". That's about 15 lines a second per connection, about 60 a second in all, even with Verbose logging off, and it buries useful log entries.
 
 **Why it happens:** Packets from other units are expected on a shared port, and the module filters them out correctly. But it logs every ignored packet at `info` level, whatever the Verbose logging setting.
 
@@ -646,7 +547,7 @@ src/index.ts:6, 33, 58, 59
 
 **Why it happens:** `public _socket: any` and `public _deviceConfig: any` turn off type checking for everything that uses them. The base package declares `bind(port: number, ...)`.
 
-**Fix:** type `_socket` as `SharedUdpSocket | undefined` (exported by `@companion-module/base`), give `_deviceConfig` a small interface, pass the numeric port from C1's fix to `bind()`, and fix whatever the compiler then reports.
+**Fix:** type `_socket` as `SharedUdpSocket | undefined` (exported by `@companion-module/base`), give `_deviceConfig` a small interface, pass the port to `bind()` as a number, and fix whatever the compiler then reports.
 
 ### L2: Status and variable updates are sent to Companion on every packet, even when nothing changed
 
