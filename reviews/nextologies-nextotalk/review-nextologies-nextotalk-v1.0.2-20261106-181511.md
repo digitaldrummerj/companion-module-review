@@ -29,13 +29,13 @@
 ### Blocking
 
 - [ ] [H1: Module memory grows every time a new key image is drawn and is never given back](#h1-module-memory-grows-every-time-a-new-key-image-is-drawn-and-is-never-given-back)
+- [ ] [H2: yarn test fails on a fresh checkout because a generated file only exists after a build](#h2-yarn-test-fails-on-a-fresh-checkout-because-a-generated-file-only-exists-after-a-build)
 
 ### Non-blocking
 
 - [ ] [M1: Renamed rooms and bare meeting IDs are drawn on one line and cut off at the button edges](#m1-renamed-rooms-and-bare-meeting-ids-are-drawn-on-one-line-and-cut-off-at-the-button-edges)
 - [ ] [L1: Help page still says the default WebSocket port is 7005, but new connections listen on 7006](#l1-help-page-still-says-the-default-websocket-port-is-7005-but-new-connections-listen-on-7006)
 - [ ] [L2: A room mapped without a mic state shows red and muted instead of the new neutral look](#l2-a-room-mapped-without-a-mic-state-shows-red-and-muted-instead-of-the-new-neutral-look)
-- [ ] [L3: yarn test fails on a fresh checkout because a generated file only exists after a build](#l3-yarn-test-fails-on-a-fresh-checkout-because-a-generated-file-only-exists-after-a-build)
 
 ### Notes
 
@@ -137,6 +137,30 @@ try {
 
 Optionally, make the cache least-recently-used (on a hit, delete the key and set it again) so the images in use every day aren't the ones evicted and redrawn.
 
+### H2: yarn test fails on a fresh checkout because a generated file only exists after a build
+
+- **Source:** 🔎 compliance reviewer
+- **Classification:** 🆕 NEW
+- **File:** [`package.json:16`](https://github.com/bitfocus/companion-module-nextologies-nextotalk/blob/e3fc882f9033b73ceecec33425612108de144b14/package.json#L16), [`src/key-art.ts:2`](https://github.com/bitfocus/companion-module-nextologies-nextotalk/blob/e3fc882f9033b73ceecec33425612108de144b14/src/key-art.ts#L2)
+
+**What goes wrong:** The module's own test command doesn't work from a clean checkout. A developer or CI job that clones the repo and runs `yarn install && yarn test` (for example the commented-out test job in `.github/workflows/node.yaml`, once enabled) gets a failed suite with 0 tests run: `FAIL src/__tests__/main.test.ts - Error: Failed to load url ./generated/render-assets.js (resolved id: ./generated/render-assets.js) in .../src/key-art.ts. Does the file exist?`. After a build, the same 2 tests pass.
+
+**Why it happens:** `src/key-art.ts` imports `./generated/render-assets.js`. That file is gitignored (`/src/generated`) and is written only by `scripts/gen-render-assets.mjs`, which the `build` and `dev` scripts run but `test` (`vitest run`) does not. The test imports `main.js`, which pulls in the feedbacks and then `key-art.ts`, so loading fails before any test runs.
+
+**Evidence:**
+
+```text
+package.json:16        "test": "vitest run"
+package.json:10        "build": "rimraf dist && run gen:render-assets && run build:main"
+src/key-art.ts:2       import { RESVG_WASM_BASE64, ROOM_NAME_FONT_BASE64 } from './generated/render-assets.js'
+.gitignore:10          /src/generated
+git ls-tree e3fc882    src/generated is not in the repository (only scripts/gen-render-assets.mjs)
+```
+
+**Confirm by:** clone the tag, run `yarn install && yarn test` without building first, and see the suite fail to load `./generated/render-assets.js`. Then compare [`package.json:16`](https://github.com/bitfocus/companion-module-nextologies-nextotalk/blob/e3fc882f9033b73ceecec33425612108de144b14/package.json#L16) (`test`) with [`package.json:10`](https://github.com/bitfocus/companion-module-nextologies-nextotalk/blob/e3fc882f9033b73ceecec33425612108de144b14/package.json#L10) (`build`, which runs `gen:render-assets`).
+
+**Fix:** generate the assets before running vitest, for example `"test": "run gen:render-assets && vitest run"` (Yarn 4 does not run `pretest` hooks, so the step has to be in the script itself), or run the generator from a vitest `globalSetup`.
+
 ## 🟡 Medium
 
 ### M1: Renamed rooms and bare meeting IDs are drawn on one line and cut off at the button edges
@@ -189,18 +213,6 @@ function keySvg(artPng64: string, name: string, level: number): string {
 **Why it happens:** The new "has mic status" check is true as soon as the module has stored any mute value for the meeting. The mapping handler stores a default of "muted" when the message has no `isMuted`, so the check passes and the feedback takes the muted branch. The new comment in `src/state.ts` says that mapped rooms without a mic status must render neutral, which this path contradicts.
 
 **Fix:** in the `map_meeting_room_to_key` handler, store the mic status only when `isMuted` is present (busy and speaking can still be updated on their own), so the meeting has no stored mute value and the neutral look applies.
-
-### L3: yarn test fails on a fresh checkout because a generated file only exists after a build
-
-- **Source:** 🔎 compliance reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`package.json:16`](https://github.com/bitfocus/companion-module-nextologies-nextotalk/blob/e3fc882f9033b73ceecec33425612108de144b14/package.json#L16), [`src/key-art.ts:2`](https://github.com/bitfocus/companion-module-nextologies-nextotalk/blob/e3fc882f9033b73ceecec33425612108de144b14/src/key-art.ts#L2)
-
-**What goes wrong:** No effect on Companion users. A developer or CI job that clones the repo and runs `yarn install && yarn test` (for example the commented-out test job in `.github/workflows/node.yaml`, once enabled) gets a failed suite with 0 tests run: `FAIL src/__tests__/main.test.ts - Error: Failed to load url ./generated/render-assets.js (resolved id: ./generated/render-assets.js) in .../src/key-art.ts. Does the file exist?`. After a build, the same 2 tests pass.
-
-**Why it happens:** `src/key-art.ts` imports `./generated/render-assets.js`. That file is gitignored (`/src/generated`) and is written only by `scripts/gen-render-assets.mjs`, which the `build` and `dev` scripts run but `test` (`vitest run`) does not. The test imports `main.js`, which pulls in the feedbacks and then `key-art.ts`, so loading fails before any test runs.
-
-**Fix:** generate the assets before running vitest, for example `"test": "run gen:render-assets && vitest run"` (Yarn 4 does not run `pretest` hooks, so the step has to be in the script itself), or run the generator from a vitest `globalSetup`.
 
 ## 📝 Additional Notes
 
