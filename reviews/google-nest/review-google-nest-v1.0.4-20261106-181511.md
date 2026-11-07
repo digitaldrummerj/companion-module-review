@@ -26,7 +26,7 @@
 
 ### Blocking
 
-- [ ] [C1: The .gitignore file no longer matches the template and re-allows committing parts of the .yarn folder](#c1-the-gitignore-file-no-longer-matches-the-template-and-re-allows-committing-parts-of-the-yarn-folder)
+- [ ] [H1: CI builds and lints the module on Node 26, but Companion runs it on Node 22](#h1-ci-builds-and-lints-the-module-on-node-26-but-companion-runs-it-on-node-22)
 
 ### Non-blocking
 
@@ -51,66 +51,26 @@
 
 - [📝 Additional Notes](#-additional-notes)
 
-## 🔴 Critical
+## 🟠 High
 
-### C1: The .gitignore file no longer matches the template and re-allows committing parts of the .yarn folder
+### H1: CI builds and lints the module on Node 26, but Companion runs it on Node 22
 
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW (introduced after the v1.0.1 review)
-- **File:** [`.gitignore:1-52`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/.gitignore#L1-L52)
+- **Source:** 🤖 validate-template (NODE-VERSION)
+- **Classification:** 🆕 NEW (still open from v1.0.1 H1)
+- **File:** [`.github/workflows/node.yaml:21-25`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/.github/workflows/node.yaml#L21-L25), [`.github/workflows/node.yaml:62-65`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/.github/workflows/node.yaml#L62-L65)
 
-**What goes wrong:** Since the v1.0.1 review, the `.gitignore` was rewritten (commit `0137018` "Enhance .gitignore with more ignored patterns"). It no longer contains the template's entries `/pkg`, `/*.tgz`, `/dist`, `/.yarn` and `/.vscode`, and it adds exceptions that let parts of the `.yarn` folder be committed again (`.yarn/patches`, `.yarn/plugins`, `.yarn/releases`, `.yarn/sdks`, `.yarn/versions`). The template ignores the whole `.yarn` folder. A developer who runs `git add .` after Yarn has written, for example, a release binary or a plugin into `.yarn/` would commit it to the module repository, and the file no longer matches the template that Bitfocus compares against when troubleshooting a module.
+**What goes wrong:** The CI check builds and lints the module on Node 26.x, but Companion runs it on Node 22 (the `node22` runtime in [`companion/manifest.json:19`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/companion/manifest.json#L19)). A green CI run therefore doesn't prove the module works on the Node version it ships on. This release's "rollback to node22" commits already brought the rest of the module back to Node 22 (`engines.node` `^22.20` in [`package.json:23`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/package.json#L23) and `@types/node` `^22.20.4` in [`package.json:31`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/package.json#L31)); only the workflow still says 26.x.
 
-**Why it happens:** The template's 8-line `.gitignore` was replaced by a general-purpose Node / Yarn Berry ignore file instead of being extended. That file uses its own patterns (`dist/`, `pkg/`, `*.tgz`, `.vscode/`, `.yarn/*` plus `!` exceptions) in place of the template's root-anchored ones.
+**Why it happens:** The workflow's Node version was changed from the template's 22.x in both the active lint job and the commented-out test job, and the rollback didn't include this file.
 
-**Evidence:** validator message (verbatim): `Missing template .gitignore entries: /pkg, /*.tgz, /dist, /.yarn, /.vscode`
+**Evidence:** validator message (verbatim): `The API 2.0 template runs on Node 22; update every place still on another version: .github/workflows/node.yaml line 21 step name 'Use Node.js 26.x' -> 'Use Node.js 22.x'; .github/workflows/node.yaml line 25 node-version 26.x -> 22.x; .github/workflows/node.yaml line 62 step name 'Use Node.js 26.x' -> 'Use Node.js 22.x' (commented out); .github/workflows/node.yaml line 65 node-version 26.x -> 22.x (commented out)`
 
-```text
-# .gitignore (module) lines 5-17 and 44-45
-# Yarn (Berry)
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
+**Confirm by:** `grep -n '26.x' .github/workflows/node.yaml` prints nothing once fixed.
 
-# Build artifacts
-dist/
-build/
-pkg/
-*.tgz
-...
-# IDE/editor
-.vscode/
-```
+**Fix:** update every place to Node 22, as the template does:
 
-```text
-# .gitignore (companion-module-template-ts-v2.0.4)
-node_modules/
-package-lock.json
-/pkg
-/*.tgz
-/dist
-DEBUG-*
-/.yarn
-/.vscode
-```
-
-**Confirm by:** in the module clone, `for e in /pkg '/*.tgz' /dist /.yarn /.vscode; do grep -qxF "$e" .gitignore || echo "missing $e"; done` prints nothing once fixed. Today it prints all five.
-
-**Fix:** start from the template's `.gitignore` and remove the `!.yarn/...` exceptions, which conflict with the template's `/.yarn`. Extra module entries (logs, `.env`, caches, OS files) may stay below the template's lines.
-
-```text
-node_modules/
-package-lock.json
-/pkg
-/*.tgz
-/dist
-DEBUG-*
-/.yarn
-/.vscode
-```
+- [ ] `.github/workflows/node.yaml`: `- name: Use Node.js 22.x` (line 21) and `node-version: 22.x` (line 25)
+- [ ] `.github/workflows/node.yaml`: commented-out `test:` job, `#     - name: Use Node.js 22.x` (line 62) and `#         node-version: 22.x` (line 65)
 
 ## 🟢 Low
 
@@ -391,14 +351,14 @@ isVisibleExpression: '$(options:fanMode) == "ON"',
 ## 📝 Additional Notes
 
 - First release: the module has never been published, so there is no published version to diff against. The whole module at v1.0.4 was reviewed, and every finding is classified 🆕 NEW.
-- Follow-up to the [v1.0.1 review](review-google-nest-v1.0.1-20261030-090507.md): every finding from that review is fixed, except H1 (the CI workflow), which is no longer reported. [C1](#c1-the-gitignore-file-no-longer-matches-the-template-and-re-allows-committing-parts-of-the-yarn-folder) was introduced after that review. The table below lists each prior finding.
+- Follow-up to the [v1.0.1 review](review-google-nest-v1.0.1-20261030-090507.md): every finding from that review is fixed except H1 (the CI workflow), whose Node 26 part is still open as [H1](#h1-ci-builds-and-lints-the-module-on-node-26-but-companion-runs-it-on-node-22). The table below lists each prior finding.
 - Build and lint passed (`yarn install --immutable`, `yarn package`, `yarn lint`).
 
 ### Prior findings from the v1.0.1 review
 
 | v1.0.1 | Finding | Status in v1.0.4 |
 | --- | --- | --- |
-| H1 | CI workflow differs from the template and tests on Node 26 | ➖ No longer reported |
+| H1 | CI workflow differs from the template and tests on Node 26 | ❌ Still open: now [H1](#h1-ci-builds-and-lints-the-module-on-node-26-but-companion-runs-it-on-node-22) (Node 26.x) |
 | H2 | Every config save adds another poll timer | ✅ Fixed: starting the timer stops the old one first ([`src/main.ts:116-121`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/main.ts#L116-L121)), and a restart stops polling before reconnecting ([`src/main.ts:98-99`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/main.ts#L98-L99)) |
 | H3 | Feedbacks never update after the first draw | ✅ Fixed: the feedbacks are re-checked after every poll ([`src/main.ts:205`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/main.ts#L205)) and after every successful command ([`src/actionsThermostat.ts:64`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/actionsThermostat.ts#L64)) |
 | H4 | Device dropdowns stay empty after the credentials are entered | ✅ Fixed: the definitions are registered in `init()` ([`src/main.ts:45`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/main.ts#L45)) and rebuilt whenever the device list changes ([`src/main.ts:197-202`](https://github.com/bitfocus/companion-module-google-nest/blob/2864faeb318e5f4c598c089a784f01feb3e2cf59/src/main.ts#L197-L202)) |
