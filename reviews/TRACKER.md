@@ -249,7 +249,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ⬜ | liveplay-liveplay | v1.1.0 | 2026-11-06 | [review](liveplay-liveplay/review-liveplay-liveplay-v1.1.0-20261106-181511.md) |
 | ✅ | outline-et | v1.0.1 | 2026-11-06 | [review](outline-et/review-outline-et-v1.0.1-20261106-181511.md) |
 | ⬜ | cuetime-stagedisplay | v0.1.2 | 2026-11-06 | [review](cuetime-stagedisplay/review-cuetime-stagedisplay-v0.1.2-20261106-181511.md) |
-| ⬜ | globalaudiosolutions-rita | v1.0.7 | 2026-11-06 | [review](globalaudiosolutions-rita/review-globalaudiosolutions-rita-v1.0.7-20261106-181511.md) |
+| ✅ | globalaudiosolutions-rita | v1.0.7 | 2026-11-06 | [review](globalaudiosolutions-rita/review-globalaudiosolutions-rita-v1.0.7-20261106-181511.md) |
 | ⬜ | eventspro-toolspro-timer | v1.2.2 | 2026-11-06 | [review](eventspro-toolspro-timer/review-eventspro-toolspro-timer-v1.2.2-20261106-181511.md) |
 | ⬜ | fora-mfr | v2.0.0 | 2026-11-06 | [review](fora-mfr/review-fora-mfr-v2.0.0-20261106-181511.md) |
 | ⬜ | middleman-breaktime | v2.0.1 | 2026-11-06 | [review](middleman-breaktime/review-middleman-breaktime-v2.0.1-20261106-181511.md) |
