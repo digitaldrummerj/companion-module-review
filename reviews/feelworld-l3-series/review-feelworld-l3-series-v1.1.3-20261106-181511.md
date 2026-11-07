@@ -18,23 +18,17 @@ This is a follow-up to the v1.1.0 review. The module has still never been publis
 - **Partly fixed:** L1. The startup sync timers are now cleared on teardown; the short action timers are not, see [L3](#l3-a-few-short-action-timers-keep-running-after-a-settings-save-or-when-the-connection-is-disabled).
 - **Still open:** M7 (now [M1](#m1-action-and-feedback-schemas-are-still-untyped-so-option-ids-and-values-are-not-type-checked)), L3 (now [L9](#l9-numbered-copies-of-actions-instead-of-one-action-with-an-option), optional), L4 (now [L6](#l6-source-and-stream-dropdown-values-are-0-based-so-expression-mode-entries-pick-the-wrong-input)), L5 (now [L7](#l7-long-running-toggle-actions-ignore-abort-actions)), N1 and N2 (still [N1](#n1-duplicate-send-code-and-untyped-json-report-handling) and [N2](#n2-volume-scene-recording-and-stream-state-are-not-available-as-variables)).
 
-The one blocking finding, [H1](#h1-current-programpreview-source-variables-show-0-4-not-the-documented-1-5), was already present in v1.1.0; the earlier review missed it.
-
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | The switcher numbers its inputs from 0 (Input 1 = 0 … Media = 4) in both the `0x20 0x0d`/`0x0e` replies and the `pgmpvwInfo` JSON report, as the module's comments say ("confirmed by testing"). If it numbers them from 1, the variables are right and the Source Indicator feedbacks and presets are off by one instead | The comments at [`src/feedbacks.ts:15`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/feedbacks.ts#L15), [`src/main.ts:383`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/main.ts#L383) and [`src/main.ts:537-538`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/main.ts#L537-L538), and the preset mapping at [`src/presets.ts:353-354`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/presets.ts#L353-L354); not checked on hardware | [H1](#h1-current-programpreview-source-variables-show-0-4-not-the-documented-1-5), [L6](#l6-source-and-stream-dropdown-values-are-0-based-so-expression-mode-entries-pick-the-wrong-input) |
+| A1 | The switcher numbers its inputs from 0 (Input 1 = 0 … Media = 4) in both the `0x20 0x0d`/`0x0e` replies and the `pgmpvwInfo` JSON report, as the module's comments say ("confirmed by testing"). If it numbers them from 1, the variables are right and the Source Indicator feedbacks and presets are off by one instead | The comments at [`src/feedbacks.ts:15`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/feedbacks.ts#L15), [`src/main.ts:383`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/main.ts#L383) and [`src/main.ts:537-538`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/main.ts#L537-L538), and the preset mapping at [`src/presets.ts:353-354`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/presets.ts#L353-L354); not checked on hardware | [L6](#l6-source-and-stream-dropdown-values-are-0-based-so-expression-mode-entries-pick-the-wrong-input) |
 | A2 | When a button has several actions, Companion starts them concurrently by default, so two "Stream N Toggle" actions on one button wait for the device's confirmation at the same time | Companion's default action-group behaviour (concurrent unless the user picks sequential or adds waits); not determinable from the module or the base package | [L2](#l2-starting-one-stream-can-mark-a-different-stream-as-live-and-hide-its-address-empty-warning) |
 | A3 | The operating system reports UDP send failures (for example `EHOSTUNREACH` / `ENETUNREACH` when the route to the switcher is gone) through the `dgram` send callback | General Node `dgram` behaviour; the module only shows that callback errors are logged | [L4](#l4-the-connection-stays-green-when-commands-cant-be-sent) |
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: Current Program/Preview Source variables show 0-4, not the documented 1-5](#h1-current-programpreview-source-variables-show-0-4-not-the-documented-1-5)
 
 ### Non-blocking
 
@@ -56,107 +50,6 @@ The one blocking finding, [H1](#h1-current-programpreview-source-variables-show-
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: Current Program/Preview Source variables show 0-4, not the documented 1-5
-
-- **Source:** 🔎 QA reviewer + compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/main.ts:705-711`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/main.ts#L705-L711)
-
-**What goes wrong:** A user puts the "Current Program Source" variable (`$(feelworld-l3-series:current_pgm)`) on a button as a tally label, or builds a trigger such as `$(feelworld-l3-series:current_pgm) == 1` to light the camera-1 tally. HELP and README both say the variable holds the source number 1-5, which matches the action names "PGM Source 1" to "PGM Source 5". The variable actually shows the device's 0-based channel: with Input 1 on Program it shows 0, with Input 3 it shows 2, and with Media it shows 4. The button label is off by one, and the `== 1` trigger fires when Input 2 is live, not Input 1. The "Current Preview Source" variable (`current_pvw`) has the same problem. This was already the case in v1.1.0.
-
-**Why it happens:** The switcher reports its channels counted from 0 (Input 1 = 0 … Media = 4); the module's own comments and the feedback dropdown say so. Every place that stores the current Program or Preview source keeps that raw channel number, and the code that publishes the variables passes it on unchanged, without adding 1. HELP, README, the action names and the presets (which subtract 1 to get the device channel) all count from 1.
-
-**Evidence:**
-
-```ts
-// src/main.ts:705-711
-	private updateVariableValues(): void {
-		// -1 = not yet known; hide the variables until the first state sync
-		this.setVariableValues({
-			current_pgm: this.currentPgm >= 0 ? this.currentPgm : undefined,
-			current_pvw: this.currentPvw >= 0 ? this.currentPvw : undefined,
-		})
-	}
-```
-
-```ts
-// src/main.ts:383,394-402
-	 * Confirmed: the id==1 entry in pgmpvwInfo is the main channel; channel numbers are 0-based (HDMI1-4=0-3, MEDIA=4).
-...
-				return typeof main?.channel === 'number' ? main.channel : null
-			}
-			const pgm = pick(pgmpvw.pgmInfo)
-			const pvw = pick(pgmpvw.pvwInfo)
-			if (pgm !== null) this.currentPgm = pgm
-			if (pvw !== null) this.currentPvw = pvw
-```
-
-```ts
-// src/main.ts:537-543, 551-553
-		// Source read reply: CMD=0x20, DAT1=0x0d PGM / 0x0e PVW, DAT2=source index 0-4
-		// (HDMI1-4=0-3, MEDIA=4, 0-based matching panel keys 1-5; same numbering as the pgmpvwInfo JSON channel)
-		if (cmd === 0x20 && (dat1 === 0x0d || dat1 === 0x0e)) {
-			if (dat1 === 0x0d) {
-				this.currentPgm = dat2
-			} else {
-				this.currentPvw = dat2
-...
-		if (cmd === 0x54 && dat1 === 0x0a) {
-			this.currentPgm = dat2
-			this.currentPvw = dat3
-```
-
-```ts
-// src/feedbacks.ts:15-27
-// Device channels are 0-based: HDMI1-4 = 0-3, MEDIA = 4 (confirmed by testing)
-const SOURCE_OPTIONS: SomeCompanionFeedbackInputField[] = [
-	{
-		type: 'dropdown',
-		label: 'Source',
-		id: 'source',
-		default: '0',
-		choices: [
-			{ id: '0', label: 'Input 1' },
-			{ id: '1', label: 'Input 2' },
-			{ id: '2', label: 'Input 3' },
-			{ id: '3', label: 'Input 4' },
-			{ id: '4', label: 'Media' },
-```
-
-```ts
-// src/presets.ts:354
-						options: { source: String(Number(source[2]) - 1) },
-```
-
-```markdown
-// companion/HELP.md:98-101
-## Variables
-
-- **current_pgm**: Current Program source (1-5)
-- **current_pvw**: Current Preview source (1-5)
-```
-
-```markdown
-// README.md:228-231
-| Variable ID   | Description                     |
-| ------------- | ------------------------------- |
-| `current_pgm` | Current PGM source number (1–5) |
-| `current_pvw` | Current PVW source number (1–5) |
-```
-
-**Confirm by:** open [`src/main.ts:705-711`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/main.ts#L705-L711): `current_pgm` and `current_pvw` are published as the raw 0-based channel, with no `+ 1`. Compare with [`companion/HELP.md:100-101`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/companion/HELP.md#L100-L101) and [`README.md:230-231`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/README.md#L230-L231) ("1-5"), and with [`src/presets.ts:354`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/presets.ts#L354), where preset N maps to feedback source N-1.
-
-**Fix:** publish the source number counted from 1, so Input 1 shows 1 and Media shows 5.
-
-```ts
-current_pgm: this.currentPgm >= 0 ? this.currentPgm + 1 : undefined,
-current_pvw: this.currentPvw >= 0 ? this.currentPvw + 1 : undefined,
-```
-
-Optionally name the variables "Current Program Source (1-5)" / "Current Preview Source (1-5)" in [`src/variables.ts`](https://github.com/bitfocus/companion-module-feelworld-l3-series/blob/38128c8c12f1ec27e61730ed24884bd490d4a017/src/variables.ts), so the range shows in the variables list. If 0-4 is really intended, change HELP.md and README.md instead, but 1-5 matches the action and preset names (PGM 1 to PGM 5).
 
 ## 🟡 Medium
 
