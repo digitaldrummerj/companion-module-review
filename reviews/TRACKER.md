@@ -259,7 +259,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | vyv-photon | v4.0.0 | 2026-11-06 | [review](vyv-photon/review-vyv-photon-v4.0.0-20261106-181511.md) |
 | ✅ | allenheath-dt168 | v1.0.0-beta.1 | 2026-11-06 | [review](allenheath-dt168/review-allenheath-dt168-v1.0.0-beta.1-20261106-181511.md) |
 | ✅ | stagetec-xci | v2.0.0 | 2026-11-06 | [review](stagetec-xci/review-stagetec-xci-v2.0.0-20261106-181511.md) |
-| ⬜ | PosiStageNet-protocol | v1.3.0 | 2026-11-06 | [review](PosiStageNet-protocol/review-PosiStageNet-protocol-v1.3.0-20261106-181511.md) |
+| ✅ | PosiStageNet-protocol | v1.3.0 | 2026-11-06 | [review](PosiStageNet-protocol/review-PosiStageNet-protocol-v1.3.0-20261106-181511.md) |
 | ✅ | nexo-nxamp | v3.0.0 | 2026-11-06 | [review](nexo-nxamp/review-nexo-nxamp-v3.0.0-20261106-181511.md) |
 | ✅ | vhd-vx90 | v1.2.2 | 2026-11-06 | [review](vhd-vx90/review-vhd-vx90-v1.2.2-20261106-181511.md) |
 | ✅ | vhd-vx61xl | v1.0.2 | 2026-11-06 | [review](vhd-vx61xl/review-vhd-vx61xl-v1.0.2-20261106-181511.md) |
