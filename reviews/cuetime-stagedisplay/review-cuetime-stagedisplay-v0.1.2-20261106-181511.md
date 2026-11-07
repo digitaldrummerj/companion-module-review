@@ -13,7 +13,7 @@
 | **Build** | `yarn install --immutable`, `yarn package` and `yarn lint` all pass |
 | **Date** | 2026-11-06 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -26,10 +26,6 @@
 | A5 | A layered preset `gauge` element whose `value` is an expression such as `$(cuetime:progress_bar)` is redrawn by Companion when the variable changes, so it can replace the advanced feedback's bitmap | The `ButtonGraphicsGaugeElement` typings in base 2.1.3 `graphics.d.ts` (`CompanionGraphicsElementValue<number>` accepts an expression); not built or run | [L5](#l5-session-progress-bar-uses-an-advanced-feedback-which-api-21-discourages) |
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: The Node CI test job differs from the template's commented-out test job](#h1-the-node-ci-test-job-differs-from-the-templates-commented-out-test-job)
 
 ### Non-blocking
 
@@ -51,84 +47,6 @@
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: The Node CI test job differs from the template's commented-out test job
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml:56-91`](https://github.com/bitfocus/companion-module-cuetime-stagedisplay/blob/8e9e6d8775a09a11f1b10ba3a6e3001b7819f238/.github/workflows/node.yaml#L56-L91)
-
-**What goes wrong:** The `node.yaml` workflow added for the previous review's M1 enables the template's optional test job, which is fine, but the job no longer matches the template's version of it. The module's CI then differs from every other template-based module and is harder to update from the template.
-
-**Why it happens:** Validator: `.github/workflows/node.yaml`: Differs from template (line 46: found 'test:', template '\<missing\>'). An enabled test job must be the template's commented-out lines (template `node.yaml:55-76`) uncommented. This one differs in three ways:
-
-- `with: persist-credentials: false` is added to `actions/checkout@v7` (lines 63-64).
-- The template's single `Prepare Environment` step (`corepack enable` + `yarn install`) is split into `Prepare Environment` and `Prepare module` (lines 70-77).
-- A `Generate assets` step runs `yarn generate-icons` (lines 78-86).
-
-The added setup-node comment (line 66) and the changed comment above the job are comment-only and not part of the finding.
-
-**Evidence:** expected (template, uncommented) vs found:
-
-```diff
-     steps:
-       - uses: actions/checkout@v7
-+        with:
-+          persist-credentials: false
-       - name: Use Node.js 26.x
-         uses: actions/setup-node@v6
-         with:
-           node-version: 26.x
-       - name: Prepare Environment
-         run: |
-           corepack enable
-+      - name: Prepare module
-+        run: |
-           yarn install
-         env:
-           CI: true
-+      - name: Generate assets
-+        run: |
-+          yarn generate-icons
-+        env:
-+          CI: true
-       - name: Run tests
-```
-
-**Confirm by:** `diff <template>/.github/workflows/node.yaml .github/workflows/node.yaml` against [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-cuetime-stagedisplay/blob/8e9e6d8775a09a11f1b10ba3a6e3001b7819f238/.github/workflows/node.yaml). The only differences should be the uncommented template lines.
-
-**Fix:** use the template's commented-out `test:` job exactly as written, uncommented. The tests need `src/generated-icons.ts`, which is gitignored, so move the icon generation into the `test` script in `package.json` instead of the workflow (this also fixes [L6](#l6-yarn-test-fails-in-a-fresh-checkout-until-the-icons-are-generated)).
-
-```yaml
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - uses: actions/checkout@v7
-      - name: Use Node.js 26.x
-        uses: actions/setup-node@v6
-        with:
-          node-version: 26.x
-      - name: Prepare Environment
-        run: |
-          corepack enable
-          yarn install
-        env:
-          CI: true
-      - name: Run tests
-        run: |
-          yarn test
-        env:
-          CI: true
-```
-
-```json
-"test": "node scripts/generate-icons.mjs && vitest run"
-```
 
 ## 🟡 Medium
 
@@ -255,7 +173,7 @@ self.log('warn', `Add session failed: ${result.code ?? 'error'}${result.message 
 
 **What goes wrong:** Companion users are not affected. A contributor who clones the repository and runs `yarn install && yarn test` gets 2 failed test files (`src/feedbacks.test.ts`, `src/presets.test.ts`) with "Cannot find module './generated-icons.ts' imported from src/feedbacks.ts". The tests pass only after `yarn generate-icons` or `yarn build` has run. Reproduced on a `git archive` export of v0.1.2: 2 test files failed and 9 passed. In the review clone, which had already been built, all 11 files and 178 tests pass.
 
-**Why it happens:** `src/generated-icons.ts` is gitignored ([`.gitignore:11`](https://github.com/bitfocus/companion-module-cuetime-stagedisplay/blob/8e9e6d8775a09a11f1b10ba3a6e3001b7819f238/.gitignore#L11)) and created only by `scripts/generate-icons.mjs`, but [`src/feedbacks.ts:3`](https://github.com/bitfocus/companion-module-cuetime-stagedisplay/blob/8e9e6d8775a09a11f1b10ba3a6e3001b7819f238/src/feedbacks.ts#L3) and [`src/presets.ts:3-15`](https://github.com/bitfocus/companion-module-cuetime-stagedisplay/blob/8e9e6d8775a09a11f1b10ba3a6e3001b7819f238/src/presets.ts#L3-L15) import it, and the `test` script is just `vitest run`. The CI test job works around this with its own "Generate assets" step, which is what [H1](#h1-the-node-ci-test-job-differs-from-the-templates-commented-out-test-job) reports.
+**Why it happens:** `src/generated-icons.ts` is gitignored ([`.gitignore:11`](https://github.com/bitfocus/companion-module-cuetime-stagedisplay/blob/8e9e6d8775a09a11f1b10ba3a6e3001b7819f238/.gitignore#L11)) and created only by `scripts/generate-icons.mjs`, but [`src/feedbacks.ts:3`](https://github.com/bitfocus/companion-module-cuetime-stagedisplay/blob/8e9e6d8775a09a11f1b10ba3a6e3001b7819f238/src/feedbacks.ts#L3) and [`src/presets.ts:3-15`](https://github.com/bitfocus/companion-module-cuetime-stagedisplay/blob/8e9e6d8775a09a11f1b10ba3a6e3001b7819f238/src/presets.ts#L3-L15) import it, and the `test` script is just `vitest run`. The CI test job works around this with its own "Generate assets" step.
 
 **Fix:** generate the icons as part of the test script (or add a `pretest` script). The extra "Generate assets" step in `.github/workflows/node.yaml` can then go.
 
@@ -370,6 +288,6 @@ this.log('warn', `${verb} '${type}'${detail ? `: ${detail}` : ''}`)
 ## 📝 Additional Notes
 
 - **Previous review (v0.1.0), fixed:** all eight blocking findings. C1-C6 (`.gitignore` entries, `.husky/pre-commit`, `.yarnrc.yml` keys and `yarnPath`, the committed Yarn binary, and the `package.json` scripts, devDependencies and `lint-staged`), H1 (`companion-module-checks.yaml` now matches the template) and H2 (`@types/node` is `^26.6.4`).
-- **Previous review (v0.1.0), also fixed:** M1 and M2 (`node.yaml` and `release.yaml` added; `release.yaml` matches the template, and `node.yaml`'s test job is [H1](#h1-the-node-ci-test-job-differs-from-the-templates-commented-out-test-job)), M3 (the manual fields use `$(options:cuetime-display)`), M4 (Blackout Mode Active is a boolean feedback), M5 (action and feedback options are typed), M6 (a discovered `ip:port` value is split, though discovery itself is [M1](#m1-the-discovered-cuetime-displays-list-is-always-empty-so-a-display-can-only-be-added-by-ip-address)), M7 (`progress_bar` is re-checked, with a test that catches drift), M8 (Toggle Playback starts the first session from idle) and L1 (no address now shows a configuration status).
+- **Previous review (v0.1.0), also fixed:** M1 and M2 (`node.yaml` and `release.yaml` added; `release.yaml` matches the template), M3 (the manual fields use `$(options:cuetime-display)`), M4 (Blackout Mode Active is a boolean feedback), M5 (action and feedback options are typed), M6 (a discovered `ip:port` value is split, though discovery itself is [M1](#m1-the-discovered-cuetime-displays-list-is-always-empty-so-a-display-can-only-be-added-by-ip-address)), M7 (`progress_bar` is re-checked, with a test that catches drift), M8 (Toggle Playback starts the first session from idle) and L1 (no address now shows a configuration status).
 - **Previous review (v0.1.0), partly fixed:** L2, L3 and L4 were fixed for the fields and presets they named; the remaining cases are [N4](#n4-variables-typed-into-session-id-duration-and-offset-fields-are-sent-as-literal-text), [N2](#n2-in-the-presets-tab-every-button-sits-under-its-own-heading) and [N3](#n3-message-flash-and-edge-dropdowns-can-still-be-switched-to-expression-mode). `tsconfig.json` now extends `./tsconfig.build.json`, as in the template.
 - `tsconfig.build.json` differs from the template: `exclude` also lists `src/**/*.test.ts` and `src/protocol/fixtures.ts`, and `compilerOptions` adds `rewriteRelativeImportExtensions: true` because the module imports its own files with `.ts` extensions. The build and lint pass, so no change is needed.
