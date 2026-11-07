@@ -243,7 +243,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | google-nest | v1.0.4 | 2026-11-06 | [review](google-nest/review-google-nest-v1.0.4-20261106-181511.md) |
 | ✅ | fritz-fritzbox | v1.0.0 | 2026-11-06 | [review](fritz-fritzbox/review-fritz-fritzbox-v1.0.0-20261106-181511.md) |
 | ✅ | sennheiser-evolutionwireless | v2.0.0 | 2026-11-06 | [review](sennheiser-evolutionwireless/review-sennheiser-evolutionwireless-v2.0.0-20261106-181511.md) |
-| ⬜ | digico-osc | v2.0.1 | 2026-11-06 | [review](digico-osc/review-digico-osc-v2.0.1-20261106-181511.md) |
+| ✅ | digico-osc | v2.0.1 | 2026-11-06 | [review](digico-osc/review-digico-osc-v2.0.1-20261106-181511.md) |
 | ⬜ | showrevue-showrevue | v1.1.1 | 2026-11-06 | [review](showrevue-showrevue/review-showrevue-showrevue-v1.1.1-20261106-181511.md) |
 | ✅ | twoloox-pandorasbox | v3.1.6 | 2026-11-06 | [review](twoloox-pandorasbox/review-twoloox-pandorasbox-v3.1.6-20261106-181511.md) |
 | ⬜ | liveplay-liveplay | v1.1.0 | 2026-11-06 | [review](liveplay-liveplay/review-liveplay-liveplay-v1.1.0-20261106-181511.md) |
