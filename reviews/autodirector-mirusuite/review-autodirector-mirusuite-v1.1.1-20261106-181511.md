@@ -12,7 +12,7 @@
 | **Language** | TypeScript |
 | **Build** | `yarn install --immutable`, `yarn package` and `yarn lint` pass |
 | **Review date** | 2026-11-06 |
-| **Prior review** | v1.1.0 (2026-10-08). v1.1.0 was never published. Fixed in v1.1.1: C1 (packaged module failed to load), C2 (passwords lost on upgrade), C3–C6 (template files, `.gitignore`, `package.json`, Node 26), H1 (LICENSE), H2 (removed features undocumented), H3 (`any`-typed definitions), M1 (visibility rules on expression fields) and L1–L4 (no request timeout, repeated variable pushes, large arrow images). H4 (CI workflows) is mostly fixed: `release.yaml` was added and `node.yaml` now matches the template's Node 26 setup, but it gained two test steps, see [NR2](#nr2-the-node-ci-workflow-adds-test-steps-to-the-templates-lint-job). The prior Next Release note about Director Status is still open ([NR1](#nr1-director-status-could-become-a-boolean-or-value-feedback)) |
+| **Prior review** | v1.1.0 (2026-10-08). v1.1.0 was never published. Fixed in v1.1.1: C1 (packaged module failed to load), C2 (passwords lost on upgrade), C3–C6 (template files, `.gitignore`, `package.json`, Node 26), H1 (LICENSE), H2 (removed features undocumented), H3 (`any`-typed definitions), M1 (visibility rules on expression fields) and L1–L4 (no request timeout, repeated variable pushes, large arrow images). H4 (CI workflows) is fixed: `release.yaml` was added and `node.yaml` now matches the template's Node 26 setup. The prior Next Release note about Director Status is still open ([NR1](#nr1-director-status-could-become-a-boolean-or-value-feedback)) |
 
 The maintainer fixed every finding from the v1.1.0 review. Because v1.1.0 was never published, this review still covers the whole v1.0.3..v1.1.1 release, so some findings below were already in v1.1.0 and were missed by that review.
 
@@ -38,7 +38,6 @@ The maintainer fixed every finding from the v1.1.0 review. Because v1.1.0 was ne
 - [ ] [N2: The release notes and HELP.md disagree on which version removed button learning](#n2-the-release-notes-and-helpmd-disagree-on-which-version-removed-button-learning)
 - [ ] [N3: Aborting a running button does not cancel its MiruSuite requests](#n3-aborting-a-running-button-does-not-cancel-its-mirusuite-requests)
 - [ ] [NR1: Director Status could become a boolean or value feedback](#nr1-director-status-could-become-a-boolean-or-value-feedback)
-- [ ] [NR2: The Node CI workflow adds test steps to the template's lint job](#nr2-the-node-ci-workflow-adds-test-steps-to-the-templates-lint-job)
 
 ### Notes
 
@@ -159,37 +158,6 @@ The maintainer fixed every finding from the v1.1.0 review. Because v1.1.0 was ne
 **What goes wrong:** Nothing visible today. **Director Status** is an advanced feedback that only sets the background and text colours (green when the director is running, yellow on warning or error, black otherwise). API 2.1 discourages advanced feedbacks, and they are likely to be removed in a future major version.
 
 **Fix:** replace it with a value feedback that returns the director state, or with boolean feedbacks (Running, Warning or Error) that the presets style themselves. Keep `directorStatus` until an upgrade script moves existing buttons to the new feedback.
-
-### NR2: The Node CI workflow adds test steps to the template's lint job
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml:48-55`](https://github.com/bitfocus/companion-module-autodirector-mirusuite/blob/0a61715acbc71a2eaf5a66b97c1722f0eae11680/.github/workflows/node.yaml#L48-L55)
-
-**What goes wrong:** No user-visible effect. `node.yaml` differs from the 2.1 template: two steps were added to the template's `lint` job, between **Build and check types** and **Run lint**. Both steps are new in this release. The validator reports "line 41: found '- name: Run tests', template '- name: Run lint'"; it counts lines with comments removed, so the real lines are 48–55.
-
-**Why it happens:** The template runs tests in a separate, commented-out `test:` job. Uncommenting that job is the accepted way to run tests in CI, but here that job is still commented out (lines 62–84) and the steps were added to the `lint` job instead.
-
-**Evidence:**
-
-```diff
-// diff companion-module-template-ts/.github/workflows/node.yaml .github/workflows/node.yaml
-47a48,55
->       - name: Run tests
->         run: yarn test
->         env:
->           CI: true
->       - name: Test packaged module
->         run: yarn test:package
->         env:
->           CI: true
-```
-
-**Confirm by:** run `diff companion-module-template-ts/.github/workflows/node.yaml .github/workflows/node.yaml`. It should show only the uncommented `test:` job, or nothing.
-
-**Fix:** copy the template's `node.yaml`. To run the tests in CI, uncomment the template's `test:` job. If the packaged smoke test should run in CI as well, call it from the `test` script in `package.json` (for example by ending it with `&& yarn test:package`) instead of adding a workflow step.
-
----
 
 ## 📝 Additional Notes
 
