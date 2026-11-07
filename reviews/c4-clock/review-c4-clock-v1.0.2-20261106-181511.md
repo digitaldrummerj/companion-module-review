@@ -18,11 +18,11 @@ What happened to the v1.0.0 findings:
 
 - **C1 (Node 22):** fixed. The manifest runtime, `engines.node`, `@types/node`, the TypeScript preset and the workflows all use Node 26.
 - **C2 (old build output):** fixed. The build script runs `rimraf dist` first.
-- **H1 (test step in the lint job):** partly fixed. The step moved to the template's optional test job, but that job now has an extra build step. See [H1](#h1-the-github-test-job-runs-an-extra-build-step-that-the-templates-test-job-does-not-have).
+- **H1 (test step in the lint job):** fixed. The step moved to the template's optional test job.
 - **M1 (cancelled actions):** fixed. Every action passes Companion's cancel signal on to its HTTP request.
 - **L1 (presets after a rename):** fixed. `configUpdated()` rebuilds the presets.
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions to Confirm
 
@@ -34,11 +34,6 @@ What happened to the v1.0.0 findings:
 | A4 | Each `checkFeedbacks(type, ...)` call makes Companion re-run the callback of every placed feedback of those types, so calling it unconditionally every 500 ms costs real work | the base 2.1.3 doc comment on `checkFeedbacks` ("Request all feedbacks of the specified types to be re-executed"); Companion's host scheduling not checked | [N5](#n5-every-500-ms-poll-resends-all-variables-and-rechecks-all-16-feedback-types-even-when-nothing-changed) |
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: The GitHub test job runs an extra build step that the template's test job does not have](#h1-the-github-test-job-runs-an-extra-build-step-that-the-templates-test-job-does-not-have)
-- [ ] [H2: The manifest lists an old module id, although C4 Clock has never been published](#h2-the-manifest-lists-an-old-module-id-although-c4-clock-has-never-been-published)
 
 ### Non-blocking
 
@@ -52,78 +47,6 @@ What happened to the v1.0.0 findings:
 - [ ] [N4: The manifest hard-codes the API version that the build fills in](#n4-the-manifest-hard-codes-the-api-version-that-the-build-fills-in)
 - [ ] [N5: Every 500 ms poll resends all variables and rechecks all 16 feedback types, even when nothing changed](#n5-every-500-ms-poll-resends-all-variables-and-rechecks-all-16-feedback-types-even-when-nothing-changed)
 - [ ] [N6: The preset builder uses non-null assertions and double casts the type checker cannot verify](#n6-the-preset-builder-uses-non-null-assertions-and-double-casts-the-type-checker-cannot-verify)
-
-## 🟠 High
-
-### H1: The GitHub test job runs an extra build step that the template's test job does not have
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **Prior review:** [v1.0.0 H1](review-c4-clock-v1.0.0-20261030-192328.md#h1-the-github-build-check-adds-a-test-step-the-template-does-not-have), partly fixed
-- **File:** [`.github/workflows/node.yaml:54-79`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/.github/workflows/node.yaml#L54-L79)
-
-**What goes wrong:** The GitHub Actions check that runs on every push now has a separate Test job, as the template offers. But that job runs `yarn build` in an extra "Build test inputs" step before the tests, and the template's test job has no such step. So the workflow still doesn't match the one other modules run, which makes later troubleshooting harder. The Lint job matches the template.
-
-**Why it happens:** The template ships its test job commented out, under "Uncomment this to enable running unit tests". Uncommenting that job is fine, but the job must then match the template's lines. The module's job adds a step between "Prepare Environment" and "Run tests". (The validator reports this as line 46 because it counts lines with comments removed. The step is at lines 71-74.)
-
-**Evidence:**
-
-```yaml
-# .github/workflows/node.yaml:71-74 (module; not in the template's test job)
-      - name: Build test inputs
-        run: yarn build
-        env:
-          CI: true
-```
-
-```yaml
-# template .github/workflows/node.yaml:66-76 (commented out in the template)
-  #     - name: Prepare Environment
-  #       run: |
-  #         corepack enable
-  #         yarn install
-  #       env:
-  #         CI: true
-  #     - name: Run tests
-  #       run: |
-  #         yarn test
-  #       env:
-  #         CI: true
-```
-
-**Confirm by:** diff [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/.github/workflows/node.yaml#L54-L79) against the template's commented-out `test` job (`companion-module-template-ts` @ `e0d42b7`). Once uncommented, everything else in the job matches.
-
-**Fix:** use the template's test job exactly as shipped (uncommented), without the extra step. The tests read the compiled files in `dist/`, so have the `test` script build them first:
-
-```json
-"test": "yarn build && node scripts/verify-feedbacks.mjs && node scripts/verify-offline.mjs && node --test test/*.test.mjs",
-```
-
-### H2: The manifest lists an old module id, although C4 Clock has never been published
-
-- **Source:** 🤖 validate-template (MAN-LEGACYIDS)
-- **Classification:** 🆕 NEW
-- **File:** [`companion/manifest.json:23`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/companion/manifest.json#L23)
-
-**What goes wrong:** The manifest says C4 Clock replaces a module called `cc-conference-clock`. No module with that id has been published: according to [`RELEASING.md:31-32`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/RELEASING.md#L31-L32), it was only used by the private development builds 1.0.65-1.0.68. If a module with that id is ever published, Companion would move its users' connections over to C4 Clock.
-
-**Why it happens:** `legacyIds` tells Companion which older modules this one replaces, and Companion moves connections of those modules over to it. That only makes sense for a module that was renamed after it was published. A module that has never been published replaces nothing, so the template ships `"legacyIds": []`. (This value was already in v1.0.0, but the v1.0.0 review did not check it. The check is newer than that review, so it is new to you, not a finding you left unfixed.)
-
-**Evidence:**
-
-```text
-companion/manifest.json:23 (module)   "legacyIds": ["cc-conference-clock"],
-companion/manifest.json (template)    "legacyIds": [],
-setup: c4-clock is not in the published module list (new module)
-```
-
-**Confirm by:** open [`companion/manifest.json:23`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/companion/manifest.json#L23) and check that `c4-clock` is not in the published module list.
-
-**Fix:** set `legacyIds` to an empty list, as in the template, and update [`RELEASING.md:38-39`](https://github.com/bitfocus/companion-module-c4-clock/blob/d2ccedff2a3c65f7b7b2a230a6cab1ca0375c2f1/RELEASING.md#L38-L39), which says the old id is kept in `legacyIds`.
-
-```json
-"legacyIds": [],
-```
 
 ## 🟢 Low
 
