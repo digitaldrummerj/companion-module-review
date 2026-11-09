@@ -268,3 +268,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | rationalacoustics-smaart3 | v3.0.0 | 2026-11-09 | [review](rationalacoustics-smaart3/review-rationalacoustics-smaart3-v3.0.0-20261109-172628.md) |
 | ✅ | churchtranslator-api | v1.4.0 | 2026-11-09 | [review](churchtranslator-api/review-churchtranslator-api-v1.4.0-20261109-172628.md) |
 | ✅ | stagetec-xci | v2.0.1 | 2026-11-09 | [review](stagetec-xci/review-stagetec-xci-v2.0.1-20261109-172628.md) |
+| ✅ | warecotech-warecue | v1.1.2 | 2026-11-09 | [review](warecotech-warecue/review-warecotech-warecue-v1.1.2-20261109-172628.md) |
