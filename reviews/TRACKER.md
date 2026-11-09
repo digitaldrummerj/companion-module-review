@@ -265,3 +265,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | vhd-vx61xl | v1.0.2 | 2026-11-06 | [review](vhd-vx61xl/review-vhd-vx61xl-v1.0.2-20261106-181511.md) |
 | ✅ | pltech-kumatimer | v2.7.0 | 2026-11-06 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.7.0-20261106-181511.md) |
 | ✅ | chyronhego-lyric | v2.0.0 | 2026-11-09 | [review](chyronhego-lyric/review-chyronhego-lyric-v2.0.0-20261109-172628.md) |
+| ✅ | rationalacoustics-smaart3 | v3.0.0 | 2026-11-09 | [review](rationalacoustics-smaart3/review-rationalacoustics-smaart3-v3.0.0-20261109-172628.md) |
