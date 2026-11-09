@@ -267,3 +267,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | chyronhego-lyric | v2.0.0 | 2026-11-09 | [review](chyronhego-lyric/review-chyronhego-lyric-v2.0.0-20261109-172628.md) |
 | ✅ | rationalacoustics-smaart3 | v3.0.0 | 2026-11-09 | [review](rationalacoustics-smaart3/review-rationalacoustics-smaart3-v3.0.0-20261109-172628.md) |
 | ✅ | churchtranslator-api | v1.4.0 | 2026-11-09 | [review](churchtranslator-api/review-churchtranslator-api-v1.4.0-20261109-172628.md) |
+| ✅ | stagetec-xci | v2.0.1 | 2026-11-09 | [review](stagetec-xci/review-stagetec-xci-v2.0.1-20261109-172628.md) |
