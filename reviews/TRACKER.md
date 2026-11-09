@@ -270,3 +270,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | stagetec-xci | v2.0.1 | 2026-11-09 | [review](stagetec-xci/review-stagetec-xci-v2.0.1-20261109-172628.md) |
 | ✅ | warecotech-warecue | v1.1.2 | 2026-11-09 | [review](warecotech-warecue/review-warecotech-warecue-v1.1.2-20261109-172628.md) |
 | ✅ | PosiStageNet-protocol | v1.3.1 | 2026-11-09 | [review](PosiStageNet-protocol/review-PosiStageNet-protocol-v1.3.1-20261109-172628.md) |
+| ✅ | breeze-overlay | v1.2.0 | 2026-11-09 | [review](breeze-overlay/review-breeze-overlay-v1.2.0-20261109-172628.md) |
