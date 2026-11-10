@@ -10,77 +10,17 @@
 | **Template** | `companion-module-template-ts-v2.0.4` @ `d62230e` (2026-08-28, pinned) · `.yarnrc.yml` from `companion-module-template-ts` @ `e0d42b7` (2026-10-11) |
 | **Reviewed** | 2026-11-09 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [C1: package.json has no packageManager field, so installs can fall back to Yarn 1 and rewrite the lockfile](#c1-packagejson-has-no-packagemanager-field-so-installs-can-fall-back-to-yarn-1-and-rewrite-the-lockfile)
-- [ ] [H1: The CI workflow (node.yaml) uses older action versions and a commented-out Codecov step](#h1-the-ci-workflow-nodeyaml-uses-older-action-versions-and-a-commented-out-codecov-step)
 
 ### Non-blocking
 
 - [ ] [L1: The Auto Tracking action starts a 200 ms re-check timer that destroy() doesn't cancel](#l1-the-auto-tracking-action-starts-a-200-ms-re-check-timer-that-destroy-doesnt-cancel)
 - [ ] [L2: The help page doesn't mention the new Auto Tracking feedback and preset, and still says status is read only over HTTP](#l2-the-help-page-doesnt-mention-the-new-auto-tracking-feedback-and-preset-and-still-says-status-is-read-only-over-http)
 - [ ] [N1: Tracking buttons light up even when no command was sent](#n1-tracking-buttons-light-up-even-when-no-command-was-sent)
-
-## 🔴 Critical
-
-### C1: package.json has no packageManager field, so installs can fall back to Yarn 1 and rewrite the lockfile
-
-- **Source:** 🤖 validate-template (PKG-FIELD)
-- **Classification:** full-module template check (also missing in v1.2.0)
-- **File:** [`package.json`](https://github.com/bitfocus/companion-module-telycam-ptz-ip-camera/blob/f1f679515a390f08a2b49f2b3c323c515619eec9/package.json)
-
-**What goes wrong:** Without a `packageManager` field, Corepack doesn't know the module uses Yarn 4, so a machine with Yarn 1 installed globally uses that instead. That is what happened during this review: the install replaced the committed Yarn 4 `yarn.lock` with a `# yarn lockfile v1` file, so the build ran on dependency versions the maintainer never locked.
-
-**Why it happens:** The template pins the package manager in `package.json` (`"packageManager": "yarn@4.17.0"`); this module's `package.json` has no such field.
-
-**Evidence:** validator: `Missing required field 'packageManager' (present in template)`
-
-```text
-Template expects:  "packageManager": "yarn@4.17.0"   (companion-module-template-ts-v2.0.4/package.json:48)
-Found:             (no packageManager field)
-```
-
-**Fix:** add the template's field to `package.json` and commit the `yarn.lock` that `yarn install` writes with it:
-
-```json
-"packageManager": "yarn@4.17.0"
-```
-
-## 🟠 High
-
-### H1: The CI workflow (node.yaml) uses older action versions and a commented-out Codecov step
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** full-module template check (file unchanged since v1.2.0)
-- **File:** [`.github/workflows/node.yaml:18-21`](https://github.com/bitfocus/companion-module-telycam-ptz-ip-camera/blob/f1f679515a390f08a2b49f2b3c323c515619eec9/.github/workflows/node.yaml#L18-L21), [`.github/workflows/node.yaml:59-76`](https://github.com/bitfocus/companion-module-telycam-ptz-ip-camera/blob/f1f679515a390f08a2b49f2b3c323c515619eec9/.github/workflows/node.yaml#L59-L76)
-
-**What goes wrong:** The CI workflow no longer matches the template it is judged by, so later template updates can't be copied over cleanly and CI differences are harder to troubleshoot.
-
-**Why it happens:** The workflow pins `actions/checkout@v4` and `actions/setup-node@v4` where the template uses `@v7` and `@v6`, and its commented-out test job adds a "Send coverage" step (Codecov) that the template doesn't have.
-
-**Evidence:** validator: `Differs from template (line 15: found '- uses: actions/checkout@v4', template '- uses: actions/checkout@v7')`
-
-```diff
-# companion-module-template-ts-v2.0.4 vs module .github/workflows/node.yaml
--      - uses: actions/checkout@v7
-+      - uses: actions/checkout@v4
--        uses: actions/setup-node@v6
-+        uses: actions/setup-node@v4
--  #     - uses: actions/checkout@v7
-+  #     - uses: actions/checkout@v4
--  #       uses: actions/setup-node@v6
-+  #       uses: actions/setup-node@v4
-+  #     - name: Send coverage
-+  #       uses: codecov/codecov-action@v5
-```
-
-**Confirm by:** `diff companion-module-template-ts-v2.0.4/.github/workflows/node.yaml .github/workflows/node.yaml` should show no difference.
-
-**Fix:** copy the template's `node.yaml` unchanged.
+- [ ] [NR1: package.json has no packageManager field, so installs can fall back to Yarn 1 and rewrite the lockfile](#nr1-packagejson-has-no-packagemanager-field-so-installs-can-fall-back-to-yarn-1-and-rewrite-the-lockfile)
+- [ ] [NR2: The CI workflow (node.yaml) uses older action versions and a commented-out Codecov step](#nr2-the-ci-workflow-nodeyaml-uses-older-action-versions-and-a-commented-out-codecov-step)
 
 ## 🟢 Low
 
@@ -121,3 +61,60 @@ Found:             (no packageManager field)
 **Why it happens:** `sendViscaCommand()` returns nothing and only logs a warning when it can't send; the action updates the variable and feedback regardless.
 
 **Fix:** have `sendViscaCommand()` return `true` when it sent and `false` when it bailed out, and only update `auto_tracking` and check the feedback on `true`.
+
+## 🔮 Next Release
+
+Both template differences below were already in v1.2.0 and don't block v1.2.1. Please fix them in the next release.
+
+### NR1: package.json has no packageManager field, so installs can fall back to Yarn 1 and rewrite the lockfile
+
+- **Source:** 🤖 validate-template (PKG-FIELD)
+- **Classification:** full-module template check (also missing in v1.2.0)
+- **File:** [`package.json`](https://github.com/bitfocus/companion-module-telycam-ptz-ip-camera/blob/f1f679515a390f08a2b49f2b3c323c515619eec9/package.json)
+
+**What goes wrong:** Without a `packageManager` field, Corepack doesn't know the module uses Yarn 4, so a machine with Yarn 1 installed globally uses that instead. That is what happened during this review: the install replaced the committed Yarn 4 `yarn.lock` with a `# yarn lockfile v1` file, so the build ran on dependency versions the maintainer never locked.
+
+**Why it happens:** The template pins the package manager in `package.json` (`"packageManager": "yarn@4.17.0"`); this module's `package.json` has no such field.
+
+**Evidence:** validator: `Missing required field 'packageManager' (present in template)`
+
+```text
+Template expects:  "packageManager": "yarn@4.17.0"   (companion-module-template-ts-v2.0.4/package.json:48)
+Found:             (no packageManager field)
+```
+
+**Fix:** add the template's field to `package.json` and commit the `yarn.lock` that `yarn install` writes with it:
+
+```json
+"packageManager": "yarn@4.17.0"
+```
+
+### NR2: The CI workflow (node.yaml) uses older action versions and a commented-out Codecov step
+
+- **Source:** 🤖 validate-template (CONFIG-DIFF)
+- **Classification:** full-module template check (file unchanged since v1.2.0)
+- **File:** [`.github/workflows/node.yaml:18-21`](https://github.com/bitfocus/companion-module-telycam-ptz-ip-camera/blob/f1f679515a390f08a2b49f2b3c323c515619eec9/.github/workflows/node.yaml#L18-L21), [`.github/workflows/node.yaml:59-76`](https://github.com/bitfocus/companion-module-telycam-ptz-ip-camera/blob/f1f679515a390f08a2b49f2b3c323c515619eec9/.github/workflows/node.yaml#L59-L76)
+
+**What goes wrong:** The CI workflow no longer matches the template it is judged by, so later template updates can't be copied over cleanly and CI differences are harder to troubleshoot.
+
+**Why it happens:** The workflow pins `actions/checkout@v4` and `actions/setup-node@v4` where the template uses `@v7` and `@v6`, and its commented-out test job adds a "Send coverage" step (Codecov) that the template doesn't have.
+
+**Evidence:** validator: `Differs from template (line 15: found '- uses: actions/checkout@v4', template '- uses: actions/checkout@v7')`
+
+```diff
+# companion-module-template-ts-v2.0.4 vs module .github/workflows/node.yaml
+-      - uses: actions/checkout@v7
++      - uses: actions/checkout@v4
+-        uses: actions/setup-node@v6
++        uses: actions/setup-node@v4
+-  #     - uses: actions/checkout@v7
++  #     - uses: actions/checkout@v4
+-  #       uses: actions/setup-node@v6
++  #       uses: actions/setup-node@v4
++  #     - name: Send coverage
++  #       uses: codecov/codecov-action@v5
+```
+
+**Confirm by:** `diff companion-module-template-ts-v2.0.4/.github/workflows/node.yaml .github/workflows/node.yaml` should show no difference.
+
+**Fix:** copy the template's `node.yaml` unchanged.
