@@ -17,7 +17,6 @@
 
 ### Blocking
 
-- [ ] [C1: The .gitignore file is missing the template's five entries](#c1-the-gitignore-file-is-missing-the-templates-five-entries)
 - [ ] [H1: The CI workflow's checkout step differs from the template](#h1-the-ci-workflows-checkout-step-differs-from-the-template)
 - [ ] [H2: The CI step that sets up Node is named Use Node.js 2.x instead of 22.x](#h2-the-ci-step-that-sets-up-node-is-named-use-nodejs-2x-instead-of-22x)
 - [ ] [H3: Running yarn build no longer clears dist, because the build scripts differ from the template](#h3-running-yarn-build-no-longer-clears-dist-because-the-build-scripts-differ-from-the-template)
@@ -34,64 +33,6 @@
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🔴 Critical
-
-### C1: The .gitignore file is missing the template's five entries
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.gitignore:6-17`](https://github.com/bitfocus/companion-module-google-nest/blob/9ad5490d4bd67815e80c145278eabc19928e072c/.gitignore#L6-L17), [`.gitignore:45`](https://github.com/bitfocus/companion-module-google-nest/blob/9ad5490d4bd67815e80c145278eabc19928e072c/.gitignore#L45)
-
-**What goes wrong:** Companion users see no difference. The repository's `.gitignore` doesn't contain the five entries every module built from the template must have: `/pkg`, `/*.tgz`, `/dist`, `/.yarn` and `/.vscode`. The module's own patterns ignore most of the same folders, but not all of them: `.yarn/*` with its `!.yarn/...` exceptions still lets `.yarn/patches`, `.yarn/plugins`, `.yarn/releases`, `.yarn/sdks` and `.yarn/versions` be committed, which the template's `/.yarn` keeps out. The file hasn't changed since v1.0.4, and the earlier reviews didn't raise it.
-
-**Why it happens:** The `.gitignore` was rewritten in commit `0137018` ("Enhance .gitignore with more ignored patterns") with the module's own patterns in place of the template's lines. Extra entries are fine, but each template entry must be present exactly as the template writes it.
-
-**Evidence:** validator message (verbatim): `Missing template .gitignore entries: /pkg, /*.tgz, /dist, /.yarn, /.vscode`
-
-```text
-# .gitignore:5-17 (module)
-# Yarn (Berry)
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# Build artifacts
-dist/
-build/
-pkg/
-*.tgz
-# .gitignore:44-45 (module)
-# IDE/editor
-.vscode/
-```
-
-```text
-# companion-module-template-ts-v2.0.4/.gitignore
-node_modules/
-package-lock.json
-/pkg
-/*.tgz
-/dist
-DEBUG-*
-/.yarn
-/.vscode
-```
-
-**Confirm by:** compare the template's `.gitignore` with the module's [`.gitignore`](https://github.com/bitfocus/companion-module-google-nest/blob/9ad5490d4bd67815e80c145278eabc19928e072c/.gitignore). Every template line must be present verbatim; `/pkg`, `/*.tgz`, `/dist`, `/.yarn` and `/.vscode` are not.
-
-**Fix:** add the five template entries to `.gitignore`. The module's extra entries can stay.
-
-```text
-/pkg
-/*.tgz
-/dist
-/.yarn
-/.vscode
-```
 
 ## 🟠 High
 
@@ -288,7 +229,7 @@ export type ModeFeedbackChoice = ThermostatMode | 'MANUAL_ECO'
 
 - First release: the module has never been published, so there is no published version to diff against. The whole module at v1.0.6 was reviewed, and every finding is classified 🆕 NEW.
 - Follow-up to the [v1.0.4 review](review-google-nest-v1.0.4-20261106-181511.md): one commit (`9ad5490`) since v1.0.4 (`2864fae`). Most v1.0.4 findings are fixed; the CI Node version is fixed apart from a typo in the step name ([H2](#h2-the-ci-step-that-sets-up-node-is-named-use-nodejs-2x-instead-of-22x)), N3 is still open as [N1](#n1-the-mode-dropdown-in-thermostat-mode-active-can-still-be-switched-to-an-expression), and N7 is partly fixed ([N2](#n2-set-mode-and-thermostat-eco-active-dont-match-the-names-in-the-help-page)). The table below lists each prior finding.
-- [C1](#c1-the-gitignore-file-is-missing-the-templates-five-entries) and [H3](#h3-running-yarn-build-no-longer-clears-dist-because-the-build-scripts-differ-from-the-template) are in files that haven't changed since v1.0.4, and the earlier reviews didn't raise them. [H1](#h1-the-ci-workflows-checkout-step-differs-from-the-template) was part of the v1.0.1 review's H1 but was left out of the v1.0.4 review.
+- [H3](#h3-running-yarn-build-no-longer-clears-dist-because-the-build-scripts-differ-from-the-template) is in a file that hasn't changed since v1.0.4, and the earlier reviews didn't raise it. [H1](#h1-the-ci-workflows-checkout-step-differs-from-the-template) was part of the v1.0.1 review's H1 but was left out of the v1.0.4 review.
 - Node version: the v1.0.6 commit message says the Bitfocus TS template uses Node 26 everywhere. That is the `main` template for API 2.1 (`@companion-module/base` ~2.1.3, Companion 5.0+). This module is on base 2.0.4 (API 2.0), whose template, like the module's own `node22` runtime, uses Node 22, so 22.x is correct here. If the module later moves to base 2.1, move every Node version to 26 in the same change.
 - Build and lint passed (`yarn install --immutable`, `yarn package`, `yarn lint`).
 

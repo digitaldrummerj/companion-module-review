@@ -267,7 +267,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | chyronhego-lyric | v2.0.0 | 2026-11-09 | [review](chyronhego-lyric/review-chyronhego-lyric-v2.0.0-20261109-172628.md) |
 | ✅ | rationalacoustics-smaart3 | v3.0.0 | 2026-11-09 | [review](rationalacoustics-smaart3/review-rationalacoustics-smaart3-v3.0.0-20261109-172628.md) |
 | ✅ | churchtranslator-api | v1.4.0 | 2026-11-09 | [review](churchtranslator-api/review-churchtranslator-api-v1.4.0-20261109-172628.md) |
-| ⬜ | google-nest | v1.0.6 | 2026-11-09 | [review](google-nest/review-google-nest-v1.0.6-20261109-172628.md) |
+| ✅ | google-nest | v1.0.6 | 2026-11-09 | [review](google-nest/review-google-nest-v1.0.6-20261109-172628.md) |
 | ⬜ | digico-osc | v2.1.0 | 2026-11-09 | [review](digico-osc/review-digico-osc-v2.1.0-20261109-172628.md) |
 | ⬜ | allenheath-dt168 | v1.0.0-beta.2 | 2026-11-09 | [review](allenheath-dt168/review-allenheath-dt168-v1.0.0-beta.2-20261109-172628.md) |
 | ✅ | stagetec-xci | v2.0.1 | 2026-11-09 | [review](stagetec-xci/review-stagetec-xci-v2.0.1-20261109-172628.md) |
