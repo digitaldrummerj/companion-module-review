@@ -23,22 +23,21 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 - [ ] [C1: The .gitignore has its own versions of the template's entries instead of the template's](#c1-the-gitignore-has-its-own-versions-of-the-templates-entries-instead-of-the-templates)
 - [ ] [C2: The .prettierignore leaves out the template's package.json and LICENSE.md entries](#c2-the-prettierignore-leaves-out-the-templates-packagejson-and-licensemd-entries)
 - [ ] [H1: yarn package, yarn build and yarn lint run different commands from the template](#h1-yarn-package-yarn-build-and-yarn-lint-run-different-commands-from-the-template)
-- [ ] [H2: Preset buttons keep showing the old preset after Recall preset on a mioXL](#h2-preset-buttons-keep-showing-the-old-preset-after-recall-preset-on-a-mioxl)
+- [ ] [H2: The package.json name doesn't match the module id](#h2-the-packagejson-name-doesnt-match-the-module-id)
+- [ ] [H3: The README sends users to personal GitHub builds instead of the module list](#h3-the-readme-sends-users-to-personal-github-builds-instead-of-the-module-list)
 
 ### Non-blocking
 
 - [ ] [M1: Saving the settings leaves the connection failed when Companion uses a fixed RTP port](#m1-saving-the-settings-leaves-the-connection-failed-when-companion-uses-a-fixed-rtp-port)
 - [ ] [M2: The preset name variable keeps the previous preset's name after Recall preset](#m2-the-preset-name-variable-keeps-the-previous-presets-name-after-recall-preset)
-- [ ] [M3: The package.json name doesn't match the module id](#m3-the-packagejson-name-doesnt-match-the-module-id)
-- [ ] [M4: Users who switch Type to an expression have to type protocol numbers](#m4-users-who-switch-type-to-an-expression-have-to-type-protocol-numbers)
+- [ ] [M3: Users who switch Type to an expression have to type protocol numbers](#m3-users-who-switch-type-to-an-expression-have-to-type-protocol-numbers)
 - [ ] [L1: Two log lines every 3 seconds when live monitoring can't be registered](#l1-two-log-lines-every-3-seconds-when-live-monitoring-cant-be-registered)
 - [ ] [L2: Every incoming RTP-MIDI packet republishes every variable](#l2-every-incoming-rtp-midi-packet-republishes-every-variable)
 - [ ] [L3: On a PlayAUDIO12, Apply snapshot or scene with Type Scene and ID 1 or 2 fails with the default settings](#l3-on-a-playaudio12-apply-snapshot-or-scene-with-type-scene-and-id-1-or-2-fails-with-the-default-settings)
 - [ ] [L4: On a Linux host without working ALSA MIDI, the module can't start even for RTP-MIDI](#l4-on-a-linux-host-without-working-alsa-midi-the-module-cant-start-even-for-rtp-midi)
 - [ ] [L5: Over USB, Refresh device state never reads the current preset or Scene](#l5-over-usb-refresh-device-state-never-reads-the-current-preset-or-scene)
 - [ ] [L6: The upgrade script resets a custom discovery port to 5002](#l6-the-upgrade-script-resets-a-custom-discovery-port-to-5002)
-- [ ] [L7: The README sends users to personal GitHub builds instead of the module list](#l7-the-readme-sends-users-to-personal-github-builds-instead-of-the-module-list)
-- [ ] [L8: Action and feedback definitions are passed to Companion with as never](#l8-action-and-feedback-definitions-are-passed-to-companion-with-as-never)
+- [ ] [L7: Action and feedback definitions are passed to Companion with as never](#l7-action-and-feedback-definitions-are-passed-to-companion-with-as-never)
 
 ## 🔴 Critical
 
@@ -165,52 +164,53 @@ if (!userAgent.startsWith('yarn/4.')) {
 
 If you add `package:release`, point the release workflow ([`.github/workflows/release.yaml:83`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/.github/workflows/release.yaml#L83)) and [`scripts/verify-package.mjs:8`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/scripts/verify-package.mjs#L8) at it, since both expect the package in `pkg/`.
 
-### H2: Preset buttons keep showing the old preset after Recall preset on a mioXL
+### H2: The package.json name doesn't match the module id
 
-- **Source:** 🔎 QA reviewer — verified
+- **Source:** 🔎 compliance reviewer
 - **Classification:** 🆕 NEW
-- **File:** [`src/main.ts:983-988`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/src/main.ts#L983-L988), [`src/main.ts:405-406`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/src/main.ts#L405-L406), [`src/main.ts:781-784`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/src/main.ts#L781-L784)
+- **File:** [`package.json:2`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/package.json#L2)
 
-**What goes wrong:** A mioXL owner sets **Interface model** to "mioXL" and drags the **Recall preset** buttons PRESET 1 to PRESET 8 onto a page. The interface is on preset 2, so PRESET 2 is blue. They press PRESET 3: the mioXL switches and `$(<label>:current_preset)` shows 3, but PRESET 3 stays grey and PRESET 2 stays blue. Nothing corrects it until the connection reconnects, the settings are saved or **Refresh device state** is pressed. The same happens when another controller changes the preset with a Program Change.
+**What goes wrong:** Users see no difference. The package is called `iconnectivity` while the module id is `iconnectivity-interfaces` ([`companion/manifest.json:4`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/companion/manifest.json#L4)), which makes the module harder to match up across tools and logs.
 
-It affects every connection with **Interface model** "mioXL", and any interface with **RTP Role** "Responder (experimental)" or **Device status connection** "Configuration port (compatibility)". PlayAUDIO12 and USB connections correct themselves within a few seconds. The default setup (Auto-detect, PlayAUDIO1U or mioXM as RTP initiator) isn't affected.
-
-**Why it happens:** A button's colours only change when the module asks Companion to re-check its feedbacks. After a recall, the module re-checks feedbacks only in the default RTP monitoring mode (`publishState(this.usesRegularRtpMonitoring())`); in the other modes the argument is `false`, so the re-check is skipped. The 2-second RTP status update and the incoming-MIDI path also update the state without re-checking feedbacks. A run of the built module (mioXL, steady state) showed no feedback re-check after a recall, after an incoming Program Change, or over five polls.
+**Why it happens:** The name is left over from before the repository was renamed; the template uses the module id as the package name.
 
 **Evidence:**
 
-```ts
-// src/main.ts:434-441
-	private usesRegularRtpMonitoring(): boolean {
-		return (
-			this.config.transport === 'rtp-midi' &&
-			(this.config.role ?? 'initiator') === 'initiator' &&
-			this.config.statusConnection !== 'configuration' &&
-			!['playaudio12', 'mioxl'].includes(this.config.expectedDevice)
-		)
-	}
-// src/main.ts:983-988
-		} else {
-			this.state.currentPreset = value
-			if (this.state.profile?.mixerSnapshots) this.state.currentMixerSnapshot = 1
-		}
-		this.state.lastRecallAt = Date.now()
-		this.publishState(this.usesRegularRtpMonitoring())
-// src/main.ts:1601
-		if (checkFeedbacks) this.checkAllFeedbacks()
-// src/main.ts:405-406 (RTP session status, about every 2 s)
-					if (connectionChanged) this.updateNetworkStatus()
-					else this.publishState(false)
-// src/main.ts:781-784 (incoming Program Change)
-		this.trackPresetAndScene(bytes)
-		this.state.midiIn = describeMidi(bytes)
-		this.midiInPulse = true
-		this.publishMidiInputState()
+```json
+// package.json:2
+	"name": "iconnectivity",
+// companion/manifest.json:4
+	"id": "iconnectivity-interfaces",
 ```
 
-**Confirm by:** open [`src/main.ts:988`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/src/main.ts#L988): for a mioXL, `usesRegularRtpMonitoring()` is `false`, so `checkAllFeedbacks()` at [`src/main.ts:1601`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/src/main.ts#L1601) is skipped. It is the only feedback re-check in the module.
+**Confirm by:** compare [`package.json:2`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/package.json#L2) with [`companion/manifest.json:4`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/companion/manifest.json#L4).
 
-**Fix:** Re-check feedbacks whenever the current preset, Scene or mixer snapshot changes: call `this.publishState()` (with the feedback check) at the end of `recallPreset`, and in `processNextMidiMessage` call `this.checkFeedbacks('current_preset', 'current_scene', 'current_mixer_snapshot')` when `trackPresetAndScene` saw a change.
+**Fix:** Set `"name": "iconnectivity-interfaces"`.
+
+### H3: The README sends users to personal GitHub builds instead of the module list
+
+- **Source:** 🔎 compliance reviewer
+- **Classification:** 🆕 NEW
+- **File:** [`README.md:5-9`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/README.md#L5-L9)
+
+**What goes wrong:** Once the module is in Companion's module list, the README still tells users to download a `.tgz` from the owner's personal repository and import it by hand. Those builds get their own version numbers, so a bug report quoting "1.0.3" may not match the released 1.0.3.
+
+**Why it happens:** The section was written for the period before the module was submitted.
+
+**Evidence:**
+
+```markdown
+<!-- README.md:5-9 -->
+## ⬇️ Download the latest version
+
+**[Get the latest version here](https://github.com/mikecreates86/companion-module-iconnectivity-interfaces/releases/latest)**: open the link, and under **Assets** click the file ending in **`.tgz`**. Then, in Companion, go to the **Modules** page and import that file.
+
+It always holds the newest work, with a higher version number every time, so Companion will accept it. Each release says which version is trusted for live use (also recorded in `STATUS.md`).
+```
+
+**Confirm by:** open [`README.md:5-9`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/README.md#L5-L9): the first section points at the `mikecreates86` releases page, not at Companion's module list.
+
+**Fix:** Make Companion's module list the main install path, and label the GitHub builds as optional test builds.
 
 ## 🟡 Medium
 
@@ -234,23 +234,11 @@ It affects every connection with **Interface model** "mioXL", and any interface 
 
 **What goes wrong:** On a mioXL, `$(<label>:current_preset)` is 2 and `$(<label>:current_preset_name)` is "Verse". After **Recall preset** 3, a button showing both reads "3" and "Verse".
 
-**Why it happens:** In the modes from [H2](#h2-preset-buttons-keep-showing-the-old-preset-after-recall-preset-on-a-mioxl), a recall updates the preset number but not its name; only the default RTP monitoring branch clears the name ([`src/main.ts:980`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/src/main.ts#L980)).
+**Why it happens:** On a mioXL, in the Responder role, or with **Device status connection** set to "Configuration port (compatibility)", a recall updates the preset number but not its name; only the default RTP monitoring branch clears the name ([`src/main.ts:980`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/src/main.ts#L980)).
 
 **Fix:** In the `else` branch, set `this.state.currentPresetName = ''` so the name falls back to "Preset 3", and re-read the name when a configuration session is open.
 
-### M3: The package.json name doesn't match the module id
-
-- **Source:** 🔎 compliance reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`package.json:2`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/package.json#L2)
-
-**What goes wrong:** Users see no difference. The package is called `iconnectivity` while the module id is `iconnectivity-interfaces` ([`companion/manifest.json:4`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/companion/manifest.json#L4)), which makes the module harder to match up across tools and logs.
-
-**Why it happens:** The name is left over from before the repository was renamed; the template uses the module id as the package name.
-
-**Fix:** Set `"name": "iconnectivity-interfaces"`.
-
-### M4: Users who switch Type to an expression have to type protocol numbers
+### M3: Users who switch Type to an expression have to type protocol numbers
 
 - **Source:** 🔎 compliance reviewer
 - **Classification:** 🆕 NEW
@@ -336,19 +324,7 @@ It affects every connection with **Interface model** "mioXL", and any interface 
 
 **Fix:** Use `configRemotePort: config.configRemotePort || 5002`.
 
-### L7: The README sends users to personal GitHub builds instead of the module list
-
-- **Source:** 🔎 compliance reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`README.md:5-9`](https://github.com/bitfocus/companion-module-iconnectivity-interfaces/blob/15315280e28cde4542c7e7acd8076155dc5ffd35/README.md#L5-L9)
-
-**What goes wrong:** Once the module is in Companion's module list, the README still tells users to download a `.tgz` from the owner's personal repository and import it by hand. Those builds get their own version numbers, so a bug report quoting "1.0.3" may not match the released 1.0.3.
-
-**Why it happens:** The section was written for the period before the module was submitted.
-
-**Fix:** Make Companion's module list the main install path, and label the GitHub builds as optional test builds.
-
-### L8: Action and feedback definitions are passed to Companion with as never
+### L7: Action and feedback definitions are passed to Companion with as never
 
 - **Source:** 🔎 compliance reviewer, QA reviewer
 - **Classification:** 🆕 NEW
