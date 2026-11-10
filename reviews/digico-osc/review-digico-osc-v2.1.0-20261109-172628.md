@@ -23,16 +23,16 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 
 - [ ] [H1: Upgraded v1 Macro buttons now recall macro N instead of pressing OSC macro button N](#h1-upgraded-v1-macro-buttons-now-recall-macro-n-instead-of-pressing-osc-macro-button-n)
 - [ ] [H2: The release workflow (release.yaml) is rewritten instead of using the template's](#h2-the-release-workflow-releaseyaml-is-rewritten-instead-of-using-the-templates)
+- [ ] [H3: The help page names the connection settings and the macro feedback differently from Companion](#h3-the-help-page-names-the-connection-settings-and-the-macro-feedback-differently-from-companion)
 
 ### Non-blocking
 
 - [ ] [M1: A macro state feedback for a button the console doesn't have keeps querying the console and rebuilding every definition](#m1-a-macro-state-feedback-for-a-button-the-console-doesnt-have-keeps-querying-the-console-and-rebuilding-every-definition)
 - [ ] [M2: Upgraded macro-state feedbacks lose Use Console Macro Name, so the button no longer shows the macro's name](#m2-upgraded-macro-state-feedbacks-lose-use-console-macro-name-so-the-button-no-longer-shows-the-macros-name)
 - [ ] [L1: When the Receive Port can't be opened, the handshake waits forever and the port-unavailable handling never runs](#l1-when-the-receive-port-cant-be-opened-the-handshake-waits-forever-and-the-port-unavailable-handling-never-runs)
-- [ ] [L2: The help page names the connection settings and the macro feedback differently from Companion](#l2-the-help-page-names-the-connection-settings-and-the-macro-feedback-differently-from-companion)
-- [ ] [L3: The Dynamics Mode action and feedback are labelled "Maybe?" for users](#l3-the-dynamics-mode-action-and-feedback-are-labelled-maybe-for-users)
-- [ ] [L4: Each definitions refresh resends several megabytes of options, even for records that didn't change](#l4-each-definitions-refresh-resends-several-megabytes-of-options-even-for-records-that-didnt-change)
-- [ ] [L5: The base dependency range allows versions that don't have the IPv4 regex the config uses](#l5-the-base-dependency-range-allows-versions-that-dont-have-the-ipv4-regex-the-config-uses)
+- [ ] [L2: The Dynamics Mode action and feedback are labelled "Maybe?" for users](#l2-the-dynamics-mode-action-and-feedback-are-labelled-maybe-for-users)
+- [ ] [L3: Each definitions refresh resends several megabytes of options, even for records that didn't change](#l3-each-definitions-refresh-resends-several-megabytes-of-options-even-for-records-that-didnt-change)
+- [ ] [L4: The base dependency range allows versions that don't have the IPv4 regex the config uses](#l4-the-base-dependency-range-allows-versions-that-dont-have-the-ipv4-regex-the-config-uses)
 - [ ] [N1: A console that never answers shows a yellow warning instead of a connection failure](#n1-a-console-that-never-answers-shows-a-yellow-warning-instead-of-a-connection-failure)
 - [ ] [N2: Count variables are named like sections instead of counts](#n2-count-variables-are-named-like-sections-instead-of-counts)
 
@@ -131,6 +131,18 @@ v2.0.0, v2.0.1 and v2.1.0 have not been published, so you can fix the existing u
 
 **Fix:** replace `release.yaml` with the template's file.
 
+### H3: The help page names the connection settings and the macro feedback differently from Companion
+
+- **Source:** 🔎 compliance reviewer
+- **Classification:** 🆕 NEW
+- **File:** [`companion/HELP.md:37-41`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/companion/HELP.md#L37-L41), [`companion/HELP.md:72`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/companion/HELP.md#L72)
+
+**What goes wrong:** Step 4 of the help tells users to set "Receive/listen port", "Send destination port" and "Send destination IP", but the connection settings are labelled "Receive Port", "Transmit Port" and "Mixer IP Address". The "Using feedbacks" section mentions a "Macro button state" feedback, but the feedback list shows "[Macros] OSC Macro State". Users following the help have to guess which field or feedback is meant.
+
+**Why it happens:** The help text wasn't updated to the labels in [`src/config.ts`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/config.ts) and the boolean feedback name in [`digico_entities.csv:3`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/digico_entities.csv#L3).
+
+**Fix:** use the real labels in HELP.md: "Receive Port" `7000`, "Transmit Port" `7001`, "Mixer IP Address" = the console's Local IP Address, and "[Macros] OSC Macro State" for the macro feedback.
+
 ## 🟡 Medium
 
 ### M1: A macro state feedback for a button the console doesn't have keeps querying the console and rebuilding every definition
@@ -171,19 +183,7 @@ v2.0.0, v2.0.1 and v2.1.0 have not been published, so you can fix the existing u
 
 **Fix:** in the socket error handler's bind-failure branch (`if (!this.receiveSocketListening) { ... }`), also clear the parked query and wake the send loop: `this.activeQueryPath = undefined; this.wakeSendQueue()`. The parked query then fails as intended, and `waitForConsole()` reports the port problem. (Or check `mixer.hasReceiveSocketFailed` in `waitForConsole()` before awaiting the query.)
 
-### L2: The help page names the connection settings and the macro feedback differently from Companion
-
-- **Source:** 🔎 compliance reviewer
-- **Classification:** 🆕 NEW
-- **File:** [`companion/HELP.md:37-41`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/companion/HELP.md#L37-L41), [`companion/HELP.md:72`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/companion/HELP.md#L72)
-
-**What goes wrong:** Step 4 of the help tells users to set "Receive/listen port", "Send destination port" and "Send destination IP", but the connection settings are labelled "Receive Port", "Transmit Port" and "Mixer IP Address". The "Using feedbacks" section mentions a "Macro button state" feedback, but the feedback list shows "[Macros] OSC Macro State". Users following the help have to guess which field or feedback is meant.
-
-**Why it happens:** The help text wasn't updated to the labels in [`src/config.ts`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/config.ts) and the boolean feedback name in [`digico_entities.csv:3`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/digico_entities.csv#L3).
-
-**Fix:** use the real labels in HELP.md: "Receive Port" `7000`, "Transmit Port" `7001`, "Mixer IP Address" = the console's Local IP Address, and "[Macros] OSC Macro State" for the macro feedback.
-
-### L3: The Dynamics Mode action and feedback are labelled "Maybe?" for users
+### L2: The Dynamics Mode action and feedback are labelled "Maybe?" for users
 
 - **Source:** 🔎 compliance reviewer
 - **Classification:** 🆕 NEW
@@ -195,7 +195,7 @@ v2.0.0, v2.0.1 and v2.1.0 have not been published, so you can fix the existing u
 
 **Fix:** confirm the command on a console. Then replace the description with a real one (for example "Dynamics mode") and add a `gate-duck-comp` entry to `src/value-mappings.json` (for example 0 = Gate, 1 = Ducker, 2 = Compressor, if those are the console's values) so users get a dropdown. If the command can't be confirmed, clear its `RW` flag like the other unverified rows so it isn't offered.
 
-### L4: Each definitions refresh resends several megabytes of options, even for records that didn't change
+### L3: Each definitions refresh resends several megabytes of options, even for records that didn't change
 
 - **Source:** 🔎 QA reviewer
 - **Classification:** 🆕 NEW
@@ -207,7 +207,7 @@ v2.0.0, v2.0.1 and v2.1.0 have not been published, so you can fix the existing u
 
 **Fix:** compare against the record's own previous value (`${record.schemaPath}|${record.key}`), as in M1, and cache the choices per selector section (for example by provider key) instead of per command path, so each list is built once per refresh.
 
-### L5: The base dependency range allows versions that don't have the IPv4 regex the config uses
+### L4: The base dependency range allows versions that don't have the IPv4 regex the config uses
 
 - **Source:** 🔎 compliance reviewer
 - **Classification:** 🆕 NEW
@@ -266,15 +266,15 @@ v2.0.0, v2.0.1 and v2.1.0 have not been published, so you can fix the existing u
 | M10 Relative mode can't step down | Fixed: separate Relative delta field |
 | M11 no boolean feedbacks | Fixed |
 | M12 `release.yaml` missing | Added, but not the template's ([H2](#h2-the-release-workflow-releaseyaml-is-rewritten-instead-of-using-the-templates)) |
-| M13 deprecated `Regex.IP` | Fixed: `Regex.IPV4` (see [L5](#l5-the-base-dependency-range-allows-versions-that-dont-have-the-ipv4-regex-the-config-uses) for the version range) |
+| M13 deprecated `Regex.IP` | Fixed: `Regex.IPV4` (see [L4](#l4-the-base-dependency-range-allows-versions-that-dont-have-the-ipv4-regex-the-config-uses) for the version range) |
 | L1 iPad relay problems only logged | Fixed |
 | L2 port-in-use shown as "No response" | Fixed for users: the status keeps the socket error; the new port-unavailable path never runs ([L1](#l1-when-the-receive-port-cant-be-opened-the-handshake-waits-forever-and-the-port-unavailable-handling-never-runs)) |
 | L3 upgraded channel stored as a single value | Fixed |
 | L4 queues wake every 5 ms | Fixed |
-| L5 every name change rebuilds all definitions | Partly: refreshes wait for discovery; each refresh is still expensive ([L4](#l4-each-definitions-refresh-resends-several-megabytes-of-options-even-for-records-that-didnt-change)) |
-| L6 MAYBE? commands shown to users | Fixed: unverified rows are no longer offered; one "Maybe?" row remains ([L3](#l3-the-dynamics-mode-action-and-feedback-are-labelled-maybe-for-users)) |
+| L5 every name change rebuilds all definitions | Partly: refreshes wait for discovery; each refresh is still expensive ([L3](#l3-each-definitions-refresh-resends-several-megabytes-of-options-even-for-records-that-didnt-change)) |
+| L6 MAYBE? commands shown to users | Fixed: unverified rows are no longer offered; one "Maybe?" row remains ([L2](#l2-the-dynamics-mode-action-and-feedback-are-labelled-maybe-for-users)) |
 | L7 upgrade log messages | Fixed: module logger |
-| L8 help page incomplete | Fixed: a few labels still don't match the UI ([L2](#l2-the-help-page-names-the-connection-settings-and-the-macro-feedback-differently-from-companion)) |
+| L8 help page incomplete | Fixed: a few labels still don't match the UI ([H3](#h3-the-help-page-names-the-connection-settings-and-the-macro-feedback-differently-from-companion)) |
 | N1 count variable names | Still open ([N2](#n2-count-variables-are-named-like-sections-instead-of-counts)) |
 | N2 README version history | Partly: 0.9.0 now says the rewrite isn't based on 1.0.4; 2.0.0 still reads "Version change only" |
 
