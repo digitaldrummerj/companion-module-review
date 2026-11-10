@@ -14,9 +14,9 @@
 
 This is a follow-up to the v1.1.0 review. The module has still never been published, so there is no published release to diff against. The whole module was reviewed again, and every finding is classified 🆕 NEW. The v1.1.0..v1.1.1 changes (5 files, +44/−14) were also checked against each finding of the v1.1.0 review. **All 4 earlier findings are fixed**; the per-finding check is in [📝 Additional Notes](#-additional-notes).
 
-Both High findings below are in `package.json` lines that are unchanged since v1.0.0. The review now compares dependency ranges and the pre-commit lint command with the template, which the earlier reviews did not, so they are raised here for the first time.
+Both 🔮 Next Release findings ([NR1](#nr1-the-module-is-locked-to-one-exact-version-of-the-companion-base-library-unlike-the-template) and [NR2](#nr2-the-pre-commit-hook-lints-typescript-files-with-a-different-command-from-the-template)) are in `package.json` lines that are unchanged since v1.0.0. The review now compares dependency ranges and the pre-commit lint command with the template, which the earlier reviews did not, so they are raised here for the first time. They don't block this release, but they need to be fixed in the next release.
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions
 
@@ -24,116 +24,18 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [H1: The module is locked to one exact version of the Companion base library, unlike the template](#h1-the-module-is-locked-to-one-exact-version-of-the-companion-base-library-unlike-the-template)
-- [ ] [H2: The pre-commit hook lints TypeScript files with a different command from the template](#h2-the-pre-commit-hook-lints-typescript-files-with-a-different-command-from-the-template)
-
 ### Non-blocking
 
 - [ ] [L1: Cart slot fields accept fractional slots such as 2.5, which name no real cart slot](#l1-cart-slot-fields-accept-fractional-slots-such-as-25-which-name-no-real-cart-slot)
 - [ ] [N1: Index-path cue buttons re-scan the whole cue list four times a second while a cue is on air](#n1-index-path-cue-buttons-re-scan-the-whole-cue-list-four-times-a-second-while-a-cue-is-on-air)
 - [ ] [N2: The current state variable shows Pause, a command word, for a paused cue](#n2-the-current-state-variable-shows-pause-a-command-word-for-a-paused-cue)
+- [ ] [NR1: The module is locked to one exact version of the Companion base library, unlike the template](#nr1-the-module-is-locked-to-one-exact-version-of-the-companion-base-library-unlike-the-template)
+- [ ] [NR2: The pre-commit hook lints TypeScript files with a different command from the template](#nr2-the-pre-commit-hook-lints-typescript-files-with-a-different-command-from-the-template)
 
 ### Notes
 
 - **Translated button labels:** [`src/locale.ts`](https://github.com/bitfocus/companion-module-liveplay-liveplay/blob/100cc1bfb5dac50289186692e3279842b79014d8/src/locale.ts#L59-L353) still holds the per-language preset names and button labels taken from LivePlay's own translations. The validator reports them as non-English text (NOT-ENGLISH, 111 lines), but they were accepted in the v1.1.0 review because translation is a supported feature of the module, and the file is unchanged since then. No change requested.
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: The module is locked to one exact version of the Companion base library, unlike the template
-
-- **Source:** 🔎 compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`package.json:26`](https://github.com/bitfocus/companion-module-liveplay-liveplay/blob/100cc1bfb5dac50289186692e3279842b79014d8/package.json#L26)
-
-**What goes wrong:** Users see no difference today. The module can only ever install `@companion-module/base` 2.1.3, so a `yarn install` or lockfile refresh never picks up a 2.1.x patch release of the Companion base library (fixes to how the module talks to Companion, or to its typings). It also makes this module differ from every other API 2.1 TypeScript module built from the template. When something misbehaves later, a difference like this sends people troubleshooting the module instead of the real cause.
-
-**Why it happens:** `package.json` lists the dependency as the exact version `"2.1.3"`. The TypeScript template (API 2.1) uses the tilde range `"~2.1.3"`, which allows any 2.1.x release from 2.1.3 up. The lockfile resolves the exact pin.
-
-**Evidence:**
-
-```json
-// package.json:25-28 (module @ v1.1.1)
-	"dependencies": {
-		"@companion-module/base": "2.1.3",
-		"ws": "^8.18.0"
-	},
-```
-
-```json
-// companion-module-template-ts/package.json:25-27 (template @ e0d42b7)
-	"dependencies": {
-		"@companion-module/base": "~2.1.3"
-	},
-```
-
-```text
-// yarn.lock:30-32 (module @ v1.1.1)
-"@companion-module/base@npm:2.1.3":
-  version: 2.1.3
-  resolution: "@companion-module/base@npm:2.1.3"
-```
-
-**Confirm by:** open [`package.json:26`](https://github.com/bitfocus/companion-module-liveplay-liveplay/blob/100cc1bfb5dac50289186692e3279842b79014d8/package.json#L26). It reads `"@companion-module/base": "2.1.3"`, while line 26 of the template's `package.json` reads `"~2.1.3"`.
-
-**Fix:** use the template's tilde range, then run `yarn install` and commit the updated `yarn.lock`.
-
-```json
-"@companion-module/base": "~2.1.3",
-```
-
-### H2: The pre-commit hook lints TypeScript files with a different command from the template
-
-- **Source:** 🔎 compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`package.json:46-48`](https://github.com/bitfocus/companion-module-liveplay-liveplay/blob/100cc1bfb5dac50289186692e3279842b79014d8/package.json#L46-L48)
-
-**What goes wrong:** Users see no difference. When a contributor commits, the pre-commit hook fixes the staged TypeScript files with a bare `eslint --fix`, while every module built from the TypeScript template runs the module's own lint script, `yarn lint:raw --fix`. The two commands do the same thing today, because `lint:raw` is just `eslint`. If the lint setup changes later (for example `lint:raw` gains a flag), this module's hook silently behaves differently, and troubleshooting has to start by finding out why.
-
-**Why it happens:** The `lint-staged` section of `package.json` (the list of commands the pre-commit hook runs on staged files) uses a different command for `*.{ts,tsx,js,jsx}` than the template does.
-
-**Evidence:**
-
-```json
-// package.json:42-49 (module @ v1.1.1)
-	"lint-staged": {
-		"*.{css,json,md,scss}": [
-			"prettier --write"
-		],
-		"*.{ts,tsx,js,jsx}": [
-			"eslint --fix"
-		]
-	},
-```
-
-```json
-// companion-module-template-ts/package.json:40-47 (template @ e0d42b7)
-	"lint-staged": {
-		"*.{css,json,md,scss}": [
-			"prettier --write"
-		],
-		"*.{ts,tsx,js,jsx}": [
-			"yarn lint:raw --fix"
-		]
-	},
-```
-
-```json
-// package.json:13 (module @ v1.1.1)
-		"lint:raw": "eslint",
-```
-
-**Confirm by:** open [`package.json:47`](https://github.com/bitfocus/companion-module-liveplay-liveplay/blob/100cc1bfb5dac50289186692e3279842b79014d8/package.json#L47). It reads `"eslint --fix"`, while line 45 of the template's `package.json` reads `"yarn lint:raw --fix"`.
-
-**Fix:** use the template's command for TypeScript and JavaScript files.
-
-```json
-"*.{ts,tsx,js,jsx}": [
-	"yarn lint:raw --fix"
-]
-```
 
 ## 🟢 Low
 
@@ -193,6 +95,101 @@ return this.uuidByIndex.get(index.join(',')) ?? ''
 ```ts
 case Transport.Paused:
 	return 'Paused'
+```
+
+## 🔮 Next Release
+
+### NR1: The module is locked to one exact version of the Companion base library, unlike the template
+
+- **Source:** 🔎 compliance reviewer — verified
+- **Classification:** 🆕 NEW
+- **File:** [`package.json:26`](https://github.com/bitfocus/companion-module-liveplay-liveplay/blob/100cc1bfb5dac50289186692e3279842b79014d8/package.json#L26)
+
+**What goes wrong:** Users see no difference today. The module can only ever install `@companion-module/base` 2.1.3, so a `yarn install` or lockfile refresh never picks up a 2.1.x patch release of the Companion base library (fixes to how the module talks to Companion, or to its typings). It also makes this module differ from every other API 2.1 TypeScript module built from the template. When something misbehaves later, a difference like this sends people troubleshooting the module instead of the real cause.
+
+**Why it happens:** `package.json` lists the dependency as the exact version `"2.1.3"`. The TypeScript template (API 2.1) uses the tilde range `"~2.1.3"`, which allows any 2.1.x release from 2.1.3 up. The lockfile resolves the exact pin.
+
+**Evidence:**
+
+```json
+// package.json:25-28 (module @ v1.1.1)
+	"dependencies": {
+		"@companion-module/base": "2.1.3",
+		"ws": "^8.18.0"
+	},
+```
+
+```json
+// companion-module-template-ts/package.json:25-27 (template @ e0d42b7)
+	"dependencies": {
+		"@companion-module/base": "~2.1.3"
+	},
+```
+
+```text
+// yarn.lock:30-32 (module @ v1.1.1)
+"@companion-module/base@npm:2.1.3":
+  version: 2.1.3
+  resolution: "@companion-module/base@npm:2.1.3"
+```
+
+**Confirm by:** open [`package.json:26`](https://github.com/bitfocus/companion-module-liveplay-liveplay/blob/100cc1bfb5dac50289186692e3279842b79014d8/package.json#L26). It reads `"@companion-module/base": "2.1.3"`, while line 26 of the template's `package.json` reads `"~2.1.3"`.
+
+**Fix:** use the template's tilde range, then run `yarn install` and commit the updated `yarn.lock`.
+
+```json
+"@companion-module/base": "~2.1.3",
+```
+
+### NR2: The pre-commit hook lints TypeScript files with a different command from the template
+
+- **Source:** 🔎 compliance reviewer — verified
+- **Classification:** 🆕 NEW
+- **File:** [`package.json:46-48`](https://github.com/bitfocus/companion-module-liveplay-liveplay/blob/100cc1bfb5dac50289186692e3279842b79014d8/package.json#L46-L48)
+
+**What goes wrong:** Users see no difference. When a contributor commits, the pre-commit hook fixes the staged TypeScript files with a bare `eslint --fix`, while every module built from the TypeScript template runs the module's own lint script, `yarn lint:raw --fix`. The two commands do the same thing today, because `lint:raw` is just `eslint`. If the lint setup changes later (for example `lint:raw` gains a flag), this module's hook silently behaves differently, and troubleshooting has to start by finding out why.
+
+**Why it happens:** The `lint-staged` section of `package.json` (the list of commands the pre-commit hook runs on staged files) uses a different command for `*.{ts,tsx,js,jsx}` than the template does.
+
+**Evidence:**
+
+```json
+// package.json:42-49 (module @ v1.1.1)
+	"lint-staged": {
+		"*.{css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx,js,jsx}": [
+			"eslint --fix"
+		]
+	},
+```
+
+```json
+// companion-module-template-ts/package.json:40-47 (template @ e0d42b7)
+	"lint-staged": {
+		"*.{css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx,js,jsx}": [
+			"yarn lint:raw --fix"
+		]
+	},
+```
+
+```json
+// package.json:13 (module @ v1.1.1)
+		"lint:raw": "eslint",
+```
+
+**Confirm by:** open [`package.json:47`](https://github.com/bitfocus/companion-module-liveplay-liveplay/blob/100cc1bfb5dac50289186692e3279842b79014d8/package.json#L47). It reads `"eslint --fix"`, while line 45 of the template's `package.json` reads `"yarn lint:raw --fix"`.
+
+**Fix:** use the template's command for TypeScript and JavaScript files.
+
+```json
+"*.{ts,tsx,js,jsx}": [
+	"yarn lint:raw --fix"
+]
 ```
 
 ## 📝 Additional Notes
