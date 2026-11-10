@@ -287,3 +287,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | digico-osc | v2.1.1 | 2026-11-09 | [review](digico-osc/review-digico-osc-v2.1.1-20261110-061335.md) |
 | ✅ | apple-tv | v1.0.1 | 2026-11-09 | [review](apple-tv/review-apple-tv-v1.0.1-20261110-061335.md) |
 | ✅ | avmatrix-switcher | v1.0.2 | 2026-11-09 | [review](avmatrix-switcher/review-avmatrix-switcher-v1.0.2-20261110-061335.md) |
+| ✅ | moxa-e2200series | v2.0.0 | 2026-11-10 | [review](moxa-e2200series/review-moxa-e2200series-v2.0.0-20261110-144104.md) |
