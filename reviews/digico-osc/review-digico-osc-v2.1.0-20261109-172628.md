@@ -21,11 +21,8 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 
 ### Blocking
 
-- [ ] [H1: A button for a channel or snapshot that isn't in the module's current list acts on channel 1 or snapshot 0 instead](#h1-a-button-for-a-channel-or-snapshot-that-isnt-in-the-modules-current-list-acts-on-channel-1-or-snapshot-0-instead)
-- [ ] [H2: Upgraded v1 Macro buttons now recall macro N instead of pressing OSC macro button N](#h2-upgraded-v1-macro-buttons-now-recall-macro-n-instead-of-pressing-osc-macro-button-n)
-- [ ] [H3: The build scripts use tsc6 and a TypeScript 6 alias instead of the template's tsc and typescript](#h3-the-build-scripts-use-tsc6-and-a-typescript-6-alias-instead-of-the-templates-tsc-and-typescript)
-- [ ] [H4: The CI workflow (node.yaml) still differs from the template](#h4-the-ci-workflow-nodeyaml-still-differs-from-the-template)
-- [ ] [H5: The release workflow (release.yaml) is rewritten instead of using the template's](#h5-the-release-workflow-releaseyaml-is-rewritten-instead-of-using-the-templates)
+- [ ] [H1: Upgraded v1 Macro buttons now recall macro N instead of pressing OSC macro button N](#h1-upgraded-v1-macro-buttons-now-recall-macro-n-instead-of-pressing-osc-macro-button-n)
+- [ ] [H2: The release workflow (release.yaml) is rewritten instead of using the template's](#h2-the-release-workflow-releaseyaml-is-rewritten-instead-of-using-the-templates)
 
 ### Non-blocking
 
@@ -45,98 +42,13 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 
 ## 🟠 High
 
-### H1: A button for a channel or snapshot that isn't in the module's current list acts on channel 1 or snapshot 0 instead
-
-- **Source:** 🔎 QA reviewer + compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`src/actions.ts:49-55`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/actions.ts#L49-L55), [`src/actions.ts:342-344`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/actions.ts#L342-L344), [`src/actions.ts:485`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/actions.ts#L485), [`src/actions.ts:564-568`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/actions.ts#L564-L568), [`src/main.ts:197`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/main.ts#L197)
-
-**What goes wrong:** An operator built a button with "[Input Channels] Mute", Input Channel 60, Value On, while a 64-input session was loaded. Later a 48-input session is loaded, so Input 60 is no longer in the module's channel list. The button doesn't just do nothing: it sends `/Input_Channels/1/mute 1` and mutes Input 1. The same happens when the channel multi-select is left empty. With "[Snapshots] Recall Snapshot", "[Snapshots] Update Snapshot" or "[Snapshots] Delete Snapshot" set to a snapshot that no longer exists on the console, the module sends `/Snapshots/Recall_Snapshot/0`, `/Snapshots/Update_Snapshot/0` or `/Snapshots/Delete_Snapshot/0`, so it recalls, overwrites or deletes the console's snapshot at index 0. If the Receive Port can't be opened, the module never learns the console's channel list, so every channel action goes to channel 1 for the whole session while the commands are still sent. "[Presets] Recall Preset" and "[Presets] New Preset" fall back to the first target in the same way. Reproduced with the built module: with 48 inputs and 2 snapshots discovered, Input 60 Mute On sent `/Input_Channels/1/mute [f 1]`, and Recall, Update and Delete Snapshot 12 sent `.../0`. This code was already in v2.0.1; the previous review missed it.
-
-**Why it happens:** Before sending, the action keeps only the selected items that appear in the list of choices the module built from the console. If nothing is left, it substitutes a fallback: channel 1 for channel commands and index 0 for Snapshots, Macros and Presets. When the console's list hasn't been read (for example because the receive port failed), that list holds only channel 1. The "No snapshots found" and "No items in this section" placeholders also use id 0, so picking one sends to index 0.
-
-**Evidence:**
-
-```ts
-// src/actions.ts:49-55
-function optionIndexes(value: unknown, choices: Array<{ id: number | string }>, fallback = 1): number[] {
-	const valid = choices.flatMap((choice) => (typeof choice.id === 'number' ? [choice.id] : []))
-	const selected = Array.isArray(value) ? value : value === undefined || value === null ? [] : [value]
-	if (selected.includes('all')) return valid.length ? valid : [fallback]
-	const indexes = [...new Set(selected.map(Number).filter((index) => Number.isInteger(index) && valid.includes(index)))]
-	return indexes.length ? indexes : [fallback]
-}
-```
-
-```ts
-// src/actions.ts:342-344
-		const selectorChoices = selectorDefinitions.map(({ path, axis }) =>
-			root && hasEntityRoot(root) ? self.getEntityChoices(root) : self.getParameterChoices(path, axis),
-		)
-// src/actions.ts:485
-				const paths = selectedPaths(row.oscPath, event.options, selectorChoices, root && hasEntityRoot(root) ? 0 : 1)
-// src/actions.ts:564-568
-				const args = wireArguments(row, value)
-				for (const path of paths) {
-					self.cancelCrossfade(path)
-					self.send_osc(path, args)
-				}
-```
-
-```ts
-// src/main.ts:197
-		if (choicesByIndex.size === 0) choicesByIndex.add(1)
-// src/main.ts:116-118  (no handshake / discovery gate on sends)
-	public send_osc(path: string, args: OSCSomeArguments): void {
-		this.mixer?.sendOsc(path, args)
-	}
-// src/main.ts:775-779  (definitions are only rebuilt once discovery completes)
-	private scheduleDefinitionRefresh(): void {
-		if (!this.discoveryComplete) {
-			this.definitionsRefreshPending = true
-			return
-		}
-```
-
-```text
-// node -e on a copy of optionIndexes (src/actions.ts:49-55)
-pre-discovery input 12: [ 1 ]
-pre-discovery snapshot 12: [ 0 ]
-48 inputs, select 60: [ 1 ]
-empty multiselect: [ 1 ]
-```
-
-```ts
-// node_modules/@companion-module/base/dist/module-api/input.d.ts:45-51
-// (static values are not validated against the choices; only expression values are)
-     * Enabling this will tell companion to validate the value of this field against the definition of the field.
-     * If the computed value for this option does not match the validation rules, it will be passed through unchanged.
-     * If this is not set, then any invalid value will result in the action/feedback being skipped entirely.
-     * Note: This only applies when in expression mode.
-    allowInvalidValues?: boolean;
-```
-
-**Confirm by:** open [`src/actions.ts:49-55`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/actions.ts#L49-L55) and check that `return indexes.length ? indexes : [fallback]` turns an unlisted or empty selection into channel 1 (0 for Snapshots, Macros and Presets, [`src/actions.ts:485`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/actions.ts#L485)). Then check that [`src/actions.ts:564-568`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/actions.ts#L564-L568) sends to that path with no check, and that [`src/main.ts:197`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/main.ts#L197) leaves only channel 1 in the list when nothing was read from the console.
-
-**Fix:** never replace the stored item with a different one. Return every number the user stored (and the full list for "All"), without filtering it against a list that may be out of date and without a fallback. When nothing is left, `combinations()` yields no paths, so nothing is sent; log a warning in that case.
-
-```ts
-function optionIndexes(value: unknown, choices: Array<{ id: number | string }>): number[] {
-	const selected = Array.isArray(value) ? value : value === undefined || value === null ? [] : [value]
-	if (selected.includes('all')) return choices.flatMap((c) => (typeof c.id === 'number' ? [c.id] : []))
-	return [...new Set(selected.map(Number).filter(Number.isInteger))]
-}
-```
-
-Apply the same rule to the preset target fallback (`targets[0]?.id ?? 1`) in Recall Preset and New Preset. Give the "No snapshots found" and "No items in this section" placeholders an id that can't be a real index (for example `''`) and skip it in the callback.
-
-### H2: Upgraded v1 Macro buttons now recall macro N instead of pressing OSC macro button N
+### H1: Upgraded v1 Macro buttons now recall macro N instead of pressing OSC macro button N
 
 - **Source:** 🔎 QA reviewer + compliance reviewer — verified
 - **Classification:** 🔙 REGRESSION
 - **File:** [`src/upgrades.ts:30`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/upgrades.ts#L30), [`src/upgrades.ts:151`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/upgrades.ts#L151), [`src/upgrades.ts:159`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/src/upgrades.ts#L159)
 
-**What goes wrong:** A v1.0.4 user has a button with the action "Macro" (number 3) and the feedback "Change button color for macro state" (Macro Number 3). In v1.0.4 the action sent `/Macros/Buttons/press` with the value 2, which presses the third configured OSC macro button. After the upgrade the action becomes "[Macros] Recall Macro" with item 3 and sends `/Macros/Recall_Macro/3`: a different command that picks from the console's macro list, with a different numbering. The same upgrade moves the button's feedback to "[Macros] OSC Macro State" for OSC macro button 2, so the button lights up for one macro and fires another. If the macro list has no item 3, [H1](#h1-a-button-for-a-channel-or-snapshot-that-isnt-in-the-modules-current-list-acts-on-channel-1-or-snapshot-0-instead) makes it recall item 0. v2.1.0 already has the exact v1 command as "[Macros] OSC Macro Press". Users without v1 Macro buttons are not affected. Reproduced with the compiled upgrade script. This mapping was already in v2.0.1; the previous review missed it.
+**What goes wrong:** A v1.0.4 user has a button with the action "Macro" (number 3) and the feedback "Change button color for macro state" (Macro Number 3). In v1.0.4 the action sent `/Macros/Buttons/press` with the value 2, which presses the third configured OSC macro button. After the upgrade the action becomes "[Macros] Recall Macro" with item 3 and sends `/Macros/Recall_Macro/3`: a different command that picks from the console's macro list, with a different numbering. The same upgrade moves the button's feedback to "[Macros] OSC Macro State" for OSC macro button 2, so the button lights up for one macro and fires another. v2.1.0 already has the exact v1 command as "[Macros] OSC Macro Press". Users without v1 Macro buttons are not affected. Reproduced with the compiled upgrade script. This mapping was already in v2.0.1; the previous review missed it.
 
 **Why it happens:** The upgrade script maps the old `macros` action to `/Macros/Recall_Macro/*` and copies the macro number unchanged. The module's own command tables treat OSC macro buttons (`/Macros/Buttons/*`) and console macros (`/Macros/name`, `/Macros/Recall_Macro/*`) as two separate lists. The feedback upgrade in the same file does target the OSC button list, with number − 1, so the action and the feedback no longer point at the same thing.
 
@@ -199,81 +111,7 @@ if (action.actionId === 'macros') {
 
 v2.0.0, v2.0.1 and v2.1.0 have not been published, so you can fix the existing upgrade script in place.
 
-### H3: The build scripts use tsc6 and a TypeScript 6 alias instead of the template's tsc and typescript
-
-- **Source:** 🔎 compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`package.json:12-13`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/package.json#L12-L13), [`package.json:37`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/package.json#L37)
-
-**What goes wrong:** Users see no difference: the module builds and runs. The problem is maintenance. This API 2.2 module no longer matches its TypeScript template, so anyone who troubleshoots it or updates it from the template (for example at the template's next TypeScript bump) has to know that it uses a different compiler package and a different command. This was already in v2.0.1; the previous review missed it.
-
-**Why it happens:** The template's `build:main` and `dev` scripts run `tsc`, and the template declares `"typescript": "~6.0.3"`. The module swaps in the `@typescript/typescript6` package through an npm alias, with a caret range, and calls its `tsc6` command in both scripts.
-
-**Evidence:**
-
-```json
-// package.json:11-13 (at v2.1.0)
-		"build": "rimraf dist && run build:main",
-		"build:main": "tsc6 -p tsconfig.build.json",
-		"dev": "tsc6 -p tsconfig.build.json --watch",
-// package.json:37 (at v2.1.0)
-		"typescript": "npm:@typescript/typescript6@^6.0.2",
-```
-
-```json
-// companion-module-template-ts/package.json:11-12 (@ e0d42b7)
-		"build:main": "tsc -p tsconfig.build.json",
-		"dev": "tsc -p tsconfig.build.json --watch",
-// companion-module-template-ts/package.json:36 (@ e0d42b7)
-		"typescript": "~6.0.3",
-```
-
-```text
-// node_modules/typescript/package.json (installed alias)
-  "name": "@typescript/typescript6",
-  "version": "6.0.2",
-  "bin": {
-    "tsc6": "./bin/tsc6"
-```
-
-**Confirm by:** compare [`package.json:12-13`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/package.json#L12-L13) and [`package.json:37`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/package.json#L37) with `companion-module-template-ts/package.json` lines 11-12 and 36. The module has `tsc6` and `npm:@typescript/typescript6@^6.0.2`; the template has `tsc` and `~6.0.3`.
-
-**Fix:** match the template, then run `yarn install` to refresh `yarn.lock`:
-
-```json
-"build:main": "tsc -p tsconfig.build.json",
-"dev": "tsc -p tsconfig.build.json --watch",
-"typescript": "~6.0.3",
-```
-
-### H4: The CI workflow (node.yaml) still differs from the template
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml:18`](https://github.com/bitfocus/companion-module-digico-osc/blob/44239fd513799febe33eea9fce813a070c30adbf/.github/workflows/node.yaml#L18)
-
-**What goes wrong:** The previous review raised this file as its H4. The Node 26 lines are now fixed, but the lint job's checkout step still leaves out the template's `persist-credentials: false`. So the job keeps the GitHub token in the checked-out repo's git config for the rest of the run.
-
-**Why it happens:** The module's `node.yaml` was updated by hand instead of being copied from the current template.
-
-**Evidence:** validator: `.github/workflows/node.yaml: Differs from template (line 16: found '- name: Use Node.js 26.x', template 'with:')`. The module's `- uses: actions/checkout@v7` at line 18 has no options; the template's step continues with `with:` / `persist-credentials: false`.
-
-```yaml
-# module .github/workflows/node.yaml:18-19
-      - uses: actions/checkout@v7
-      - name: Use Node.js 26.x
-# template .github/workflows/node.yaml
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - name: Use Node.js 26.x
-```
-
-**Confirm by:** `diff companion-module-template-ts/.github/workflows/node.yaml .github/workflows/node.yaml` should show no difference.
-
-**Fix:** copy the template's `node.yaml`, which restores `with: persist-credentials: false` on the `actions/checkout@v7` step.
-
-### H5: The release workflow (release.yaml) is rewritten instead of using the template's
+### H2: The release workflow (release.yaml) is rewritten instead of using the template's
 
 - **Source:** 🤖 validate-template (CONFIG-DIFF)
 - **Classification:** 🆕 NEW
@@ -415,7 +253,7 @@ v2.0.0, v2.0.1 and v2.1.0 have not been published, so you can fix the existing u
 | H1 v1 IP and ports lost on upgrade | Fixed: the upgrade script carries `host`/`port`/`receiveport` over |
 | H2 macro-state feedback upgraded to a missing id | Fixed: it now becomes "[Macros] OSC Macro State" with its colours and state; the name text is still lost ([M2](#m2-upgraded-macro-state-feedbacks-lose-use-console-macro-name-so-the-button-no-longer-shows-the-macros-name)) |
 | H3 `Bfloat` rows sent without a value | Fixed |
-| H4 `node.yaml` differs from the template | Still open: the Node lines are fixed, `persist-credentials: false` is still missing ([H4](#h4-the-ci-workflow-nodeyaml-still-differs-from-the-template)) |
+| H4 `node.yaml` differs from the template | Fixed: the Node lines now match the template; the checkout step still leaves out `persist-credentials: false`, which is not treated as a finding |
 | M1 feedbacks stop after saving settings | Fixed: `checkAllFeedbacks()` after the handshake |
 | M2 one failed send stops all queries | Fixed: send errors are now logged separately |
 | M3 default ports reversed from HELP | Fixed: defaults and HELP agree (Receive 7000, Transmit 7001) |
@@ -427,7 +265,7 @@ v2.0.0, v2.0.1 and v2.1.0 have not been published, so you can fix the existing u
 | M9 preset option ids shift | Fixed: ids come from the section name |
 | M10 Relative mode can't step down | Fixed: separate Relative delta field |
 | M11 no boolean feedbacks | Fixed |
-| M12 `release.yaml` missing | Added, but not the template's ([H5](#h5-the-release-workflow-releaseyaml-is-rewritten-instead-of-using-the-templates)) |
+| M12 `release.yaml` missing | Added, but not the template's ([H2](#h2-the-release-workflow-releaseyaml-is-rewritten-instead-of-using-the-templates)) |
 | M13 deprecated `Regex.IP` | Fixed: `Regex.IPV4` (see [L5](#l5-the-base-dependency-range-allows-versions-that-dont-have-the-ipv4-regex-the-config-uses) for the version range) |
 | L1 iPad relay problems only logged | Fixed |
 | L2 port-in-use shown as "No response" | Fixed for users: the status keeps the socket error; the new port-unavailable path never runs ([L1](#l1-when-the-receive-port-cant-be-opened-the-handshake-waits-forever-and-the-port-unavailable-handling-never-runs)) |
@@ -444,6 +282,5 @@ v2.0.0, v2.0.1 and v2.1.0 have not been published, so you can fix the existing u
 
 | # | Assumption | Based on | Affects |
 | --- | --- | --- | --- |
-| A1 | Companion passes a static (non-expression) dropdown or multi-select value to the action callback unchanged, even when that value is no longer one of the current choices | base 2.2.2 `input.d.ts`: validation against the field "only applies when in expression mode"; Companion host code not checked | [H1](#h1-a-button-for-a-channel-or-snapshot-that-isnt-in-the-modules-current-list-acts-on-channel-1-or-snapshot-0-instead) |
-| A2 | Companion re-runs a feedback's callback each time the module calls `checkFeedbacksById` for it, and can start a new run while an earlier one is still waiting; this decides whether the query loop runs about once a second or hundreds of times a second | base 2.2.2 `checkFeedbacksById` only forwards the ids to the host (`module-api/base.js:112-113`); host-side scheduling not checked | [M1](#m1-a-macro-state-feedback-for-a-button-the-console-doesnt-have-keeps-querying-the-console-and-rebuilding-every-definition) |
-| A3 | In the Connections list, `InstanceStatus.UnknownWarning` shows as a yellow warning and `InstanceStatus.ConnectionFailure` as a red error | Companion host status rendering; the base package only defines the enum values | [N1](#n1-a-console-that-never-answers-shows-a-yellow-warning-instead-of-a-connection-failure) |
+| A1 | Companion re-runs a feedback's callback each time the module calls `checkFeedbacksById` for it, and can start a new run while an earlier one is still waiting; this decides whether the query loop runs about once a second or hundreds of times a second | base 2.2.2 `checkFeedbacksById` only forwards the ids to the host (`module-api/base.js:112-113`); host-side scheduling not checked | [M1](#m1-a-macro-state-feedback-for-a-button-the-console-doesnt-have-keeps-querying-the-console-and-rebuilding-every-definition) |
+| A2 | In the Connections list, `InstanceStatus.UnknownWarning` shows as a yellow warning and `InstanceStatus.ConnectionFailure` as a red error | Companion host status rendering; the base package only defines the enum values | [N1](#n1-a-console-that-never-answers-shows-a-yellow-warning-instead-of-a-connection-failure) |
