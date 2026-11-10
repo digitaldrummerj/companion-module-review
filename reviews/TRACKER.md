@@ -289,3 +289,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | avmatrix-switcher | v1.0.2 | 2026-11-09 | [review](avmatrix-switcher/review-avmatrix-switcher-v1.0.2-20261110-061335.md) |
 | ✅ | moxa-e2200series | v2.0.0 | 2026-11-10 | [review](moxa-e2200series/review-moxa-e2200series-v2.0.0-20261110-144104.md) |
 | ✅ | saccani-live-studio | v1.0.2 | 2026-11-10 | [review](saccani-live-studio/review-saccani-live-studio-v1.0.2-20261110-144104.md) |
+| ✅ | glensound-minferno | v1.0.2 | 2026-11-10 | [review](glensound-minferno/review-glensound-minferno-v1.0.2-20261110-154338.md) |
