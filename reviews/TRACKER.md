@@ -278,7 +278,7 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | PosiStageNet-protocol | v1.3.1 | 2026-11-09 | [review](PosiStageNet-protocol/review-PosiStageNet-protocol-v1.3.1-20261109-172628.md) |
 | ✅ | breeze-overlay | v1.2.0 | 2026-11-09 | [review](breeze-overlay/review-breeze-overlay-v1.2.0-20261109-172628.md) |
 | ✅ | advatek-pixlite-mk3 | v0.1.1 | 2026-11-09 | [review](advatek-pixlite-mk3/review-advatek-pixlite-mk3-v0.1.1-20261109-172628.md) |
-| ⬜ | microfilms-gpio | v1.1.0 | 2026-11-09 | [review](microfilms-gpio/review-microfilms-gpio-v1.1.0-20261109-172628.md) |
+| ✅ | microfilms-gpio | v1.1.0 | 2026-11-09 | [review](microfilms-gpio/review-microfilms-gpio-v1.1.0-20261109-172628.md) |
 | ✅ | alto-tmd16 | v1.0.0 | 2026-11-09 | [review](alto-tmd16/review-alto-tmd16-v1.0.0-20261109-172628.md) |
 | ✅ | fora-mfr | v3.0.0 | 2026-11-09 | [review](fora-mfr/review-fora-mfr-v3.0.0-20261109-172628.md) |
 | ✅ | roland-v1-4k | v0.1.3 | 2026-11-09 | [review](roland-v1-4k/review-roland-v1-4k-v0.1.3-20261109-172628.md) |
