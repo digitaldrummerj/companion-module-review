@@ -22,9 +22,6 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 
 - [ ] [C1: The module still targets Node 22, but the API 2.1 template runs on Node 26](#c1-the-module-still-targets-node-22-but-the-api-21-template-runs-on-node-26)
 - [ ] [H1: The manifest claims the legacy id "streamlingo" although this module has never been published](#h1-the-manifest-claims-the-legacy-id-streamlingo-although-this-module-has-never-been-published)
-- [ ] [H2: The module checks workflow leaves out the template's template-repository guard](#h2-the-module-checks-workflow-leaves-out-the-templates-template-repository-guard)
-- [ ] [H3: The release workflow leaves out the template's template-repository guard](#h3-the-release-workflow-leaves-out-the-templates-template-repository-guard)
-- [ ] [H4: The CI workflow (node.yaml) leaves out the template's template-repository step](#h4-the-ci-workflow-nodeyaml-leaves-out-the-templates-template-repository-step)
 
 ### Non-blocking
 
@@ -80,80 +77,6 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 ```
 
 **Fix:** empty the list, as in the template: `"legacyIds": []`.
-
-### H2: The module checks workflow leaves out the template's template-repository guard
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/companion-module-checks.yaml:7-13`](https://github.com/bitfocus/companion-module-streamlingo-streamlingo/blob/e80129e3858fd790935fb390b27f2400650d7100/.github/workflows/companion-module-checks.yaml#L7-L13)
-
-**What goes wrong:** Nothing changes for this module's CI today, but the file no longer matches the template, so a later template update can't be copied over cleanly and differences are harder to troubleshoot.
-
-**Why it happens:** The template's `check` job starts with an `if:` line that skips the job in the template repository itself. The module's copy removed it.
-
-**Evidence:** validator: `Differs from template (line 7: found 'permissions:', template 'if: ${{ !contains(github.repository, 'companion-module-template-') }}')`
-
-```diff
-# template vs module .github/workflows/companion-module-checks.yaml
--    if: ${{ !contains(github.repository, 'companion-module-template-') }}
--
-```
-
-**Confirm by:** `diff companion-module-template-ts/.github/workflows/companion-module-checks.yaml .github/workflows/companion-module-checks.yaml` should show no difference.
-
-**Fix:** copy the template's `companion-module-checks.yaml` unchanged.
-
-### H3: The release workflow leaves out the template's template-repository guard
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/release.yaml:10-17`](https://github.com/bitfocus/companion-module-streamlingo-streamlingo/blob/e80129e3858fd790935fb390b27f2400650d7100/.github/workflows/release.yaml#L10-L17)
-
-**What goes wrong:** As in H2, the release workflow no longer matches the template, which makes later template updates and troubleshooting harder.
-
-**Why it happens:** The template's `package` job starts with a comment and an `if:` line that skip packaging in the template repository. The module's copy removed both.
-
-**Evidence:** validator: `Differs from template (line 10: found 'permissions:', template 'if: ${{ !contains(github.repository, 'companion-module-template-') }}')`
-
-```diff
-# template vs module .github/workflows/release.yaml
--    # The template itself cannot be packaged, as its manifest still holds placeholders
--    if: ${{ !contains(github.repository, 'companion-module-template-') }}
--
-```
-
-**Confirm by:** `diff companion-module-template-ts/.github/workflows/release.yaml .github/workflows/release.yaml` should show no difference.
-
-**Fix:** copy the template's `release.yaml` unchanged.
-
-### H4: The CI workflow (node.yaml) leaves out the template's template-repository step
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.github/workflows/node.yaml:25-28`](https://github.com/bitfocus/companion-module-streamlingo-streamlingo/blob/e80129e3858fd790935fb390b27f2400650d7100/.github/workflows/node.yaml#L25-L28)
-
-**What goes wrong:** As in H2, `node.yaml` no longer matches the template. Apart from the Node version lines (covered by C1), the difference is one removed step.
-
-**Why it happens:** The template's lint job has a "Prepare Environment (For template repository)" step that only runs in the template repository. The module's copy removed it. The template's own comment on that step says a module can remove it.
-
-**Evidence:** validator: `Differs from template (line 25: found '- name: Prepare module', template '- name: Prepare Environment (For template repository)')`
-
-```diff
-# template vs module .github/workflows/node.yaml
--      - name: Prepare Environment (For template repository)
--        # Only run this step if the repository is a template repository
--        # If you are using this in a module, you can remove this step
--        if: ${{ contains(github.repository, 'companion-module-template-') }}
--        run: |
--          # Perform an install to generate the lockfile
--          yarn install
--        env:
--          CI: false
-```
-
-**Confirm by:** `diff companion-module-template-ts/.github/workflows/node.yaml .github/workflows/node.yaml` shows only this step and the Node version lines.
-
-**Fix:** copy the template's `node.yaml` unchanged (with the Node 26 lines from C1).
 
 ## 🟡 Medium
 
