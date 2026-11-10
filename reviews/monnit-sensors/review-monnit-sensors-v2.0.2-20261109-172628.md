@@ -11,7 +11,7 @@
 | **Prior review** | [v2.0.0 (2026-11-06)](review-monnit-sensors-v2.0.0-20261106-181511.md) — Changes Required; every finding from it is fixed in v2.0.2 |
 | **Reviewed** | 2026-11-09 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions
 
@@ -19,70 +19,16 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 
 ## 📋 Issues
 
-### Blocking
-
-- [ ] [H1: package.json engines does not require Yarn 4 as the template does](#h1-packagejson-engines-does-not-require-yarn-4-as-the-template-does)
-
 ### Non-blocking
 
 - [ ] [L1: Aborting a running Refresh All Sensors action turns the connection status red](#l1-aborting-a-running-refresh-all-sensors-action-turns-the-connection-status-red)
 - [ ] [L2: ESLint and typescript-eslint are installed but never used](#l2-eslint-and-typescript-eslint-are-installed-but-never-used)
 - [ ] [L3: manifest.json has no $schema, so editors cannot validate it](#l3-manifestjson-has-no-schema-so-editors-cannot-validate-it)
+- [ ] [NR1: package.json engines does not require Yarn 4 as the template does](#nr1-packagejson-engines-does-not-require-yarn-4-as-the-template-does)
 
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: package.json engines does not require Yarn 4 as the template does
-
-- **Source:** 🔎 compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`package.json:17-19`](https://github.com/bitfocus/companion-module-monnit-sensors/blob/e1ee34a04c583226f253360b0102a98e8b42b786/package.json#L17-L19)
-
-**What goes wrong:** Nothing changes for Companion users. A contributor or CI job that installs the module with another major version of Yarn (for example Yarn 1 classic) gets no engines warning or error, although the module now needs Yarn 4: it has a Yarn 4 lockfile, a `.yarnrc.yml` and `"packageManager": "yarn@4.18.1"`. Because package.json still differs from the template, people troubleshooting the module later can't rely on it matching every other module built from the template.
-
-**Why it happens:** The `engines` block in package.json lists the Node and package-manager versions a project supports. The API 2.x JS template's block has both `node` and `yarn`. This release rewrote the module's block for API 2.x (from `"node": "^22"` to `"node": "^26.5"`) and, while fixing the v2.0.0 review, moved the module from Yarn 1 to Yarn 4, but did not add the template's `yarn` entry. The template validator checks `engines.node` but not `engines.yarn`, so it didn't report this, and at v2.0.0 the module wasn't on Yarn 4 yet.
-
-**Evidence:**
-
-```json
-// package.json:5-6, 17-19 (module at v2.0.2)
-	"type": "module",
-	"packageManager": "yarn@4.18.1",
-...
-	"engines": {
-		"node": "^26.5"
-	},
-```
-
-```json
-// companion-module-template-js/package.json:15-18
-	"engines": {
-		"node": "^26",
-		"yarn": "^4"
-	},
-```
-
-```diff
-// git diff v1.2.0..v2.0.2 -- package.json (engines hunk)
- 	"engines": {
--		"node": "^22"
-+		"node": "^26.5"
- 	},
-```
-
-**Confirm by:** open [`package.json:17-19`](https://github.com/bitfocus/companion-module-monnit-sensors/blob/e1ee34a04c583226f253360b0102a98e8b42b786/package.json#L17-L19): `engines` has only `"node"`. The template's `package.json:15-18` also has `"yarn": "^4"`.
-
-**Fix:** add the template's Yarn entry to `engines`.
-
-```json
-"engines": {
-	"node": "^26.5",
-	"yarn": "^4"
-},
-```
 
 ## 🟢 Low
 
@@ -154,6 +100,57 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 "$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
 ```
 
+## 🔮 Next Release
+
+### NR1: package.json engines does not require Yarn 4 as the template does
+
+- **Source:** 🔎 compliance reviewer — verified
+- **Classification:** 🆕 NEW
+- **File:** [`package.json:17-19`](https://github.com/bitfocus/companion-module-monnit-sensors/blob/e1ee34a04c583226f253360b0102a98e8b42b786/package.json#L17-L19)
+
+**What goes wrong:** Nothing changes for Companion users. A contributor or CI job that installs the module with another major version of Yarn (for example Yarn 1 classic) gets no engines warning or error, although the module now needs Yarn 4: it has a Yarn 4 lockfile, a `.yarnrc.yml` and `"packageManager": "yarn@4.18.1"`. Because package.json still differs from the template, people troubleshooting the module later can't rely on it matching every other module built from the template.
+
+**Why it happens:** The `engines` block in package.json lists the Node and package-manager versions a project supports. The API 2.x JS template's block has both `node` and `yarn`. This release rewrote the module's block for API 2.x (from `"node": "^22"` to `"node": "^26.5"`) and, while fixing the v2.0.0 review, moved the module from Yarn 1 to Yarn 4, but did not add the template's `yarn` entry. The template validator checks `engines.node` but not `engines.yarn`, so it didn't report this, and at v2.0.0 the module wasn't on Yarn 4 yet.
+
+**Evidence:**
+
+```json
+// package.json:5-6, 17-19 (module at v2.0.2)
+	"type": "module",
+	"packageManager": "yarn@4.18.1",
+...
+	"engines": {
+		"node": "^26.5"
+	},
+```
+
+```json
+// companion-module-template-js/package.json:15-18
+	"engines": {
+		"node": "^26",
+		"yarn": "^4"
+	},
+```
+
+```diff
+// git diff v1.2.0..v2.0.2 -- package.json (engines hunk)
+ 	"engines": {
+-		"node": "^22"
++		"node": "^26.5"
+ 	},
+```
+
+**Confirm by:** open [`package.json:17-19`](https://github.com/bitfocus/companion-module-monnit-sensors/blob/e1ee34a04c583226f253360b0102a98e8b42b786/package.json#L17-L19): `engines` has only `"node"`. The template's `package.json:15-18` also has `"yarn": "^4"`.
+
+**Fix:** add the template's Yarn entry to `engines`.
+
+```json
+"engines": {
+	"node": "^26.5",
+	"yarn": "^4"
+},
+```
+
 ## 📝 Additional Notes
 
 - Follow-up to the [v2.0.0 review](review-monnit-sensors-v2.0.0-20261106-181511.md): every finding from it was re-checked against v2.0.2 and is fixed. No blocking finding from it is still open and none is carried forward; the findings above are new.
@@ -166,6 +163,7 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 - Prior N1: the two "Below %" fields are now 0 to 100 and "Older Than Minutes" starts at 0 ([`src/feedbacks.js:302`](https://github.com/bitfocus/companion-module-monnit-sensors/blob/e1ee34a04c583226f253360b0102a98e8b42b786/src/feedbacks.js#L302), [`src/feedbacks.js:318`](https://github.com/bitfocus/companion-module-monnit-sensors/blob/e1ee34a04c583226f253360b0102a98e8b42b786/src/feedbacks.js#L318), [`src/feedbacks.js:334`](https://github.com/bitfocus/companion-module-monnit-sensors/blob/e1ee34a04c583226f253360b0102a98e8b42b786/src/feedbacks.js#L334)).
 - Prior N2: both refresh actions now pass `context.signal` through to `fetch` and skip queued work that was already aborted. The abort is reported as a connection failure, though, see [L1](#l1-aborting-a-running-refresh-all-sensors-action-turns-the-connection-status-red).
 - The template validator reports no findings for v2.0.2.
+- [NR1](#nr1-packagejson-engines-does-not-require-yarn-4-as-the-template-does) was raised as a High finding. It doesn't block this release, but it needs to be fixed in the next release.
 
 ## ❓ Assumptions to Confirm
 
