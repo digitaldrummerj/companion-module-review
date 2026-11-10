@@ -284,3 +284,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | roland-v1-4k | v0.1.3 | 2026-11-09 | [review](roland-v1-4k/review-roland-v1-4k-v0.1.3-20261109-172628.md) |
 | ✅ | streamlingo-streamlingo | v1.0.0 | 2026-11-09 | [review](streamlingo-streamlingo/review-streamlingo-streamlingo-v1.0.0-20261110-061335.md) |
 | ✅ | telycam-ptz-ip-camera | v1.2.1 | 2026-11-09 | [review](telycam-ptz-ip-camera/review-telycam-ptz-ip-camera-v1.2.1-20261110-061335.md) |
+| ✅ | digico-osc | v2.1.1 | 2026-11-09 | [review](digico-osc/review-digico-osc-v2.1.1-20261110-061335.md) |

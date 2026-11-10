@@ -11,17 +11,13 @@
 | **Previous review** | [v2.1.0 (2026-11-09)](review-digico-osc-v2.1.0-20261109-172628.md), Changes Required; what happened to each of its findings is in [📝 Additional Notes](#-additional-notes) |
 | **Reviewed** | 2026-11-09 |
 
-## Verdict: ❌ Changes Required
+## Verdict: ✅ Approved
 
 ## ❓ Assumptions
 
 Some findings depend on assumptions the reviewers couldn't check. They're listed in [❓ Assumptions to Confirm](#-assumptions-to-confirm) at the end of this review.
 
 ## 📋 Issues
-
-### Blocking
-
-- [ ] [H1: The help page names the macro feedback "OSC button state", but Companion lists it as "OSC Macro State"](#h1-the-help-page-names-the-macro-feedback-osc-button-state-but-companion-lists-it-as-osc-macro-state)
 
 ### Non-blocking
 
@@ -30,42 +26,11 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 - [ ] [N1: Count variables are named like sections instead of counts](#n1-count-variables-are-named-like-sections-instead-of-counts)
 - [ ] [N2: An unchanged Layout Bank list re-checks every Layout Bank feedback once per bank](#n2-an-unchanged-layout-bank-list-re-checks-every-layout-bank-feedback-once-per-bank)
 - [ ] [N3: The legacy action table still maps the v1 Macro action to Recall Macro](#n3-the-legacy-action-table-still-maps-the-v1-macro-action-to-recall-macro)
+- [ ] [NR1: The help page names the macro feedback "OSC button state", but Companion lists it as "OSC Macro State"](#nr1-the-help-page-names-the-macro-feedback-osc-button-state-but-companion-lists-it-as-osc-macro-state)
 
 ### Notes
 
 - [📝 Additional Notes](#-additional-notes)
-
-## 🟠 High
-
-### H1: The help page names the macro feedback "OSC button state", but Companion lists it as "OSC Macro State"
-
-- **Source:** 🔎 compliance reviewer — verified
-- **Classification:** v2.1.0 H3, partly fixed (the line was rewritten in this release, still with the wrong name)
-- **File:** [`companion/HELP.md:72`](https://github.com/bitfocus/companion-module-digico-osc/blob/6a485f437e155b5ef09d6942208a2614169b5361/companion/HELP.md#L72)
-
-**What goes wrong:** A user reads "Using feedbacks" on the help page and searches the feedback picker for "OSC button state". No feedback has that name: Companion lists it as **[Macros] OSC Macro State**. Two lines further down, the help page uses the correct name, so the page also contradicts itself. The connection-settings part of the v2.1.0 finding is fixed: the settings table now says Receive Port, Transmit Port and Mixer IP Address.
-
-**Why it happens:** Feedback names come straight from the `boolean_feedback_name` column of `digico_entities.csv` (only trimmed). The v2.1.1 edit replaced "Macro button state" with another name that isn't the feedback's either.
-
-**Evidence:**
-
-```text
-// companion/HELP.md:72
-... set its feedback style in Companion to choose the active color. **[Macros] OSC button state** is a boolean feedback for macro buttons.
-// companion/HELP.md:74
-... The replacement **[Macros] OSC Macro State** feedback controls colors only; ...
-// digico_entities.csv:3 (column boolean_feedback_name)
-/Macros/Buttons/state/*,Int,0,2,R,OSC macro button state,,1,indexedRecord,[Macros] OSC Macro State Value,Macro,[Macros] OSC Macro State,True when the OSC Macro matches the selected state.,macroButtonState,...
-// src/commandTable.ts:183
-				booleanFeedbackName: get('boolean_feedback_name').trim(),
-// src/feedbacks.ts:133-134
-				feedbacks[row.booleanFeedbackId] = {
-					name: row.booleanFeedbackName,
-```
-
-**Confirm by:** open [`companion/HELP.md:72`](https://github.com/bitfocus/companion-module-digico-osc/blob/6a485f437e155b5ef09d6942208a2614169b5361/companion/HELP.md#L72) and compare the bold name with `boolean_feedback_name` in [`digico_entities.csv:3`](https://github.com/bitfocus/companion-module-digico-osc/blob/6a485f437e155b5ef09d6942208a2614169b5361/digico_entities.csv#L3) and with line 74.
-
-**Fix:** use the feedback's real name on line 72: `**[Macros] OSC Macro State** is a boolean feedback for macro buttons.`
 
 ## 🟢 Low
 
@@ -133,6 +98,38 @@ if (definition?.queryPath) this.loadedRecordLists.add(definition.queryPath)
 
 **Fix:** handle `macros` before the table lookup and delete line 30, or change line 30 to `/Macros/Buttons/press` so the table matches what the upgrade produces.
 
+## 🔮 Next Release
+
+### NR1: The help page names the macro feedback "OSC button state", but Companion lists it as "OSC Macro State"
+
+- **Source:** 🔎 compliance reviewer — verified
+- **Classification:** v2.1.0 H3, partly fixed (the line was rewritten in this release, still with the wrong name)
+- **File:** [`companion/HELP.md:72`](https://github.com/bitfocus/companion-module-digico-osc/blob/6a485f437e155b5ef09d6942208a2614169b5361/companion/HELP.md#L72)
+
+**What goes wrong:** A user reads "Using feedbacks" on the help page and searches the feedback picker for "OSC button state". No feedback has that name: Companion lists it as **[Macros] OSC Macro State**. Two lines further down, the help page uses the correct name, so the page also contradicts itself. The connection-settings part of the v2.1.0 finding is fixed: the settings table now says Receive Port, Transmit Port and Mixer IP Address.
+
+**Why it happens:** Feedback names come straight from the `boolean_feedback_name` column of `digico_entities.csv` (only trimmed). The v2.1.1 edit replaced "Macro button state" with another name that isn't the feedback's either.
+
+**Evidence:**
+
+```text
+// companion/HELP.md:72
+... set its feedback style in Companion to choose the active color. **[Macros] OSC button state** is a boolean feedback for macro buttons.
+// companion/HELP.md:74
+... The replacement **[Macros] OSC Macro State** feedback controls colors only; ...
+// digico_entities.csv:3 (column boolean_feedback_name)
+/Macros/Buttons/state/*,Int,0,2,R,OSC macro button state,,1,indexedRecord,[Macros] OSC Macro State Value,Macro,[Macros] OSC Macro State,True when the OSC Macro matches the selected state.,macroButtonState,...
+// src/commandTable.ts:183
+				booleanFeedbackName: get('boolean_feedback_name').trim(),
+// src/feedbacks.ts:133-134
+				feedbacks[row.booleanFeedbackId] = {
+					name: row.booleanFeedbackName,
+```
+
+**Confirm by:** open [`companion/HELP.md:72`](https://github.com/bitfocus/companion-module-digico-osc/blob/6a485f437e155b5ef09d6942208a2614169b5361/companion/HELP.md#L72) and compare the bold name with `boolean_feedback_name` in [`digico_entities.csv:3`](https://github.com/bitfocus/companion-module-digico-osc/blob/6a485f437e155b5ef09d6942208a2614169b5361/digico_entities.csv#L3) and with line 74.
+
+**Fix:** use the feedback's real name on line 72: `**[Macros] OSC Macro State** is a boolean feedback for macro buttons.`
+
 ## 📝 Additional Notes
 
 - `tsconfig.build.json` adds `"resolveJsonModule": true` after the template's `"verbatimModuleSyntax": true`. The module builds, so no change is required.
@@ -144,7 +141,7 @@ if (definition?.queryPath) this.loadedRecordLists.add(definition.queryPath)
 | --- | --- |
 | H1 upgraded v1 Macro buttons recall macro N | Fixed: they now press OSC macro button N − 1, as v1 did (checked by running the compiled upgrade script) |
 | H2 `release.yaml` rewritten | Fixed: it matches the template |
-| H3 help page names settings and the macro feedback differently | Partly: the settings names are fixed; the feedback name is still wrong ([H1](#h1-the-help-page-names-the-macro-feedback-osc-button-state-but-companion-lists-it-as-osc-macro-state)) |
+| H3 help page names settings and the macro feedback differently | Partly: the settings names are fixed; the feedback name is still wrong ([NR1](#nr1-the-help-page-names-the-macro-feedback-osc-button-state-but-companion-lists-it-as-osc-macro-state)) |
 | M1 macro feedback for a missing button keeps querying and rebuilding | Partly: the loop and rebuilds are gone; the list is still re-queried on every macro change ([L1](#l1-a-macro-state-feedback-for-a-button-the-console-doesnt-have-still-re-queries-the-button-list-on-every-macro-change)) |
 | M2 upgraded macro feedbacks lose Use Console Macro Name | Addressed as suggested: the help page now says the option isn't carried over |
 | L1 handshake waits forever when the Receive Port can't be opened | Fixed: the bind failure now ends the parked query and the port-unavailable status shows |
