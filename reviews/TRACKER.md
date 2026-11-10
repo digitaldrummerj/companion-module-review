@@ -286,3 +286,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | telycam-ptz-ip-camera | v1.2.1 | 2026-11-09 | [review](telycam-ptz-ip-camera/review-telycam-ptz-ip-camera-v1.2.1-20261110-061335.md) |
 | ✅ | digico-osc | v2.1.1 | 2026-11-09 | [review](digico-osc/review-digico-osc-v2.1.1-20261110-061335.md) |
 | ✅ | apple-tv | v1.0.1 | 2026-11-09 | [review](apple-tv/review-apple-tv-v1.0.1-20261110-061335.md) |
+| ✅ | avmatrix-switcher | v1.0.2 | 2026-11-09 | [review](avmatrix-switcher/review-avmatrix-switcher-v1.0.2-20261110-061335.md) |
