@@ -21,12 +21,10 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 ### Blocking
 
 - [ ] [C1: The module still targets Node 22, but the API 2.2 template runs on Node 26](#c1-the-module-still-targets-node-22-but-the-api-22-template-runs-on-node-26)
-- [ ] [C2: .yarnrc.yml pre-approves node-appletv-remote and adds a patchFolder key](#c2-yarnrcyml-pre-approves-node-appletv-remote-and-adds-a-patchfolder-key)
 - [ ] [H1: The module checks workflow adds a pull request trigger and pins the shared workflow to a commit](#h1-the-module-checks-workflow-adds-a-pull-request-trigger-and-pins-the-shared-workflow-to-a-commit)
 - [ ] [H2: The CI workflow (node.yaml) is rewritten instead of using the template's](#h2-the-ci-workflow-nodeyaml-is-rewritten-instead-of-using-the-templates)
-- [ ] [H3: yarn test fails on a fresh clone because the tests need a build first](#h3-yarn-test-fails-on-a-fresh-clone-because-the-tests-need-a-build-first)
-- [ ] [H4: Feedbacks, variables, upgrade scripts and action definitions live in main.ts instead of their own files](#h4-feedbacks-variables-upgrade-scripts-and-action-definitions-live-in-maints-instead-of-their-own-files)
-- [ ] [H5: The build script and the @companion-module/base version are written differently from the template](#h5-the-build-script-and-the-companion-modulebase-version-are-written-differently-from-the-template)
+- [ ] [H3: Feedbacks, variables, upgrade scripts and action definitions live in main.ts instead of their own files](#h3-feedbacks-variables-upgrade-scripts-and-action-definitions-live-in-maints-instead-of-their-own-files)
+- [ ] [H4: The build script and the @companion-module/base version are written differently from the template](#h4-the-build-script-and-the-companion-modulebase-version-are-written-differently-from-the-template)
 
 ### Non-blocking
 
@@ -63,34 +61,6 @@ Some findings depend on assumptions the reviewers couldn't check. They're listed
 - [ ] [`package.json:25`](https://github.com/bitfocus/companion-module-apple-tv/blob/b9f4bc4439647bd87ac79995d9c306672c37266d/package.json#L25): `"engines": { "node": "^26" }` (now `^22.22.1`)
 - [ ] [`tsconfig.build.json:2`](https://github.com/bitfocus/companion-module-apple-tv/blob/b9f4bc4439647bd87ac79995d9c306672c37266d/tsconfig.build.json#L2): `"extends": "@companion-module/tools/tsconfig/node26/recommended.json"` (now `…/node22/recommended-esm.json`)
 - [ ] [`.github/workflows/node.yaml`](https://github.com/bitfocus/companion-module-apple-tv/blob/b9f4bc4439647bd87ac79995d9c306672c37266d/.github/workflows/node.yaml#L22-L25): `- name: Use Node.js 26.x` (line 22) and `node-version: 26.x` (lines 25 and 49); copying the template's file (H2) covers this
-
-### C2: .yarnrc.yml pre-approves node-appletv-remote and adds a patchFolder key
-
-- **Source:** 🤖 validate-template (CONFIG-DIFF)
-- **Classification:** 🆕 NEW
-- **File:** [`.yarnrc.yml:3`](https://github.com/bitfocus/companion-module-apple-tv/blob/b9f4bc4439647bd87ac79995d9c306672c37266d/.yarnrc.yml#L3), [`.yarnrc.yml:5-7`](https://github.com/bitfocus/companion-module-apple-tv/blob/b9f4bc4439647bd87ac79995d9c306672c37266d/.yarnrc.yml#L5-L7)
-
-**What goes wrong:** `.yarnrc.yml` controls how dependencies are installed for everyone who builds the module, including the Bitfocus build. The template hardens it with a 3-day minimum age for new package versions (`npmMinimalAgeGate: 3d`) and pre-approves only `@companion-module/*`. This file also exempts `node-appletv-remote` from the age gate, so a brand-new release of that package would be installed at once, and adds a `patchFolder` key the template doesn't have.
-
-**Why it happens:** The age-gate exemption is probably left over from when `node-appletv-remote` 0.5.0 was new; it was published on 2026-10-28, so it now passes the gate without help. `patchFolder` only tells `yarn patch-commit -s` where to write new patches: the dependency already points at the patch file by path (`patch:node-appletv-remote@npm%3A0.5.0#~/patches/…` in `package.json:30`).
-
-**Evidence:** validator:
-
-```text
-Value mismatch: npmPreapprovedPackages = '[@companion-module/*, node-appletv-remote]' (template '[@companion-module/*]')
-Extra keys not in template: patchFolder
-```
-
-```yaml
-# .yarnrc.yml:3-7
-patchFolder: patches
-npmMinimalAgeGate: 3d
-npmPreapprovedPackages:
-  - '@companion-module/*'
-  - node-appletv-remote
-```
-
-**Fix:** remove `patchFolder: patches` and the `- node-appletv-remote` line, so `.yarnrc.yml` matches the template, then confirm that `yarn install` still applies the patch.
 
 ## 🟠 High
 
@@ -153,45 +123,7 @@ npmPreapprovedPackages:
 
 **Fix:** copy the template's `node.yaml`. To run the tests in CI, uncomment the template's own `test:` job.
 
-### H3: yarn test fails on a fresh clone because the tests need a build first
-
-- **Source:** 🔎 compliance reviewer — verified
-- **Classification:** 🆕 NEW
-- **File:** [`package.json:16`](https://github.com/bitfocus/companion-module-apple-tv/blob/b9f4bc4439647bd87ac79995d9c306672c37266d/package.json#L16)
-
-**What goes wrong:** No Companion user sees this. A contributor who clones the repository and runs `yarn install && yarn test` gets 17 of 17 test files failing with `ERR_MODULE_NOT_FOUND` before any test runs. CI passes only because `node.yaml` runs `yarn build` before `yarn test`.
-
-**Why it happens:** The tests import the compiled output in `dist/` and `dist-tools/`. Those folders are gitignored and only created by `yarn build`, and the `test` script doesn't build. There is no `pretest` hook, and `postinstall` only runs `husky`.
-
-**Evidence:**
-
-```text
-// package.json:16
-    "test": "node --test tests/*.test.mjs",
-// .gitignore:5-6
-/dist
-/dist-tools
-// tests/presets.test.mjs:3-4
-import { remoteActions } from '../dist/actions.js'
-import { buildPresets } from '../dist/presets.js'
-// tests/node-acceptance.test.mjs:4
-import { runAcceptance } from '../dist-tools/tools/acceptance.js'
-// fresh clone of v1.0.1, yarn install, yarn test (no build):
-# tests 17
-# pass 0
-# fail 17
-# Error [ERR_MODULE_NOT_FOUND]: Cannot find module '.../dist/display.js' imported from .../tests/display.test.mjs
-```
-
-**Confirm by:** in a fresh clone of v1.0.1, run `yarn install && yarn test` without `yarn build`; every test file fails with `ERR_MODULE_NOT_FOUND`.
-
-**Fix:** build in the test script, for example:
-
-```json
-"test": "run build && node --test tests/*.test.mjs"
-```
-
-### H4: Feedbacks, variables, upgrade scripts and action definitions live in main.ts instead of their own files
+### H3: Feedbacks, variables, upgrade scripts and action definitions live in main.ts instead of their own files
 
 - **Source:** 🔎 compliance reviewer — verified
 - **Classification:** 🆕 NEW
@@ -233,7 +165,7 @@ export const UpgradeScripts: CompanionStaticUpgradeScript<ModuleConfig, ModuleSe
 - [ ] `src/variables.ts`: the variable definitions and their schema
 - [ ] `src/actions.ts`: `setActionDefinitions` as `UpdateActions(self)` with `ActionsSchema`, next to `remoteActions`
 
-### H5: The build script and the @companion-module/base version are written differently from the template
+### H4: The build script and the @companion-module/base version are written differently from the template
 
 - **Source:** 🔎 compliance reviewer — verified
 - **Classification:** 🆕 NEW

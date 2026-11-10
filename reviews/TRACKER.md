@@ -285,3 +285,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | streamlingo-streamlingo | v1.0.0 | 2026-11-09 | [review](streamlingo-streamlingo/review-streamlingo-streamlingo-v1.0.0-20261110-061335.md) |
 | ✅ | telycam-ptz-ip-camera | v1.2.1 | 2026-11-09 | [review](telycam-ptz-ip-camera/review-telycam-ptz-ip-camera-v1.2.1-20261110-061335.md) |
 | ✅ | digico-osc | v2.1.1 | 2026-11-09 | [review](digico-osc/review-digico-osc-v2.1.1-20261110-061335.md) |
+| ✅ | apple-tv | v1.0.1 | 2026-11-09 | [review](apple-tv/review-apple-tv-v1.0.1-20261110-061335.md) |
