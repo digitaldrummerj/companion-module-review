@@ -291,3 +291,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | saccani-live-studio | v1.0.2 | 2026-11-10 | [review](saccani-live-studio/review-saccani-live-studio-v1.0.2-20261110-144104.md) |
 | ✅ | glensound-minferno | v1.0.2 | 2026-11-10 | [review](glensound-minferno/review-glensound-minferno-v1.0.2-20261110-154338.md) |
 | ✅ | iconnectivity-interfaces | v1.0.0 | 2026-11-10 | [review](iconnectivity-interfaces/review-iconnectivity-interfaces-v1.0.0-20261110-155540.md) |
+| ✅ | multicam-systems-rcp | v2.0.0-beta.6 | 2026-11-16 | [review](multicam-systems-rcp/review-multicam-systems-rcp-v2.0.0-beta.6-20261116-035231.md) |
