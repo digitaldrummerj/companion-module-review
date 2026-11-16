@@ -294,3 +294,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | multicam-systems-rcp | v2.0.0-beta.6 | 2026-11-16 | [review](multicam-systems-rcp/review-multicam-systems-rcp-v2.0.0-beta.6-20261116-035231.md) |
 | ✅ | multicam-systems-rcp | v1.1.0-beta.2 | 2026-11-16 | [review](multicam-systems-rcp/review-multicam-systems-rcp-v1.1.0-beta.2-20261116-035231.md) |
 | ✅ | fullyfactory-fullykiosk | v1.0.0 | 2026-11-16 | [review](fullyfactory-fullykiosk/review-fullyfactory-fullykiosk-v1.0.0-20261116-035231.md) |
+| ✅ | streamlingo-streamlingo | v1.0.1 | 2026-11-16 | [review](streamlingo-streamlingo/review-streamlingo-streamlingo-v1.0.1-20261116-035231.md) |
