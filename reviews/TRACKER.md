@@ -306,3 +306,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | utopianacademy-deckboy | v1.1.0 | 2026-11-19 | [review](utopianacademy-deckboy/review-utopianacademy-deckboy-v1.1.0-20261119-142715.md) |
 | ✅ | nextologies-nextotalk | v1.0.3 | 2026-11-19 | [review](nextologies-nextotalk/review-nextologies-nextotalk-v1.0.3-20261119-142715.md) |
 | ✅ | wearefalcon-falconplay | v1.2.1 | 2026-11-19 | [review](wearefalcon-falconplay/review-wearefalcon-falconplay-v1.2.1-20261119-142715.md) |
+| ✅ | livemotion-livematrix | v0.1.1 | 2026-11-19 | [review](livemotion-livematrix/review-livemotion-livematrix-v0.1.1-20261119-150514.md) |
