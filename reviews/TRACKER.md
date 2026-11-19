@@ -296,3 +296,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | fullyfactory-fullykiosk | v1.0.0 | 2026-11-16 | [review](fullyfactory-fullykiosk/review-fullyfactory-fullykiosk-v1.0.0-20261116-035231.md) |
 | ✅ | streamlingo-streamlingo | v1.0.1 | 2026-11-16 | [review](streamlingo-streamlingo/review-streamlingo-streamlingo-v1.0.1-20261116-035231.md) |
 | ✅ | microfilms-gpio | v1.2.0 | 2026-11-16 | [review](microfilms-gpio/review-microfilms-gpio-v1.2.0-20261116-035231.md) |
+| ✅ | dreamchip-visca | v1.0.1 | 2026-11-16 | [review](dreamchip-visca/review-dreamchip-visca-v1.0.1-20261116-035231.md) |
