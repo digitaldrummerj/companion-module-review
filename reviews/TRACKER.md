@@ -300,3 +300,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | duonn-atrium20 | v0.1.0 | 2026-11-16 | [review](duonn-atrium20/review-duonn-atrium20-v0.1.0-20261116-035231.md) |
 | ✅ | eventspro-toolspro-timer | v1.3.0 | 2026-11-16 | [review](eventspro-toolspro-timer/review-eventspro-toolspro-timer-v1.3.0-20261116-035231.md) |
 | ✅ | livemotion-livematrix | v0.1.0 | 2026-11-16 | [review](livemotion-livematrix/review-livemotion-livematrix-v0.1.0-20261116-035231.md) |
+| ✅ | wearefalcon-falconplay | v1.2.0 | 2026-11-16 | [review](wearefalcon-falconplay/review-wearefalcon-falconplay-v1.2.0-20261116-035231.md) |
