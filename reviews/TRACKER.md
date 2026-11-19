@@ -297,3 +297,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | streamlingo-streamlingo | v1.0.1 | 2026-11-16 | [review](streamlingo-streamlingo/review-streamlingo-streamlingo-v1.0.1-20261116-035231.md) |
 | ✅ | microfilms-gpio | v1.2.0 | 2026-11-16 | [review](microfilms-gpio/review-microfilms-gpio-v1.2.0-20261116-035231.md) |
 | ✅ | dreamchip-visca | v1.0.1 | 2026-11-16 | [review](dreamchip-visca/review-dreamchip-visca-v1.0.1-20261116-035231.md) |
+| ✅ | duonn-atrium20 | v0.1.0 | 2026-11-16 | [review](duonn-atrium20/review-duonn-atrium20-v0.1.0-20261116-035231.md) |
