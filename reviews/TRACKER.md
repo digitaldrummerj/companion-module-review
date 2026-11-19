@@ -304,3 +304,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | holboxdesign-rio | v1.1.0 | 2026-11-16 | [review](holboxdesign-rio/review-holboxdesign-rio-v1.1.0-20261116-035231.md) |
 | ✅ | sonos-speakers | v2.0.1 | 2026-11-16 | [review](sonos-speakers/review-sonos-speakers-v2.0.1-20261116-035231.md) |
 | ✅ | utopianacademy-deckboy | v1.1.0 | 2026-11-19 | [review](utopianacademy-deckboy/review-utopianacademy-deckboy-v1.1.0-20261119-142715.md) |
+| ✅ | nextologies-nextotalk | v1.0.3 | 2026-11-19 | [review](nextologies-nextotalk/review-nextologies-nextotalk-v1.0.3-20261119-142715.md) |
