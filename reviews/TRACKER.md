@@ -311,3 +311,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | largedisplaysolutions-ldsperimetral | v0.9.1 | 2026-11-19 | [review](largedisplaysolutions-ldsperimetral/review-largedisplaysolutions-ldsperimetral-v0.9.1-20261119-142715.md) |
 | ✅ | largedisplaysolutions-ldsscoreboard | v0.9.1 | 2026-11-19 | [review](largedisplaysolutions-ldsscoreboard/review-largedisplaysolutions-ldsscoreboard-v0.9.1-20261119-142715.md) |
 | ✅ | pltech-kumatimer | v2.9.0 | 2026-11-19 | [review](pltech-kumatimer/review-pltech-kumatimer-v2.9.0-20261119-142715.md) |
+| ✅ | etcaudiovisuel-onlyview | v2.0.0 | 2026-11-19 | [review](etcaudiovisuel-onlyview/review-etcaudiovisuel-onlyview-v2.0.0-20261119-142715.md) |
