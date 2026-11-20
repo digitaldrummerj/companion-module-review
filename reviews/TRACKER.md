@@ -308,3 +308,4 @@ Track completed reviews and whether feedback has been submitted to the module ma
 | ✅ | wearefalcon-falconplay | v1.2.1 | 2026-11-19 | [review](wearefalcon-falconplay/review-wearefalcon-falconplay-v1.2.1-20261119-142715.md) |
 | ✅ | livemotion-livematrix | v0.1.1 | 2026-11-19 | [review](livemotion-livematrix/review-livemotion-livematrix-v0.1.1-20261119-150514.md) |
 | ✅ | peavy-ratc | v2.0.0 | 2026-11-19 | [review](peavy-ratc/review-peavy-ratc-v2.0.0-20261119-142715.md) |
+| ✅ | largedisplaysolutions-ldsperimetral | v0.9.1 | 2026-11-19 | [review](largedisplaysolutions-ldsperimetral/review-largedisplaysolutions-ldsperimetral-v0.9.1-20261119-142715.md) |
